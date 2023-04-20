@@ -1,12 +1,15 @@
 #pragma once
 
 #include "stdbool.h"
-#include "SDL.h"
+#include "SDL2/SDL.h"
 
 #define TARGET_FPS 60
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 450
+
+#define WINDOW_FLAGS SDL_WINDOW_RESIZABLE
+#define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 
 #define VIEWPORT_SCALE 4
 #define CAM_OFFSET_X 0
@@ -21,6 +24,7 @@
 #define GRAVITY 27.0f
 
 #define MILLISECONDS 1000.0f
+#define TIME_STEP (f32) 1 / TARGET_FPS * MILLISECONDS
 
 typedef unsigned char u8;
 typedef short unsigned int u16;

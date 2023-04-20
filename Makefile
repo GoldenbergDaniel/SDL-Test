@@ -1,7 +1,7 @@
 run:
-	./build/SDLTest
+	build/Game
 compile:
-	cmake --build ./build
+	cc src/main.c src/game.c -o Game -lSDL2
 test:
-	cmake --build ./build
-	./build/SDLTest
+	cc src/main.c src/game.c -o build/Game -lSDL2
+	build/Game
