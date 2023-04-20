@@ -1,0 +1,13 @@
+        // while (frame_time_since_update >= (f32) 1/60 * 1000.0f)
+        // {
+        //     game.time.delta = frame_time_since_update;
+        //     game.time.elapsed = frame_time;
+        //     frame_time_since_update -= delta_time;
+        //     counter++;
+            
+        //     printf("Frame: %i \n", counter);
+        //     // printf("Time: %lu \n", (u64) frame_time);
+        //     printf("Delta: %f \n", game.time.delta/1000.0f);
+            
+        //     game_update(&game);
+        // }

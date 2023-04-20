@@ -1,0 +1,3 @@
+/Users/dg/Dev/SDLTest/build/CMakeFiles/rebuild_cache.dir
+/Users/dg/Dev/SDLTest/build/CMakeFiles/edit_cache.dir
+/Users/dg/Dev/SDLTest/build/CMakeFiles/SDLTest.dir

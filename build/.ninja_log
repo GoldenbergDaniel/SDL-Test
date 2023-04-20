@@ -1,0 +1,4 @@
+# ninja log v5
+991	1111	1678661656286115638	SDLTest	61f3e9d9e9a3dbda
+2	991	1678661656160920811	CMakeFiles/SDLTest.dir/src/main.c.o	42e05ee64c3b7a8c
+3	956	1678661656116701879	CMakeFiles/SDLTest.dir/src/game.c.o	e3e745e1164b211
