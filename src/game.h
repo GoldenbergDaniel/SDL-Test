@@ -1,16 +1,13 @@
-#include "globals.h"
+#pragma once
 
-typedef struct Time
-{
-    f32 delta;
-    u64 elapsed;
-} Time;
+#include "globals.h"
+#include "game_time.h"
 
 typedef struct Game
 {
     SDL_Window* window;
     SDL_Renderer* renderer;
-    Time time;
+    GameTime time;
     bool is_running;
 } Game;
 

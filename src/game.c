@@ -2,7 +2,7 @@
 
 void game_init(Game* game)
 {
-
+    
 }
 
 void game_handle_events(Game* game, SDL_Event* event)
