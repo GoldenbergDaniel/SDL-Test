@@ -1,12 +1,13 @@
 #include "globals.h"
-#include "util.h"
 #include "draw.h"
-
+#include "util.h"
+#include "object.h"
 #include "game.h"
 
 void init(Game *game)
 {
-    
+    game->object = new_object(20, 20, COLOR_RED);
+    init_object(&game->object);
 }
 
 void handle_events(Game *game, SDL_Event *event)
@@ -16,14 +17,14 @@ void handle_events(Game *game, SDL_Event *event)
 
 void update(Game *game)
 {
-
+    update_object(&game->object, game->t, game->dt);
 }
 
 void draw(Game *game)
 {
     clear_background(game->renderer, COLOR_BLACK);
 
-    draw_rect(game->renderer, (v2) {WINDOW_WIDTH/2 - 10, WINDOW_HEIGHT/2 - 10}, 20, 20, COLOR_RED);
+    draw_object(&game->object, game->renderer);
 }
 
 void uninit(Game *game)

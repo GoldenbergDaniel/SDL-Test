@@ -2,7 +2,6 @@
 
 #include "globals.h"
 #include "util.h"
-#include "draw.h"
 #include "game.h"
 
 i32 main()
@@ -38,7 +37,10 @@ i32 main()
             game.t = elapsed_time;
             game.dt = frame_time;
 
-            update(&game);
+            printf("DT: %lf \n", frame_time);
+
+            if (elapsed_time >= 1.0f)
+                update(&game);
 
             elapsed_time += TIMESTEP;
             accumulator -= TIMESTEP;

@@ -16,7 +16,7 @@
 #define COLOR_GREEN (SDL_Color) {100, 160, 60, 255}
 #define COLOR_BLUE (SDL_Color) {55, 107, 186, 255}
 
-#define TIMESTEP 1.0f / 60.0f
+#define TIMESTEP 1.0f / 10.0f
 
 #define TRUE 1
 #define FALSE 0

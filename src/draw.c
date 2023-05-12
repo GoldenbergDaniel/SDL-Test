@@ -1,6 +1,6 @@
 #include "globals.h"
 #include "util.h"
-#include "game.h"
+#include "draw.h"
 
 void clear_background(SDL_Renderer *renderer, SDL_Color color)
 {

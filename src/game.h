@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef OBJECT
+#include "object.h"
+#endif
+
 typedef struct Game
 {
     SDL_Window *window;
@@ -7,6 +11,7 @@ typedef struct Game
     bool is_running;
     f64 t;
     f64 dt;
+    Object object;
 } Game;
 
 void init(Game *game);
