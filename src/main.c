@@ -19,6 +19,7 @@ i32 main()
 
     f64 elapsed_time = 0.0f;
     f64 current_time = time_in_seconds();
+    f64 timestep = 1.0f / TARGET_FPS;
     f64 accumulator = 0.0f;
 
     while (game.is_running)
@@ -29,21 +30,19 @@ i32 main()
         current_time = new_time;
         accumulator += frame_time;
 
-        while (accumulator >= TIMESTEP)
+        while (accumulator >= timestep)
         {
             SDL_Event event;
             while (SDL_PollEvent(&event)) handle_events(&game, &event);
 
             game.t = elapsed_time;
-            game.dt = frame_time;
-
-            printf("DT: %lf \n", frame_time);
+            game.dt = timestep;
 
             if (elapsed_time >= 1.0f)
                 update(&game);
 
-            elapsed_time += TIMESTEP;
-            accumulator -= TIMESTEP;
+            elapsed_time += timestep;
+            accumulator -= timestep;
         }
         
         draw(&game);

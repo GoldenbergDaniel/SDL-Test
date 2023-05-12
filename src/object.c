@@ -23,20 +23,20 @@ Object new_object(u16 width, u16 height, SDL_Color color)
 void init_object(Object *object)
 {
     object->pos = (v2) {
-        0.0f,
+        get_center(object->width, object->height).x,
         get_center(object->width, object->height).y
     };
 
-    object->vel.x = 100.0f;
+    // object->vel.x = 200.0f;
 }
 
 void update_object(Object *object, f64 t, f64 dt)
 {
-    // object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.2f) * dt;
+    // object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.7f) * dt;
     // object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f);
 
-    // object->pos.x += cosf(t) * 10.0f * dt;
-    // object->pos.y += sinf(t) * 10.0f * dt;
+    object->pos.x += cosf(t*2.0f) * 100.0f * dt;
+    object->pos.y += sinf(t*2.0f) * 100.0f * dt;
     
     object->vel.x += object->acc.x;
     object->vel.y += object->acc.y;
@@ -49,3 +49,4 @@ void draw_object(Object *object, SDL_Renderer *renderer)
 {
     draw_rect(renderer, object->pos, object->width, object->height, object->color);
 }
+
