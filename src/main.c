@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "util.h"
+#include "draw.h"
 #include "game.h"
 
 i32 main()
@@ -45,8 +46,6 @@ i32 main()
         
         draw(&game);
 
-        SDL_SetRenderDrawColor(game.renderer, COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 255);
-        SDL_RenderClear(game.renderer);
         SDL_RenderPresent(game.renderer);
     }
 

@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "util.h"
+#include "draw.h"
 
 #include "game.h"
 
@@ -20,7 +21,9 @@ void update(Game *game)
 
 void draw(Game *game)
 {
+    clear_background(game->renderer, COLOR_BLACK);
 
+    draw_rect(game->renderer, (v2) {WINDOW_WIDTH/2 - 10, WINDOW_HEIGHT/2 - 10}, 20, 20, COLOR_RED);
 }
 
 void uninit(Game *game)
