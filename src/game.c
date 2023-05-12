@@ -1,26 +1,29 @@
+#include "globals.h"
+#include "util.h"
+
 #include "game.h"
 
-void game_init(Game* game)
+void init(Game *game)
 {
     
 }
 
-void game_handle_events(Game* game, SDL_Event* event)
+void handle_events(Game *game, SDL_Event *event)
 {
-    if (event->type == SDL_QUIT) game->is_running = false;
+    if (event->type == SDL_QUIT) game->is_running = FALSE;
 }
 
-void game_update(Game* game)
-{
-
-}
-
-void game_draw(Game* game)
+void update(Game *game)
 {
 
 }
 
-void game_uninit(Game* game)
+void draw(Game *game)
+{
+
+}
+
+void uninit(Game *game)
 {
 
 }

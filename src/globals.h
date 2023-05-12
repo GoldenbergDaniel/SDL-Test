@@ -1,28 +1,27 @@
 #pragma once
 
-#include "stdbool.h"
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
 
-// Window
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 450
-#define WINDOW_FLAGS SDL_WINDOW_RESIZABLE
 
-// Renderer
+#define WINDOW_FLAGS SDL_WINDOW_ALLOW_HIGHDPI
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+#define IMAGE_INIT_FLAGS IMG_INIT_PNG | IMG_INIT_JPG
 
-// Color
 #define COLOR_BLACK (SDL_Color) {19, 19, 19, 255}
 #define COLOR_WHITE (SDL_Color) {236, 236, 236, 255}
 #define COLOR_RED (SDL_Color) {229, 78, 48, 255}
 #define COLOR_GREEN (SDL_Color) {100, 160, 60, 255}
 #define COLOR_BLUE (SDL_Color) {55, 107, 186, 255}
 
-// Time
-#define MILLISECONDS 1000.0f
-#define TIME_STEP (f32) 1 / 60 * MILLISECONDS
+#define TIMESTEP (f32) 1 / 60
 
-// Types
+#define TRUE 1
+#define FALSE 0
+
+typedef unsigned char bool;
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
