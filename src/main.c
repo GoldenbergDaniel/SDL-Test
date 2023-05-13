@@ -33,7 +33,7 @@ i32 main()
         while (accumulator >= timestep)
         {
             SDL_Event event;
-            while (SDL_PollEvent(&event)) handle_events(&game, &event);
+            while (SDL_PollEvent(&event)) handle_event(&game, &event);
 
             game.t = elapsed_time;
             game.dt = timestep;

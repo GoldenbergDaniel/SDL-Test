@@ -1,8 +1,11 @@
 #include "globals.h"
 #include "draw.h"
 #include "util.h"
+#include "input.h"
 #include "object.h"
 #include "game.h"
+
+#include <stdio.h>
 
 void init(Game *game)
 {
@@ -10,10 +13,26 @@ void init(Game *game)
     init_object(&game->object);
 }
 
-void handle_events(Game *game, SDL_Event *event)
-{
-    if (event->type == SDL_QUIT) 
-        game->is_running = FALSE;
+void handle_event(Game *game, SDL_Event *event)
+{   
+    switch (event->type)
+    {
+        case SDL_QUIT:
+            game->is_running = FALSE;
+            break;
+        case SDL_KEYDOWN:
+            switch (event->key.keysym.scancode)
+            {
+                case SDL_SCANCODE_ESCAPE:
+                    game->is_running = FALSE;
+                    break;
+                case SDL_SCANCODE_SPACE:
+                    printf("Space key pressed\n");
+                    break;
+                break;
+            }
+        break;
+    }
 }
 
 void update(Game *game)
