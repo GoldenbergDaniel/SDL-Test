@@ -1,5 +1,5 @@
 EXE_PATH = build/Game
-DEPS = -lSDL2 -lSDL2_image
+DEPS = -lSDL2
 IGNORE = -Wno-switch
 
 all:

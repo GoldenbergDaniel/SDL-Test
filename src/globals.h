@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
 
 #define WINDOW_WIDTH (unsigned short) 800
 #define WINDOW_HEIGHT (unsigned short) 450
@@ -9,7 +8,6 @@
 
 #define WINDOW_FLAGS 0
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-#define IMAGE_INIT_FLAGS IMG_INIT_PNG | IMG_INIT_JPG
 
 #define COLOR_BLACK (SDL_Color) {19, 19, 19, 255}
 #define COLOR_WHITE (SDL_Color) {236, 236, 236, 255}
