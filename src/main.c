@@ -1,8 +1,11 @@
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "globals.h"
 #include "util.h"
+#include "input.h"
 #include "game.h"
+
+Input *input;
 
 i32 main()
 {
@@ -12,6 +15,8 @@ i32 main()
     game.is_running = TRUE;
 
     init(&game);
+
+    input = (Input*) malloc(sizeof(Input));
 
     f64 elapsed_time = 0.0f;
     f64 current_time = time_in_seconds();
@@ -29,7 +34,8 @@ i32 main()
         while (accumulator >= time_step)
         {
             SDL_Event event;
-            while (SDL_PollEvent(&event)) handle_event(&game, &event);
+            while (SDL_PollEvent(&event)) 
+                handle_event(&game, &event);
 
             game.t = elapsed_time;
             game.dt = time_step;
@@ -45,7 +51,6 @@ i32 main()
         SDL_RenderPresent(game.renderer);
     }
 
-    uninit(&game);
     SDL_DestroyWindow(game.window);
     SDL_DestroyRenderer(game.renderer);
     SDL_Quit();

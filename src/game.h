@@ -17,4 +17,3 @@ void init(Game *game);
 void handle_event(Game *game, SDL_Event *event);
 void update(Game *game);
 void draw(Game *game);
-void uninit(Game *game);

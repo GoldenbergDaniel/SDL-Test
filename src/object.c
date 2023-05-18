@@ -2,12 +2,17 @@
 #include "util.h"
 #include "draw.h"
 #include "object.h"
+#include "input.h"
+
+#include <stdio.h>
+
+extern Input *input;
 
 v2 get_center(u16 width, u16 height)
 {
     return (v2) { 
         WINDOW_WIDTH/2.0f - width/2.0f,
-        WINDOW_HEIGHT/2.0f - height/2.0f,
+        WINDOW_HEIGHT/2.0f - height/2.0f
     };
 }
 
@@ -26,17 +31,20 @@ void init_object(Object *object)
         get_center(object->width, object->height).x,
         get_center(object->width, object->height).y
     };
-
-    // object->vel.x = 200.0f;
 }
 
 void update_object(Object *object, f64 t, f64 dt)
 {
     object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.7f) * dt;
-    // object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f) * dt;
+    
+    if (input->w)
+    {
+        printf("in object \n");
+        object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f) * dt;
+    }
 
     // object->pos.x += cosf(t*2) * 100 * dt;
-    // object->pos.y += sinf(t*2) * 100 * dt;
+    // object->pos.y += sinf(t*2) * 100 * dt;        
     
     object->vel.x += object->acc.x;
     object->vel.y += object->acc.y;
