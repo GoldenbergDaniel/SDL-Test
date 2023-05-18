@@ -11,15 +11,11 @@ i32 main()
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
 
-    IMG_Init(IMAGE_INIT_FLAGS);
-
     init(&game);
-
-    SDL_Texture *texture = IMG_LoadTexture(game.renderer, "../res/icon.png");
 
     f64 elapsed_time = 0.0f;
     f64 current_time = time_in_seconds();
-    f64 timestep = 1.0f / TARGET_FPS;
+    f64 time_step = 1.0f / TARGET_FPS;
     f64 accumulator = 0.0f;
 
     while (game.is_running)
@@ -30,28 +26,26 @@ i32 main()
         current_time = new_time;
         accumulator += frame_time;
 
-        while (accumulator >= timestep)
+        while (accumulator >= time_step)
         {
             SDL_Event event;
             while (SDL_PollEvent(&event)) handle_event(&game, &event);
 
             game.t = elapsed_time;
-            game.dt = timestep;
+            game.dt = time_step;
 
             if (elapsed_time >= 1.0f)
                 update(&game);
 
-            elapsed_time += timestep;
-            accumulator -= timestep;
+            elapsed_time += time_step;
+            accumulator -= time_step;
         }
         
         draw(&game);
-
         SDL_RenderPresent(game.renderer);
     }
 
     uninit(&game);
-
     SDL_DestroyWindow(game.window);
     SDL_DestroyRenderer(game.renderer);
     SDL_Quit();

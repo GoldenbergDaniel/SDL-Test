@@ -1,11 +1,10 @@
 #pragma once
 
-#ifndef OBJECT
+#ifndef OBJECT_H
 #include "object.h"
 #endif
 
-typedef struct Game
-{
+typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     bool is_running;

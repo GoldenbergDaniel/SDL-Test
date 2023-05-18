@@ -11,7 +11,7 @@ v2 get_center(u16 width, u16 height)
     };
 }
 
-Object new_object(u16 width, u16 height, SDL_Color color)
+Object new_object(u16 width, u16 height, SDL_Color color) 
 {
     return (Object) {
         width,
@@ -33,14 +33,13 @@ void init_object(Object *object)
 void update_object(Object *object, f64 t, f64 dt)
 {
     object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.7f) * dt;
-    // object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f);
+    // object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f) * dt;
 
     // object->pos.x += cosf(t*2) * 100 * dt;
     // object->pos.y += sinf(t*2) * 100 * dt;
     
     object->vel.x += object->acc.x;
     object->vel.y += object->acc.y;
-
     object->pos.x += object->vel.x * dt;
     object->pos.y += object->vel.y * dt;
 }

@@ -1,5 +1,4 @@
-typedef struct Input
-{
+typedef struct {
     bool w;
     bool a;
     bool s;

@@ -1,13 +1,13 @@
 #pragma once
 
-#define UTIL
+#define UTIL_H
 
-typedef struct v2 {
+typedef struct {
     f32 x;
     f32 y;
 } v2;
 
-typedef struct vi2 {
+typedef struct {
     i32 x;
     i32 y;
 } vi2;

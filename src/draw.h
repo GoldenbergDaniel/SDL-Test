@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef DRAW
+#ifndef UTIL_H
 #include "util.h"
 #endif
 

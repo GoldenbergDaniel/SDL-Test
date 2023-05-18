@@ -3,10 +3,9 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 450
-
-#define TARGET_FPS 60
+#define WINDOW_WIDTH (unsigned short) 800
+#define WINDOW_HEIGHT (unsigned short) 450
+#define TARGET_FPS (unsigned short) 60
 
 #define WINDOW_FLAGS 0
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
@@ -18,8 +17,8 @@
 #define COLOR_GREEN (SDL_Color) {100, 160, 60, 255}
 #define COLOR_BLUE (SDL_Color) {55, 107, 186, 255}
 
-#define TRUE 1
-#define FALSE 0
+#define TRUE (unsigned char) 1
+#define FALSE (unsigned char) 0
 
 typedef unsigned char bool;
 typedef unsigned char u8;

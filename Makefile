@@ -4,8 +4,8 @@ IGNORE = -Wno-switch
 
 all:
 	cc src/*.c -o $(EXE_PATH) $(DEPS) $(IGNORE)
-	$(EXE_PATH)
+	@$(EXE_PATH)
 compile:
 	cc src/*.c -o $(EXE_PATH) $(DEPS) $(IGNORE)
 run:
-	$(EXE_PATH)
+	@$(EXE_PATH)
