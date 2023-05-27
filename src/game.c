@@ -2,15 +2,15 @@
 #include "draw.h"
 #include "util.h"
 #include "input.h"
-#include "object.h"
+#include "player.h"
 #include "game.h"
 
 extern Input *input;
 
 void init(Game *game)
 {
-    game->object = new_object(20, 20, COLOR_RED);
-    init_object(&game->object);
+    game->player = create_player(20, 20, COLOR_RED);
+    init_player(&game->player);
 }
 
 void handle_event(Game *game, SDL_Event *event)
@@ -76,11 +76,11 @@ void update(Game *game)
     if (input->escape)
         game->is_running = FALSE;
 
-    update_object(&game->object, game->t, game->dt);
+    update_player(&game->player, game->t, game->dt);
 }
 
 void draw(Game *game)
 {
     clear_background(game->renderer, COLOR_BLACK);
-    draw_object(&game->object, game->renderer);
+    draw_player(&game->player, game->renderer);
 }

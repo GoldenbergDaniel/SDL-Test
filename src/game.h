@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef OBJECT_H
-#include "object.h"
+#ifndef PLAYER_H
+#include "player.h"
 #endif
 
 typedef struct {
@@ -10,7 +10,7 @@ typedef struct {
     bool is_running;
     f64 t;
     f64 dt;
-    Object object;
+    Player player;
 } Game;
 
 void init(Game *game);
