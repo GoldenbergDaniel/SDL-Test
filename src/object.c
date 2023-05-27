@@ -5,8 +5,11 @@
 #include "input.h"
 
 #include <stdio.h>
+#include <math.h>
 
 extern Input *input;
+
+v2 dir;
 
 v2 get_center(u16 width, u16 height)
 {
@@ -35,19 +38,46 @@ void init_object(Object *object)
 
 void update_object(Object *object, f64 t, f64 dt)
 {
-    object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.7f) * dt;
+    // object->pos.x += lerp(object->pos.x, WINDOW_WIDTH-object->width, 0.7f) * dt;
+    // object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f) * dt;
+
+    i32 speed = 500.0f;
     
+    if (input->d)
+        dir.x = 1.0f;
+
+    if (input->a)
+        dir.x = -1.0f;
+
     if (input->w)
+        dir.y = -1.0f;
+
+    if (input->s)
+        dir.y = 1.0f;
+
+    if (!input->a && !input->d) 
     {
-        printf("in object \n");
-        object->pos.y += lerp(object->pos.y, WINDOW_HEIGHT-object->height, 0.7f) * dt;
+        object->vel.x = 0.0f;
+        dir.x = 0.0f;
     }
 
-    // object->pos.x += cosf(t*2) * 100 * dt;
-    // object->pos.y += sinf(t*2) * 100 * dt;        
+    if (!input->w && !input->s)
+    {
+        object->vel.y = 0.0f;
+        dir.y = 0.0f;
+    }
+
+    object->vel.x = speed * dir.x;
+    object->vel.y = speed * dir.y;
+
+    f32 magnitude = sqrtf(powf(object->vel.x, 2) + powf(object->vel.y, 2));
+
+    if (magnitude > 0.0f)
+    {
+        object->vel.x = (object->vel.x/magnitude) * speed;
+        object->vel.y = (object->vel.y/magnitude) * speed;
+    }
     
-    object->vel.x += object->acc.x;
-    object->vel.y += object->acc.y;
     object->pos.x += object->vel.x * dt;
     object->pos.y += object->vel.y * dt;
 }

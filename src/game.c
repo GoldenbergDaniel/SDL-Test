@@ -5,8 +5,6 @@
 #include "object.h"
 #include "game.h"
 
-#include <stdio.h>
-
 extern Input *input;
 
 void init(Game *game)
@@ -32,8 +30,16 @@ void handle_event(Game *game, SDL_Event *event)
                     input->space = TRUE;
                     break;
                 case SDL_SCANCODE_W:
-                    printf("W pressed\n");
                     input->w = TRUE;
+                    break;
+                case SDL_SCANCODE_A:
+                    input->a = TRUE;
+                    break;
+                case SDL_SCANCODE_S:
+                    input->s = TRUE;
+                    break;
+                case SDL_SCANCODE_D:
+                    input->d = TRUE;
                     break;
                 break;
             }
@@ -48,8 +54,16 @@ void handle_event(Game *game, SDL_Event *event)
                     input->space = FALSE;
                     break;
                 case SDL_SCANCODE_W:
-                    printf("W up\n");
                     input->w = FALSE;
+                    break;
+                case SDL_SCANCODE_A:
+                    input->a = FALSE;
+                    break;
+                case SDL_SCANCODE_S:
+                    input->s = FALSE;
+                    break;
+                case SDL_SCANCODE_D:
+                    input->d = FALSE;
                     break;
                 break;
             }
