@@ -12,6 +12,6 @@ typedef struct
 } Player;
 
 Player create_player(u16 width, u16 height, SDL_Color color);
-void init_player(Player *object);
-void update_player(Player *object, f64 t, f64 dt);
-void draw_player(Player *object, SDL_Renderer *renderer);
+void init_player(Player *player);
+void update_player(Player *player, f64 t, f64 dt);
+void draw_player(Player *player, SDL_Renderer *renderer);

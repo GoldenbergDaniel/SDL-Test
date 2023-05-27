@@ -26,46 +26,46 @@ Player create_player(u16 width, u16 height, SDL_Color color)
     };
 }
 
-void init_player(Player *object)
+void init_player(Player *player)
 {
-    object->pos = (v2) {
-        get_center(object->width, object->height).x,
-        get_center(object->width, object->height).y
+    player->pos = (v2) {
+        get_center(player->width, player->height).x,
+        get_center(player->width, player->height).y
     };
 
-    object->speed = 300.0f;
+    player->speed = 300.0f;
 }
 
-void update_player(Player *object, f64 t, f64 dt)
+void update_player(Player *player, f64 t, f64 dt)
 {   
     if (input->a)
-        object->dir.x = -1.0f;
+        player->dir.x = -1.0f;
 
     if (input->d)
-        object->dir.x = 1.0f;
+        player->dir.x = 1.0f;
 
     if (input->w)
-        object->dir.y = -1.0f;
+        player->dir.y = -1.0f;
 
     if (input->s)
-        object->dir.y = 1.0f;
+        player->dir.y = 1.0f;
 
     if (!input->a && !input->d) 
-        object->dir.x = 0.0f;
+        player->dir.x = 0.0f;
 
     if (!input->w && !input->s)
-        object->dir.y = 0.0f;
+        player->dir.y = 0.0f;
 
-    if (object->dir.x != 0.0f || object->dir.y != 0.0f)
-        object->dir = normalize(object->dir);
+    if (player->dir.x != 0.0f || player->dir.y != 0.0f)
+        player->dir = normalize(player->dir);
 
-    object->vel.x = object->speed * object->dir.x * dt;
-    object->vel.y = object->speed * object->dir.y * dt;
+    player->vel.x = player->speed * player->dir.x * dt;
+    player->vel.y = player->speed * player->dir.y * dt;
 
-    object->pos = add_vec(object->pos, object->vel);
+    player->pos = add_vec(player->pos, player->vel);
 }
 
-void draw_player(Player *object, SDL_Renderer *renderer)
+void draw_player(Player *player, SDL_Renderer *renderer)
 {
-    draw_rect(renderer, object->pos, object->width, object->height, object->color);
+    draw_rect(renderer, player->pos, player->width, player->height, player->color);
 }
