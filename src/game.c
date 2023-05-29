@@ -5,6 +5,7 @@
 #include "util.h"
 #include "input.h"
 #include "player.h"
+#include "enemy.h"
 #include "game.h"
 
 extern Input *input;
@@ -12,7 +13,10 @@ extern Input *input;
 void init(Game *game)
 {
     game->player = create_player(20, 20, COLOR_WHITE);
+    game->enemies[0] = create_enemy(20, 20, COLOR_RED);
+    
     init_player(&game->player);
+    init_enemy(&game->enemies[0]);
 }
 
 void handle_event(Game *game, SDL_Event *event)
@@ -53,9 +57,10 @@ void update(Game *game)
         game->is_running = FALSE;
 
     update_player(&game->player, game->t, game->dt);
+    update_enemy(&game->enemies[0], game->t, game->dt);
 
     // TODO: Fix clipping bug
-    if (get_player_right_bound(game->player) <= 0.0f)
+    if (game->player.pos.x + game->player.width <= 0.0f)
     {
         game->player.pos.x = WINDOW_WIDTH;
     }
@@ -63,7 +68,7 @@ void update(Game *game)
     {
         game->player.pos.x = 0.0f;
     }
-    else if (get_player_bottom_bound(game->player) <= 0.0f)
+    else if (game->player.pos.y + game->player.height <= 0.0f)
     {
         game->player.pos.y = WINDOW_HEIGHT;
     }
@@ -76,10 +81,12 @@ void update(Game *game)
 void draw(Game *game)
 {
     clear_background(game->renderer, COLOR_BLACK);
-    draw_player(&game->player, game->renderer);
-}
 
-f64 time_in_seconds()
-{
-    return (f64) SDL_GetTicks64() * 0.001f;
+    for (u8 i = 0; i < len(game->enemies); i++)
+    {
+        Enemy enemy = game->enemies[i];
+        draw_rect(game->renderer, enemy.pos, enemy.width, enemy.height, enemy.color);
+    }
+
+    draw_rect(game->renderer, game->player.pos, game->player.width, game->player.height, game->player.color);
 }

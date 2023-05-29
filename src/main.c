@@ -21,13 +21,13 @@ i32 main()
     input = (Input*) malloc(sizeof(Input));
 
     f64 elapsed_time = 0.0f;
-    f64 current_time = time_in_seconds();
+    f64 current_time = SDL_GetTicks64() * 0.001f;
     f64 time_step = 1.0f / TARGET_FPS;
     f64 accumulator = 0.0f;
 
     while (game.is_running)
     {
-        f64 new_time = time_in_seconds();
+        f64 new_time = SDL_GetTicks64() * 0.001f;
         f64 frame_time = new_time - current_time;
 
         current_time = new_time;
