@@ -1,8 +1,8 @@
 typedef struct {
-    bool w;
-    bool a;
-    bool s;
-    bool d;
-    bool space;
-    bool escape;
+    u8 w;
+    u8 a;
+    u8 s;
+    u8 d;
+    u8 space;
+    u8 escape;
 } Input;

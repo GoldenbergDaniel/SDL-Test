@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include "SDL2/SDL.h"
+
 #include "globals.h"
 #include "util.h"
 #include "input.h"
@@ -34,14 +36,13 @@ i32 main()
         while (accumulator >= time_step)
         {
             SDL_Event event;
-            while (SDL_PollEvent(&event)) 
+            while (SDL_PollEvent(&event))
                 handle_event(&game, &event);
 
             game.t = elapsed_time;
             game.dt = time_step;
 
-            if (elapsed_time >= 1.0f)
-                update(&game);
+            update(&game);
 
             elapsed_time += time_step;
             accumulator -= time_step;

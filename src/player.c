@@ -1,11 +1,12 @@
+#include <stdio.h>
+
+#include "SDL2/SDL.h"
+
 #include "globals.h"
 #include "util.h"
 #include "draw.h"
 #include "player.h"
 #include "input.h"
-
-#include <stdio.h>
-#include <math.h>
 
 extern Input *input;
 
@@ -17,7 +18,7 @@ v2 get_center(u16 width, u16 height)
     };
 }
 
-Player create_player(u16 width, u16 height, SDL_Color color) 
+Player create_player(u16 width, u16 height, SDL_Color color)
 {
     return (Player) {
         width,
@@ -50,10 +51,10 @@ void update_player(Player *player, f64 t, f64 dt)
     if (input->s)
         player->dir.y = 1.0f;
 
-    if (!input->a && !input->d) 
+    if ((!input->a && !input->d) || (input->a && input->d))
         player->dir.x = 0.0f;
 
-    if (!input->w && !input->s)
+    if ((!input->w && !input->s) || (input->w && input->s))
         player->dir.y = 0.0f;
 
     if (player->dir.x != 0.0f || player->dir.y != 0.0f)
@@ -68,4 +69,14 @@ void update_player(Player *player, f64 t, f64 dt)
 void draw_player(Player *player, SDL_Renderer *renderer)
 {
     draw_rect(renderer, player->pos, player->width, player->height, player->color);
+}
+
+f32 get_player_right_bound(Player player)
+{
+    return player.pos.x + player.width;
+}
+
+f32 get_player_bottom_bound(Player player)
+{
+    return player.pos.y + player.height;
 }

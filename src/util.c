@@ -1,5 +1,6 @@
-#include "globals.h"
+#include <math.h>
 
+#include "globals.h"
 #include "util.h"
 
 f32 lerp(f32 curr, f32 target, f32 rate)
@@ -20,11 +21,5 @@ v2 add_vec(v2 vec1, v2 vec2)
 v2 normalize(v2 vec)
 {
     f32 mag = magnitude(vec);
-    
     return (v2) {vec.x/mag, vec.y/mag};
-}
-
-f64 time_in_seconds()
-{
-    return (f64) SDL_GetTicks64() * 0.001f;
 }

@@ -4,7 +4,8 @@
 #include "player.h"
 #endif
 
-typedef struct {
+typedef struct Game
+{
     SDL_Window *window;
     SDL_Renderer *renderer;
     bool is_running;
@@ -17,3 +18,4 @@ void init(Game *game);
 void handle_event(Game *game, SDL_Event *event);
 void update(Game *game);
 void draw(Game *game);
+f64 time_in_seconds();

@@ -1,3 +1,5 @@
+#include "SDL2/SDL.h"
+
 #include "globals.h"
 #include "util.h"
 #include "draw.h"

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "SDL2/SDL.h"
-
 #define WINDOW_WIDTH (unsigned short) 800
 #define WINDOW_HEIGHT (unsigned short) 450
 #define TARGET_FPS (unsigned short) 60
