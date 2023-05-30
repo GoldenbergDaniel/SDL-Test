@@ -59,16 +59,30 @@ void handle_event(Game *game, SDL_Event *event)
     }
 }
 
+int count = 0;
+
 void update(Game *game)
 {
     if (input->escape)
+    {
         game->is_running = FALSE;
+    }
 
     update_player(&game->player, game->t, game->dt);
 
     for (u8 i = 0; i < len(game->enemies); i++)
     {
+        enemy_lookat(&game->enemies[i], game->player.pos);
         update_enemy(&game->enemies[i], game->t, game->dt);
+
+        // TODO: Collision detection does not work properly!
+        if (rr_collision(game->enemies[i].pos, game->player.pos, 
+                         game->enemies[i].width, game->enemies[i].height, 
+                         game->player.width, game->player.height))
+        {
+            count++;
+            printf("Collision %i!\n", count);
+        }
     }
 
     // TODO: Fix clipping bug

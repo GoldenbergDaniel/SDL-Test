@@ -11,6 +11,7 @@ typedef struct Player
     v2 vel;
     v2 dir;
     f32 speed;
+    u8 col_mask;
 } Player;
 
 Player create_player(u16 width, u16 height, SDL_Color color);

@@ -4,8 +4,6 @@
 #include "globals.h"
 #include "util.h"
 
-#include <CoreAudio/CoreAudio.h>
-
 f32 lerp(f32 curr, f32 target, f32 rate)
 {
     return (target - curr) * rate;
@@ -39,11 +37,11 @@ v2 normalize_v2(v2 vec)
     };
 }
 
-v2 get_rect_center(u16 width, u16 height)
+v2 get_rect_center(u16 w, u16 h)
 {
     return (v2) {
-        WINDOW_WIDTH/2.0f - width/2.0f,
-        WINDOW_HEIGHT/2.0f - height/2.0f
+        WINDOW_WIDTH/2.0f - w/2.0f,
+        WINDOW_HEIGHT/2.0f - h/2.0f
     };
 }
 
@@ -53,4 +51,15 @@ v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y)
         (rand() % max_x) + min_x,
         (rand() % max_y) + min_y
     };
+}
+
+bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2)
+{
+    return (max1 >= min2) && (max2 >= min1);
+}
+
+bool rr_collision(v2 pos1, v2 pos2, f32 w1, f32 h1, f32 w2, f32 h2)
+{
+    return range_intersect(pos1.x, pos1.x+w1, pos2.x, pos2.x+w2) &&
+           range_intersect(pos1.y, pos1.y+h1, pos2.y, pos2.y+h2);
 }
