@@ -75,7 +75,6 @@ void update(Game *game)
         enemy_lookat(&game->enemies[i], game->player.pos);
         update_enemy(&game->enemies[i], game->t, game->dt);
 
-        // TODO: Collision detection does not work properly!
         if (rr_collision(game->enemies[i].pos, game->player.pos, 
                          game->enemies[i].width, game->enemies[i].height, 
                          game->player.width, game->player.height))
