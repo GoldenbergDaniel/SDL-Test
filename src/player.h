@@ -1,4 +1,5 @@
 #pragma once
+
 #define PLAYER_H
 
 typedef struct Player

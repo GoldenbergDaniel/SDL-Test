@@ -1,11 +1,14 @@
 #include <stdlib.h>
-
-#include "SDL2/SDL.h"
+#include <time.h>
+#include <SDL2/SDL.h>
 
 #include "globals.h"
 #include "util.h"
 #include "input.h"
 #include "game.h"
+
+#define WINDOW_FLAGS SDL_WINDOW_METAL
+#define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 
 Input *input;
 
@@ -15,6 +18,8 @@ i32 main()
     game.window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_FLAGS);
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
+
+    srand(time(NULL));
 
     init(&game);
 
@@ -36,8 +41,7 @@ i32 main()
         while (accumulator >= time_step)
         {
             SDL_Event event;
-            while (SDL_PollEvent(&event))
-                handle_event(&game, &event);
+            while (SDL_PollEvent(&event)) handle_event(&game, &event);
 
             game.t = elapsed_time;
             game.dt = time_step;

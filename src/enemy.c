@@ -1,8 +1,9 @@
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 #include "globals.h"
 #include "util.h"
 #include "draw.h"
+#include "player.h"
 #include "enemy.h"
 
 Enemy create_enemy(u16 width, u16 height, SDL_Color color)
@@ -16,10 +17,7 @@ Enemy create_enemy(u16 width, u16 height, SDL_Color color)
 
 void init_enemy(Enemy *enemy)
 {
-    enemy->pos = (v2) {
-        get_center(enemy->width, enemy->height).x,
-        0.0f
-    };
+    enemy->pos = get_random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
 
     enemy->speed = 300.0f;
 }

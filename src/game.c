@@ -1,4 +1,4 @@
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 #include "globals.h"
 #include "draw.h"
@@ -13,10 +13,18 @@ extern Input *input;
 void init(Game *game)
 {
     game->player = create_player(20, 20, COLOR_WHITE);
-    game->enemies[0] = create_enemy(20, 20, COLOR_RED);
+    
+    for (u8 i = 0; i < len(game->enemies); i++)
+    {
+        game->enemies[i] = create_enemy(20, 20, COLOR_RED);
+    }
     
     init_player(&game->player);
-    init_enemy(&game->enemies[0]);
+
+    for (u8 i = 0; i < len(game->enemies); i++)
+    {
+        init_enemy(&game->enemies[i]);
+    }
 }
 
 void handle_event(Game *game, SDL_Event *event)
@@ -57,7 +65,11 @@ void update(Game *game)
         game->is_running = FALSE;
 
     update_player(&game->player, game->t, game->dt);
-    update_enemy(&game->enemies[0], game->t, game->dt);
+
+    for (u8 i = 0; i < len(game->enemies); i++)
+    {
+        update_enemy(&game->enemies[i], game->t, game->dt);
+    }
 
     // TODO: Fix clipping bug
     if (game->player.pos.x + game->player.width <= 0.0f)

@@ -4,9 +4,6 @@
 #define WINDOW_HEIGHT (unsigned short) 450
 #define TARGET_FPS (unsigned short) 60
 
-#define WINDOW_FLAGS SDL_WINDOW_METAL
-#define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-
 #define COLOR_BLACK (SDL_Color) {19, 19, 19, 255}
 #define COLOR_WHITE (SDL_Color) {236, 236, 236, 255}
 #define COLOR_RED (SDL_Color) {249, 58, 38, 255}

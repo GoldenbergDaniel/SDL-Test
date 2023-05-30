@@ -19,5 +19,6 @@ typedef struct vi2
 f32 lerp(f32 curr, f32 target, f32 rate);
 f32 magnitude(v2 vec);
 v2 add_v2(v2 vec1, v2 vec2);
-v2 normalize(v2 vec);
-v2 get_center(u16 width, u16 height);
+v2 normalize_v2(v2 vec);
+v2 get_rect_center(u16 width, u16 height);
+v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y);

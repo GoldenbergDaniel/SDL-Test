@@ -1,6 +1,5 @@
 #include <stdio.h>
-
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 #include "globals.h"
 #include "util.h"
@@ -22,8 +21,8 @@ Player create_player(u16 width, u16 height, SDL_Color color)
 void init_player(Player *player)
 {
     player->pos = (v2) {
-        get_center(player->width, player->height).x,
-        get_center(player->width, player->height).y
+        get_rect_center(player->width, player->height).x,
+        get_rect_center(player->width, player->height).y
     };
 
     player->speed = 300.0f;
@@ -43,7 +42,7 @@ void update_player(Player *player, f64 t, f64 dt)
         player->dir.y = 0.0f;
 
     if (player->dir.x != 0.0f || player->dir.y != 0.0f)
-        player->dir = normalize(player->dir);
+        player->dir = normalize_v2(player->dir);
 
     player->vel.x = player->speed * player->dir.x * dt;
     player->vel.y = player->speed * player->dir.y * dt;

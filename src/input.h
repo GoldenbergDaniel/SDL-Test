@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct {
     u8 w;
     u8 a;
