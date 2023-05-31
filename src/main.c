@@ -10,21 +10,17 @@
 #define WINDOW_FLAGS SDL_WINDOW_METAL
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 
-Input *input;
-
 i32 main()
 {
     Game game;
     game.window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_FLAGS);
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
-
+    
     srand(time(NULL));
 
     init(&game);
-
-    input = (Input*) malloc(sizeof(Input));
-
+    
     f64 elapsed_time = 0.0f;
     f64 current_time = SDL_GetTicks64() * 0.001f;
     f64 time_step = 1.0f / TARGET_FPS;

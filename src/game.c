@@ -8,10 +8,12 @@
 #include "enemy.h"
 #include "game.h"
 
-extern Input *input;
+Input *input;
 
 void init(Game *game)
-{
+{    
+    input = (Input*) malloc(sizeof(Input));
+
     game->player = create_player(20, 20, COLOR_WHITE);
     
     for (u8 i = 0; i < len(game->enemies); i++)
@@ -59,8 +61,6 @@ void handle_event(Game *game, SDL_Event *event)
     }
 }
 
-int count = 0;
-
 void update(Game *game)
 {
     if (input->escape)
@@ -72,15 +72,22 @@ void update(Game *game)
 
     for (u8 i = 0; i < len(game->enemies); i++)
     {
-        enemy_lookat(&game->enemies[i], game->player.pos);
+        enemy_lookat(&game->enemies[i], get_player_center(&game->player));
         update_enemy(&game->enemies[i], game->t, game->dt);
 
-        if (rr_collision(game->enemies[i].pos, game->player.pos, 
-                         game->enemies[i].width, game->enemies[i].height, 
-                         game->player.width, game->player.height))
+        if (rr_collision(
+                        add_v2(game->enemies[i].pos, game->enemies[i].vel),
+                        add_v2(game->player.pos, game->player.vel), 
+                        game->enemies[i].width, 
+                        game->enemies[i].height, 
+                        game->player.width, 
+                        game->player.height))
         {
-            count++;
-            printf("Collision %i!\n", count);
+            game->enemies[i].color = COLOR_GREEN;
+        }
+        else
+        {
+            game->enemies[i].color = COLOR_RED;
         }
     }
 
@@ -107,11 +114,11 @@ void draw(Game *game)
 {
     clear_background(game->renderer, COLOR_BLACK);
 
+    draw_rect(game->renderer, game->player.pos, game->player.width, game->player.height, game->player.color);
+
     for (u8 i = 0; i < len(game->enemies); i++)
     {
         Enemy enemy = game->enemies[i];
         draw_rect(game->renderer, enemy.pos, enemy.width, enemy.height, enemy.color);
     }
-
-    draw_rect(game->renderer, game->player.pos, game->player.width, game->player.height, game->player.color);
 }

@@ -20,7 +20,8 @@ void init_enemy(Enemy *enemy)
 {
     // TODO: Fix enemies spawning on invalid locations
     enemy->pos = get_random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
-    enemy->speed = 200.0f;
+    enemy->speed = 150.0f;
+    enemy->view_dist = 200;;
 }
 
 void update_enemy(Enemy *enemy, f64 t, f64 dt)
@@ -29,6 +30,10 @@ void update_enemy(Enemy *enemy, f64 t, f64 dt)
     {
         enemy->dir.x = sinf(enemy->target_angle);
         enemy->dir.y = cosf(enemy->target_angle);
+    }
+    else
+    {
+        enemy->dir = V2_ZERO;
     }
 
     enemy->vel.x = enemy->speed * enemy->dir.x * dt;
@@ -39,10 +44,21 @@ void update_enemy(Enemy *enemy, f64 t, f64 dt)
 
 void enemy_lookat(Enemy *enemy, v2 target_pos)
 {
-    enemy->has_target = TRUE;
-    enemy->target_pos = target_pos;
-    
-    i16 dist_x = enemy->target_pos.x - enemy->pos.x;
-    i16 dist_y = enemy->target_pos.y - enemy->pos.y;
-    enemy->target_angle = atan2(dist_x, dist_y);
+    if ((target_pos.x < enemy->pos.x+enemy->view_dist &&
+         target_pos.x > enemy->pos.x-enemy->view_dist) &&
+        (target_pos.y < enemy->pos.y+enemy->view_dist &&
+         target_pos.y > enemy->pos.y-enemy->view_dist))
+    {
+        enemy->has_target = TRUE;
+        enemy->target_pos = target_pos;
+        
+        i16 dist_x = enemy->target_pos.x - enemy->pos.x;
+        i16 dist_y = enemy->target_pos.y - enemy->pos.y;
+        enemy->target_angle = atan2(dist_x, dist_y);
+    }
+    else
+    {
+        enemy->has_target = FALSE;
+        enemy->target_pos = V2_ZERO;
+    }
 }

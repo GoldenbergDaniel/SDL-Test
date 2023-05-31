@@ -15,6 +15,7 @@ typedef struct Enemy
     v2 target_pos;
     f32 target_angle;
     u8 col_mask;
+    u16 view_dist;
 } Enemy;
 
 Enemy create_enemy(u16 width, u16 height, SDL_Color color);
