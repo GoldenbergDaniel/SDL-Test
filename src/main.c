@@ -5,10 +5,13 @@
 #include "globals.h"
 #include "util.h"
 #include "input.h"
+#include "player.h"
+#include "enemy.h"
 #include "game.h"
 
 #define WINDOW_FLAGS SDL_WINDOW_METAL
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+#define TARGET_FPS 60
 
 i32 main()
 {

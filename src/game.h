@@ -1,10 +1,5 @@
 #pragma once
 
-#ifndef PLAYER_H
-#include "player.h"
-#include "enemy.h"
-#endif
-
 typedef struct Game
 {
     SDL_Window *window;

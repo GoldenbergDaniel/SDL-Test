@@ -4,8 +4,8 @@
 #include "globals.h"
 #include "util.h"
 #include "draw.h"
-#include "player.h"
 #include "input.h"
+#include "player.h"
 
 extern Input *input;
 
@@ -29,7 +29,7 @@ void init_player(Player *player)
 }
 
 void update_player(Player *player, f64 t, f64 dt)
-{   
+{
     if (input->a) player->dir.x = -1.0f;
     if (input->d) player->dir.x = 1.0f;
     if (input->w) player->dir.y = -1.0f;
@@ -54,12 +54,4 @@ void update_player(Player *player, f64 t, f64 dt)
     player->vel.y = player->speed * player->dir.y * dt;
 
     player->pos = add_v2(player->pos, player->vel);
-}
-
-v2 get_player_center(Player *player)
-{
-    return (v2) {
-        player->pos.x + player->width/2.0f,
-        player->pos.y + player->height/2.0f
-    };
 }

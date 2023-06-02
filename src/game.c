@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 
 #include "globals.h"
-#include "draw.h"
 #include "util.h"
+#include "draw.h"
 #include "input.h"
 #include "player.h"
 #include "enemy.h"
@@ -72,7 +72,8 @@ void update(Game *game)
 
     for (u8 i = 0; i < len(game->enemies); i++)
     {
-        enemy_lookat(&game->enemies[i], get_player_center(&game->player));
+        v2 player_center = get_rect_center(game->player.pos, game->player.width, game->player.height);
+        enemy_find_target(&game->enemies[i], player_center);
         update_enemy(&game->enemies[i], game->t, game->dt);
 
         if (rr_collision(

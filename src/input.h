@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct {
+typedef struct Input {
     u8 w;
     u8 a;
     u8 s;

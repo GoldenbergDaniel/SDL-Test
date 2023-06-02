@@ -23,6 +23,12 @@ f32 magnitude(v2 vec)
 }
 
 inline
+f32 distance(v2 vec1, v2 vec2)
+{
+    return sqrtf(powf(vec2.x - vec1.x, 2.0f) + powf(vec2.y - vec1.y, 2.0f));
+}
+
+inline
 v2 add_v2(v2 vec1, v2 vec2)
 {
     return (v2) {
@@ -47,20 +53,28 @@ v2 normalize_v2(v2 vec)
     };
 }
 
-v2 get_screen_center(u16 w, u16 h)
-{
-    return (v2) {
-        WINDOW_WIDTH/2.0f - w/2.0f,
-        WINDOW_HEIGHT/2.0f - h/2.0f
-    };
-}
-
-inline
 v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y)
 {
     return (v2) {
         (rand() % max_x) + min_x,
         (rand() % max_y) + min_y
+    };
+}
+
+v2 get_screen_center(u16 w, u16 h)
+{
+    return (v2) {
+        (WINDOW_WIDTH / 2.0f) - (w / 2.0f),
+        (WINDOW_HEIGHT / 2.0f) - (h / 2.0f)
+    };
+}
+
+
+v2 get_rect_center(v2 pos, u16 w, u16 h)
+{
+    return (v2) {
+        pos.x + (w / 2.0f),
+        pos.y + (h / 2.0f)
     };
 }
 
