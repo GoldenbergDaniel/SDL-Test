@@ -1,12 +1,30 @@
-EXE_PATH = build/Game
-DEPS = -lSDL2
-IGNORE = -Wno-switch
-OPTIMIZATIONS = -O0
+NAME = Game
+LDFLAGS = -lSDL2
+CFLAGS = -std=c17 -Wno-switch
 
-all:
-	cc src/*.c -o $(EXE_PATH) $(DEPS) $(IGNORE) $(OPTIMIZATIONS)
-	@$(EXE_PATH)
-compile:
-	cc src/*.c -o $(EXE_PATH) $(DEPS) $(IGNORE) $(OPTIMIZATIONS)
-run:
-	@$(EXE_PATH)
+SOURCES = \
+	main.c \
+	game.c \
+	util.c \
+	draw.c \
+	player.c \
+	enemy.c
+
+OBJECTS = $(SOURCES:%.c=build/obj/%.o)
+
+all: $(NAME)
+	build/$(NAME)
+
+build: $(NAME)
+
+clean:
+	rm build/obj/*.o
+
+.PHONY: all build clean
+
+$(NAME): $(OBJECTS)
+	@cc $(LDFLAGS) -o build/$(NAME) $^
+
+$(OBJECTS): build/obj/%.o: src/%.c
+	@echo $(subst src/,,$<)
+	@cc -c $(CFLAGS) -o $@ $<
