@@ -1,6 +1,6 @@
 #pragma once
 
-#define len(arr) sizeof(arr)/sizeof(arr[0])
+#define arr_len(arr) sizeof(arr)/sizeof(arr[0])
 
 typedef struct v2
 {
@@ -16,7 +16,7 @@ f32 magnitude(v2 vec);
 f32 distance(v2 vec1, v2 vec2);
 v2 add_v2(v2 vec1, v2 vec2);
 v2 normalize_v2(v2 vec);
-v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y);
+v2 get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
 v2 get_screen_center(u16 w, u16 h);
 v2 get_rect_center(v2 pos, u16 w, u16 h);
 bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2);

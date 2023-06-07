@@ -8,7 +8,7 @@ typedef struct Game
     f64 t;
     f64 dt;
     Player player;
-    Enemy enemies[1];
+    Enemy enemies[2];
 } Game;
 
 void init(Game *game);

@@ -30,10 +30,17 @@ void init_player(Player *player)
 
 void update_player(Player *player, f64 t, f64 dt)
 {
-    if (input->a) player->dir.x = -1.0f;
-    if (input->d) player->dir.x = 1.0f;
-    if (input->w) player->dir.y = -1.0f;
-    if (input->s) player->dir.y = 1.0f;
+    if (input->a)
+        player->dir.x = -1.0f;
+
+    if (input->d)
+        player->dir.x = 1.0f;
+
+    if (input->w)
+        player->dir.y = -1.0f;
+
+    if (input->s)
+        player->dir.y = 1.0f;
 
     if ((!input->a && !input->d) || (input->a && input->d))
     {

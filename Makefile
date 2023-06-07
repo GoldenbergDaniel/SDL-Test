@@ -1,6 +1,6 @@
 NAME = Game
 LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -Wno-switch
+CFLAGS = -std=c17 -O0 -Wall -Wno-switch -Wpedantic
 
 SOURCES = \
 	main.c \
@@ -18,7 +18,8 @@ all: $(NAME)
 build: $(NAME)
 
 clean:
-	rm build/obj/*.o
+	@rm build/obj/*.o
+	@echo "Cleaned build directory"
 
 .PHONY: all build clean
 

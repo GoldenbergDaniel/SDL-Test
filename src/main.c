@@ -13,7 +13,7 @@
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 #define TARGET_FPS 60
 
-i32 main()
+i32 main(void)
 {
     Game game;
     game.window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_FLAGS);
@@ -40,7 +40,10 @@ i32 main()
         while (accumulator >= time_step)
         {
             SDL_Event event;
-            while (SDL_PollEvent(&event)) handle_event(&game, &event);
+            while (SDL_PollEvent(&event))
+            {
+                handle_event(&game, &event);
+            }
 
             game.t = elapsed_time;
             game.dt = time_step;

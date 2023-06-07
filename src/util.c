@@ -53,7 +53,7 @@ v2 normalize_v2(v2 vec)
     };
 }
 
-v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y)
+v2 get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 {
     return (v2) {
         (rand() % max_x) + min_x,
@@ -61,6 +61,7 @@ v2 get_random_position(i32 min_x, i32 max_x, i32 min_y, i32 max_y)
     };
 }
 
+inline
 v2 get_screen_center(u16 w, u16 h)
 {
     return (v2) {
@@ -69,7 +70,7 @@ v2 get_screen_center(u16 w, u16 h)
     };
 }
 
-
+inline
 v2 get_rect_center(v2 pos, u16 w, u16 h)
 {
     return (v2) {
