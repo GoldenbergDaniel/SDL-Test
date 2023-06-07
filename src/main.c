@@ -9,6 +9,7 @@
 #include "enemy.h"
 #include "game.h"
 
+#define WINDOW_NAME "Game"
 #define WINDOW_FLAGS SDL_WINDOW_METAL
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 #define TARGET_FPS 60
@@ -16,10 +17,16 @@
 i32 main(void)
 {
     Game game;
-    game.window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_FLAGS);
+    game.window = SDL_CreateWindow(
+                    WINDOW_NAME, 
+                    SDL_WINDOWPOS_CENTERED, 
+                    SDL_WINDOWPOS_CENTERED, 
+                    WINDOW_WIDTH, 
+                    WINDOW_HEIGHT, 
+                    WINDOW_FLAGS);
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
-    
+
     srand(time(NULL));
 
     init(&game);
