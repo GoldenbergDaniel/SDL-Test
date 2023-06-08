@@ -5,9 +5,9 @@ typedef struct Player
     u16 width;
     u16 height;
     SDL_Color color;
-    v2 pos;
-    v2 vel;
-    v2 dir;
+    v2f pos;
+    v2f vel;
+    v2f dir;
     f32 speed;
     u8 col_mask;
 } Player;

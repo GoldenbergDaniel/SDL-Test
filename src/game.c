@@ -16,14 +16,14 @@ void init(Game *game)
 
     game->player = create_player(20, 20, COLOR_WHITE);
 
-    for (u8 i = 0; i < arr_len(game->enemies); i++)
+    for (u8 i = 0; i < array_len(game->enemies); i++)
     {
         game->enemies[i] = create_enemy(20, 20, COLOR_RED);
     }
 
     init_player(&game->player);
 
-    for (u8 i = 0; i < arr_len(game->enemies); i++)
+    for (u8 i = 0; i < array_len(game->enemies); i++)
     {
         init_enemy(&game->enemies[i]);
     }
@@ -34,7 +34,8 @@ void handle_event(Game *game, SDL_Event *event)
     switch (event->type)
     {
         case SDL_QUIT: { game->is_running = FALSE; } break;
-        case SDL_KEYDOWN:
+        case SDL_KEYDOWN: 
+        {
             switch (event->key.keysym.scancode)
             {
                 case SDL_SCANCODE_ESCAPE: { input->escape = TRUE; } break;
@@ -46,7 +47,9 @@ void handle_event(Game *game, SDL_Event *event)
                 break;
             }
             break;
-        case SDL_KEYUP:
+        }
+        case SDL_KEYUP: 
+        {
             switch (event->key.keysym.scancode)
             {
                 case SDL_SCANCODE_ESCAPE: { input->escape = FALSE; } break;
@@ -57,7 +60,8 @@ void handle_event(Game *game, SDL_Event *event)
                 case SDL_SCANCODE_W: { input->w = FALSE; } break;
                 break;
             }
-        break;
+            break;
+        }
     }
 }
 
@@ -70,21 +74,22 @@ void update(Game *game)
 
     update_player(&game->player, game->t, game->dt);
 
-    for (u8 i = 0; i < arr_len(game->enemies); i++)
+    for (u8 i = 0; i < array_len(game->enemies); i++)
     {
-        v2 p_center = get_rect_center(game->player.pos, game->player.width, game->player.height);
+        v2f p_center = get_rect_center(game->player.pos, game->player.width, game->player.height);
         enemy_find_target(&game->enemies[i], &p_center);
 
         update_enemy(&game->enemies[i], game->t, game->dt);
 
         // Enemy-Player collision
         if (rr_collision(
-                add_v2(game->enemies[i].pos, game->enemies[i].vel),
-                add_v2(game->player.pos, game->player.vel),
+                add_v2f(game->enemies[i].pos, game->enemies[i].vel),
+                add_v2f(game->player.pos, game->player.vel),
                 game->enemies[i].width,
                 game->enemies[i].height,
                 game->player.width,
-                game->player.height))
+                game->player.height
+            ))
         {
             game->enemies[i].color = COLOR_GREEN;
         }
@@ -93,24 +98,21 @@ void update(Game *game)
             game->enemies[i].color = COLOR_RED;
         }
 
-        for (u8 j = 0; j < arr_len(game->enemies); j++)
+        for (u8 j = 0; j < array_len(game->enemies); j++)
         {
             if (i == j) continue;
 
             // Enemy-Enemy collision
             if (rr_collision(
-                    add_v2(game->enemies[i].pos, game->enemies[i].vel),
-                    add_v2(game->enemies[j].pos, game->enemies[j].vel),
+                    add_v2f(game->enemies[i].pos, game->enemies[i].vel),
+                    add_v2f(game->enemies[j].pos, game->enemies[j].vel),
                     game->enemies[i].width,
                     game->enemies[i].height,
                     game->enemies[j].width,
-                    game->enemies[j].height))
+                    game->enemies[j].height
+                ))
             {
                 game->enemies[i].color = COLOR_BLUE;
-            }
-            else
-            {
-                game->enemies[i].color = COLOR_RED;
             }
         }
     }
@@ -138,11 +140,24 @@ void draw(Game *game)
 {
     clear_background(game->renderer, COLOR_BLACK);
 
-    draw_rect(game->renderer, game->player.pos, game->player.width, game->player.height, game->player.color);
+    // Draw player
+    draw_rect(
+        game->renderer, 
+        game->player.pos, 
+        game->player.width,
+        game->player.height, 
+        game->player.color
+    );
 
-    for (u8 i = 0; i < arr_len(game->enemies); i++)
+    // Draw enemies
+    for (u8 i = 0; i < array_len(game->enemies); i++)
     {
-        Enemy *enemy = &game->enemies[i];
-        draw_rect(game->renderer, enemy->pos, enemy->width, enemy->height, enemy->color);
+        draw_rect(
+            game->renderer, 
+            game->enemies[i].pos, 
+            game->enemies[i].width, 
+            game->enemies[i].height, 
+            game->enemies[i].color
+        );
     }
 }

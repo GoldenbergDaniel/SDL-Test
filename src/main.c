@@ -23,7 +23,8 @@ i32 main(void)
                     SDL_WINDOWPOS_CENTERED, 
                     WINDOW_WIDTH, 
                     WINDOW_HEIGHT, 
-                    WINDOW_FLAGS);
+                    WINDOW_FLAGS
+                  );
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
 

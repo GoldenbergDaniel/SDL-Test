@@ -3,11 +3,11 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 450
 
-#define COLOR_BLACK (SDL_Color) {19, 19, 19, 255}
-#define COLOR_WHITE (SDL_Color) {236, 236, 236, 255}
-#define COLOR_RED (SDL_Color) {249, 58, 38, 255}
-#define COLOR_GREEN (SDL_Color) {100, 160, 60, 255}
-#define COLOR_BLUE (SDL_Color) {55, 107, 186, 255}
+#define COLOR_BLACK ((SDL_Color) {19, 19, 19, 255})
+#define COLOR_WHITE ((SDL_Color) {236, 236, 236, 255})
+#define COLOR_RED ((SDL_Color) {249, 58, 38, 255})
+#define COLOR_GREEN ((SDL_Color) {100, 160, 60, 255})
+#define COLOR_BLUE ((SDL_Color) {55, 107, 186, 255})
 
 #define TRUE 1
 #define FALSE 0

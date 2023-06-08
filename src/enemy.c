@@ -34,25 +34,23 @@ void update_enemy(Enemy *enemy, f64 t, f64 dt)
     }
     else
     {
-        enemy->dir = V2_ZERO;
+        enemy->dir = V2F_ZERO;
     }
 
     if (enemy->dir.x != 0.0f || enemy->dir.y != 0.0f)
     {
-        enemy->dir = normalize_v2(enemy->dir);
+        enemy->dir = normalize_v2f(enemy->dir);
     }
 
     enemy->vel.x = enemy->speed * enemy->dir.x * dt;
     enemy->vel.y = enemy->speed * enemy->dir.y * dt;
 
-    enemy->pos = add_v2(enemy->pos, enemy->vel);
+    enemy->pos = add_v2f(enemy->pos, enemy->vel);
 }
 
-void enemy_find_target(Enemy *enemy, v2 *target_pos)
+void enemy_find_target(Enemy *enemy, v2f *target_pos)
 {
-    // printf("TARGET POS X, Y: %f, %f\n", target_pos->x, target_pos->y);
-
-    if (distance(enemy->pos, *target_pos) <= enemy->view_dist)
+    if (distance_v2f(enemy->pos, *target_pos) <= enemy->view_dist)
     {
         enemy->has_target = TRUE;
         enemy->target_pos = *target_pos;
@@ -65,6 +63,6 @@ void enemy_find_target(Enemy *enemy, v2 *target_pos)
     else
     {
         enemy->has_target = FALSE;
-        enemy->target_pos = V2_ZERO;
+        enemy->target_pos = V2F_ZERO;
     }
 }
