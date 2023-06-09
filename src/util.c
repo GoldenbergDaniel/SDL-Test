@@ -5,73 +5,100 @@
 #include "util.h"
 
 inline 
-f32 lerp(f32 curr, f32 target, f32 rate)
+f32 lerp_f32(f32 curr, f32 target, f32 rate)
 {
     return (target - curr) * rate;
 }
 
-inline
-f32 magnitude_v2i(v2i vec)
+v2f lerp_v2f(v2f curr, v2f target, f32 rate)
 {
-    return sqrtf(powf(vec.x, 2.0f) + powf(vec.y, 2.0f));
+    return scale_v2f(subtract_v2f(target, curr), rate);
 }
 
 inline
-f32 magnitude_v2f(v2f vec)
+v2i add_v2i(v2i a, v2i b)
 {
-    return sqrtf(powf(vec.x, 2.0f) + powf(vec.y, 2.0f));
+    return (v2i) {a.x + b.x, a.y + b.y};
 }
 
 inline
-f32 distance_v2i(v2i vec1, v2i vec2)
+v2f add_v2f(v2f a, v2f b)
 {
-    return sqrtf(powf(vec2.x - vec1.x, 2.0f) + powf(vec2.y - vec1.y, 2.0f));
+    return (v2f) {a.x + b.x, a.y + b.y};
 }
 
 inline
-f32 distance_v2f(v2f vec1, v2f vec2)
+v2i subtract_v2i(v2i a, v2i b)
 {
-    return sqrtf(powf(vec2.x - vec1.x, 2.0f) + powf(vec2.y - vec1.y, 2.0f));
+    return (v2i) {a.x - b.x, a.y - b.y};
 }
 
 inline
-v2i add_v2i(v2i vec1, v2i vec2)
+v2f subtract_v2f(v2f a, v2f b)
 {
-    return (v2i) {
-        vec1.x + vec2.x,
-        vec1.y + vec2.y
-    };
+    return (v2f) {a.x - b.x, a.y - b.y};
 }
 
 inline
-v2f add_v2f(v2f vec1, v2f vec2)
+v2i scale_v2i(v2i a, f32 s)
 {
-    return (v2f) {
-        vec1.x + vec2.x,
-        vec1.y + vec2.y
-    };
+    return (v2i) {a.x * s, a.y * s};
 }
 
 inline
-i32 dot_v2i(v2i vec1, v2i vec2)
+v2f scale_v2f(v2f a, f32 s)
 {
-    return (vec1.x * vec2.x) + (vec1.y * vec2.y);
+    return (v2f) {a.x * s, a.y * s};
 }
 
 inline
-f32 dot_v2f(v2f vec1, v2f vec2)
+i32 dot_v2i(v2i a, v2i b)
 {
-    return (vec1.x * vec2.x) + (vec1.y * vec2.y);
+    return (a.x * b.x) + (a.y * b.y);
 }
 
-v2f normalize_v2f(v2f vec)
+inline
+f32 dot_v2f(v2f a, v2f b)
 {
-    f32 mag = magnitude_v2f(vec);
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+inline
+f32 magnitude_v2i(v2i a)
+{
+    return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
+}
+
+inline
+f32 magnitude_v2f(v2f a)
+{
+    return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
+}
+
+inline
+f32 distance_v2i(v2i a, v2i b)
+{
+    return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
+}
+
+inline
+f32 distance_v2f(v2f a, v2f b)
+{
+    return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
+}
+
+v2f normalize_v2i(v2i a)
+{
+    f32 mag = magnitude_v2i(a);
     
-    return (v2f) {
-        vec.x / mag,
-        vec.y / mag
-    };
+    return (v2f) {a.x / mag, a.y / mag};
+}
+
+v2f normalize_v2f(v2f a)
+{
+    f32 mag = magnitude_v2f(a);
+    
+    return (v2f) {a.x / mag, a.y / mag};
 }
 
 v2f get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
