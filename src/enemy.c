@@ -19,8 +19,9 @@ Enemy create_enemy(u16 width, u16 height, SDL_Color color)
 void init_enemy(Enemy *enemy)
 {
     // TODO: Fix enemies spawning on invalid locations
-    enemy->pos = get_random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
-    enemy->speed = 150.0f;
+    // enemy->pos = get_random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
+    enemy->pos = get_screen_center(enemy->width+100, enemy->height+100);
+    // enemy->speed = 150.0f;
     enemy->view_dist = 1000;
     enemy->has_target = FALSE;
 }

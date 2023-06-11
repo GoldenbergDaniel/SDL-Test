@@ -4,20 +4,23 @@
 #include "util.h"
 #include "draw.h"
 
-void clear_background(SDL_Renderer *renderer, SDL_Color color)
+inline
+void clear_background(SDL_Renderer *renderer, SDL_Color c)
 {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
     SDL_RenderClear(renderer);
 }
 
-void draw_rect(SDL_Renderer *renderer, v2f pos, i32 w, i32 h, SDL_Color color)
+inline
+void draw_rect(SDL_Renderer *renderer, v2f pos, i32 w, i32 h, SDL_Color c)
 {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
     SDL_RenderFillRectF(renderer, &((SDL_FRect) {pos.x, pos.y, w, h}));
 }
 
-void draw_rect_outline(SDL_Renderer *renderer, v2f pos, i32 w, i32 h, SDL_Color color)
+inline
+void draw_rect_outline(SDL_Renderer *renderer, v2f pos, i32 w, i32 h, SDL_Color c)
 {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
     SDL_RenderDrawRectF(renderer, &((SDL_FRect) {pos.x, pos.y, w, h}));
 }

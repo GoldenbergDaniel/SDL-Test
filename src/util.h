@@ -13,6 +13,7 @@ typedef struct v2f
 #define V2I_ZERO ((v2f) {0, 0})
 #define V2F_ZERO ((v2f) {0.0f, 0.0f})
 
+#define abs(a) (((a) < 0) ? (-a) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define clamp_top(a, b) (min(a, b))

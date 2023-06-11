@@ -18,8 +18,10 @@ void init(Game *game)
 
     for (u8 i = 0; i < array_len(game->enemies); i++)
     {
-        game->enemies[i] = create_enemy(20, 20, COLOR_RED);
+        game->enemies[i] = create_enemy(40, 40, COLOR_RED);
     }
+
+    // game->enemies[1].color = COLOR_BLUE;
 
     init_player(&game->player);
 
@@ -76,12 +78,17 @@ void update(Game *game)
 
     for (u8 i = 0; i < array_len(game->enemies); i++)
     {
-        v2f p_center = get_rect_center(game->player.pos, game->player.width, game->player.height);
+        v2f p_center = get_rect_center(
+                            game->player.pos, 
+                            game->player.width, 
+                            game->player.height
+                       );
+
         enemy_find_target(&game->enemies[i], &p_center);
 
         update_enemy(&game->enemies[i], game->t, game->dt);
 
-        // Enemy-Player collision
+        // Player-Enemy collision
         if (rr_collision(
                 add_v2f(game->enemies[i].pos, game->enemies[i].vel),
                 add_v2f(game->player.pos, game->player.vel),
@@ -90,12 +97,31 @@ void update(Game *game)
                 game->player.width,
                 game->player.height
             ))
-        {
-            game->enemies[i].color = COLOR_GREEN;
-        }
-        else
-        {
-            game->enemies[i].color = COLOR_RED;
+        {   
+            // NOTE: These work exclusive or (XOR)
+            // Idea: Do something with the vectors from center of one rect to other
+
+            // if (abs(game->player.pos.x + game->player.width - game->enemies[0].pos.x) >
+            //     abs(game->player.pos.y + game->player.height - game->enemies[0].pos.y)
+            //    )
+            // {
+            //     game->player.pos.x = game->enemies[0].pos.x + game->enemies[0].width;
+            // }
+            // else
+            // {
+            //     game->player.pos.y = game->enemies[0].pos.y + game->enemies[0].height;
+            // }
+
+            if (abs(game->enemies[0].pos.x + game->enemies[0].width - game->player.pos.x) >
+                abs(game->enemies[0].pos.y + game->enemies[0].height - game->player.pos.y)
+               )
+            {
+                game->player.pos.x = game->enemies[0].pos.x - game->player.width;
+            }
+            else
+            {
+                game->player.pos.y = game->enemies[0].pos.y - game->player.height;
+            }
         }
 
         for (u8 j = 0; j < array_len(game->enemies); j++)
@@ -112,7 +138,7 @@ void update(Game *game)
                     game->enemies[j].height
                 ))
             {
-                game->enemies[i].color = COLOR_BLUE;
+                // game->enemies[i].color = COLOR_BLUE;
             }
         }
     }

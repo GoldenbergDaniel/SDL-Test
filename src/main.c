@@ -9,7 +9,7 @@
 #include "enemy.h"
 #include "game.h"
 
-#define WINDOW_NAME "Game"
+#define WINDOW_NAME "GAME"
 #define WINDOW_FLAGS SDL_WINDOW_METAL
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 #define TARGET_FPS 60
