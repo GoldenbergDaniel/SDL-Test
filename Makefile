@@ -1,31 +1,33 @@
 NAME = Game
 LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -O0 -Wall -Wno-switch -Wpedantic
+CFLAGS = -std=c17 -O0 -Wall -Wpedantic
 
 SOURCES = \
 	main.c \
 	game.c \
 	util.c \
 	draw.c \
-	player.c \
-	enemy.c
+	entity.c
 
 OBJECTS = $(SOURCES:%.c=build/obj/%.o)
 
 all: $(NAME)
-	build/$(NAME)
+	./$(NAME)
 
 build: $(NAME)
+
+run: 
+	./$(NAME)
 
 clean:
 	@rm build/obj/*.o
 	@echo "Cleaned build directory"
 
-.PHONY: all build clean
+.PHONY: all build run clean
 
 $(NAME): $(OBJECTS)
-	@cc $(LDFLAGS) -o build/$(NAME) $^
+	@cc $(LDFLAGS) -o $(NAME) $^
 
-$(OBJECTS): build/obj/%.o: src/%.c
+$(OBJECTS): build/obj/%.o: src/%.c src/%.h
 	@echo $(subst src/,,$<)
 	@cc -c $(CFLAGS) -o $@ $<

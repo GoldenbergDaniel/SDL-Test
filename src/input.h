@@ -8,3 +8,6 @@ typedef struct Input {
     u8 space;
     u8 escape;
 } Input;
+
+Input *new_input(void);
+void delete_input(Input *input);

@@ -10,6 +10,7 @@ f32 lerp_f32(f32 curr, f32 target, f32 rate)
     return (target - curr) * rate;
 }
 
+inline
 v2f lerp_v2f(v2f curr, v2f target, f32 rate)
 {
     return scale_v2f(subtract_v2f(target, curr), rate);

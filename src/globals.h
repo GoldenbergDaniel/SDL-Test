@@ -12,6 +12,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define func
+
 typedef unsigned char bool;
 typedef unsigned char u8;
 typedef unsigned short u16;

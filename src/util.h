@@ -13,14 +13,14 @@ typedef struct v2f
 #define V2I_ZERO ((v2f) {0, 0})
 #define V2F_ZERO ((v2f) {0.0f, 0.0f})
 
-#define abs(a) (((a) < 0) ? (-a) : (a))
+#define abs(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define clamp_top(a, b) (min(a, b))
 #define clamp_bottom(a, b) (max(a, b))
-#define round(a) ((i32) (a + 0.5f))
+#define round(a) ((i32) (a) + 0.5f))
 
-#define array_len(arr) (sizeof(arr) / sizeof(arr[0]))
+#define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
 
 f32 lerp_f32(f32 curr, f32 target, f32 rate);
 v2f lerp_v2f(v2f curr, v2f target, f32 rate);

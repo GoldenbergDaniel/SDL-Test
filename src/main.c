@@ -5,14 +5,9 @@
 #include "globals.h"
 #include "util.h"
 #include "input.h"
-#include "player.h"
-#include "enemy.h"
+#include "entity.h"
 #include "game.h"
-
-#define WINDOW_NAME "GAME"
-#define WINDOW_FLAGS SDL_WINDOW_METAL
-#define RENDERER_FLAGS SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-#define TARGET_FPS 60
+#include "main.h"
 
 i32 main(void)
 {
@@ -24,7 +19,9 @@ i32 main(void)
                     WINDOW_WIDTH, 
                     WINDOW_HEIGHT, 
                     WINDOW_FLAGS
-                  );
+    );
+
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
     game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
     game.is_running = TRUE;
 
@@ -61,10 +58,12 @@ i32 main(void)
             elapsed_time += time_step;
             accumulator -= time_step;
         }
-        
+
         draw(&game);
         SDL_RenderPresent(game.renderer);
     }
+
+    deinit();
 
     SDL_DestroyWindow(game.window);
     SDL_DestroyRenderer(game.renderer);
