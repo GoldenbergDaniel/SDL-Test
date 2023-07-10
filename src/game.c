@@ -14,19 +14,18 @@ void game_init(Game *game)
     input = (Input *) malloc(sizeof (Input *));
 
     // Create entities
-    game->entity_count = arr_len(game->entities);
-    // game->enemy_count = game->entity_count - 1;
-    game->enemy_count = 1;
+    game->enemy_count = 10;
+    game->entity_count = game->enemy_count+1;
     game->entities[0] = entity_create(ENTITY_PLAYER);
     game->player = &game->entities[0];
 
-    for (u8 i = 1; i < game->enemy_count + 1; i++)
+    for (u8 i = 1; i < game->entity_count; i++)
     {
         game->entities[i] = entity_create(ENTITY_ENEMY);
     }
 
     // Set starting positions
-    for (u8 i = 0; i < game->enemy_count + 1; i++)
+    for (u8 i = 0; i < game->entity_count; i++)
     {
         entity_start(&game->entities[i]);
     }
@@ -75,16 +74,16 @@ void game_update(Game *game)
     // Update entities
     entity_update(game->player, game->t, game->dt);
     
-    for (u8 i = 1; i < game->enemy_count + 1; i++)
+    for (u8 i = 1; i < game->entity_count; i++)
     {
         entity_set_target(&game->entities[i], game->player->pos);
         entity_update(&game->entities[i], game->t, game->dt);
     }
 
     // Collision detection and resoluton
-    for (u8 i = 0; i < game->enemy_count + 1; i++)
+    for (u8 i = 0; i < game->entity_count; i++)
     {
-        for (u8 j = 0; j < game->enemy_count + 1; j++)
+        for (u8 j = 0; j < game->entity_count; j++)
         {
             if (i == j) continue;
         }
