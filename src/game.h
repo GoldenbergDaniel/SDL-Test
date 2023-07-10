@@ -1,6 +1,7 @@
 #pragma once
 
-typedef struct Game
+typedef struct Game Game;
+struct Game
 {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -8,12 +9,14 @@ typedef struct Game
     f64 t;
     f64 dt;
     u8 entity_count;
-    Entity entities[2];
+    u8 enemy_count;
+    Entity entities[255];
     Entity *player;
-} Game;
+};
 
-void init(Game *game);
-void handle_event(Game *game, SDL_Event *event);
-void update(Game *game);
-void draw(Game *game);
-void deinit(void);
+void game_init(Game *game);
+void game_handle_event(Game *game, SDL_Event *event);
+void game_update(Game *game);
+void game_draw(Game *game);
+void game_deinit(void);
+bool game_should_quit(void);

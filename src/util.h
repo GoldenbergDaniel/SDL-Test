@@ -1,14 +1,16 @@
 #pragma once
 
-typedef struct v2i
+typedef struct v2i v2i;
+struct v2i
 {
     i32 x, y;
-} v2i;
+};
 
-typedef struct v2f
+typedef struct v2f v2f;
+struct v2f
 {
     f32 x, y;
-} v2f;
+};
 
 #define V2I_ZERO ((v2f) {0, 0})
 #define V2F_ZERO ((v2f) {0.0f, 0.0f})
@@ -42,9 +44,9 @@ f32 distance_v2f(v2f a, v2f b);
 v2f normalize_v2i(v2i a);
 v2f normalize_v2f(v2f a);
 
-v2f get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
-v2f get_screen_center(u16 w, u16 h);
-v2f get_rect_center(v2f pos, u16 w, u16 h);
+v2f random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
+v2f rect_center(v2f pos, f32 w, f32 h);
 
 bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2);
-bool rr_collision(v2f pos1, v2f pos2, f32 w1, f32 h1, f32 w2, f32 h2);
+bool rect_ranges_intersect(v2f p1, v2f p2, f32 w1, f32 h1, f32 w2, f32 h2);
+bool rect_intersect(void);

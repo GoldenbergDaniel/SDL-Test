@@ -102,7 +102,7 @@ v2f normalize_v2f(v2f a)
     return (v2f) {a.x / mag, a.y / mag};
 }
 
-v2f get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
+v2f random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 {
     return (v2f) {
         (rand() % max_x) + min_x,
@@ -111,16 +111,7 @@ v2f get_random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 }
 
 inline
-v2f get_screen_center(u16 w, u16 h)
-{
-    return (v2f) {
-        (WINDOW_WIDTH / 2.0f) - (w / 2.0f),
-        (WINDOW_HEIGHT / 2.0f) - (h / 2.0f)
-    };
-}
-
-inline
-v2f get_rect_center(v2f pos, u16 w, u16 h)
+v2f rect_center(v2f pos, f32 w, f32 h)
 {
     return (v2f) {
         pos.x + (w / 2.0f),
@@ -134,8 +125,13 @@ bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2)
     return (max1 >= min2) && (max2 >= min1);
 }
 
-bool rr_collision(v2f pos1, v2f pos2, f32 w1, f32 h1, f32 w2, f32 h2)
+bool rect_ranges_intersect(v2f p1, v2f p2, f32 w1, f32 h1, f32 w2, f32 h2)
 {
-    return range_intersect(pos1.x, pos1.x+w1, pos2.x, pos2.x+w2) &&
-           range_intersect(pos1.y, pos1.y+h1, pos2.y, pos2.y+h2);
+    return range_intersect(p1.x, p1.x+w1, p2.x, p2.x+w2) &&
+           range_intersect(p1.y, p1.y+h1, p2.y, p2.y+h2);
+}
+
+bool rect_intersect(void)
+{
+    return TRUE;
 }

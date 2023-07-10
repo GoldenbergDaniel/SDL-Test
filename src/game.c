@@ -9,22 +9,30 @@
 
 Input *input;
 
-void init(Game *game)
+void game_init(Game *game)
 {   
-    input = (Input*) malloc(sizeof (Input*));
+    input = (Input *) malloc(sizeof (Input *));
 
+    // Create entities
     game->entity_count = arr_len(game->entities);
+    // game->enemy_count = game->entity_count - 1;
+    game->enemy_count = 1;
     game->entities[0] = entity_create(ENTITY_PLAYER);
-    entity_init(&game->entities[0]);
+    game->player = &game->entities[0];
 
-    for (u8 i = 1; i < game->entity_count; i++)
+    for (u8 i = 1; i < game->enemy_count + 1; i++)
     {
         game->entities[i] = entity_create(ENTITY_ENEMY);
-        entity_init(&game->entities[i]);
+    }
+
+    // Set starting positions
+    for (u8 i = 0; i < game->enemy_count + 1; i++)
+    {
+        entity_start(&game->entities[i]);
     }
 }
 
-void handle_event(Game *game, SDL_Event *event)
+void game_handle_event(Game *game, SDL_Event *event)
 {   
     switch (event->type)
     {
@@ -62,65 +70,27 @@ void handle_event(Game *game, SDL_Event *event)
     }
 }
 
-void update(Game *game)
+void game_update(Game *game)
 {
-    if (input->escape)
-        game->is_running = FALSE;
-
-    game->player = &game->entities[0];
+    // Update entities
     entity_update(game->player, game->t, game->dt);
-
-    for (u8 i = 1; i < game->entity_count; i++)
+    
+    for (u8 i = 1; i < game->enemy_count + 1; i++)
     {
         entity_set_target(&game->entities[i], game->player->pos);
         entity_update(&game->entities[i], game->t, game->dt);
     }
 
-    // for (u8 i = 0; i < array_len(game->enemies); i++)
-    // {
-    //     v2f p_center = get_rect_center(
-    //             game->player.pos, 
-    //             game->player.width, 
-    //             game->player.height
-    //         );
+    // Collision detection and resoluton
+    for (u8 i = 0; i < game->enemy_count + 1; i++)
+    {
+        for (u8 j = 0; j < game->enemy_count + 1; j++)
+        {
+            if (i == j) continue;
+        }
+    }
 
-        // Entity-Entity collision
-        // if (rr_collision(
-        //         add_v2f(game->enemies[i].pos, game->enemies[i].vel),
-        //         add_v2f(game->player.pos, game->player.vel),
-        //         game->enemies[i].width,
-        //         game->enemies[i].height,
-        //         game->player.width,
-        //         game->player.height
-        //     ))
-        // {
-            // if (abs((p->pos.x + p->width - e[0].pos.x)) > 0 && 
-            //     (abs(p->pos.x + p->width - e[0].pos.x)) < p->width)
-            // {
-            //     p->pos.x = e[0].pos.x - p->width;
-            // }
-
-            // if (abs(((e[0].pos.x + e[0].width) - p->pos.x)) > 0 && 
-            //     (abs((e[0].pos.x + e[0].width) - p->pos.x)) < p->width) 
-            // {
-            //     p->pos.x = e[0].pos.x + e[0].width;
-            // }
-
-            // if (abs((p->pos.y + p->height) - e[0].pos.y) > 0 && 
-            //     (abs((p->pos.y + p->height) - e[0].pos.y)) < p->height) 
-            // {
-            //     p->pos.y = e[0].pos.y - p->height;
-            // }
-
-            // if (abs((e[0].pos.y + e[0].height) - p->pos.y) > 0 && 
-            //     (abs((e[0].pos.y + e[0].height) - p->pos.y)) < p->height) 
-            // {
-            //     p->pos.y = e[0].pos.y + e[0].height;
-            // }
-        // }
-    // }
-
-    // TODO: Fix clipping bug
+    // Window edge behavior
     if (game->player->pos.x + game->player->width <= 0.0f)
     {
         game->player->pos.x = WINDOW_WIDTH;
@@ -139,9 +109,9 @@ void update(Game *game)
     }
 }
 
-void draw(Game *game)
+void game_draw(Game *game)
 {
-    clear_background(game->renderer, COLOR_BLACK);
+    clear_background(game->renderer, COLOR_PURPLE);
 
     for (u8 i = 0; i < game->entity_count; i++)
     {
@@ -155,7 +125,12 @@ void draw(Game *game)
     }
 }
 
-void deinit(void)
+void game_deinit(void)
 {
     free(input);
+}
+
+bool game_should_quit(void)
+{
+    return input->escape;
 }

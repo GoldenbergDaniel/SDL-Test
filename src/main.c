@@ -27,7 +27,7 @@ i32 main(void)
 
     srand(time(NULL));
 
-    init(&game);
+    game_init(&game);
     
     f64 elapsed_time = 0.0f;
     f64 current_time = SDL_GetTicks64() * 0.001f;
@@ -46,24 +46,24 @@ i32 main(void)
         {
             SDL_Event event;
             while (SDL_PollEvent(&event))
-            {
-                handle_event(&game, &event);
-            }
+                game_handle_event(&game, &event);
+
+            if (game_should_quit())
+                game.is_running = FALSE;
 
             game.t = elapsed_time;
             game.dt = time_step;
-
-            update(&game);
+            game_update(&game);
 
             elapsed_time += time_step;
             accumulator -= time_step;
         }
 
-        draw(&game);
+        game_draw(&game);
         SDL_RenderPresent(game.renderer);
     }
 
-    deinit();
+    game_deinit();
 
     SDL_DestroyWindow(game.window);
     SDL_DestroyRenderer(game.renderer);
