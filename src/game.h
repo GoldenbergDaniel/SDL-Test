@@ -18,5 +18,4 @@ void game_init(Game *game);
 void game_handle_event(Game *game, SDL_Event *event);
 void game_update(Game *game);
 void game_draw(Game *game);
-void game_deinit(void);
 bool game_should_quit(void);

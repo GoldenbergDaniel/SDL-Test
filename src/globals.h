@@ -23,7 +23,7 @@
 #define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
 #define arr_ptr_len(arr) (sizeof (*arr) / sizeof (arr[0]))
 
-#define log(msg) (printf("%s\n", msg))
+#define log_msg(msg) (printf("%s\n", msg))
 #define log_char(caption, data) (printf("%s%c\n", caption, data))
 #define log_int(caption, data) (printf("%s%i\n", caption, data))
 #define log_uint(caption, data) (printf("%s%u\n", caption, data))

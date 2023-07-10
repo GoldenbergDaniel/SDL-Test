@@ -10,6 +10,7 @@ typedef struct Entity Entity;
 struct Entity
 {
     EntityType type;
+    SDL_Color color;
     f32 width;
     f32 height;
     v2f pos;
@@ -21,10 +22,13 @@ struct Entity
     f32 target_angle;
     u16 view_dist;
     u8 col_mask;
-    SDL_Color color;
+    i8 max_health;
+    i8 cur_health;
+    bool is_active;
 };
 
 Entity entity_create(EntityType type);
 void entity_start(Entity *entity);
 void entity_update(Entity *entity, f64 t, f64 dt);
 void entity_set_target(Entity *entity, v2f target_pos);
+void entity_deal_damage(Entity *target);

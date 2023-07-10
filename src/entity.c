@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "util.h"
+#include "timer.h"
 #include "input.h"
 #include "entity.h"
 
@@ -9,35 +10,37 @@ extern Input *input;
 
 Entity entity_create(EntityType type)
 {
-    Entity e;
-    e.type = type;
-    e.pos = V2F_ZERO;
-    e.vel = V2F_ZERO;
-    e.dir = V2F_ZERO;
+    Entity entity;
+    entity.type = type;
+    entity.pos = V2F_ZERO;
+    entity.vel = V2F_ZERO;
+    entity.dir = V2F_ZERO;
+    entity.is_active = TRUE;
 
     switch (type)
     {
         case ENTITY_PLAYER:
         {
-            e.width = 20.0f;
-            e.height = 20.0f;
-            e.speed = 300.0f;
-            e.color = COLOR_WHITE;
+            entity.width = 20.0f;
+            entity.height = 20.0f;
+            entity.speed = 300.0f;
+            entity.color = COLOR_WHITE;
+            entity.cur_health = 3;
             break;
         }
         case ENTITY_ENEMY:
         {
-            e.width = 20.0f;
-            e.height = 20.0f;
-            e.speed = 100.0f;
-            e.view_dist = 250;
-            e.color = COLOR_RED;
+            entity.width = 20.0f;
+            entity.height = 20.0f;
+            entity.speed = 100.0f;
+            entity.view_dist = 250;
+            entity.color = COLOR_RED;
             break;
         }
         default: break;
     }
 
-    return e;
+    return entity;
 }
 
 void entity_start(Entity *entity)
@@ -64,29 +67,36 @@ void entity_update(Entity *entity, f64 t, f64 dt)
     {
         case ENTITY_PLAYER:
         {
-            if (input->a)
-                entity->dir.x = -1.0f;
+            if (entity->is_active)
+            {
+                if (input->a)
+                    entity->dir.x = -1.0f;
 
-            if (input->d)
-                entity->dir.x = 1.0f;
+                if (input->d)
+                    entity->dir.x = 1.0f;
 
-            if (input->w)
-                entity->dir.y = -1.0f;
+                if (input->w)
+                    entity->dir.y = -1.0f;
 
-            if (input->s)
-                entity->dir.y = 1.0f;
+                if (input->s)
+                    entity->dir.y = 1.0f;
 
-            if ((!input->a && !input->d) || (input->a && input->d))
-                entity->dir.x = 0.0f;
+                if ((!input->a && !input->d) || (input->a && input->d))
+                    entity->dir.x = 0.0f;
 
-            if ((!input->w && !input->s) || (input->w && input->s))
-                entity->dir.y = 0.0f;
+                if ((!input->w && !input->s) || (input->w && input->s))
+                    entity->dir.y = 0.0f;
+            }
+            else
+            {
+                entity->dir = V2F_ZERO;
+            }
 
             break;
         }
         case ENTITY_ENEMY:
         {
-            if (entity->has_target)
+            if (entity->has_target && entity->is_active)
             {
                 entity->dir.x = sinf(entity->target_angle);
                 entity->dir.y = cosf(entity->target_angle);
@@ -126,5 +136,17 @@ void entity_set_target(Entity *entity, v2f target_pos)
     {
         entity->has_target = FALSE;
         entity->target_pos = V2F_ZERO;
+    }
+}
+
+void entity_deal_damage(Entity *target)
+{
+    target->cur_health -= 1;
+
+    if (target->cur_health <= 0)
+    {
+        target->cur_health = 0;
+        target->is_active = FALSE;
+        log_msg("Player ded");
     }
 }

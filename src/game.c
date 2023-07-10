@@ -9,13 +9,16 @@
 
 Input *input;
 
+static f32 max_delay = 1.0f;
+static f32 cur_delay;
+
 void game_init(Game *game)
 {   
     input = (Input *) malloc(sizeof (Input *));
 
     // Create entities
-    game->enemy_count = 10;
-    game->entity_count = game->enemy_count+1;
+    game->enemy_count = 1;
+    game->entity_count = game->enemy_count + 1;
     game->entities[0] = entity_create(ENTITY_PLAYER);
     game->player = &game->entities[0];
 
@@ -29,6 +32,8 @@ void game_init(Game *game)
     {
         entity_start(&game->entities[i]);
     }
+
+    cur_delay = max_delay;
 }
 
 void game_handle_event(Game *game, SDL_Event *event)
@@ -71,40 +76,67 @@ void game_handle_event(Game *game, SDL_Event *event)
 
 void game_update(Game *game)
 {
+    Entity *player = game->player;
+    Entity *entities = game->entities;
+
     // Update entities
-    entity_update(game->player, game->t, game->dt);
+    entity_update(player, game->t, game->dt);
     
     for (u8 i = 1; i < game->entity_count; i++)
     {
-        entity_set_target(&game->entities[i], game->player->pos);
-        entity_update(&game->entities[i], game->t, game->dt);
+        if (player->is_active)
+            entity_set_target(&entities[i], player->pos);
+        else
+            entity_set_target(&entities[i], (v2f) {WINDOW_WIDTH/2, WINDOW_HEIGHT/2});
+
+        entity_update(&entities[i], game->t, game->dt);
     }
 
-    // Collision detection and resoluton
-    for (u8 i = 0; i < game->entity_count; i++)
+    // Entity collision detection and resolution
+    for (u8 i = 1; i < game->entity_count; i++)
     {
-        for (u8 j = 0; j < game->entity_count; j++)
+        if (rect_ranges_intersect(
+                player->pos, 
+                entities[i].pos, 
+                player->width,
+                player->height,
+                entities[i].width, 
+                entities[i].height))
+        {
+            // Deal damage to player
+            if (cur_delay <= 0.0f)
+            {
+                entity_deal_damage(player);
+                cur_delay = max_delay;
+            }
+            else
+            {
+                cur_delay -= game->dt;
+            }
+        }
+
+        for (u8 j = 1; j < game->entity_count; j++)
         {
             if (i == j) continue;
         }
     }
 
     // Window edge behavior
-    if (game->player->pos.x + game->player->width <= 0.0f)
+    if (player->pos.x + player->width <= 0.0f)
     {
-        game->player->pos.x = WINDOW_WIDTH;
+        player->pos.x = WINDOW_WIDTH;
     }
-    else if (game->player->pos.x >= WINDOW_WIDTH)
+    else if (player->pos.x >= WINDOW_WIDTH)
     {
-        game->player->pos.x = 0.0f;
+        player->pos.x = 0.0f;
     }
-    else if (game->player->pos.y + game->player->height <= 0.0f)
+    else if (player->pos.y + player->height <= 0.0f)
     {
-        game->player->pos.y = WINDOW_HEIGHT;
+        player->pos.y = WINDOW_HEIGHT;
     }
-    else if (game->player->pos.y >= WINDOW_HEIGHT)
+    else if (player->pos.y >= WINDOW_HEIGHT)
     {
-        game->player->pos.y = 0.0f;
+        player->pos.y = 0.0f;
     }
 }
 
@@ -114,6 +146,8 @@ void game_draw(Game *game)
 
     for (u8 i = 0; i < game->entity_count; i++)
     {
+        if (!game->entities[i].is_active) continue;
+
         draw_rect(
             game->renderer, 
             game->entities[i].pos, 
@@ -122,11 +156,6 @@ void game_draw(Game *game)
             game->entities[i].color
         );
     }
-}
-
-void game_deinit(void)
-{
-    free(input);
 }
 
 bool game_should_quit(void)

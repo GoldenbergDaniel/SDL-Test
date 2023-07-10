@@ -63,8 +63,6 @@ i32 main(void)
         SDL_RenderPresent(game.renderer);
     }
 
-    game_deinit();
-
     SDL_DestroyWindow(game.window);
     SDL_DestroyRenderer(game.renderer);
     SDL_Quit();
