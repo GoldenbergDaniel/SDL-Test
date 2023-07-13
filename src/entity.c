@@ -17,6 +17,7 @@ Entity entity_create(EntityType type)
   entity.vel = VEC2F_ZERO;
   entity.dir = VEC2F_ZERO;
   entity.is_active = TRUE;
+  entity.hurt_cooldown.max_duration = 1.0f;
   entity.hurt_cooldown.is_running = FALSE;
 
   switch (type)

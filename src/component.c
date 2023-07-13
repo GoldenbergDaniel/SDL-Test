@@ -3,27 +3,21 @@
 
 // Timer ----------------------------------------------------------------------
 
-Timer timer_start(f32 duration)
+void timer_start(Timer *timer, bool start_at_zero)
 {
-  Timer timer;
-  timer.max_duration = duration;
-  timer.cur_duration = duration;
-  timer.is_running = TRUE;
-
-  return timer;
+  timer->cur_duration = start_at_zero ? 0.0f : timer->max_duration;
+  timer->is_running = TRUE;
+  timer->timeout = FALSE;
 }
 
-bool timer_tick(Timer *timer, f64 dt)
+void timer_tick(Timer *timer, f64 dt)
 {
-  if (timer->cur_duration > 0)
+  timer->cur_duration -= dt;
+
+  if (timer->cur_duration <= 0.0f)
   {
-    timer->cur_duration -= dt;
-    return FALSE;
-  }
-  else
-  {
-    timer->cur_duration = 0;
+    timer->cur_duration = 0.0f;
     timer->is_running = FALSE;
-    return TRUE;
+    timer->timeout = TRUE;
   }
 }

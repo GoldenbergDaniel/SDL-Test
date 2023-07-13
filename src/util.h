@@ -40,26 +40,26 @@ Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate);
 
 // Color ----------------------------------------------------------------------
 
-typedef struct Color8I Color8I;
-struct Color8I
+typedef struct ColorI8 ColorI8;
+struct ColorI8
 {
   i8 r, g, b, a;
 };
 
-typedef struct Color8F Color8F;
-struct Color8F
+typedef struct ColorF32 ColorF32;
+struct ColorF32
 {
   f32 r, g, b, a;
 };
 
-#define COLOR_BLACK ((Color8I) {19, 19, 19, 255})
-#define COLOR_WHITE ((Color8I) {236, 236, 236, 255})
-#define COLOR_RED ((Color8I) {249, 58, 38, 255})
-#define COLOR_GREEN ((Color8I) {100, 160, 60, 255})
-#define COLOR_BLUE ((Color8I) {55, 107, 186, 255})
-#define COLOR_PURPLE ((Color8I) {44, 45, 84, 255})
+#define COLOR_BLACK ((ColorI8) {19, 19, 19, 255})
+#define COLOR_WHITE ((ColorI8) {236, 236, 236, 255})
+#define COLOR_RED ((ColorI8) {249, 58, 38, 255})
+#define COLOR_GREEN ((ColorI8) {100, 160, 60, 255})
+#define COLOR_BLUE ((ColorI8) {55, 107, 186, 255})
+#define COLOR_PURPLE ((ColorI8) {44, 45, 84, 255})
 
-// Other --------------------------------------------------
+// Other ----------------------------------------------------------------------
 
 #define abs(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))

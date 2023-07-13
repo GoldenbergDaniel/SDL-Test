@@ -11,7 +11,7 @@ struct Entity
 {
   // General
   EntityType type;
-  Color8I color;
+  ColorI8 color;
   f32 width;
   f32 height;
 

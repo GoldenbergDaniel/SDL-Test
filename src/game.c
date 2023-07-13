@@ -15,7 +15,7 @@ void game_init(Game *game)
   input = (Input *) malloc(sizeof (Input *));
 
   // Create entities
-  game->enemy_count = 0;
+  game->enemy_count = 1;
   game->entity_count = game->enemy_count + 1;
   game->entities[0] = entity_create(ENTITY_PLAYER);
   game->player = &game->entities[0];
@@ -75,16 +75,6 @@ void game_update(Game *game)
   Entity *player = game->player;
   Entity *entities = game->entities;
 
-  if (!game->player->hurt_cooldown.is_running)
-  {
-    game->player->hurt_cooldown = timer_start(1.0f);
-  }
-  else
-  {
-    timer_tick(&game->player->hurt_cooldown, game->dt);
-    log_f32("Timer: ", game->player->hurt_cooldown.cur_duration);
-  }
-
   // Update entities
   entity_update(player, game->dt);
   
@@ -113,7 +103,22 @@ void game_update(Game *game)
           entities[i].width, 
           entities[i].height))
     {
+      // NOTE: Broken!
+      if (!player->hurt_cooldown.is_running)
+      {
+        timer_start(&player->hurt_cooldown, FALSE);
+      }
+      else
+      {
+        timer_tick(&player->hurt_cooldown, game->dt);
 
+        if (player->hurt_cooldown.timeout)
+        {
+          log_msg("Timeout!");
+        }
+
+        log_f32("Timer: ", player->hurt_cooldown.cur_duration);
+      }
     }
   }
 
@@ -153,6 +158,7 @@ void game_draw(Game *game)
     );
   }
 }
+
 bool game_should_quit(void)
 {
   return input->escape;
