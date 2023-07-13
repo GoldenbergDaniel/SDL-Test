@@ -1,6 +1,6 @@
 NAME = Game
 LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -O0 -Wall -Wextra -Wpedantic -Wno-unused-parameter
+CFLAGS = -std=c17 -O0 -Wall -Wextra -Wpedantic
 CC = cc
 
 SOURCES = \

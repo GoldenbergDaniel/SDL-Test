@@ -63,7 +63,7 @@ void entity_start(Entity *entity)
   }
 }
 
-void entity_update(Entity *entity, f64 t, f64 dt)
+void entity_update(Entity *entity, f64 dt)
 {
   switch (entity->type)
   {

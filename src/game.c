@@ -86,7 +86,7 @@ void game_update(Game *game)
   }
 
   // Update entities
-  entity_update(player, game->t, game->dt);
+  entity_update(player, game->dt);
   
   for (u8 i = 1; i < game->entity_count; i++)
   {
@@ -99,7 +99,7 @@ void game_update(Game *game)
       entity_set_target(&entities[i], v2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
     }
 
-    entity_update(&entities[i], game->t, game->dt);
+    entity_update(&entities[i], game->dt);
   }
 
   // Entity collision detection and resolution

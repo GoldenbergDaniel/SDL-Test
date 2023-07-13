@@ -39,6 +39,6 @@ struct Entity
 
 Entity entity_create(EntityType type);
 void entity_start(Entity *entity);
-void entity_update(Entity *entity, f64 t, f64 dt);
+void entity_update(Entity *entity, f64 dt);
 void entity_set_target(Entity *entity, Vec2F target_pos);
 void entity_deal_damage(Entity *target);
