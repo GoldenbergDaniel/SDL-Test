@@ -4,134 +4,146 @@
 #include "globals.h"
 #include "util.h"
 
+inline
+Vec2I v2i(i32 x, i32 y)
+{
+  return (Vec2I) {x, y};
+}
+
+inline
+Vec2F v2f(f32 x, f32 y)
+{
+  return (Vec2F) {x, y};
+}
+
 inline 
 f32 lerp_f32(f32 curr, f32 target, f32 rate)
 {
-    return (target - curr) * rate;
+  return (target - curr) * rate;
 }
 
 inline
-v2f lerp_v2f(v2f curr, v2f target, f32 rate)
+Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate)
 {
-    return scale_v2f(subtract_v2f(target, curr), rate);
+  return scale_v2f(sub_v2f(target, curr), rate);
 }
 
 inline
-v2i add_v2i(v2i a, v2i b)
+Vec2I add_v2i(Vec2I a, Vec2I b)
 {
-    return (v2i) {a.x + b.x, a.y + b.y};
+  return (Vec2I) {a.x + b.x, a.y + b.y};
 }
 
 inline
-v2f add_v2f(v2f a, v2f b)
+Vec2F add_v2f(Vec2F a, Vec2F b)
 {
-    return (v2f) {a.x + b.x, a.y + b.y};
+  return (Vec2F) {a.x + b.x, a.y + b.y};
 }
 
 inline
-v2i subtract_v2i(v2i a, v2i b)
+Vec2I sub_v2i(Vec2I a, Vec2I b)
 {
-    return (v2i) {a.x - b.x, a.y - b.y};
+  return (Vec2I) {a.x - b.x, a.y - b.y};
 }
 
 inline
-v2f subtract_v2f(v2f a, v2f b)
+Vec2F sub_v2f(Vec2F a, Vec2F b)
 {
-    return (v2f) {a.x - b.x, a.y - b.y};
+  return (Vec2F) {a.x - b.x, a.y - b.y};
 }
 
 inline
-v2i scale_v2i(v2i a, f32 s)
+Vec2I scale_v2i(Vec2I a, f32 s)
 {
-    return (v2i) {a.x * s, a.y * s};
+  return (Vec2I) {a.x * s, a.y * s};
 }
 
 inline
-v2f scale_v2f(v2f a, f32 s)
+Vec2F scale_v2f(Vec2F a, f32 s)
 {
-    return (v2f) {a.x * s, a.y * s};
+  return (Vec2F) {a.x * s, a.y * s};
 }
 
 inline
-i32 dot_v2i(v2i a, v2i b)
+i32 dot_v2i(Vec2I a, Vec2I b)
 {
-    return (a.x * b.x) + (a.y * b.y);
+  return (a.x * b.x) + (a.y * b.y);
 }
 
 inline
-f32 dot_v2f(v2f a, v2f b)
+f32 dot_v2f(Vec2F a, Vec2F b)
 {
-    return (a.x * b.x) + (a.y * b.y);
+  return (a.x * b.x) + (a.y * b.y);
 }
 
 inline
-f32 magnitude_v2i(v2i a)
+f32 magnitude_v2i(Vec2I a)
 {
-    return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
+  return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
 }
 
 inline
-f32 magnitude_v2f(v2f a)
+f32 magnitude_v2f(Vec2F a)
 {
-    return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
+  return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
 }
 
 inline
-f32 distance_v2i(v2i a, v2i b)
+f32 distance_v2i(Vec2I a, Vec2I b)
 {
-    return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
+  return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
 }
 
 inline
-f32 distance_v2f(v2f a, v2f b)
+f32 distance_v2f(Vec2F a, Vec2F b)
 {
-    return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
+  return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
 }
 
-v2f normalize_v2i(v2i a)
+Vec2F normalize_v2i(Vec2I a)
 {
-    f32 mag = magnitude_v2i(a);
-    
-    return (v2f) {a.x / mag, a.y / mag};
+  f32 mag = magnitude_v2i(a);
+  
+  return (Vec2F) {a.x / mag, a.y / mag};
 }
 
-v2f normalize_v2f(v2f a)
+Vec2F normalize_v2f(Vec2F a)
 {
-    f32 mag = magnitude_v2f(a);
-    
-    return (v2f) {a.x / mag, a.y / mag};
+  f32 mag = magnitude_v2f(a);
+  
+  return (Vec2F) {a.x / mag, a.y / mag};
 }
 
-v2f random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
+Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 {
-    return (v2f) {
-        (rand() % max_x) + min_x,
-        (rand() % max_y) + min_y
-    };
+  return (Vec2F) {
+    (rand() % max_x) + min_x,
+    (rand() % max_y) + min_y
+  };
 }
 
 inline
-v2f rect_center(v2f pos, f32 w, f32 h)
+Vec2F rect_center(Vec2F pos, f32 w, f32 h)
 {
-    return (v2f) {
-        pos.x + (w / 2.0f),
-        pos.y + (h / 2.0f)
-    };
+  return (Vec2F) {
+    pos.x + (w / 2.0f),
+    pos.y + (h / 2.0f)
+  };
 }
 
 inline
 bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2)
 {
-    return (max1 >= min2) && (max2 >= min1);
+  return (max1 >= min2) && (max2 >= min1);
 }
 
-bool rect_ranges_intersect(v2f p1, v2f p2, f32 w1, f32 h1, f32 w2, f32 h2)
+bool rect_ranges_intersect(Vec2F p1, Vec2F p2, f32 w1, f32 h1, f32 w2, f32 h2)
 {
-    return range_intersect(p1.x, p1.x+w1, p2.x, p2.x+w2) &&
-           range_intersect(p1.y, p1.y+h1, p2.y, p2.y+h2);
+  return range_intersect(p1.x, p1.x+w1, p2.x, p2.x+w2) &&
+         range_intersect(p1.y, p1.y+h1, p2.y, p2.y+h2);
 }
 
 bool rect_intersect(void)
 {
-    return TRUE;
+  return TRUE;
 }

@@ -1,19 +1,66 @@
 #pragma once
 
-typedef struct v2i v2i;
-struct v2i
+// Vector --------------------------------------------------
+
+typedef struct Vec2I Vec2I;
+struct Vec2I
 {
-    i32 x, y;
+  i32 x, y;
 };
 
-typedef struct v2f v2f;
-struct v2f
+typedef struct Vec2F Vec2F;
+struct Vec2F
 {
-    f32 x, y;
+  f32 x, y;
 };
 
-#define V2I_ZERO ((v2f) {0, 0})
-#define V2F_ZERO ((v2f) {0.0f, 0.0f})
+#define VEC2I_ZERO ((Vec2I) {0, 0})
+#define VEC2F_ZERO ((Vec2F) {0.0f, 0.0f})
+
+f32 lerp_f32(f32 curr, f32 target, f32 rate);
+Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate);
+
+Vec2I v2i(i32 x, i32 y);
+Vec2F v2f(f32 x, f32 y);
+Vec2I add_v2i(Vec2I a, Vec2I b);
+Vec2F add_v2f(Vec2F a, Vec2F b);
+Vec2I sub_v2i(Vec2I a, Vec2I b);
+Vec2F sub_v2f(Vec2F a, Vec2F b);
+Vec2I scale_v2i(Vec2I a, f32 s);
+Vec2F scale_v2f(Vec2F a, f32 s);
+i32 dot_v2i(Vec2I a, Vec2I b);
+f32 dot_v2f(Vec2F a, Vec2F b);
+
+f32 magnitude_v2i(Vec2I a);
+f32 magnitude_v2f(Vec2F a);
+f32 distance_v2i(Vec2I a, Vec2I b);
+f32 distance_v2f(Vec2F a, Vec2F b);
+
+Vec2F normalize_v2i(Vec2I a);
+Vec2F normalize_v2f(Vec2F a);
+
+// Color --------------------------------------------------
+
+typedef struct Color8I Color8I;
+struct Color8I
+{
+  i8 r, g, b, a;
+};
+
+typedef struct Color8F Color8F;
+struct Color8F
+{
+  f32 r, g, b, a;
+};
+
+#define COLOR_BLACK ((Color8I) {19, 19, 19, 255})
+#define COLOR_WHITE ((Color8I) {236, 236, 236, 255})
+#define COLOR_RED ((Color8I) {249, 58, 38, 255})
+#define COLOR_GREEN ((Color8I) {100, 160, 60, 255})
+#define COLOR_BLUE ((Color8I) {55, 107, 186, 255})
+#define COLOR_PURPLE ((Color8I) {44, 45, 84, 255})
+
+// Other --------------------------------------------------
 
 #define abs(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -24,29 +71,9 @@ struct v2f
 
 #define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
 
-f32 lerp_f32(f32 curr, f32 target, f32 rate);
-v2f lerp_v2f(v2f curr, v2f target, f32 rate);
-
-v2i add_v2i(v2i a, v2i b);
-v2f add_v2f(v2f a, v2f b);
-v2i subtract_v2i(v2i a, v2i b);
-v2f subtract_v2f(v2f a, v2f b);
-v2i scale_v2i(v2i a, f32 s);
-v2f scale_v2f(v2f a, f32 s);
-i32 dot_v2i(v2i a, v2i b);
-f32 dot_v2f(v2f a, v2f b);
-
-f32 magnitude_v2i(v2i a);
-f32 magnitude_v2f(v2f a);
-f32 distance_v2i(v2i a, v2i b);
-f32 distance_v2f(v2f a, v2f b);
-
-v2f normalize_v2i(v2i a);
-v2f normalize_v2f(v2f a);
-
-v2f random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
-v2f rect_center(v2f pos, f32 w, f32 h);
+Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
+Vec2F rect_center(Vec2F pos, f32 w, f32 h);
 
 bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2);
-bool rect_ranges_intersect(v2f p1, v2f p2, f32 w1, f32 h1, f32 w2, f32 h2);
+bool rect_ranges_intersect(Vec2F p1, Vec2F p2, f32 w1, f32 h1, f32 w2, f32 h2);
 bool rect_intersect(void);
