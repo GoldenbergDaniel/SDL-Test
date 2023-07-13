@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "util.h"
 
+// Vector ---------------------------------------------------------------------
+
 inline
 Vec2I v2i(i32 x, i32 y)
 {
@@ -14,18 +16,6 @@ inline
 Vec2F v2f(f32 x, f32 y)
 {
   return (Vec2F) {x, y};
-}
-
-inline 
-f32 lerp_f32(f32 curr, f32 target, f32 rate)
-{
-  return (target - curr) * rate;
-}
-
-inline
-Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate)
-{
-  return scale_v2f(sub_v2f(target, curr), rate);
 }
 
 inline
@@ -112,6 +102,20 @@ Vec2F normalize_v2f(Vec2F a)
   f32 mag = magnitude_v2f(a);
   
   return (Vec2F) {a.x / mag, a.y / mag};
+}
+
+inline
+Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate)
+{
+  return scale_v2f(sub_v2f(target, curr), rate);
+}
+
+// Other ----------------------------------------------------------------------
+
+inline 
+f32 lerp_f32(f32 curr, f32 target, f32 rate)
+{
+  return (target - curr) * rate;
 }
 
 Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)

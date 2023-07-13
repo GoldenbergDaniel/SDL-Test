@@ -14,14 +14,6 @@ struct Game
   Entity *player;
 };
 
-typedef struct Timer Timer;
-struct Timer
-{
-  f64 max_duration;
-  f64 cur_duration;
-  bool should_repeat;
-};
-
 void game_init(Game *game);
 void game_handle_event(Game *game, SDL_Event *event);
 void game_update(Game *game);

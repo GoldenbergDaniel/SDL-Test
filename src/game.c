@@ -4,23 +4,19 @@
 #include "util.h"
 #include "draw.h"
 #include "input.h"
+#include "component.h"
 #include "entity.h"
 #include "game.h"
 
 Input *input;
-
-// NOTE: Just no
-static f32 max_delay = 1.0f;
-static f32 cur_delay = 0.0f;
-const f32 dlwq = 0.0f;
 
 void game_init(Game *game)
 {
   input = (Input *) malloc(sizeof (Input *));
 
   // Create entities
-  game->enemy_count = 1;
-  game->entity_count = game->enemy_count++;
+  game->enemy_count = 0;
+  game->entity_count = game->enemy_count + 1;
   game->entities[0] = entity_create(ENTITY_PLAYER);
   game->player = &game->entities[0];
 
@@ -79,6 +75,16 @@ void game_update(Game *game)
   Entity *player = game->player;
   Entity *entities = game->entities;
 
+  if (!game->player->hurt_cooldown.is_running)
+  {
+    game->player->hurt_cooldown = timer_start(1.0f);
+  }
+  else
+  {
+    timer_tick(&game->player->hurt_cooldown, game->dt);
+    log_f32("Timer: ", game->player->hurt_cooldown.cur_duration);
+  }
+
   // Update entities
   entity_update(player, game->t, game->dt);
   
@@ -107,23 +113,7 @@ void game_update(Game *game)
           entities[i].width, 
           entities[i].height))
     {
-      log_float("Delay: ", cur_delay);
 
-      // NOTE: Just no
-      if (cur_delay <= 0.0f)
-      {
-        entity_deal_damage(player);
-        cur_delay = max_delay;
-      }
-      else
-      {
-        cur_delay -= game->dt;
-      }
-    }
-
-    for (u8 j = 1; j < game->entity_count; j++)
-    {
-      if (i == j) continue;
     }
   }
 

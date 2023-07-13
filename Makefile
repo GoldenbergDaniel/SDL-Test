@@ -8,7 +8,8 @@ SOURCES = \
 	game.c \
 	util.c \
 	draw.c \
-	entity.c
+	component.c \
+	entity.c \
 
 OBJECTS = $(SOURCES:%.c=build/obj/%.o)
 
@@ -33,5 +34,5 @@ $(NAME): $(OBJECTS)
 	@$(CC) $(LDFLAGS) -o $(NAME) $^
 
 $(OBJECTS): build/obj/%.o: src/%.c
-	@echo $(subst src/,,$<)
 	@$(CC) -c $(CFLAGS) -o $@ $<
+	@echo $(subst src/,,$<)

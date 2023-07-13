@@ -1,6 +1,9 @@
+#include <stdio.h>
+#include <math.h>
+
 #include "globals.h"
 #include "util.h"
-#include "timer.h"
+#include "component.h"
 #include "input.h"
 #include "entity.h"
 
@@ -14,25 +17,26 @@ Entity entity_create(EntityType type)
   entity.vel = VEC2F_ZERO;
   entity.dir = VEC2F_ZERO;
   entity.is_active = TRUE;
+  entity.hurt_cooldown.is_running = FALSE;
 
   switch (type)
   {
     case ENTITY_PLAYER:
     {
+      entity.color = COLOR_WHITE;
       entity.width = 20.0f;
       entity.height = 20.0f;
       entity.speed = PLAYER_SPEED;
-      entity.color = COLOR_WHITE;
       entity.health = PLAYER_HEALTH;
       break;
     }
     case ENTITY_ENEMY:
     {
+      entity.color = COLOR_RED;
       entity.width = 20.0f;
       entity.height = 20.0f;
       entity.speed = 100.0f;
       entity.view_dist = 250;
-      entity.color = COLOR_RED;
       break;
     }
     default: break;

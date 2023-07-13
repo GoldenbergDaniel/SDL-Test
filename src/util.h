@@ -1,6 +1,6 @@
 #pragma once
 
-// Vector --------------------------------------------------
+// Vector ---------------------------------------------------------------------
 
 typedef struct Vec2I Vec2I;
 struct Vec2I
@@ -16,9 +16,6 @@ struct Vec2F
 
 #define VEC2I_ZERO ((Vec2I) {0, 0})
 #define VEC2F_ZERO ((Vec2F) {0.0f, 0.0f})
-
-f32 lerp_f32(f32 curr, f32 target, f32 rate);
-Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate);
 
 Vec2I v2i(i32 x, i32 y);
 Vec2F v2f(f32 x, f32 y);
@@ -39,7 +36,9 @@ f32 distance_v2f(Vec2F a, Vec2F b);
 Vec2F normalize_v2i(Vec2I a);
 Vec2F normalize_v2f(Vec2F a);
 
-// Color --------------------------------------------------
+Vec2F lerp_v2f(Vec2F curr, Vec2F target, f32 rate);
+
+// Color ----------------------------------------------------------------------
 
 typedef struct Color8I Color8I;
 struct Color8I
@@ -70,6 +69,8 @@ struct Color8F
 #define round(a) ((i32) (a) + 0.5f))
 
 #define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
+
+f32 lerp_f32(f32 curr, f32 target, f32 rate);
 
 Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
 Vec2F rect_center(Vec2F pos, f32 w, f32 h);

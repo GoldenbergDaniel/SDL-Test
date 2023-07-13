@@ -16,10 +16,10 @@
 #define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
 
 #define log_msg(msg) (printf("%s\n", msg))
-#define log_char(caption, data) (printf("%s%c\n", caption, data))
-#define log_int(caption, data) (printf("%s%i\n", caption, data))
-#define log_uint(caption, data) (printf("%s%u\n", caption, data))
-#define log_float(caption, data) (printf("%s%f\n", caption, data))
+#define log_i8(caption, data) (printf("%s%c\n", caption, data))
+#define log_i32(caption, data) (printf("%s%i\n", caption, data))
+#define log_u32(caption, data) (printf("%s%u\n", caption, data))
+#define log_f32(caption, data) (printf("%s%f\n", caption, data))
 
 typedef unsigned char bool;
 typedef unsigned char b8;
