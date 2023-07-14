@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "util.h"
 #include "component.h"
-#include "input.h"
 #include "entity.h"
 
 extern Input *input;
@@ -22,7 +21,7 @@ Entity entity_create(EntityType type)
 
   switch (type)
   {
-    case ENTITY_PLAYER:
+    case EntityType_Player:
     {
       entity.color = COLOR_WHITE;
       entity.width = 20.0f;
@@ -31,7 +30,7 @@ Entity entity_create(EntityType type)
       entity.health = PLAYER_HEALTH;
       break;
     }
-    case ENTITY_ENEMY:
+    case EntityType_Enemy:
     {
       entity.color = COLOR_RED;
       entity.width = 20.0f;
@@ -50,12 +49,12 @@ void entity_start(Entity *entity)
 {
   switch (entity->type)
   {
-    case ENTITY_PLAYER:
+    case EntityType_Player:
     {
       entity->pos = v2f(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f);
       break;
     }
-    case ENTITY_ENEMY:
+    case EntityType_Enemy:
     {
       entity->pos = random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
       break;
@@ -68,7 +67,7 @@ void entity_update(Entity *entity, f64 dt)
 {
   switch (entity->type)
   {
-    case ENTITY_PLAYER:
+    case EntityType_Player:
     {
       if (entity->is_active)
       {
@@ -109,7 +108,7 @@ void entity_update(Entity *entity, f64 dt)
 
       break;
     }
-    case ENTITY_ENEMY:
+    case EntityType_Enemy:
     {
       if (entity->has_target && entity->is_active)
       {

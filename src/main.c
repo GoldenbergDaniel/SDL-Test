@@ -4,7 +4,6 @@
 
 #include "globals.h"
 #include "util.h"
-#include "input.h"
 #include "component.h"
 #include "entity.h"
 #include "game.h"

@@ -59,6 +59,19 @@ struct ColorF32
 #define COLOR_BLUE ((ColorI8) {55, 107, 186, 255})
 #define COLOR_PURPLE ((ColorI8) {44, 45, 84, 255})
 
+// Input ----------------------------------------------------------------------
+
+typedef struct Input Input;
+struct Input
+{
+  u8 w;
+  u8 a;
+  u8 s;
+  u8 d;
+  u8 space;
+  u8 escape;
+};
+
 // Other ----------------------------------------------------------------------
 
 #define abs(a) (((a) < 0) ? (-(a)) : (a))

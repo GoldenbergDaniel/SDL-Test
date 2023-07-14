@@ -1,13 +1,13 @@
 NAME = Game
 LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -O0 -Wall -Wextra -Wpedantic
+CFLAGS = -std=c17 -O1 -Wall -Wextra -Wpedantic
 CC = cc
 
 SOURCES = \
 	main.c \
 	game.c \
 	util.c \
-	draw.c \
+	platform.c \
 	component.c \
 	entity.c \
 

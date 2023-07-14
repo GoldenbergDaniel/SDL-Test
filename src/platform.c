@@ -2,7 +2,7 @@
 
 #include "globals.h"
 #include "util.h"
-#include "draw.h"
+#include "platform.h"
 
 inline 
 void clear_background(SDL_Renderer *renderer, ColorI8 c)

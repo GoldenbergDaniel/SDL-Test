@@ -2,8 +2,7 @@
 
 #include "globals.h"
 #include "util.h"
-#include "draw.h"
-#include "input.h"
+#include "platform.h"
 #include "component.h"
 #include "entity.h"
 #include "game.h"
@@ -17,12 +16,12 @@ void game_init(Game *game)
   // Create entities
   game->enemy_count = 1;
   game->entity_count = game->enemy_count + 1;
-  game->entities[0] = entity_create(ENTITY_PLAYER);
+  game->entities[0] = entity_create(EntityType_Player);
   game->player = &game->entities[0];
 
   for (u8 i = 1; i < game->entity_count; i++)
   {
-    game->entities[i] = entity_create(ENTITY_ENEMY);
+    game->entities[i] = entity_create(EntityType_Enemy);
   }
 
   // Set starting positions

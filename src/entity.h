@@ -2,8 +2,8 @@
 
 typedef enum EntityType
 {
-  ENTITY_PLAYER,
-  ENTITY_ENEMY
+  EntityType_Player,
+  EntityType_Enemy,
 } EntityType;
 
 typedef struct Entity Entity;
