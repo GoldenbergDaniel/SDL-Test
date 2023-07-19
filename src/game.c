@@ -1,6 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
 
-#include "globals.h"
+#include "common.h"
 #include "util.h"
 #include "platform.h"
 #include "component.h"
@@ -85,7 +87,7 @@ void game_update(Game *game)
     }
     else
     {
-      entity_set_target(&entities[i], v2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+      entity_set_target(&entities[i], v2f(WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f));
     }
 
     entity_update(&entities[i], game->dt);
@@ -95,12 +97,12 @@ void game_update(Game *game)
   for (u8 i = 1; i < game->entity_count; i++)
   {
     if (rect_ranges_intersect(
-          player->pos, 
-          entities[i].pos, 
-          player->width,
-          player->height,
-          entities[i].width, 
-          entities[i].height))
+                              player->pos, 
+                              entities[i].pos, 
+                              player->width,
+                              player->height,
+                              entities[i].width, 
+                              entities[i].height))
     {
       // NOTE: Broken!
       if (!player->hurt_cooldown.is_running)
@@ -115,6 +117,9 @@ void game_update(Game *game)
         {
           log_msg("Timeout!");
         }
+
+        destroy:
+          printf("");
 
         log_f32("Timer: ", player->hurt_cooldown.cur_duration);
       }
@@ -149,12 +154,11 @@ void game_draw(Game *game)
     if (!game->entities[i].is_active) continue;
 
     draw_rect(
-      game->renderer, 
-      game->entities[i].pos, 
-      game->entities[i].width, 
-      game->entities[i].height, 
-      game->entities[i].color
-    );
+              game->renderer, 
+              game->entities[i].pos, 
+              game->entities[i].width, 
+              game->entities[i].height, 
+              game->entities[i].color);
   }
 }
 

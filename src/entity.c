@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "globals.h"
+#include "common.h"
 #include "util.h"
 #include "component.h"
 #include "entity.h"
@@ -18,6 +18,7 @@ Entity entity_create(EntityType type)
   entity.is_active = TRUE;
   entity.hurt_cooldown.max_duration = 1.0f;
   entity.hurt_cooldown.is_running = FALSE;
+  entity.hurt_cooldown.should_tick = FALSE;
 
   switch (type)
   {
@@ -136,7 +137,7 @@ void entity_update(Entity *entity, f64 dt)
   entity->pos = add_v2f(entity->pos, entity->vel);
 }
 
-void entity_set_target(Entity *entity, Vec2F target_pos)
+void entity_set_target(Entity *entity, Vec2F32 target_pos)
 {
   if (distance_v2f(entity->pos, target_pos) <= entity->view_dist)
   {

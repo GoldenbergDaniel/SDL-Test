@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "common.h"
 #include "component.h"
 
 // Timer ----------------------------------------------------------------------

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <SDL2/SDL.h>
+
+#include "common.h"
+#include "entity.h"
+
 typedef struct Game Game;
 struct Game
 {

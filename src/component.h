@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common.h"
+
 // Timer ----------------------------------------------------------------------
 
 typedef struct Timer Timer;
@@ -8,6 +10,7 @@ struct Timer
   f32 max_duration;
   f32 cur_duration;
   bool is_running;
+  bool should_tick;
   bool timeout;
 };
 

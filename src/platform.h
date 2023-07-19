@@ -1,5 +1,10 @@
 #pragma once
 
-void clear_background(SDL_Renderer *renderer, ColorI8 c);
-void draw_rect(SDL_Renderer *renderer, Vec2F pos, f32 w, f32 h, ColorI8 c);
-void draw_rect_outline(SDL_Renderer *renderer, Vec2F pos, f32 w, f32 h, ColorI8 c);
+#include <SDL2/SDL.h>
+
+#include "common.h"
+#include "util.h"
+
+void clear_background(SDL_Renderer *renderer, Vec4I8 c);
+void draw_rect(SDL_Renderer *renderer, Vec2F32 pos, f32 w, f32 h, Vec4I8 c);
+void draw_rect_outline(SDL_Renderer *renderer, Vec2F32 pos, f32 w, f32 h, Vec4I8 c);

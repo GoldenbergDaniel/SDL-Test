@@ -2,7 +2,7 @@
 #include <time.h>
 #include <SDL2/SDL.h>
 
-#include "globals.h"
+#include "common.h"
 #include "util.h"
 #include "component.h"
 #include "entity.h"
@@ -13,22 +13,22 @@ i32 main(void)
 {
   Game game;
   game.window = SDL_CreateWindow(
-                  WINDOW_NAME, 
-                  SDL_WINDOWPOS_CENTERED, 
-                  SDL_WINDOWPOS_CENTERED, 
-                  WINDOW_WIDTH, 
-                  WINDOW_HEIGHT, 
-                  WINDOW_FLAGS
+                                 WINDOW_NAME, 
+                                 SDL_WINDOWPOS_CENTERED, 
+                                 SDL_WINDOWPOS_CENTERED, 
+                                 WINDOW_WIDTH, 
+                                 WINDOW_HEIGHT, 
+                                 WINDOW_FLAGS
   );
 
   SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
   game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
   game.is_running = TRUE;
 
-  srand(time(NULL));
-
   game_init(&game);
   
+  srand(time(NULL));
+
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
   f64 time_step = 1.0f / TARGET_FPS;
