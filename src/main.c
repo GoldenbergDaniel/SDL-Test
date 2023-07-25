@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <SDL2/SDL.h>
+#include <float.h>
 
 #include "common.h"
 #include "util.h"

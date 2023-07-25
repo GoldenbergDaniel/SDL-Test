@@ -10,12 +10,20 @@ typedef enum EntityType
   EntityType_Enemy,
 } EntityType;
 
+typedef enum EntityState
+{
+  EntityState_Idle,
+  EntityState_Move,
+  EntityState_Slide,
+} EntityState;
+
 typedef struct Entity Entity;
 struct Entity
 {
   // General
   EntityType type;
-  Vec4I8 color;
+  EntityState move_state;
+  Vec4U8 color;
   f32 width;
   f32 height;
 
@@ -38,8 +46,9 @@ struct Entity
   Timer hurt_cooldown;
 };
 
-#define PLAYER_HEALTH 3
-#define PLAYER_SPEED 300.0f
+// #define PLAYER_HEALTH 3
+// #define PLAYER_SPEED 300.0f
+// #define PLAYER_ACC 30.0f
 
 Entity entity_create(EntityType type);
 void entity_start(Entity *entity);

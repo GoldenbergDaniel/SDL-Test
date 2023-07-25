@@ -7,99 +7,75 @@
 // Vector ---------------------------------------------------------------------
 
 inline
-Vec2I32 v2i(i32 x, i32 y)
+Vec2I32 v2i32(i32 x, i32 y)
 {
   return (Vec2I32) {x, y};
 }
 
 inline
-Vec2F32 v2f(f32 x, f32 y)
+Vec2F32 v2f32(f32 x, f32 y)
 {
   return (Vec2F32) {x, y};
 }
 
 inline
-Vec2I32 add_v2i(Vec2I32 a, Vec2I32 b)
+Vec2I32 add_v2i32(Vec2I32 a, Vec2I32 b)
 {
   return (Vec2I32) {a.x + b.x, a.y + b.y};
 }
 
 inline
-Vec2F32 add_v2f(Vec2F32 a, Vec2F32 b)
+Vec2F32 add_v2f32(Vec2F32 a, Vec2F32 b)
 {
   return (Vec2F32) {a.x + b.x, a.y + b.y};
 }
 
 inline
-Vec2I32 sub_v2i(Vec2I32 a, Vec2I32 b)
+Vec2I32 sub_v2i32(Vec2I32 a, Vec2I32 b)
 {
   return (Vec2I32) {a.x - b.x, a.y - b.y};
 }
 
 inline
-Vec2F32 sub_v2f(Vec2F32 a, Vec2F32 b)
+Vec2F32 sub_v2f32(Vec2F32 a, Vec2F32 b)
 {
   return (Vec2F32) {a.x - b.x, a.y - b.y};
 }
 
 inline
-Vec2I32 scale_v2i(Vec2I32 a, f32 s)
+Vec2I32 scale_v2i32(Vec2I32 a, f32 s)
 {
   return (Vec2I32) {a.x * s, a.y * s};
 }
 
 inline
-Vec2F32 scale_v2f(Vec2F32 a, f32 s)
+Vec2F32 scale_v2f32(Vec2F32 a, f32 s)
 {
   return (Vec2F32) {a.x * s, a.y * s};
 }
 
 inline
-i32 dot_v2i(Vec2I32 a, Vec2I32 b)
+f32 dot_v2f32(Vec2F32 a, Vec2F32 b)
 {
   return (a.x * b.x) + (a.y * b.y);
 }
 
-inline
-f32 dot_v2f(Vec2F32 a, Vec2F32 b)
-{
-  return (a.x * b.x) + (a.y * b.y);
-}
 
 inline
-f32 magnitude_v2i(Vec2I32 a)
+f32 magnitude_v2f32(Vec2F32 a)
 {
   return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
 }
 
 inline
-f32 magnitude_v2f(Vec2F32 a)
-{
-  return sqrtf(powf(a.x, 2.0f) + powf(a.y, 2.0f));
-}
-
-inline
-f32 distance_v2i(Vec2I32 a, Vec2I32 b)
+f32 distance_v2f32(Vec2F32 a, Vec2F32 b)
 {
   return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
 }
 
-inline
-f32 distance_v2f(Vec2F32 a, Vec2F32 b)
+Vec2F32 normalize_v2f32(Vec2F32 a)
 {
-  return sqrtf(powf(b.x - a.x, 2.0f) + powf(b.y - a.y, 2.0f));
-}
-
-Vec2F32 normalize_v2i(Vec2I32 a)
-{
-  f32 mag = magnitude_v2i(a);
-  
-  return (Vec2F32) {a.x / mag, a.y / mag};
-}
-
-Vec2F32 normalize_v2f(Vec2F32 a)
-{
-  f32 mag = magnitude_v2f(a);
+  f32 mag = magnitude_v2f32(a);
   
   return (Vec2F32) {a.x / mag, a.y / mag};
 }
@@ -107,7 +83,7 @@ Vec2F32 normalize_v2f(Vec2F32 a)
 inline
 Vec2F32 lerp_v2f(Vec2F32 curr, Vec2F32 target, f32 rate)
 {
-  return scale_v2f(sub_v2f(target, curr), rate);
+  return scale_v2f32(sub_v2f32(target, curr), rate);
 }
 
 // Other ----------------------------------------------------------------------
@@ -115,9 +91,10 @@ Vec2F32 lerp_v2f(Vec2F32 curr, Vec2F32 target, f32 rate)
 inline 
 f32 lerp_f32(f32 curr, f32 target, f32 rate)
 {
-  return (target - curr) * rate;
+  return curr + (target - curr) * rate;
 }
 
+inline
 Vec2F32 random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 {
   return (Vec2F32) {

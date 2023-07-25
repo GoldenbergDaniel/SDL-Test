@@ -16,7 +16,7 @@ void game_init(Game *game)
   input = (Input *) malloc(sizeof (Input *));
 
   // Create entities
-  game->enemy_count = 1;
+  game->enemy_count = 0;
   game->entity_count = game->enemy_count + 1;
   game->entities[0] = entity_create(EntityType_Player);
   game->player = &game->entities[0];
@@ -87,7 +87,7 @@ void game_update(Game *game)
     }
     else
     {
-      entity_set_target(&entities[i], v2f(WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f));
+      entity_set_target(&entities[i], v2f32(WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f));
     }
 
     entity_update(&entities[i], game->dt);
@@ -118,9 +118,6 @@ void game_update(Game *game)
           log_msg("Timeout!");
         }
 
-        destroy:
-          printf("");
-
         log_f32("Timer: ", player->hurt_cooldown.cur_duration);
       }
     }
@@ -147,7 +144,7 @@ void game_update(Game *game)
 
 void game_draw(Game *game)
 {
-  clear_background(game->renderer, COLOR_PURPLE);
+  clear_background(game->renderer, COLOR_BLACK);
 
   for (u8 i = 0; i < game->entity_count; i++)
   {

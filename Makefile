@@ -1,6 +1,6 @@
 NAME = Game
 LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -O1 -Wall -Wextra -Wpedantic
+CFLAGS = -std=c17 -O1 -Wall -Wextra -Wpedantic -Wno-missing-braces
 CC = cc
 
 SOURCES = \
@@ -14,15 +14,15 @@ SOURCES = \
 OBJECTS = $(SOURCES:%.c=build/obj/%.o)
 
 all: $(NAME)
-	./$(NAME)
+	build/$(NAME)
 
 compile: $(NAME)
 
 recompile: clean $(NAME)
-	./$(NAME)
+	build/$(NAME)
 
 run: 
-	./$(NAME)
+	build/$(NAME)
 
 clean:
 	@rm build/obj/*.o
@@ -31,7 +31,7 @@ clean:
 .PHONY: all compile recompile run clean
 
 $(NAME): $(OBJECTS)
-	@$(CC) $(LDFLAGS) -o $(NAME) $^
+	@$(CC) $(LDFLAGS) -o build/$(NAME) $^
 
 $(OBJECTS): build/obj/%.o: src/%.c
 	@$(CC) -c $(CFLAGS) -o $@ $<
