@@ -1,36 +1,31 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
-#include "common.h"
+#include "base_common.h"
+#include "base_math.h"
 #include "util.h"
 #include "component.h"
 #include "entity.h"
 
-#define PLAYER_HEALTH 3
-#define PLAYER_SPEED 300.0f
-#define PLAYER_ACC 30.0f
-#define PLAYER_FRIC 3.0f
+static
+Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
 
 extern Input *input;
 
 Entity entity_create(EntityType type)
 {
-  Entity entity;
+  Entity entity = {0};
   entity.type = type;
   entity.move_state = EntityState_Idle;
-  entity.pos = V2F_ZERO;
-  entity.vel = V2F_ZERO;
-  entity.dir = V2F_ZERO;
   entity.is_active = TRUE;
   entity.hurt_cooldown.max_duration = 1.0f;
-  entity.hurt_cooldown.is_running = FALSE;
-  entity.hurt_cooldown.should_tick = FALSE;
 
   switch (type)
   {
     case EntityType_Player:
     {
-      entity.color = COLOR_WHITE;
+      entity.color = v4f(0.9f, 0.9f, 0.9f, 1.0f);
       entity.width = 20.0f;
       entity.height = 20.0f;
       entity.speed = PLAYER_SPEED;
@@ -39,7 +34,7 @@ Entity entity_create(EntityType type)
     }
     case EntityType_Enemy:
     {
-      entity.color = COLOR_RED;
+      entity.color = v4f(0.8f, 0.3f, 0.2f, 1.0f);
       entity.width = 20.0f;
       entity.height = 20.0f;
       entity.speed = 100.0f;
@@ -58,12 +53,12 @@ void entity_start(Entity *entity)
   {
     case EntityType_Player:
     {
-      entity->pos = v2f32(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f);
+      entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
       break;
     }
     case EntityType_Enemy:
     {
-      entity->pos = random_position(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
+      entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
       break;
     }
     default: break;
@@ -86,7 +81,7 @@ void entity_update(Entity *entity, f64 dt)
       {
         entity->dir.x = -1.0f;
       }
-
+ 
       if (input->d)
       {
         entity->dir.x = 1.0f;
@@ -111,8 +106,8 @@ void entity_update(Entity *entity, f64 dt)
       {
         entity->dir.y = 0.0f;
       }
-      break;
     }
+    break;
     case EntityType_Enemy:
     {
       if (entity->has_target && entity->is_active)
@@ -124,34 +119,35 @@ void entity_update(Entity *entity, f64 dt)
       {
         entity->dir = V2F_ZERO;
       }
-
-      break;
     }
+    break;
     default: break;
   }
 
   if (entity->dir.x != 0.0f || entity->dir.y != 0.0f)
   {
-    entity->dir = normalize_v2f32(entity->dir);
+    entity->dir = normalize_2f(entity->dir);
   }
 
+  // X Acceleration
   if (entity->dir.x != 0.0f)
   {
-    entity->vel.x += PLAYER_ACC * entity->dir.x * dt;
+    entity->vel.x += PLAYER_ACC * dir(entity->dir.x) * dt;
     entity->vel.x = clamp(
                           entity->vel.x, 
-                         -entity->speed * abs(entity->dir.x) * dt, 
+                         -entity->speed * abs(entity->dir.x) * dt,
                           entity->speed * abs(entity->dir.x) * dt);
   }
   else
   {
-    entity->vel.x = lerp_f32(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
+    entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
     entity->vel.x = to_zero(entity->vel.x, 0.1f);
   }
 
+  // Y Acceleration
   if (entity->dir.y != 0.0f)
   {
-    entity->vel.y += PLAYER_ACC * entity->dir.y * dt;
+    entity->vel.y += PLAYER_ACC * dir(entity->dir.y) * dt;
     entity->vel.y = clamp(
                           entity->vel.y, 
                          -entity->speed * abs(entity->dir.y) * dt, 
@@ -159,28 +155,21 @@ void entity_update(Entity *entity, f64 dt)
   }
   else 
   {
-    entity->vel.y = lerp_f32(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
+    entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
     entity->vel.y = to_zero(entity->vel.y, 0.1f);
   }
 
-  // log_f32("DirX: ", entity->dir.x);
-  // log_f32("DirY: ", entity->dir.y);
-  // log_f32("VelX: ", entity->vel.x);
-  // log_f32("VelY: ", entity->vel.y);
-
-  entity->pos = add_v2f32(entity->pos, entity->vel);
+  entity->pos = add_2f(entity->pos, entity->vel);
 }
 
-void entity_set_target(Entity *entity, Vec2F32 target_pos)
+void entity_set_target(Entity *entity, Vec2F target_pos)
 {
-  if (distance_v2f32(entity->pos, target_pos) <= entity->view_dist)
+  if (distance_2f(entity->pos, target_pos) <= entity->view_dist)
   {
     entity->has_target = TRUE;
     entity->target_pos = target_pos;
-
     f32 dist_x = entity->target_pos.x - entity->pos.x;
     f32 dist_y = entity->target_pos.y - entity->pos.y;
-    
     entity->target_angle = atan2(dist_x, dist_y);
   }
   else
@@ -198,6 +187,16 @@ void entity_deal_damage(Entity *target)
   {
     target->health = 0;
     target->is_active = FALSE;
-    log_msg("Player ded");
+    print("Player ded");
   }
+}
+
+static inline
+Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
+{
+  return (Vec2F)
+  {
+    (rand() % max_x) + min_x,
+    (rand() % max_y) + min_y
+  };
 }

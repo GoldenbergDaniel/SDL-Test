@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <SDL2/SDL.h>
 
-#include "common.h"
+#include "base_common.h"
+#include "base_os.h"
+#include "draw.h"
 #include "util.h"
-#include "platform.h"
 #include "component.h"
 #include "entity.h"
 #include "game.h"
@@ -13,13 +13,16 @@ Input *input;
 
 void game_init(Game *game)
 {
-  input = (Input *) malloc(sizeof (Input *));
+  input = (Input *) os_alloc(sizeof (Input *));
 
   // Create entities
   game->enemy_count = 0;
   game->entity_count = game->enemy_count + 1;
   game->entities[0] = entity_create(EntityType_Player);
   game->player = &game->entities[0];
+
+  Entity *entities = {0};
+  entities++;
 
   for (u8 i = 1; i < game->entity_count; i++)
   {
@@ -87,7 +90,7 @@ void game_update(Game *game)
     }
     else
     {
-      entity_set_target(&entities[i], v2f32(WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f));
+      entity_set_target(&entities[i], v2f(W_WIDTH/2.0f, W_HEIGHT/2.0f));
     }
 
     entity_update(&entities[i], game->dt);
@@ -115,10 +118,10 @@ void game_update(Game *game)
 
         if (player->hurt_cooldown.timeout)
         {
-          log_msg("Timeout!");
+          print("Timeout!");
         }
 
-        log_f32("Timer: ", player->hurt_cooldown.cur_duration);
+        printf("Timer: %f", player->hurt_cooldown.cur_duration);
       }
     }
   }
@@ -126,17 +129,17 @@ void game_update(Game *game)
   // Window edge behavior
   if (player->pos.x + player->width <= 0.0f)
   {
-    player->pos.x = WINDOW_WIDTH;
+    player->pos.x = W_WIDTH;
   }
-  else if (player->pos.x >= WINDOW_WIDTH)
+  else if (player->pos.x >= W_WIDTH)
   {
     player->pos.x = 0.0f;
   }
   else if (player->pos.y + player->height <= 0.0f)
   {
-    player->pos.y = WINDOW_HEIGHT;
+    player->pos.y = W_HEIGHT;
   }
-  else if (player->pos.y >= WINDOW_HEIGHT)
+  else if (player->pos.y >= W_HEIGHT)
   {
     player->pos.y = 0.0f;
   }
@@ -144,18 +147,18 @@ void game_update(Game *game)
 
 void game_draw(Game *game)
 {
-  clear_background(game->renderer, COLOR_BLACK);
+  d_clear(v4f(0.1f, 0.1f, 0.1f, 1.0f));
 
   for (u8 i = 0; i < game->entity_count; i++)
   {
     if (!game->entities[i].is_active) continue;
 
-    draw_rect(
-              game->renderer, 
-              game->entities[i].pos, 
-              game->entities[i].width, 
-              game->entities[i].height, 
-              game->entities[i].color);
+    // draw_rect(
+    //           game->renderer, 
+    //           game->entities[i].pos, 
+    //           game->entities[i].width, 
+    //           game->entities[i].height, 
+    //           game->entities[i].color);
   }
 }
 

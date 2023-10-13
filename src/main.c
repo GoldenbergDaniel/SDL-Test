@@ -1,29 +1,74 @@
+#include <SDL2/SDL.h>
+
+#include "glad/glad.h"
+
 #include <stdlib.h>
 #include <time.h>
-#include <SDL2/SDL.h>
-#include <float.h>
 
-#include "common.h"
+#include "base_common.h"
+#include "base_math.h"
+#include "render.h"
+#include "draw.h"
+#include "shaders.h"
 #include "util.h"
 #include "component.h"
 #include "entity.h"
 #include "game.h"
 #include "main.h"
 
+#define DEBUG
+// #define LOG_PERF
+
+static
+void set_gl_attributes(void);
+
 i32 main(void)
 {
-  Game game;
-  game.window = SDL_CreateWindow(
-                                 WINDOW_NAME, 
-                                 SDL_WINDOWPOS_CENTERED, 
-                                 SDL_WINDOWPOS_CENTERED, 
-                                 WINDOW_WIDTH, 
-                                 WINDOW_HEIGHT, 
-                                 WINDOW_FLAGS
-  );
+  Game game = {0};
+  SDL_Window *window;
+  SDL_GLContext context;
 
-  SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
-  game.renderer = SDL_CreateRenderer(game.window, -1, RENDERER_FLAGS);
+  SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+
+  set_gl_attributes();
+
+  window = SDL_CreateWindow(
+                            "OPENGL", 
+                            W_CENTERED, 
+                            W_CENTERED, 
+                            W_WIDTH, 
+                            W_HEIGHT, 
+                            W_FLAGS);
+
+  context = SDL_GL_CreateContext(window);
+  SDL_GL_MakeCurrent(window, context);
+  SDL_GL_SetSwapInterval(VSYNC_ON);
+
+  gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
+
+  R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
+
+  R_Vertex vertices[4] = 
+  {
+    {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
+    {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
+    {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
+    {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
+  };
+
+  u16 indices[6] = 
+  {
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
+  };
+
+  R_Object vao = r_create_vertex_array(2);
+  r_create_vertex_buffer(vertices, sizeof (vertices));
+  r_create_index_buffer(indices, sizeof (indices));
+  r_create_vertex_layout(&vao, GL_FLOAT, 3);
+  r_create_vertex_layout(&vao, GL_FLOAT, 3);
+
+  game.window = window;
   game.is_running = TRUE;
 
   game_init(&game);
@@ -37,6 +82,10 @@ i32 main(void)
 
   while (game.is_running)
   {
+    #ifdef LOG_PERF
+    u64 frame_start = SDL_GetPerformanceCounter();
+    #endif
+
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
 
@@ -54,6 +103,7 @@ i32 main(void)
       if (game_should_quit())
       {
         game.is_running = FALSE;
+        break;
       }
 
       game.t = elapsed_time;
@@ -64,13 +114,37 @@ i32 main(void)
       accumulator -= time_step;
     }
 
+    #ifdef LOG_PERF
+    u64 frame_end = SDL_GetPerformanceCounter();
+    u64 frequency = SDL_GetPerformanceFrequency();
+    f64 frame_diff = (f64) (frame_end - frame_start) / frequency * 1000.0f;
+
+    printf("%.2lf ms\n", frame_diff);
+    #endif
+
     game_draw(&game);
-    SDL_RenderPresent(game.renderer);
+    SDL_GL_SwapWindow(game.window);
   }
 
   SDL_DestroyWindow(game.window);
-  SDL_DestroyRenderer(game.renderer);
   SDL_Quit();
 
   return 0;
+}
+
+static
+void set_gl_attributes(void)
+{
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 }

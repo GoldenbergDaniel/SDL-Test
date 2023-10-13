@@ -1,38 +1,55 @@
-NAME = Game
-LDFLAGS = -lSDL2
-CFLAGS = -std=c17 -O1 -Wall -Wextra -Wpedantic -Wno-missing-braces
+NAME = SpaceGame
 CC = cc
 
-SOURCES = \
-	main.c \
-	game.c \
-	util.c \
-	platform.c \
-	component.c \
-	entity.c \
+CFLAGS = -Ilib/ \
+				 -std=c17 -O1 \
+				 -Wall -Wextra -Wpedantic \
+				 -Wno-missing-braces \
+				 -Wno-unused-function
 
-OBJECTS = $(SOURCES:%.c=build/obj/%.o)
+LDFLAGS = -framework OpenGL \
+					-lsdl2 \
 
-all: $(NAME)
-	build/$(NAME)
+LIB = lib/glad/glad.c \
 
-compile: $(NAME)
+SRC = src/main.c \
+			src/base_os.c \
+			src/base_math.c \
+			src/base_arena.c \
+			src/render.c \
+			src/draw.c \
+			src/game.c \
+			src/component.c \
+			src/entity.c
 
-recompile: clean $(NAME)
-	build/$(NAME)
+.PHONY: all compile compile_t run test debug combine
 
-run: 
-	build/$(NAME)
+all: compile run
 
-clean:
-	@rm build/obj/*.o
-	@echo "Cleaned build directory"
+compile:
+	@echo "Compiling project..."
+	@./ParseShaders
+	@$(CC) $(CFLAGS) $(LDFLAGS) $(LIB) $(SRC) -o $(NAME)
+	@echo "Compilation complete!"
 
-.PHONY: all compile recompile run clean
+compile_t:
+	@echo "Compiling timed compilation..."
+	@time $(CC) $(CFLAGS) $(LDFLAGS) $(LIB) $(SRC) -o $(NAME)
+	@echo "Compilation complete!"
 
-$(NAME): $(OBJECTS)
-	@$(CC) $(LDFLAGS) -o build/$(NAME) $^
+run:
+	./$(NAME)
 
-$(OBJECTS): build/obj/%.o: src/%.c
-	@$(CC) -c $(CFLAGS) -o $@ $<
-	@echo $(subst src/,,$<)
+test:
+	@echo "Compiling test..."
+	@$(CC) $(CFLAGS) test/test.c src/base_math.c -o Test1
+	./Test1
+
+debug:
+	@echo "Compiling debug..."
+	@cd debug; \
+	$(CC) -I../lib/ $(LDFLAGS) ../lib/glad/glad.c ../src/*.c -g
+	@echo "Compilation complete!"
+
+combine: $(SRC)
+	cat $^ > project.c

@@ -2,7 +2,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "common.h"
+#include "base_common.h"
 #include "entity.h"
 
 typedef struct Game Game;
@@ -15,7 +15,7 @@ struct Game
   f64 dt;
   u8 entity_count;
   u8 enemy_count;
-  Entity entities[255];
+  Entity entities[512];
   Entity *player;
 };
 
