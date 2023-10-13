@@ -13,6 +13,7 @@ struct Game
   Mat3x3F camera;
   D_Stream draw_stream;
   bool running;
+  bool first_frame;
   f64 t;
   f64 dt;
   u8 entity_count;

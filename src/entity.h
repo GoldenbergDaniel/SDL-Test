@@ -30,6 +30,7 @@ struct Entity
   f32 width;
   f32 height;
   Vec4F color;
+  bool active : 1;
 
   // Physics
   Vec2F pos;
@@ -46,7 +47,6 @@ struct Entity
 
   // Health
   i8 health;
-  bool is_active : 1;
   Timer hurt_cooldown;
 };
 

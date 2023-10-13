@@ -14,7 +14,7 @@ Input *input;
 
 void game_init(Game *game)
 {
-  input = (Input *) os_alloc(sizeof (Input *));
+  input = os_alloc(sizeof (Input));
 
   R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
 
@@ -38,7 +38,7 @@ void game_init(Game *game)
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
 
-  game->camera = translate_3x3f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
+  game->camera = translate_3x3f(0.0f, W_HEIGHT);
   game->draw_stream = (D_Stream) 
   {
     .vao = vao,
@@ -64,6 +64,7 @@ void game_init(Game *game)
   }
 
   game->running = TRUE;
+  game->first_frame = TRUE;
 }
 
 void game_handle_event(Game *game, SDL_Event *event)
@@ -125,13 +126,13 @@ void game_update(Game *game)
   
   for (u8 i = 1; i < game->entity_count; i++)
   {
-    if (player->is_active)
+    if (player->active)
     {
       entity_set_target(&entities[i], player->pos);
     }
     else
     {
-      entity_set_target(&entities[i], v2f(W_WIDTH/2.0f, W_HEIGHT/2.0f));
+      entity_set_target(&entities[i], v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f));
     }
 
     entity_update(&entities[i], game->dt);
@@ -167,23 +168,23 @@ void game_update(Game *game)
     }
   }
 
-  // Window edge behavior
-  if (player->pos.x + player->width <= 0.0f)
-  {
-    player->pos.x = W_WIDTH;
-  }
-  else if (player->pos.x >= W_WIDTH)
-  {
-    player->pos.x = 0.0f;
-  }
-  else if (player->pos.y + player->height <= 0.0f)
-  {
-    player->pos.y = W_HEIGHT;
-  }
-  else if (player->pos.y >= W_HEIGHT)
-  {
-    player->pos.y = 0.0f;
-  }
+  // // Window edge behavior
+  // if (player->pos.x + player->width/2 <= 0.0f)
+  // {
+  //   player->pos.x = W_WIDTH;
+  // }
+  // else if (player->pos.x >= W_WIDTH)
+  // {
+  //   player->pos.x = 0.0f;
+  // }
+  // else if (player->pos.y + player->height/2 <= 0.0f)
+  // {
+  //   player->pos.y = W_HEIGHT;
+  // }
+  // else if (player->pos.y >= W_HEIGHT)
+  // {
+  //   player->pos.y = 0.0f;
+  // }
 }
 
 void game_draw(Game *game)
@@ -194,7 +195,7 @@ void game_draw(Game *game)
   {
     Entity entity = game->entities[i];
 
-    if (entity.is_active)
+    if (entity.active)
     {
       d_draw_rect(&game->draw_stream, entity.xform, entity.color);
     }

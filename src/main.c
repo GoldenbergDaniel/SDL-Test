@@ -65,10 +65,14 @@ i32 main(void)
 
     while (accumulator >= time_step)
     {
-      SDL_Event event;
-      while (SDL_PollEvent(&event))
+      // Handle events
+      if (!game.first_frame)
       {
-        game_handle_event(&game, &event);
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+          game_handle_event(&game, &event);
+        }
       }
 
       if (game_should_quit())
@@ -95,6 +99,8 @@ i32 main(void)
 
     game_draw(&game);
     SDL_GL_SwapWindow(game.window);
+
+    game.first_frame = FALSE;
   }
 
   SDL_DestroyWindow(game.window);

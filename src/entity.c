@@ -19,7 +19,11 @@ Entity entity_create(EntityType type)
   entity.type = type;
   entity.move_state = EntityState_Idle;
   entity.scale = v2f(2.0f, 2.0f);
-  entity.is_active = TRUE;
+  entity.width = 10.0f * entity.scale.x;
+  entity.height = 10.0f * entity.scale.y;
+  printf("W: %f\n", entity.width);
+  printf("H: %f\n", entity.height);
+  entity.active = TRUE;
   entity.hurt_cooldown.max_duration = 1.0f;
 
   switch (type)
@@ -64,7 +68,7 @@ void entity_start(Entity *entity)
 
 void entity_update(Entity *entity, f64 dt)
 {
-  if (!entity->is_active)
+  if (!entity->active)
   {
     entity->dir = V2F_ZERO;
     return;
@@ -107,7 +111,7 @@ void entity_update(Entity *entity, f64 dt)
     break;
     case EntityType_Enemy:
     {
-      if (entity->has_target && entity->is_active)
+      if (entity->has_target && entity->active)
       {
         entity->dir.x = sinf(entity->target_angle);
         entity->dir.y = cosf(entity->target_angle);
@@ -156,6 +160,10 @@ void entity_update(Entity *entity, f64 dt)
     entity->vel.y = to_zero(entity->vel.y, 0.1f);
   }
 
+  // printf("Pos: %f, %f\n", entity->pos.x, entity->pos.y);
+  // printf("Dir: %f, %f\n", entity->dir.x, entity->dir.y);
+  // printf("Vel: %f, %f\n", entity->vel.x, entity->vel.y);
+
   entity->pos = add_2f(entity->pos, entity->vel);
 
   entity->xform = m3x3f(1.0f);
@@ -188,7 +196,7 @@ void entity_deal_damage(Entity *target)
   if (target->health <= 0)
   {
     target->health = 0;
-    target->is_active = FALSE;
+    target->active = FALSE;
     print("Player ded");
   }
 }
