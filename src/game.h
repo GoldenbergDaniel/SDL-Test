@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 
 #include "base_common.h"
+#include "base_arena.h"
 #include "draw.h"
 #include "entity.h"
 
@@ -10,6 +11,7 @@ typedef struct Game Game;
 struct Game
 {
   SDL_Window *window;
+  Arena arena;
   Mat3x3F camera;
   D_Stream draw_stream;
   bool running;

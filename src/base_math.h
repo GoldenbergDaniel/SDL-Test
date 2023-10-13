@@ -179,7 +179,7 @@ Mat4x4F rotate_4x4f(f32 angle, Vec3F axis); // Should use quaternion
 Mat4x4F scale_4x4f(f32 x_scale, f32 y_scale, f32 z_scale);
 Mat4x4F shear_4x4f(f32 x_shear, f32 y_shear, f32 z_shear);
 
-Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top);
+Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 top, f32 bot);
 
 // @Collision ===============================================================================
 

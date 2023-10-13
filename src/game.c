@@ -2,11 +2,10 @@
 #include <SDL2/SDL.h>
 
 #include "base_common.h"
-#include "base_os.h"
+#include "base_arena.h"
 #include "draw.h"
 #include "shaders.h"
 #include "util.h"
-#include "component.h"
 #include "entity.h"
 #include "game.h"
 
@@ -14,7 +13,7 @@ Input *input;
 
 void game_init(Game *game)
 {
-  input = os_alloc(sizeof (Input));
+  input = arena_alloc(&game->arena, sizeof (Input));
 
   R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
 
@@ -38,8 +37,8 @@ void game_init(Game *game)
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
 
-  game->camera = translate_3x3f(0.0f, W_HEIGHT);
-  game->draw_stream = (D_Stream) 
+  game->camera = translate_3x3f(0.0f, 0.0f);
+  game->draw_stream = (D_Stream)
   {
     .vao = vao,
     .shader = shader,
@@ -62,9 +61,6 @@ void game_init(Game *game)
   {
     entity_start(&game->entities[i]);
   }
-
-  game->running = TRUE;
-  game->first_frame = TRUE;
 }
 
 void game_handle_event(Game *game, SDL_Event *event)
@@ -160,7 +156,7 @@ void game_update(Game *game)
 
         if (player->hurt_cooldown.timeout)
         {
-          print("Timeout!");
+          printf("Timeout!\n");
         }
 
         printf("Timer: %f", player->hurt_cooldown.cur_duration);
@@ -168,23 +164,23 @@ void game_update(Game *game)
     }
   }
 
-  // // Window edge behavior
-  // if (player->pos.x + player->width/2 <= 0.0f)
-  // {
-  //   player->pos.x = W_WIDTH;
-  // }
-  // else if (player->pos.x >= W_WIDTH)
-  // {
-  //   player->pos.x = 0.0f;
-  // }
-  // else if (player->pos.y + player->height/2 <= 0.0f)
-  // {
-  //   player->pos.y = W_HEIGHT;
-  // }
-  // else if (player->pos.y >= W_HEIGHT)
-  // {
-  //   player->pos.y = 0.0f;
-  // }
+  // Window edge behavior
+  if (player->pos.x + player->width <= 0.0f)
+  {
+    player->pos.x = W_WIDTH;
+  }
+  else if (player->pos.x >= W_WIDTH)
+  {
+    player->pos.x = -(player->width);
+  }
+  else if (player->pos.y + player->height <= 0.0f)
+  {
+    player->pos.y = W_HEIGHT;
+  }
+  else if (player->pos.y >= W_HEIGHT)
+  {
+    player->pos.y = -(player->height);
+  }
 }
 
 void game_draw(Game *game)

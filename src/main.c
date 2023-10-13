@@ -1,19 +1,16 @@
+#include <time.h>
 #include <SDL2/SDL.h>
 
 #include "glad/glad.h"
 
-#include <stdlib.h>
 #include <time.h>
-
 #include "base_common.h"
 #include "base_math.h"
 #include "render.h"
 #include "draw.h"
 #include "util.h"
-#include "component.h"
 #include "entity.h"
 #include "game.h"
-#include "main.h"
 
 #define DEBUG
 // #define LOG_PERF
@@ -24,27 +21,30 @@ void set_gl_attributes(void);
 i32 main(void)
 {
   Game game = {0};
-  SDL_GLContext context;
+  game.arena = arena_create(MEGABYTES(64));
+  SDL_GLContext gl_context;
 
   srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   set_gl_attributes();
 
   game.window = SDL_CreateWindow(
-                                 "SPACE GAME", 
+                                 W_NAME,
                                  W_CENTERED, 
                                  W_CENTERED, 
                                  W_WIDTH, 
                                  W_HEIGHT, 
                                  W_FLAGS);
 
-  context = SDL_GL_CreateContext(game.window);
-  SDL_GL_MakeCurrent(game.window, context);
+  gl_context = SDL_GL_CreateContext(game.window);
+  SDL_GL_MakeCurrent(game.window, gl_context);
   SDL_GL_SetSwapInterval(VSYNC_ON);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
   game_init(&game);
+  game.running = TRUE;
+  game.first_frame = TRUE;
   
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
@@ -78,7 +78,6 @@ i32 main(void)
       if (game_should_quit())
       {
         game.running = FALSE;
-        break;
       }
 
       game.t = elapsed_time;
@@ -87,6 +86,8 @@ i32 main(void)
 
       elapsed_time += time_step;
       accumulator -= time_step;
+
+      game.first_frame = FALSE;
     }
 
     #ifdef LOG_PERF
@@ -99,8 +100,6 @@ i32 main(void)
 
     game_draw(&game);
     SDL_GL_SwapWindow(game.window);
-
-    game.first_frame = FALSE;
   }
 
   SDL_DestroyWindow(game.window);

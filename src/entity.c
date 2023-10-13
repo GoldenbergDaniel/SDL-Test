@@ -5,7 +5,6 @@
 #include "base_common.h"
 #include "base_math.h"
 #include "util.h"
-#include "component.h"
 #include "entity.h"
 
 extern Input *input;
@@ -21,8 +20,6 @@ Entity entity_create(EntityType type)
   entity.scale = v2f(2.0f, 2.0f);
   entity.width = 10.0f * entity.scale.x;
   entity.height = 10.0f * entity.scale.y;
-  printf("W: %f\n", entity.width);
-  printf("H: %f\n", entity.height);
   entity.active = TRUE;
   entity.hurt_cooldown.max_duration = 1.0f;
 
@@ -54,7 +51,7 @@ void entity_start(Entity *entity)
   {
     case EntityType_Player:
     {
-      entity->pos = v2f(0.0f, 0.0f);
+      entity->pos = v2f(0, 0);
       break;
     }
     case EntityType_Enemy:
@@ -90,12 +87,12 @@ void entity_update(Entity *entity, f64 dt)
 
       if (input->w)
       {
-        entity->dir.y = 1.0f;
+        entity->dir.y = -1.0f;
       }
 
       if (input->s)
       {
-        entity->dir.y = -1.0f;
+        entity->dir.y = 1.0f;
       }
 
       if ((!input->a && !input->d) || (input->a && input->d))
@@ -160,16 +157,18 @@ void entity_update(Entity *entity, f64 dt)
     entity->vel.y = to_zero(entity->vel.y, 0.1f);
   }
 
+  entity->pos = add_2f(entity->pos, entity->vel);
+
+  Mat3x3F xform = m3x3f(1.0f);
+  xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
+  xform = mul_3x3f(rotate_3x3f(entity->rotation), xform);
+  xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
+  xform = mul_3x3f(translate_3x3f(entity->width/2, entity->height/2), xform);
+  entity->xform = xform;
+
   // printf("Pos: %f, %f\n", entity->pos.x, entity->pos.y);
   // printf("Dir: %f, %f\n", entity->dir.x, entity->dir.y);
   // printf("Vel: %f, %f\n", entity->vel.x, entity->vel.y);
-
-  entity->pos = add_2f(entity->pos, entity->vel);
-
-  entity->xform = m3x3f(1.0f);
-  entity->xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), entity->xform);
-  entity->xform = mul_3x3f(rotate_3x3f(entity->rotation), entity->xform);
-  entity->xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), entity->xform);
 }
 
 void entity_set_target(Entity *entity, Vec2F target_pos)
@@ -197,7 +196,7 @@ void entity_deal_damage(Entity *target)
   {
     target->health = 0;
     target->active = FALSE;
-    print("Player ded");
+    printf("Player ded\n");
   }
 }
 

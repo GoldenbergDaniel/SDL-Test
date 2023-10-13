@@ -3,7 +3,6 @@
 #include "base_common.h"
 #include "base_math.h"
 #include "util.h"
-#include "component.h"
 
 typedef enum EntityType
 {

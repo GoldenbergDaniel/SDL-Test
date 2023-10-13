@@ -14,12 +14,12 @@ LIB = lib/glad/glad.c \
 
 SRC = src/main.c \
 			src/base_os.c \
-			src/base_math.c \
 			src/base_arena.c \
+			src/base_math.c \
 			src/render.c \
 			src/draw.c \
+			src/util.c \
 			src/game.c \
-			src/component.c \
 			src/entity.c
 
 .PHONY: all compile compile_t run test debug combine

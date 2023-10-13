@@ -21,26 +21,21 @@ typedef double f64;
 #define ASSERT(exp) assert(exp)
 #define ARR_LEN(arr) (sizeof (arr) / sizeof (arr[0]))
 
+#define TRUE 1
+#define FALSE 0
+
 #ifndef NULL
 #define NULL (void *) 0
 #endif
 
-#ifdef __GNUC__
-#define typeof(type) __typeof__(type)
-#endif
+#define TARGET_FPS 60
 
 #define VSYNC_AUTO -1
 #define VSYNC_OFF 0
 #define VSYNC_ON 1
 
+#define W_NAME "SPACE GAME"
 #define W_WIDTH 1200
 #define W_HEIGHT 675
-#define W_FLAGS SDL_WINDOW_OPENGL
 #define W_CENTERED SDL_WINDOWPOS_CENTERED
-
-#define TRUE 1
-#define FALSE 0
-
-#define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))
-
-#define print(msg) (printf("%s\n", msg))
+#define W_FLAGS SDL_WINDOW_OPENGL
