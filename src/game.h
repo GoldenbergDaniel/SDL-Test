@@ -2,8 +2,8 @@
 
 #include <SDL2/SDL.h>
 
-#include "base_common.h"
-#include "base_arena.h"
+#include "base/base_common.h"
+#include "base/base_arena.h"
 #include "draw.h"
 #include "entity.h"
 

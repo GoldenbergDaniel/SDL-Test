@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
-#include "base_common.h"
-#include "base_arena.h"
+#include "base/base_common.h"
+#include "base/base_arena.h"
 #include "draw.h"
 #include "shaders.h"
 #include "util.h"
@@ -17,23 +17,35 @@ void game_init(Game *game)
 
   R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
 
-  R_Vertex vertices[4] = 
+  R_Vertex triangle_vertices[3] = 
   {
     {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-    {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
-    {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
+    {{ 10.0f,  0.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // right
     {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
   };
 
-  u16 indices[6] = 
+  u16 triangle_indices[3] = 
   {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
+    0, 1, 2, // triangle
   };
 
+  // R_Vertex rectangle_vertices[4] = 
+  // {
+  //   {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
+  //   {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
+  //   {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
+  //   {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
+  // };
+
+  // u16 rectangle_indices[6] = 
+  // {
+  //   0, 1, 3, // first triangle
+  //   1, 2, 3  // second triangle
+  // };
+
   R_Object vao = r_create_vertex_array(2);
-  r_create_vertex_buffer(vertices, sizeof (vertices));
-  r_create_index_buffer(indices, sizeof (indices));
+  r_create_vertex_buffer(triangle_vertices, sizeof (triangle_vertices));
+  r_create_index_buffer(triangle_indices, sizeof (triangle_indices));
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
   r_create_vertex_layout(&vao, GL_FLOAT, 3);
 
@@ -42,7 +54,8 @@ void game_init(Game *game)
   {
     .vao = vao,
     .shader = shader,
-    .camera = game->camera
+    .camera = game->camera,
+    .index_count = 3,
   };
 
   // Create entities
@@ -185,7 +198,7 @@ void game_update(Game *game)
 
 void game_draw(Game *game)
 {
-  d_clear(v4f(0.1f, 0.1f, 0.1f, 1.0f));
+  d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
 
   for (u8 i = 0; i < game->entity_count; i++)
   {

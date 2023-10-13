@@ -4,8 +4,8 @@
 #include "glad/glad.h"
 
 #include <time.h>
-#include "base_common.h"
-#include "base_math.h"
+#include "base/base_common.h"
+#include "base/base_math.h"
 #include "render.h"
 #include "draw.h"
 #include "util.h"

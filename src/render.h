@@ -3,8 +3,8 @@
 #include <assert.h>
 #include "glad/glad.h"
 
-#include "base_common.h"
-#include "base_math.h"
+#include "base/base_common.h"
+#include "base/base_math.h"
 
 typedef struct R_Vertex R_Vertex;
 struct R_Vertex

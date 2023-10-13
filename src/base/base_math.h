@@ -3,6 +3,8 @@
 #include "base_common.h"
 
 #define PI 3.14159265359
+#define RADIANS (PI / 180)
+#define DEGREES (180 / PI)
 
 #define abs(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))

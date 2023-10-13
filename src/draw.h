@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base_common.h"
+#include "base/base_common.h"
 #include "render.h"
 
 // @Draw ====================================================================================
@@ -11,6 +11,7 @@ struct D_Stream
   R_Object vao;
   R_Shader shader;
   Mat3x3F camera;
+  u16 index_count;
 };
 
 void d_clear(Vec4F color);

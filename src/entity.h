@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base_common.h"
-#include "base_math.h"
+#include "base/base_common.h"
+#include "base/base_math.h"
 #include "util.h"
 
 typedef enum EntityType
@@ -50,8 +50,8 @@ struct Entity
 };
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 360.0f
-#define PLAYER_ACC 10.0f
+#define PLAYER_SPEED 200.0f
+#define PLAYER_ACC 3.0f
 #define PLAYER_FRIC 1.5f
 
 Entity entity_create(EntityType type);

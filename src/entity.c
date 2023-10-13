@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "base_common.h"
-#include "base_math.h"
+#include "base/base_common.h"
+#include "base/base_math.h"
 #include "util.h"
 #include "entity.h"
 
@@ -18,6 +18,8 @@ Entity entity_create(EntityType type)
   entity.type = type;
   entity.move_state = EntityState_Idle;
   entity.scale = v2f(2.0f, 2.0f);
+  entity.rotation = 45.0f;
+  // entity.rotation = 0.0f;
   entity.width = 10.0f * entity.scale.x;
   entity.height = 10.0f * entity.scale.y;
   entity.active = TRUE;
@@ -51,7 +53,8 @@ void entity_start(Entity *entity)
   {
     case EntityType_Player:
     {
-      entity->pos = v2f(0, 0);
+      // entity->pos = v2f(W_WIDTH/2.0f, W_HEIGHT/2.0f);
+      entity->pos = V2F_ZERO;
       break;
     }
     case EntityType_Enemy:
@@ -75,35 +78,25 @@ void entity_update(Entity *entity, f64 dt)
   {
     case EntityType_Player:
     {
-      if (input->a)
+      if (input->a) entity->rotation += 120.0f * dt;
+      if (input->d) entity->rotation -= 120.0f * dt;
+
+      if (input->space)
       {
-        entity->dir.x = -1.0f;
+        entity->speed = lerp_1f(entity->speed, PLAYER_SPEED * 3.0f, PLAYER_ACC * dt);
       }
- 
-      if (input->d)
+      else 
       {
-        entity->dir.x = 1.0f;
+        entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_FRIC * dt);
       }
 
-      if (input->w)
-      {
-        entity->dir.y = -1.0f;
-      }
-
-      if (input->s)
-      {
-        entity->dir.y = 1.0f;
-      }
-
-      if ((!input->a && !input->d) || (input->a && input->d))
+      if ((input->a && input->d) || (!input->a && !input->d))
       {
         entity->dir.x = 0.0f;
       }
 
-      if ((!input->w && !input->s) || (input->w && input->s))
-      {
-        entity->dir.y = 0.0f;
-      }
+      entity->vel.x = cosf(entity->rotation * RADIANS) * entity->speed * dt;
+      entity->vel.y = sinf(entity->rotation * RADIANS) * entity->speed * dt;
     }
     break;
     case EntityType_Enemy:
@@ -122,40 +115,40 @@ void entity_update(Entity *entity, f64 dt)
     default: break;
   }
 
-  if (entity->dir.x != 0.0f || entity->dir.y != 0.0f)
-  {
-    entity->dir = normalize_2f(entity->dir);
-  }
+  // if (entity->dir.x != 0.0f || entity->dir.y != 0.0f)
+  // {
+  //   entity->dir = normalize_2f(entity->dir);
+  // }
 
-  // X Acceleration
-  if (entity->dir.x != 0.0f)
-  {
-    entity->vel.x += PLAYER_ACC * dir(entity->dir.x) * dt;
-    entity->vel.x = clamp(
-                          entity->vel.x, 
-                         -entity->speed * abs(entity->dir.x) * dt,
-                          entity->speed * abs(entity->dir.x) * dt);
-  }
-  else
-  {
-    entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
-    entity->vel.x = to_zero(entity->vel.x, 0.1f);
-  }
+  // // X Acceleration
+  // if (entity->dir.x != 0.0f)
+  // {
+  //   entity->vel.x += PLAYER_ACC * dir(entity->dir.x) * dt;
+  //   entity->vel.x = clamp(
+  //                         entity->vel.x, 
+  //                        -entity->speed * abs(entity->dir.x) * dt,
+  //                         entity->speed * abs(entity->dir.x) * dt);
+  // }
+  // else
+  // {
+  //   entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
+  //   entity->vel.x = to_zero(entity->vel.x, 0.1f);
+  // }
 
-  // Y Acceleration
-  if (entity->dir.y != 0.0f)
-  {
-    entity->vel.y += PLAYER_ACC * dir(entity->dir.y) * dt;
-    entity->vel.y = clamp(
-                          entity->vel.y, 
-                         -entity->speed * abs(entity->dir.y) * dt, 
-                          entity->speed * abs(entity->dir.y) * dt);
-  }
-  else 
-  {
-    entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
-    entity->vel.y = to_zero(entity->vel.y, 0.1f);
-  }
+  // // Y Acceleration
+  // if (entity->dir.y != 0.0f)
+  // {
+  //   entity->vel.y += PLAYER_ACC * dir(entity->dir.y) * dt;
+  //   entity->vel.y = clamp(
+  //                         entity->vel.y, 
+  //                        -entity->speed * abs(entity->dir.y) * dt, 
+  //                         entity->speed * abs(entity->dir.y) * dt);
+  // }
+  // else 
+  // {
+  //   entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
+  //   entity->vel.y = to_zero(entity->vel.y, 0.1f);
+  // }
 
   entity->pos = add_2f(entity->pos, entity->vel);
 

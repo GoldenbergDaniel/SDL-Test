@@ -4,8 +4,8 @@
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
 
-#include "base_common.h"
-#include "base_math.h"
+#include "base/base_common.h"
+#include "base/base_math.h"
 #include "render.h"
 
 typedef R_Shader Shader;

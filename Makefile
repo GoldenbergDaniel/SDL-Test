@@ -5,7 +5,7 @@ CFLAGS = -Ilib/ \
 				 -std=c17 -O1 \
 				 -Wall -Wextra -Wpedantic \
 				 -Wno-missing-braces \
-				 -Wno-unused-function
+				 -Wno-unused-function \
 
 LDFLAGS = -framework OpenGL \
 					-lsdl2 \
@@ -13,14 +13,14 @@ LDFLAGS = -framework OpenGL \
 LIB = lib/glad/glad.c \
 
 SRC = src/main.c \
-			src/base_os.c \
-			src/base_arena.c \
-			src/base_math.c \
+			src/base/base_os.c \
+			src/base/base_arena.c \
+			src/base/base_math.c \
 			src/render.c \
 			src/draw.c \
 			src/util.c \
+			src/entity.c \
 			src/game.c \
-			src/entity.c
 
 .PHONY: all compile compile_t run test debug combine
 
