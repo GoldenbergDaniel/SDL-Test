@@ -8,16 +8,17 @@
 #include "component.h"
 #include "entity.h"
 
+extern Input *input;
+
 static
 Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
-
-extern Input *input;
 
 Entity entity_create(EntityType type)
 {
   Entity entity = {0};
   entity.type = type;
   entity.move_state = EntityState_Idle;
+  entity.scale = v2f(2.0f, 2.0f);
   entity.is_active = TRUE;
   entity.hurt_cooldown.max_duration = 1.0f;
 
@@ -26,8 +27,6 @@ Entity entity_create(EntityType type)
     case EntityType_Player:
     {
       entity.color = v4f(0.9f, 0.9f, 0.9f, 1.0f);
-      entity.width = 20.0f;
-      entity.height = 20.0f;
       entity.speed = PLAYER_SPEED;
       entity.health = PLAYER_HEALTH;
       break;
@@ -35,8 +34,6 @@ Entity entity_create(EntityType type)
     case EntityType_Enemy:
     {
       entity.color = v4f(0.8f, 0.3f, 0.2f, 1.0f);
-      entity.width = 20.0f;
-      entity.height = 20.0f;
       entity.speed = 100.0f;
       entity.view_dist = 250;
       break;
@@ -53,7 +50,7 @@ void entity_start(Entity *entity)
   {
     case EntityType_Player:
     {
-      entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
+      entity->pos = v2f(0.0f, 0.0f);
       break;
     }
     case EntityType_Enemy:
@@ -89,12 +86,12 @@ void entity_update(Entity *entity, f64 dt)
 
       if (input->w)
       {
-        entity->dir.y = -1.0f;
+        entity->dir.y = 1.0f;
       }
 
       if (input->s)
       {
-        entity->dir.y = 1.0f;
+        entity->dir.y = -1.0f;
       }
 
       if ((!input->a && !input->d) || (input->a && input->d))
@@ -160,6 +157,11 @@ void entity_update(Entity *entity, f64 dt)
   }
 
   entity->pos = add_2f(entity->pos, entity->vel);
+
+  entity->xform = m3x3f(1.0f);
+  entity->xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), entity->xform);
+  entity->xform = mul_3x3f(rotate_3x3f(entity->rotation), entity->xform);
+  entity->xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), entity->xform);
 }
 
 void entity_set_target(Entity *entity, Vec2F target_pos)

@@ -3,14 +3,16 @@
 #include <SDL2/SDL.h>
 
 #include "base_common.h"
+#include "draw.h"
 #include "entity.h"
 
 typedef struct Game Game;
 struct Game
 {
   SDL_Window *window;
-  SDL_Renderer *renderer;
-  bool is_running;
+  Mat3x3F camera;
+  D_Stream draw_stream;
+  bool running;
   f64 t;
   f64 dt;
   u8 entity_count;

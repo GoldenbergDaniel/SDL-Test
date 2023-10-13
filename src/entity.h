@@ -24,31 +24,34 @@ struct Entity
   // General
   EntityType type;
   EntityState move_state;
-  Vec4F color;
+  Mat3x3F xform;
+  f32 rotation;
+  Vec2F scale;
   f32 width;
   f32 height;
+  Vec4F color;
 
   // Physics
   Vec2F pos;
-  Vec2F vel;
   Vec2F dir;
+  Vec2F vel;
   f32 speed;
   u8 col_mask;
 
   // Targetting
-  bool has_target;
+  bool has_target : 1;
   Vec2F target_pos;
   f32 target_angle;
   u16 view_dist;
 
   // Health
   i8 health;
-  bool is_active;
+  bool is_active : 1;
   Timer hurt_cooldown;
 };
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 1200.0f
+#define PLAYER_SPEED 360.0f
 #define PLAYER_ACC 10.0f
 #define PLAYER_FRIC 1.5f
 

@@ -9,7 +9,6 @@
 #include "base_math.h"
 #include "render.h"
 #include "draw.h"
-#include "shaders.h"
 #include "util.h"
 #include "component.h"
 #include "entity.h"
@@ -25,62 +24,34 @@ void set_gl_attributes(void);
 i32 main(void)
 {
   Game game = {0};
-  SDL_Window *window;
   SDL_GLContext context;
 
+  srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-
   set_gl_attributes();
 
-  window = SDL_CreateWindow(
-                            "OPENGL", 
-                            W_CENTERED, 
-                            W_CENTERED, 
-                            W_WIDTH, 
-                            W_HEIGHT, 
-                            W_FLAGS);
+  game.window = SDL_CreateWindow(
+                                 "SPACE GAME", 
+                                 W_CENTERED, 
+                                 W_CENTERED, 
+                                 W_WIDTH, 
+                                 W_HEIGHT, 
+                                 W_FLAGS);
 
-  context = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, context);
+  context = SDL_GL_CreateContext(game.window);
+  SDL_GL_MakeCurrent(game.window, context);
   SDL_GL_SetSwapInterval(VSYNC_ON);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
-  R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
-
-  R_Vertex vertices[4] = 
-  {
-    {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-    {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
-    {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
-    {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
-  };
-
-  u16 indices[6] = 
-  {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
-  };
-
-  R_Object vao = r_create_vertex_array(2);
-  r_create_vertex_buffer(vertices, sizeof (vertices));
-  r_create_index_buffer(indices, sizeof (indices));
-  r_create_vertex_layout(&vao, GL_FLOAT, 3);
-  r_create_vertex_layout(&vao, GL_FLOAT, 3);
-
-  game.window = window;
-  game.is_running = TRUE;
-
   game_init(&game);
   
-  srand(time(NULL));
-
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
   f64 time_step = 1.0f / TARGET_FPS;
   f64 accumulator = 0.0f;
 
-  while (game.is_running)
+  while (game.running)
   {
     #ifdef LOG_PERF
     u64 frame_start = SDL_GetPerformanceCounter();
@@ -102,7 +73,7 @@ i32 main(void)
 
       if (game_should_quit())
       {
-        game.is_running = FALSE;
+        game.running = FALSE;
         break;
       }
 
