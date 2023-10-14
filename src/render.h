@@ -77,8 +77,8 @@ void r_unbind_index_buffer(void);
 R_Object r_create_vertex_array(u8 attrib_count);
 void r_bind_vertex_array(R_Object *vertex_array);
 void r_unbind_vertex_array(void);
-void r_create_vertex_layout(R_Object *vertex_array, u32 type, u32 count);
-// void r_bind_vertex_layout(R_VertexLayout *layout);
+R_VertexLayout r_create_vertex_layout(R_Object *vertex_array, u32 type, u32 count);
+void r_bind_vertex_layout(R_VertexLayout *layout);
 
 // @Shader ==================================================================================
 

@@ -4,80 +4,89 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 #include "draw.h"
-#include "shaders.h"
 #include "util.h"
 #include "entity.h"
 #include "game.h"
 
-Input *input;
+State *state;
 
 void game_init(Game *game)
 {
-  input = arena_alloc(&game->arena, sizeof (Input));
-
-  R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
-
-  R_Vertex triangle_vertices[3] = 
-  {
-    {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-    {{ 10.0f,  0.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // right
-    {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
-  };
-
-  u16 triangle_indices[3] = 
-  {
-    0, 1, 2, // triangle
-  };
-
-  // R_Vertex rectangle_vertices[4] = 
-  // {
-  //   {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-  //   {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
-  //   {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
-  //   {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
-  // };
-
-  // u16 rectangle_indices[6] = 
-  // {
-  //   0, 1, 3, // first triangle
-  //   1, 2, 3  // second triangle
-  // };
-
-  R_Object vao = r_create_vertex_array(2);
-  r_create_vertex_buffer(triangle_vertices, sizeof (triangle_vertices));
-  r_create_index_buffer(triangle_indices, sizeof (triangle_indices));
-  r_create_vertex_layout(&vao, GL_FLOAT, 3);
-  r_create_vertex_layout(&vao, GL_FLOAT, 3);
-
-  game->camera = translate_3x3f(0.0f, 0.0f);
-  game->draw_stream = (D_Stream)
-  {
-    .vao = vao,
-    .shader = shader,
-    .camera = game->camera,
-    .index_count = 3,
-  };
+  state = arena_alloc(&game->arena, sizeof (State));
+  state->input = arena_alloc(&game->arena, sizeof (Input));
+  state->renderer = arena_alloc(&game->arena, sizeof (D_Renderer));
+  d_init_renderer(state->renderer);
 
   // Create entities
-  game->enemy_count = 0;
+  game->enemy_count = 5;
   game->entity_count = game->enemy_count + 1;
-  game->entities[0] = entity_create(EntityType_Player);
+  game->entities[0] = create_player_entity();
   game->player = &game->entities[0];
 
   for (u8 i = 1; i < game->entity_count; i++)
   {
-    game->entities[i] = entity_create(EntityType_Enemy);
-  }
-
-  // Set starting positions
-  for (u8 i = 0; i < game->entity_count; i++)
-  {
-    entity_start(&game->entities[i]);
+    game->entities[i] = create_enemy_entity(EntityType_Ship);
   }
 }
 
+void game_update(Game *game)
+{
+  Entity *entities = game->entities;
+  Entity *player = game->player;
+
+  for (u8 i = 0; i < game->entity_count; i++)
+  {
+    if (entities[i].flags & EntityFlag_Movable)
+    {
+      update_entity_movement(&entities[i], game->dt);
+    }
+
+    if (entities[i].flags & EntityFlag_Enemy)
+    {
+      if (player->active)
+      {
+        set_entity_target(&entities[i], player->pos);
+      }
+      else
+      {
+        set_entity_target(&entities[i], v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f));
+      }
+    }
+  }
+
+  wrap_entity_at_edges(player);
+}
+
+void game_draw(Game *game)
+{
+  d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
+
+  for (u8 i = 1; i < game->entity_count; i++)
+  {
+    Entity *entity = &game->entities[i];
+
+    if (entity->active)
+    {
+      d_draw_rectangle(entity->xform, entity->color);
+    }
+  }
+
+  if (game->player->active)
+  {
+    d_draw_triangle(game->player->xform, game->player->color);
+  }
+}
+
+inline
+bool game_should_quit(void)
+{
+  return state->input->escape;
+}
+
 void game_handle_event(Game *game, SDL_Event *event)
-{   
+{
+  Input *input = state->input;
+
   switch (event->type)
   {
     case SDL_QUIT: game->running = FALSE;
@@ -123,95 +132,4 @@ void game_handle_event(Game *game, SDL_Event *event)
       break;
     }
   }
-}
-
-void game_update(Game *game)
-{
-  Entity *player = game->player;
-  Entity *entities = game->entities;
-
-  // Update entities
-  entity_update(player, game->dt);
-  
-  for (u8 i = 1; i < game->entity_count; i++)
-  {
-    if (player->active)
-    {
-      entity_set_target(&entities[i], player->pos);
-    }
-    else
-    {
-      entity_set_target(&entities[i], v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f));
-    }
-
-    entity_update(&entities[i], game->dt);
-  }
-
-  // Entity collision detection and resolution
-  for (u8 i = 1; i < game->entity_count; i++)
-  {
-    if (rect_ranges_intersect(
-                              player->pos, 
-                              entities[i].pos, 
-                              player->width,
-                              player->height,
-                              entities[i].width, 
-                              entities[i].height))
-    {
-      // NOTE: Broken!
-      if (!player->hurt_cooldown.is_running)
-      {
-        timer_start(&player->hurt_cooldown, FALSE);
-      }
-      else
-      {
-        timer_tick(&player->hurt_cooldown, game->dt);
-
-        if (player->hurt_cooldown.timeout)
-        {
-          printf("Timeout!\n");
-        }
-
-        printf("Timer: %f", player->hurt_cooldown.cur_duration);
-      }
-    }
-  }
-
-  // Window edge behavior
-  if (player->pos.x + player->width <= 0.0f)
-  {
-    player->pos.x = W_WIDTH;
-  }
-  else if (player->pos.x >= W_WIDTH)
-  {
-    player->pos.x = -(player->width);
-  }
-  else if (player->pos.y + player->height <= 0.0f)
-  {
-    player->pos.y = W_HEIGHT;
-  }
-  else if (player->pos.y >= W_HEIGHT)
-  {
-    player->pos.y = -(player->height);
-  }
-}
-
-void game_draw(Game *game)
-{
-  d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
-
-  for (u8 i = 0; i < game->entity_count; i++)
-  {
-    Entity entity = game->entities[i];
-
-    if (entity.active)
-    {
-      d_draw_rect(&game->draw_stream, entity.xform, entity.color);
-    }
-  }
-}
-
-bool game_should_quit(void)
-{
-  return input->escape;
 }

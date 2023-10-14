@@ -102,7 +102,7 @@ void r_unbind_vertex_array(void)
   glBindVertexArray(0);
 }
 
-void r_create_vertex_layout(Object *vertex_array, u32 data_type, u32 count)
+R_VertexLayout r_create_vertex_layout(Object *vertex_array, u32 data_type, u32 count)
 {
   u8 type_size;
   switch (data_type)
@@ -134,7 +134,13 @@ void r_create_vertex_layout(Object *vertex_array, u32 data_type, u32 count)
                                  layout.stride,
                                  layout.first));
 
-  R_ASSERT(glEnableVertexAttribArray(layout.index));
+  return layout;
+}
+
+inline
+void r_bind_vertex_layout(R_VertexLayout *layout)
+{
+  R_ASSERT(glEnableVertexAttribArray(layout->index));
 }
 
 // @Shader ==================================================================================

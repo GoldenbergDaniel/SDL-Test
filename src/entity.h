@@ -6,8 +6,8 @@
 
 typedef enum EntityType
 {
-  EntityType_Player,
-  EntityType_Enemy,
+  EntityType_Ship,
+  EntityType_Astreroid,
 } EntityType;
 
 typedef enum EntityState
@@ -17,18 +17,27 @@ typedef enum EntityState
   EntityState_Slide,
 } EntityState;
 
+typedef enum EntityFlag
+{
+  EntityFlag_Movable = 1,
+  EntityFlag_Killable = 1 << 1,
+  EntityFlag_Enemy = 1 << 2,
+} EntityFlag;
+
 typedef struct Entity Entity;
 struct Entity
 {
   // General
   EntityType type;
-  EntityState move_state;
+  EntityState state;
+  u64 flags;
   Mat3x3F xform;
-  f32 rotation;
+  f32 rot;
   Vec2F scale;
   f32 width;
   f32 height;
   Vec4F color;
+  bool player : 1;
   bool active : 1;
 
   // Physics
@@ -46,16 +55,16 @@ struct Entity
 
   // Health
   i8 health;
-  Timer hurt_cooldown;
 };
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 200.0f
-#define PLAYER_ACC 3.0f
+#define PLAYER_SPEED 120.0f
+#define PLAYER_ACC 2.5f
 #define PLAYER_FRIC 1.5f
 
-Entity entity_create(EntityType type);
-void entity_start(Entity *entity);
-void entity_update(Entity *entity, f64 dt);
-void entity_set_target(Entity *entity, Vec2F target_pos);
-void entity_deal_damage(Entity *target);
+Entity create_player_entity(void);
+Entity create_enemy_entity(EntityType type);
+void update_entity_movement(Entity *entity, f64 dt);
+void set_entity_target(Entity *entity, Vec2F target_pos);
+void wrap_entity_at_edges(Entity *entity);
+void hurt_entity(Entity *entity);

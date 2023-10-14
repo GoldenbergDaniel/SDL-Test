@@ -13,7 +13,6 @@ struct Game
   SDL_Window *window;
   Arena arena;
   Mat3x3F camera;
-  D_Stream draw_stream;
   bool running;
   bool first_frame;
   f64 t;
@@ -22,6 +21,13 @@ struct Game
   u8 enemy_count;
   Entity entities[512];
   Entity *player;
+};
+
+typedef struct State State;
+struct State
+{
+  Input *input;
+  D_Renderer *renderer;
 };
 
 void game_init(Game *game);

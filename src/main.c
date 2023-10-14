@@ -13,7 +13,7 @@
 #include "game.h"
 
 #define DEBUG
-// #define LOG_PERF
+//#define LOG_PERF
 
 static
 void set_gl_attributes(void);
@@ -22,7 +22,6 @@ i32 main(void)
 {
   Game game = {0};
   game.arena = arena_create(MEGABYTES(64));
-  SDL_GLContext gl_context;
 
   srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -36,9 +35,9 @@ i32 main(void)
                                  W_HEIGHT, 
                                  W_FLAGS);
 
-  gl_context = SDL_GL_CreateContext(game.window);
+  SDL_GLContext gl_context = SDL_GL_CreateContext(game.window);
   SDL_GL_MakeCurrent(game.window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_ON);
+  SDL_GL_SetSwapInterval(VSYNC_AUTO);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
@@ -59,7 +58,6 @@ i32 main(void)
 
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
-
     current_time = new_time;
     accumulator += frame_time;
 
@@ -94,7 +92,6 @@ i32 main(void)
     u64 frame_end = SDL_GetPerformanceCounter();
     u64 frequency = SDL_GetPerformanceFrequency();
     f64 frame_diff = (f64) (frame_end - frame_start) / frequency * 1000.0f;
-
     printf("%.2lf ms\n", frame_diff);
     #endif
 
