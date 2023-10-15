@@ -3,23 +3,21 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 #include "base/base_math.h"
-#include "render.h"
+#include "gl_render.h"
 
 typedef struct D_Object D_Object;
 struct D_Object
 {
-  R_Shader shader;
-  R_Object vao;
-  R_Object vbo;
-  R_Object ibo;
-  R_VertexLayout v_layout;
-  R_VertexLayout c_layout;
+  GL_Shader shader;
+  GL_Object vao;
+  GL_Object vbo;
+  GL_Object ibo;
 };
 
 typedef struct D_Renderer D_Renderer;
 struct D_Renderer
 {
-  Mat3x3F camera;
+  Mat3x3F *camera;
   D_Object triangle;
   D_Object rectangle;
 };

@@ -1,24 +1,24 @@
+#include <stdio.h>
+
 #include "base/base_common.h"
 #include "base/base_arena.h"
-#include "game.h"
-#include "render.h"
+#include "util.h"
+#include "gl_render.h"
 #include "shaders.h"
 #include "draw.h"
 
 typedef D_Object Object;
 typedef D_Renderer Renderer;
-typedef R_Shader Shader;
 
-extern State *state;
+extern Global *GLOBAL;
 
 void d_init_renderer(D_Renderer *renderer)
 {
-  R_Shader shader = r_create_shader(shaders_vert_src, shaders_frag_src);
-  renderer->camera = translate_3x3f(0.0f, 0.0f);
+  GL_Shader shader = gl_create_shader(shaders_vert_src, shaders_frag_src);
 
-  // TRIANGLE
+  SCOPE("Triangle")
   {
-    R_Vertex vertices[3] = 
+    GL_Vertex vertices[3] = 
     {
       {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
       {{ 20.0f,  0.0f,  1.0f},  {0.0f, 0.0f, 0.0f}}, // right
@@ -30,27 +30,23 @@ void d_init_renderer(D_Renderer *renderer)
       0, 1, 2
     };
 
-    R_Object vao = r_create_vertex_array(2);
-    R_Object vbo = r_create_vertex_buffer(&vertices, sizeof (vertices));
-    R_Object ibo = r_create_index_buffer(&indices, sizeof (indices));
-    R_VertexLayout vl = r_create_vertex_layout(&vao, GL_FLOAT, 3);
-    R_VertexLayout cl = r_create_vertex_layout(&vao, GL_FLOAT, 3);
+    GL_Object vao = gl_create_vertex_array(2);
+    GL_Object vbo = gl_create_vertex_buffer(&vertices, sizeof (vertices));
+    GL_Object ibo = gl_create_index_buffer(&indices, sizeof (indices));
+    gl_set_vertex_layout(&vao, GL_FLOAT, 3);
+    gl_set_vertex_layout(&vao, GL_FLOAT, 3);
 
     renderer->triangle.vao = vao;
     renderer->triangle.vbo = vbo;
     renderer->triangle.ibo = ibo;
     renderer->triangle.shader = shader;
-    renderer->triangle.v_layout = vl;
-    renderer->triangle.v_layout = cl;
 
-    r_unbind_vertex_buffer();
-    r_unbind_vertex_array();
-    r_unbind_index_buffer();
+    gl_unbind_vertex_array();
   }
 
-  // RECTANGLE
+  SCOPE("Rectangle")
   {
-    R_Vertex vertices[4] = 
+    GL_Vertex vertices[4] = 
     {
       {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
       {{ 10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
@@ -64,22 +60,18 @@ void d_init_renderer(D_Renderer *renderer)
       1, 2, 3  // second triangle
     };
 
-    R_Object vao = r_create_vertex_array(2);
-    R_Object vbo = r_create_vertex_buffer(&vertices, sizeof (vertices));
-    R_Object ibo = r_create_index_buffer(&indices, sizeof (indices));
-    R_VertexLayout vl = r_create_vertex_layout(&vao, GL_FLOAT, 3);
-    R_VertexLayout cl = r_create_vertex_layout(&vao, GL_FLOAT, 3);
+    GL_Object vao = gl_create_vertex_array(2);
+    GL_Object vbo = gl_create_vertex_buffer(&vertices, sizeof (vertices));
+    GL_Object ibo = gl_create_index_buffer(&indices, sizeof (indices));
+    gl_set_vertex_layout(&vao, GL_FLOAT, 3);
+    gl_set_vertex_layout(&vao, GL_FLOAT, 3);
 
-    renderer->rectangle.shader = shader;
     renderer->rectangle.vao = vao;
     renderer->rectangle.vbo = vbo;
     renderer->rectangle.ibo = ibo;
-    renderer->rectangle.v_layout = vl;
-    renderer->rectangle.v_layout = cl;
+    renderer->rectangle.shader = shader;
 
-    r_unbind_vertex_buffer();
-    r_unbind_vertex_array();
-    r_unbind_index_buffer();
+    gl_unbind_vertex_array();
   }
 }
 
@@ -91,40 +83,32 @@ void d_clear(Vec4F color)
 
 void d_draw_triangle(Mat3x3F xform, Vec4F color)
 {
-  Renderer *renderer = state->renderer;
-  Object triangle = renderer->triangle;
+  Renderer *renderer = GLOBAL->renderer;
+  Object object = renderer->triangle;
 
   Mat3x3F projection = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
-  Mat3x3F scp = mul_3x3f(mul_3x3f(projection, renderer->camera), xform);
-  r_set_uniform_3x3f(&triangle.shader, "u_xform", scp);
-  r_set_uniform_4f(&triangle.shader, "u_color", color);
+  Mat3x3F transform = mul_3x3f(mul_3x3f(projection, *renderer->camera), xform);
+  gl_bind_shader(&object.shader);
+  gl_set_uniform_3x3f(&object.shader, "u_xform", transform);
+  gl_set_uniform_4f(&object.shader, "u_color", color);
 
-  r_bind_shader(&triangle.shader);
-  r_bind_vertex_array(&triangle.vao);
-  r_bind_vertex_buffer(&triangle.vbo);
-  r_bind_index_buffer(&triangle.ibo);
-  r_bind_vertex_layout(&triangle.v_layout);
-  r_bind_vertex_layout(&triangle.c_layout);
-
-  R_ASSERT(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, NULL));
+  gl_bind_vertex_array(&object.vao);
+  GL_ASSERT(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, NULL));
+  gl_unbind_vertex_array();
 }
 
 void d_draw_rectangle(Mat3x3F xform, Vec4F color)
 {
-  Renderer *renderer = state->renderer;
-  Object rectangle = renderer->rectangle;
+  Renderer *renderer = GLOBAL->renderer;
+  Object object = renderer->rectangle;
 
   Mat3x3F projection = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
-  Mat3x3F scp = mul_3x3f(mul_3x3f(projection, renderer->camera), xform);
-  r_set_uniform_3x3f(&rectangle.shader, "u_xform", scp);
-  r_set_uniform_4f(&rectangle.shader, "u_color", color);
+  Mat3x3F transform = mul_3x3f(mul_3x3f(projection, *renderer->camera), xform);
+  gl_bind_shader(&object.shader);
+  gl_set_uniform_3x3f(&object.shader, "u_xform", transform);
+  gl_set_uniform_4f(&object.shader, "u_color", color);
 
-  r_bind_shader(&rectangle.shader);
-  r_bind_vertex_array(&rectangle.vao);
-  r_bind_vertex_buffer(&rectangle.vbo);
-  r_bind_index_buffer(&rectangle.ibo);
-  r_bind_vertex_layout(&rectangle.v_layout);
-  r_bind_vertex_layout(&rectangle.c_layout);
-
-  R_ASSERT(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL));
+  gl_bind_vertex_array(&object.vao);
+  GL_ASSERT(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL));
+  gl_unbind_vertex_array();
 }
