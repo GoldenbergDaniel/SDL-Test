@@ -3,17 +3,15 @@
 
 #include "glad/glad.h"
 
-#include <time.h>
 #include "base/base_common.h"
-#include "base/base_math.h"
-#include "render.h"
 #include "draw.h"
 #include "util.h"
-#include "entity.h"
 #include "game.h"
 
 #define DEBUG
 //#define LOG_PERF
+
+Global *GLOBAL;
 
 static
 void set_gl_attributes(void);
@@ -21,25 +19,34 @@ void set_gl_attributes(void);
 i32 main(void)
 {
   Game game = {0};
-  game.arena = arena_create(MEGABYTES(64));
+  game.arena = arena_create(MEGABYTES(16));
+  GLOBAL = arena_alloc(&game.arena, sizeof (Global));
+  GLOBAL->input = arena_alloc(&game.arena, sizeof (Input));
+  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (D_Renderer));
 
   srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   set_gl_attributes();
 
-  game.window = SDL_CreateWindow(
-                                 W_NAME,
-                                 W_CENTERED, 
-                                 W_CENTERED, 
-                                 W_WIDTH, 
-                                 W_HEIGHT, 
-                                 W_FLAGS);
+  SDL_Window *window = SDL_CreateWindow(
+                                        W_NAME,
+                                        W_CENTERED, 
+                                        W_CENTERED, 
+                                        W_WIDTH, 
+                                        W_HEIGHT, 
+                                        W_FLAGS);
 
-  SDL_GLContext gl_context = SDL_GL_CreateContext(game.window);
-  SDL_GL_MakeCurrent(game.window, gl_context);
+  SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+  SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(VSYNC_AUTO);
 
-  gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
+  if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
+  {
+    printf("GLAD failed to load!\n");
+    return 1;
+  }
+
+  d_init_renderer(GLOBAL->renderer);
 
   game_init(&game);
   game.running = TRUE;
@@ -96,10 +103,10 @@ i32 main(void)
     #endif
 
     game_draw(&game);
-    SDL_GL_SwapWindow(game.window);
+    SDL_GL_SwapWindow(window);
   }
 
-  SDL_DestroyWindow(game.window);
+  SDL_DestroyWindow(window);
   SDL_Quit();
 
   return 0;

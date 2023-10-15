@@ -3,7 +3,15 @@
 #include "base_common.h"
 #include "base_math.h"
 
-// @Vec2F ===================================================================================
+// @Scalar =====================================================================================
+
+inline 
+f32 lerp_1f(f32 curr, f32 target, f32 rate)
+{
+  return curr + (target - curr) * rate;
+}
+
+// @Vec2F ======================================================================================
 
 inline
 Vec2F v2f(f32 x, f32 y)
@@ -374,10 +382,10 @@ Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
 Mat3x3F rotate_3x3f(f32 angle)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.elements[0][0] = cos(angle * (PI / 180.0f));
-  result.elements[0][1] = -sin(angle * (PI / 180.0f));
-  result.elements[1][0] = sin(angle * (PI / 180.0f));
-  result.elements[1][1] = cos(angle * (PI / 180.0f));
+  result.elements[0][0] = cos(angle);
+  result.elements[0][1] = -sin(angle);
+  result.elements[1][0] = sin(angle);
+  result.elements[1][1] = cos(angle);
 
   return result;
 }

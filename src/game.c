@@ -3,23 +3,21 @@
 
 #include "base/base_common.h"
 #include "base/base_arena.h"
+#include "base/base_math.h"
 #include "draw.h"
 #include "util.h"
 #include "entity.h"
 #include "game.h"
 
-State *state;
+extern Global *GLOBAL;
 
 void game_init(Game *game)
 {
-  state = arena_alloc(&game->arena, sizeof (State));
-  state->input = arena_alloc(&game->arena, sizeof (Input));
-  state->renderer = arena_alloc(&game->arena, sizeof (D_Renderer));
-  d_init_renderer(state->renderer);
+  game->camera = translate_3x3f(0.0f, 0.0f);
+  GLOBAL->renderer->camera = &game->camera;
 
   // Create entities
-  game->enemy_count = 5;
-  game->entity_count = game->enemy_count + 1;
+  game->entity_count = 1 + 1;
   game->entities[0] = create_player_entity();
   game->player = &game->entities[0];
 
@@ -61,31 +59,39 @@ void game_draw(Game *game)
 {
   d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
 
-  for (u8 i = 1; i < game->entity_count; i++)
+  for (u8 i = 0; i < game->entity_count; i++)
   {
     Entity *entity = &game->entities[i];
 
     if (entity->active)
     {
-      d_draw_rectangle(entity->xform, entity->color);
+      switch (entity->type)
+      {
+        case EntityType_Ship:
+        {
+          d_draw_triangle(entity->xform, entity->color);
+        }
+        break;
+        case EntityType_Astreroid:
+        {
+          d_draw_rectangle(entity->xform, entity->color);
+        }
+        break;
+        default: break;
+      }
     }
-  }
-
-  if (game->player->active)
-  {
-    d_draw_triangle(game->player->xform, game->player->color);
   }
 }
 
 inline
 bool game_should_quit(void)
 {
-  return state->input->escape;
+  return GLOBAL->input->escape;
 }
 
 void game_handle_event(Game *game, SDL_Event *event)
 {
-  Input *input = state->input;
+  Input *input = GLOBAL->input;
 
   switch (event->type)
   {

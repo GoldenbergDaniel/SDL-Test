@@ -10,24 +10,15 @@
 typedef struct Game Game;
 struct Game
 {
-  SDL_Window *window;
   Arena arena;
   Mat3x3F camera;
-  bool running;
-  bool first_frame;
+  bool running : 1;
+  bool first_frame : 1;
   f64 t;
   f64 dt;
-  u8 entity_count;
-  u8 enemy_count;
-  Entity entities[512];
   Entity *player;
-};
-
-typedef struct State State;
-struct State
-{
-  Input *input;
-  D_Renderer *renderer;
+  Entity entities[512];
+  u16 entity_count;
 };
 
 void game_init(Game *game);

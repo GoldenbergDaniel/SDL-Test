@@ -70,11 +70,7 @@ struct Mat4x4F
 
 // @Scalar ==================================================================================
 
-inline 
-f32 lerp_1f(f32 curr, f32 target, f32 rate)
-{
-  return curr + (target - curr) * rate;
-}
+f32 lerp_1f(f32 curr, f32 target, f32 rate);
 
 // @Vec2F ===================================================================================
 
@@ -124,13 +120,6 @@ Vec3F lerp_3f(Vec3F curr, Vec3F target, f32 rate);
 // @Vec4F ===================================================================================
 
 #define V4F_ZERO ((Vec4F) {0.0f, 0.0f, 0.0f, 0.0f})
-
-// #define COLOR_BLACK ((Vec4F) {19, 19, 19, 255})
-// #define COLOR_WHITE ((Vec4F) {236, 236, 236, 255})
-// #define COLOR_RED ((Vec4F) {249, 58, 38, 255})
-// #define COLOR_GREEN ((Vec4F) {100, 160, 60, 255})
-// #define COLOR_BLUE ((Vec4F) {55, 107, 186, 255})
-// #define COLOR_PURPLE ((Vec4U) {44, 45, 84, 255})
 
 Vec4F v4f(f32 x, f32 y, f32 z, f32 w);
 

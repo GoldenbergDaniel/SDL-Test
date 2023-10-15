@@ -54,11 +54,11 @@
     #include "HandmadeMath.h"
   
   By default, it is assumed that your math functions take radians. To use
-  different units, you must define HMM_ANGLE_USER_TO_INTERNAL and
+  different units, you must define HMM_ANGLE_USEGL_TO_INTERNAL and
   HMM_ANGLE_INTERNAL_TO_USER. For example, if you want to use degrees in your
   code but your math functions use turns:
 
-    #define HMM_ANGLE_USER_TO_INTERNAL(a) ((a)*HMM_DegToTurn)
+    #define HMM_ANGLE_USEGL_TO_INTERNAL(a) ((a)*HMM_DegToTurn)
     #define HMM_ANGLE_INTERNAL_TO_USER(a) ((a)*HMM_TurnToDeg)
 
   =============================================================================
@@ -135,7 +135,7 @@
 #if defined(__GNUC__) || defined(__clang__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wfloat-equal"
-# if (defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 8)) || defined(__clang__)
+# if (defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOGL__ < 8)) || defined(__clang__)
 #  pragma GCC diagnostic ignored "-Wmissing-braces"
 # endif
 # ifdef __clang__
@@ -199,8 +199,8 @@ extern "C"
 # define HMM_ACOSF acosf
 #endif
 
-#if !defined(HMM_ANGLE_USER_TO_INTERNAL)
-# define HMM_ANGLE_USER_TO_INTERNAL(a) (HMM_ToRad(a))
+#if !defined(HMM_ANGLE_USEGL_TO_INTERNAL)
+# define HMM_ANGLE_USEGL_TO_INTERNAL(a) (HMM_ToRad(a))
 #endif
 
 #if !defined(HMM_ANGLE_INTERNAL_TO_USER)
@@ -480,21 +480,21 @@ COVERAGE(HMM_SinF, 1)
 static inline float HMM_SinF(float Angle)
 {
     ASSERT_COVERED(HMM_SinF);
-    return HMM_SINF(HMM_ANGLE_USER_TO_INTERNAL(Angle));
+    return HMM_SINF(HMM_ANGLE_USEGL_TO_INTERNAL(Angle));
 }
 
 COVERAGE(HMM_CosF, 1)
 static inline float HMM_CosF(float Angle)
 {
     ASSERT_COVERED(HMM_CosF);
-    return HMM_COSF(HMM_ANGLE_USER_TO_INTERNAL(Angle));
+    return HMM_COSF(HMM_ANGLE_USEGL_TO_INTERNAL(Angle));
 }
 
 COVERAGE(HMM_TanF, 1)
 static inline float HMM_TanF(float Angle)
 {
     ASSERT_COVERED(HMM_TanF);
-    return HMM_TANF(HMM_ANGLE_USER_TO_INTERNAL(Angle));
+    return HMM_TANF(HMM_ANGLE_USEGL_TO_INTERNAL(Angle));
 }
 
 COVERAGE(HMM_ACosF, 1)
@@ -604,7 +604,7 @@ static inline HMM_Vec4 HMM_V4(float X, float Y, float Z, float W)
     HMM_Vec4 Result;
 
 #ifdef HANDMADE_MATH__USE_SSE
-    Result.SSE = _mm_setr_ps(X, Y, Z, W);
+    Result.SSE = _mm_setgl_ps(X, Y, Z, W);
 #else
     Result.X = X;
     Result.Y = Y;
@@ -623,7 +623,7 @@ static inline HMM_Vec4 HMM_V4V(HMM_Vec3 Vector, float W)
     HMM_Vec4 Result;
 
 #ifdef HANDMADE_MATH__USE_SSE
-    Result.SSE = _mm_setr_ps(Vector.X, Vector.Y, Vector.Z, W);
+    Result.SSE = _mm_setgl_ps(Vector.X, Vector.Y, Vector.Z, W);
 #else
     Result.XYZ = Vector;
     Result.W = W;
@@ -2076,7 +2076,7 @@ static inline HMM_Quat HMM_Q(float X, float Y, float Z, float W)
     HMM_Quat Result;
 
 #ifdef HANDMADE_MATH__USE_SSE
-    Result.SSE = _mm_setr_ps(X, Y, Z, W);
+    Result.SSE = _mm_setgl_ps(X, Y, Z, W);
 #else
     Result.X = X;
     Result.Y = Y;
@@ -2153,15 +2153,15 @@ static inline HMM_Quat HMM_MulQ(HMM_Quat Left, HMM_Quat Right)
     HMM_Quat Result;
 
 #ifdef HANDMADE_MATH__USE_SSE
-    __m128 SSEResultOne = _mm_xor_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(0, 0, 0, 0)), _mm_setr_ps(0.f, -0.f, 0.f, -0.f));
+    __m128 SSEResultOne = _mm_xogl_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(0, 0, 0, 0)), _mm_setgl_ps(0.f, -0.f, 0.f, -0.f));
     __m128 SSEResultTwo = _mm_shuffle_ps(Right.SSE, Right.SSE, _MM_SHUFFLE(0, 1, 2, 3));
     __m128 SSEResultThree = _mm_mul_ps(SSEResultTwo, SSEResultOne);
 
-    SSEResultOne = _mm_xor_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(1, 1, 1, 1)) , _mm_setr_ps(0.f, 0.f, -0.f, -0.f));
+    SSEResultOne = _mm_xogl_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(1, 1, 1, 1)) , _mm_setgl_ps(0.f, 0.f, -0.f, -0.f));
     SSEResultTwo = _mm_shuffle_ps(Right.SSE, Right.SSE, _MM_SHUFFLE(1, 0, 3, 2));
     SSEResultThree = _mm_add_ps(SSEResultThree, _mm_mul_ps(SSEResultTwo, SSEResultOne));
 
-    SSEResultOne = _mm_xor_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setr_ps(-0.f, 0.f, 0.f, -0.f));
+    SSEResultOne = _mm_xogl_ps(_mm_shuffle_ps(Left.SSE, Left.SSE, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setgl_ps(-0.f, 0.f, 0.f, -0.f));
     SSEResultTwo = _mm_shuffle_ps(Right.SSE, Right.SSE, _MM_SHUFFLE(2, 3, 0, 1));
     SSEResultThree = _mm_add_ps(SSEResultThree, _mm_mul_ps(SSEResultTwo, SSEResultOne));
 
@@ -3670,7 +3670,7 @@ static inline HMM_Vec4 operator-(HMM_Vec4 In)
 
     HMM_Vec4 Result;
 #if HANDMADE_MATH__USE_SSE
-    Result.SSE = _mm_xor_ps(In.SSE, _mm_set1_ps(-0.0f));
+    Result.SSE = _mm_xogl_ps(In.SSE, _mm_set1_ps(-0.0f));
 #else
     Result.X = -In.X;
     Result.Y = -In.Y;

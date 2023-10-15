@@ -16,7 +16,7 @@ SRC = src/main.c \
 			src/base/base_os.c \
 			src/base/base_arena.c \
 			src/base/base_math.c \
-			src/render.c \
+			src/gl_render.c \
 			src/draw.c \
 			src/util.c \
 			src/entity.c \

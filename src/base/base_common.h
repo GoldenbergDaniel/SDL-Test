@@ -19,7 +19,9 @@ typedef double f64;
 #define THREAD_LOCAL __thread
 
 #define ASSERT(exp) assert(exp)
-#define ARR_LEN(arr) (sizeof (arr) / sizeof (arr[0]))
+#define ARGL_LEN(arr) (sizeof (arr) / sizeof (arr[0]))
+
+#define SCOPE(title)
 
 #define TRUE 1
 #define FALSE 0

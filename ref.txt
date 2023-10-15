@@ -6,7 +6,7 @@
   // // X Acceleration
   // if (entity->dir.x != 0.0f)
   // {
-  //   entity->vel.x += PLAYER_ACC * dir(entity->dir.x) * dt;
+  //   entity->vel.x += PLAYEGL_ACC * dir(entity->dir.x) * dt;
   //   entity->vel.x = clamp(
   //                         entity->vel.x, 
   //                        -entity->speed * abs(entity->dir.x) * dt,
@@ -14,14 +14,14 @@
   // }
   // else
   // {
-  //   entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
+  //   entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYEGL_FRIC * dt);
   //   entity->vel.x = to_zero(entity->vel.x, 0.1f);
   // }
 
   // // Y Acceleration
   // if (entity->dir.y != 0.0f)
   // {
-  //   entity->vel.y += PLAYER_ACC * dir(entity->dir.y) * dt;
+  //   entity->vel.y += PLAYEGL_ACC * dir(entity->dir.y) * dt;
   //   entity->vel.y = clamp(
   //                         entity->vel.y, 
   //                        -entity->speed * abs(entity->dir.y) * dt, 
@@ -29,7 +29,7 @@
   // }
   // else 
   // {
-  //   entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
+  //   entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYEGL_FRIC * dt);
   //   entity->vel.y = to_zero(entity->vel.y, 0.1f);
   // }
 
@@ -47,18 +47,18 @@
   //     // NOTE: Broken!
   //     if (!player->hurt_cooldown.is_running)
   //     {
-  //       timer_start(&player->hurt_cooldown, FALSE);
+  //       timegl_start(&player->hurt_cooldown, FALSE);
   //     }
   //     else
   //     {
-  //       timer_tick(&player->hurt_cooldown, game->dt);
+  //       timegl_tick(&player->hurt_cooldown, game->dt);
 
   //       if (player->hurt_cooldown.timeout)
   //       {
   //         // printf("Timeout!\n");
   //       }
 
-  //       // printf("Timer: %f\n", player->hurt_cooldown.cur_duration);
+  //       // printf("Timer: %f\n", player->hurt_cooldown.cugl_duration);
   //     }
   //   }
   // }

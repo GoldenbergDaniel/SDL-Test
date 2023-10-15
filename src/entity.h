@@ -8,6 +8,8 @@ typedef enum EntityType
 {
   EntityType_Ship,
   EntityType_Astreroid,
+  EntityType_Mine,
+  EntityType_Laser,
 } EntityType;
 
 typedef enum EntityState
@@ -19,9 +21,10 @@ typedef enum EntityState
 
 typedef enum EntityFlag
 {
-  EntityFlag_Movable = 1,
-  EntityFlag_Killable = 1 << 1,
-  EntityFlag_Enemy = 1 << 2,
+  EntityFlag_Player = 1 << 0,
+  EntityFlag_Enemy = 1 << 1,
+  EntityFlag_Movable = 1 << 2,
+  EntityFlag_Killable = 1 << 3,
 } EntityFlag;
 
 typedef struct Entity Entity;
@@ -37,7 +40,6 @@ struct Entity
   f32 width;
   f32 height;
   Vec4F color;
-  bool player : 1;
   bool active : 1;
 
   // Physics
@@ -45,7 +47,6 @@ struct Entity
   Vec2F dir;
   Vec2F vel;
   f32 speed;
-  u8 col_mask;
 
   // Targetting
   bool has_target : 1;
