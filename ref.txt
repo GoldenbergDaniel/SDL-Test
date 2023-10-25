@@ -1,37 +1,3 @@
-  // if (entity->dir.x != 0.0f || entity->dir.y != 0.0f)
-  // {
-  //   entity->dir = normalize_2f(entity->dir);
-  // }
-
-  // // X Acceleration
-  // if (entity->dir.x != 0.0f)
-  // {
-  //   entity->vel.x += PLAYEGL_ACC * dir(entity->dir.x) * dt;
-  //   entity->vel.x = clamp(
-  //                         entity->vel.x, 
-  //                        -entity->speed * abs(entity->dir.x) * dt,
-  //                         entity->speed * abs(entity->dir.x) * dt);
-  // }
-  // else
-  // {
-  //   entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYEGL_FRIC * dt);
-  //   entity->vel.x = to_zero(entity->vel.x, 0.1f);
-  // }
-
-  // // Y Acceleration
-  // if (entity->dir.y != 0.0f)
-  // {
-  //   entity->vel.y += PLAYEGL_ACC * dir(entity->dir.y) * dt;
-  //   entity->vel.y = clamp(
-  //                         entity->vel.y, 
-  //                        -entity->speed * abs(entity->dir.y) * dt, 
-  //                         entity->speed * abs(entity->dir.y) * dt);
-  // }
-  // else 
-  // {
-  //   entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYEGL_FRIC * dt);
-  //   entity->vel.y = to_zero(entity->vel.y, 0.1f);
-  // }
 
   // Entity collision detection and resolution
   // for (u8 i = 1; i < game->entity_count; i++)
