@@ -4,8 +4,7 @@
 #include "glad/glad.h"
 
 #include "base/base_common.h"
-#include "draw.h"
-#include "util.h"
+#include "global.h"
 #include "game.h"
 
 #define DEBUG
@@ -22,7 +21,7 @@ i32 main(void)
   game.arena = arena_create(MEGABYTES(16));
   GLOBAL = arena_alloc(&game.arena, sizeof (Global));
   GLOBAL->input = arena_alloc(&game.arena, sizeof (Input));
-  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (D_Renderer));
+  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (*GLOBAL->renderer));
 
   srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -48,10 +47,10 @@ i32 main(void)
 
   d_init_renderer(GLOBAL->renderer);
 
-  game_init(&game);
+  init(&game);
   game.running = TRUE;
   game.first_frame = TRUE;
-  
+
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
   f64 time_step = 1.0f / TARGET_FPS;
@@ -76,18 +75,18 @@ i32 main(void)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-          game_handle_event(&game, &event);
+          handle_event(&game, &event);
         }
       }
 
-      if (game_should_quit())
+      if (should_quit())
       {
         game.running = FALSE;
       }
 
       game.t = elapsed_time;
       game.dt = time_step;
-      game_update(&game);
+      update(&game);
 
       elapsed_time += time_step;
       accumulator -= time_step;
@@ -102,7 +101,7 @@ i32 main(void)
     printf("%.2lf ms\n", frame_diff);
     #endif
 
-    game_draw(&game);
+    draw(&game);
     SDL_GL_SwapWindow(window);
   }
 

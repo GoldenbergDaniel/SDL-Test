@@ -30,6 +30,7 @@ void arena_destroy(Arena *arena)
 
 void *arena_alloc(Arena *arena, u64 size)
 {
+  // printf("%llu\n", arena->used + size);
   ASSERT(arena->size >= arena->used + size);
 
   byte *allocated = arena->memory + arena->used;

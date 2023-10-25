@@ -4,77 +4,98 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 #include "base/base_math.h"
-#include "draw.h"
-#include "util.h"
+#include "gfx/draw.h"
+#include "global.h"
+#include "component.h"
 #include "entity.h"
 #include "game.h"
 
 extern Global *GLOBAL;
 
-void game_init(Game *game)
+void init(Game *game)
 {
   game->camera = translate_3x3f(0.0f, 0.0f);
   GLOBAL->renderer->camera = &game->camera;
 
   // Create entities
-  game->entity_count = 1 + 1;
-  game->entities[0] = create_player_entity();
-  game->player = &game->entities[0];
+  game->entity_head = create_player_entity(game);
+  game->entity_tail = game->entity_head;
+  game->entity_count = 1;
 
-  for (u8 i = 1; i < game->entity_count; i++)
+  Entity *entity = game->entity_head;
+  for (u32 i = 0; i < 3; i++)
   {
-    game->entities[i] = create_enemy_entity(EntityType_Ship);
+    entity->next = create_enemy_entity(game, EntityClass_Ship);
+    game->entity_tail = entity->next;
+    game->entity_count++;
+    entity = entity->next;
   }
 }
 
-void game_update(Game *game)
+void update(Game *game)
 {
-  Entity *entities = game->entities;
-  Entity *player = game->player;
+  Entity *player = get_player(game);
 
-  for (u8 i = 0; i < game->entity_count; i++)
+  for (Entity *e = game->entity_head; e != NULL; e = e->next)
   {
-    if (entities[i].flags & EntityFlag_Movable)
+    if (e->props & EntityProp_Movable)
     {
-      update_entity_movement(&entities[i], game->dt);
+      if (e->props & EntityProp_Controlled)
+      {
+        update_controlled_entity_movement(game, e);
+        wrap_entity_at_edges(game, e);
+      }
+
+      if (e->props & EntityProp_Targetting)
+      {
+        update_targetting_entity_movement(game, e);
+      }
+
+      update_entity_xform(game, e);
     }
 
-    if (entities[i].flags & EntityFlag_Enemy)
+    if (e->props & EntityProp_Attacker)
     {
-      if (player->active)
+      if (e->props & EntityProp_Controlled)
       {
-        set_entity_target(&entities[i], player->pos);
+        update_controlled_entity_combat(game, e);
       }
-      else
+      
+      if (e->props & EntityProp_Targetting)
       {
-        set_entity_target(&entities[i], v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f));
+        update_targetting_entity_combat(game, e);
+
+        if (player->active)
+        {
+          set_entity_target(game, e, player);
+        }
+        else
+        {
+          set_entity_target(game, e, e);
+        }
       }
     }
   }
-
-  wrap_entity_at_edges(player);
 }
 
-void game_draw(Game *game)
+void draw(Game *game)
 {
   d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
 
-  for (u8 i = 0; i < game->entity_count; i++)
+  for (Entity *e = game->entity_head; e != NULL; e = e->next)
   {
-    Entity *entity = &game->entities[i];
-
-    if (entity->active)
+    if (e->active)
     {
-      switch (entity->type)
+      switch (e->class)
       {
-        case EntityType_Ship:
+        case EntityClass_Ship:
         {
-          d_draw_triangle(entity->xform, entity->color);
+          d_triangle(e->xform, e->color);
         }
         break;
-        case EntityType_Astreroid:
+        case EntityClass_Astreroid:
         {
-          d_draw_rectangle(entity->xform, entity->color);
+          d_rectangle(e->xform, e->color);
         }
         break;
         default: break;
@@ -84,12 +105,27 @@ void game_draw(Game *game)
 }
 
 inline
-bool game_should_quit(void)
+bool should_quit(void)
 {
   return GLOBAL->input->escape;
 }
 
-void game_handle_event(Game *game, SDL_Event *event)
+Entity *get_player(Game *game)
+{
+  Entity *result = NULL;
+
+  for (Entity *e = game->entity_head; e != NULL; e = e->next)
+  {
+    if (e->props & EntityProp_Controlled)
+    {
+      result = e;
+    }
+  }
+
+  return result;
+}
+
+void handle_event(Game *game, SDL_Event *event)
 {
   Input *input = GLOBAL->input;
 
