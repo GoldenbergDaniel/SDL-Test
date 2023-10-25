@@ -6,6 +6,7 @@
 #include "base/base_math.h"
 #include "game.h"
 #include "global.h"
+#include "event.h"
 #include "entity.h"
 
 extern Global *GLOBAL;
@@ -15,42 +16,39 @@ static Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
 
 Entity *create_player_entity(Game *game)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof(Entity));
-  entity->class = EntityClass_Ship;
+  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
   entity->pos = v2f(W_WIDTH / 2.0f, 0.0f);
+  entity->vel = V2F_ZERO;
   entity->scale = v2f(1.0f, 1.0f);
   entity->rot = 0.0f;
-  entity->vel = V2F_ZERO;
+  entity->speed = PLAYER_SPEED;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-  entity->color = v4f(0.9f, 0.9f, 0.9f, 1.0f);
-  entity->speed = PLAYER_SPEED;
-  entity->health = PLAYER_HEALTH;
+  entity->color = COLOR_BLUE;
   entity->active = TRUE;
-  entity->next = NULL;
 
   init_timers(entity);
 
   return entity;
 }
 
-Entity *create_enemy_entity(Game *game, EntityClass class)
+Entity *create_enemy_entity(Game *game)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof(Entity));
-  entity->class = class;
+  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
+  entity->vel = V2F_ZERO;
   entity->scale = v2f(2.0f, 2.0f);
   entity->rot = 0.0f;
-  entity->vel = V2F_ZERO;
+  entity->speed = 100.0f;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-  entity->color = v4f(9.0f, 0.2f, 0.1f, 1.0f);
-  entity->speed = 100.0f;
+  entity->color = COLOR_RED;
   entity->view_dist = 250;
   entity->active = TRUE;
-  entity->next = NULL;
 
   init_timers(entity);
 
@@ -59,16 +57,17 @@ Entity *create_enemy_entity(Game *game, EntityClass class)
 
 Entity *create_laser_entity(Game *game)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof(Entity));
-  entity->class = EntityClass_Laser;
+  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->type = EntityType_Laser;
   entity->props = LASER_PROPS;
-  entity->scale = v2f(1.0f, 1.0f);
+  entity->pos = V2F_ZERO;
   entity->vel = V2F_ZERO;
+  entity->scale = v2f(3.0f, 0.25f);
+  entity->rot = 0.0f;
+  entity->speed = 0.0f;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-  entity->color = v4f(9.0f, 0.2f, 0.1f, 1.0f);
-  entity->speed = 100.0f;
-  entity->view_dist = 250;
+  entity->color = COLOR_YELLOW;
   entity->active = TRUE;
   entity->next = NULL;
 
@@ -83,8 +82,16 @@ void update_entity_xform(Game *game, Entity *entity)
   xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
   xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
   xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
-  // xform = mul_3x3f(translate_3x3f(entity->width/2, entity->height/2), xform);
+  xform = mul_3x3f(translate_3x3f(entity->width/2, entity->height/2), xform);
   entity->xform = xform;
+}
+
+void update_projectile_entity_movement(Game *game, Entity *entity)
+{
+  entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * game->dt;
+  entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * game->dt;
+
+  entity->pos = add_2f(entity->pos, entity->vel);
 }
 
 void update_controlled_entity_movement(Game *game, Entity *entity)
@@ -173,7 +180,14 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
 
   if (input->space)
   {
-    printf("Player shooting!\n");
+    EventDescriptor descripter = 
+    {
+      .position = entity->pos,
+      .rotation = entity->rot,
+      .speed = 1000.0f,
+    };
+
+    push_event(&game->event_queue, EventType_SpawnEntity, descripter);
   }
 
   Timer *timer = &entity->timers[TIMER_HEALTH];
@@ -184,7 +198,7 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
 
     if (timer->timeout)
     {
-      printf("Tick!\n");
+      // printf("Tick!\n");
     }
   }
   else
@@ -197,7 +211,7 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
 {
   if (entity->has_target)
   {
-    printf("Entity shooting!\n");
+    // printf("Entity shot!\n");
   }
 }
 
@@ -211,6 +225,7 @@ void set_entity_target(Game *game, Entity *entity, Entity *target)
 
     f32 dist_x = target_pos.x - entity->pos.x;
     f32 dist_y = target_pos.y - entity->pos.y;
+
     entity->target_pos = target_pos;
     entity->target_angle = atan2(dist_x, dist_y);
   }
@@ -221,7 +236,7 @@ void set_entity_target(Game *game, Entity *entity, Entity *target)
   }
 }
 
-void wrap_entity_at_edges(Game *game, Entity *entity)
+void wrap_entity_at_edges(Entity *entity)
 {
   if (entity->pos.x + entity->width <= 0.0f)
   {
@@ -282,7 +297,7 @@ Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y)
 {
   return (Vec2F)
   {
-    (rand() % max_x) + min_x,
-    (rand() % max_y) + min_y
+    rand() % max_x + min_x,
+    rand() % max_y + min_y
   };
 }

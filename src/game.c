@@ -4,16 +4,21 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 #include "base/base_math.h"
+
 #include "gfx/draw.h"
 #include "global.h"
 #include "component.h"
+#include "event.h"
 #include "entity.h"
 #include "game.h"
 
 extern Global *GLOBAL;
 
+static void push_entity(Game *game, Entity *entity);
+
 void init(Game *game)
 {
+  game->event_queue = (EventQueue) {0};
   game->camera = translate_3x3f(0.0f, 0.0f);
   GLOBAL->renderer->camera = &game->camera;
 
@@ -23,11 +28,10 @@ void init(Game *game)
   game->entity_count = 1;
 
   Entity *entity = game->entity_head;
-  for (u32 i = 0; i < 3; i++)
+  for (u32 i = 0; i < 1; i++)
   {
-    entity->next = create_enemy_entity(game, EntityClass_Ship);
-    game->entity_tail = entity->next;
-    game->entity_count++;
+    entity->next = create_enemy_entity(game);
+    push_entity(game, entity->next);
     entity = entity->next;
   }
 }
@@ -38,30 +42,37 @@ void update(Game *game)
 
   for (Entity *e = game->entity_head; e != NULL; e = e->next)
   {
-    if (e->props & EntityProp_Movable)
+    b64 props = e->props;
+
+    if (props & EntityProp_Movable)
     {
-      if (e->props & EntityProp_Controlled)
+      if (props & EntityProp_Controlled)
       {
         update_controlled_entity_movement(game, e);
-        wrap_entity_at_edges(game, e);
+        wrap_entity_at_edges(e);
       }
 
-      if (e->props & EntityProp_Targetting)
+      if (props & EntityProp_Targetting)
       {
         update_targetting_entity_movement(game, e);
+      }
+
+      if (props & EntityProp_Projectile)
+      {
+        update_projectile_entity_movement(game, e);
       }
 
       update_entity_xform(game, e);
     }
 
-    if (e->props & EntityProp_Attacker)
+    if (props & EntityProp_Attacker)
     {
-      if (e->props & EntityProp_Controlled)
+      if (props & EntityProp_Controlled)
       {
         update_controlled_entity_combat(game, e);
       }
       
-      if (e->props & EntityProp_Targetting)
+      if (props & EntityProp_Targetting)
       {
         update_targetting_entity_combat(game, e);
 
@@ -78,22 +89,52 @@ void update(Game *game)
   }
 }
 
+void handle_events(Game *game)
+{
+  EventQueue *queue = &game->event_queue;
+
+  while (queue->count > 0)
+  {
+    Event event = peek_event(queue);
+
+    switch (event.type)
+    {
+      case EventType_SpawnEntity:
+      {
+        Entity *entity = create_laser_entity(game);
+        entity->pos = event.descripter.position;
+        entity->rot = event.descripter.rotation;
+        entity->speed = event.descripter.speed;
+        push_entity(game, entity);
+      }
+      break;
+      default: break;
+    }
+
+    pop_event(queue);
+  }
+}
+
 void draw(Game *game)
 {
-  d_clear(v4f(0.05f, 0.05f, 0.05f, 1.0f));
+  d_clear(COLOR_BLACK);
 
   for (Entity *e = game->entity_head; e != NULL; e = e->next)
   {
     if (e->active)
     {
-      switch (e->class)
+      switch (e->type)
       {
-        case EntityClass_Ship:
+        case EntityType_Player:
         {
           d_triangle(e->xform, e->color);
         }
         break;
-        case EntityClass_Astreroid:
+        case EntityType_EnemyShip:
+        {
+          d_triangle(e->xform, e->color);
+        }
+        case EntityType_Laser:
         {
           d_rectangle(e->xform, e->color);
         }
@@ -125,9 +166,11 @@ Entity *get_player(Game *game)
   return result;
 }
 
-void handle_event(Game *game, SDL_Event *event)
+void handle_input(Game *game, SDL_Event *event)
 {
   Input *input = GLOBAL->input;
+
+  SDL_GetMouseState(&input->mouse_x, &input->mouse_y);
 
   switch (event->type)
   {
@@ -174,4 +217,19 @@ void handle_event(Game *game, SDL_Event *event)
       break;
     }
   }
+}
+
+static
+void push_entity(Game *game, Entity *entity)
+{
+  if (game->entity_tail != NULL)
+  {
+    game->entity_tail->next = entity;
+  }
+
+  entity->next = NULL;
+  game->entity_tail = entity;
+  game->entity_count++;
+
+  printf("Entity count: %u\n", game->entity_count);
 }

@@ -2,8 +2,8 @@
 #include <SDL2/SDL.h>
 
 #include "glad/glad.h"
-
 #include "base/base_common.h"
+
 #include "global.h"
 #include "game.h"
 
@@ -75,7 +75,7 @@ i32 main(void)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-          handle_event(&game, &event);
+          handle_input(&game, &event);
         }
       }
 
@@ -87,6 +87,7 @@ i32 main(void)
       game.t = elapsed_time;
       game.dt = time_step;
       update(&game);
+      handle_events(&game);
 
       elapsed_time += time_step;
       accumulator -= time_step;

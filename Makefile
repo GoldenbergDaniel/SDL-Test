@@ -19,6 +19,7 @@ EXTERN = extern/glad/glad.c \
 SRC = src/gfx/gl_render.c \
 			src/gfx/draw.c \
 			src/component.c \
+			src/event.c \
 			src/entity.c \
 			src/game.c \
 			src/main.c \
