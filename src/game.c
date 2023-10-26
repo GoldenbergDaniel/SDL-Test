@@ -102,10 +102,28 @@ void handle_events(Game *game)
     {
       case EventType_SpawnEntity:
       {
-        Entity *entity = create_laser_entity(game);
-        entity->pos = event.descripter.position;
-        entity->rot = event.descripter.rotation;
-        entity->speed = event.descripter.speed;
+        Entity *entity = NULL;
+
+        switch (event.descripter.type)
+        {
+          case EntityType_EnemyShip:
+          {
+            entity = create_enemy_entity(game);
+            entity->pos = event.descripter.position;
+            entity->rot = event.descripter.rotation;
+          }
+          break;
+          case EntityType_Laser:
+          {
+            entity = create_laser_entity(game);
+            entity->pos = event.descripter.position;
+            entity->rot = event.descripter.rotation;
+            entity->speed = event.descripter.speed;
+          }
+          break;
+          default: ASSERT(FALSE);
+        }
+
         push_entity(game, entity);
       }
       break;
@@ -151,11 +169,12 @@ void draw(Game *game)
   }
 }
 
+inline
 bool should_quit(Game *game)
 {
   bool result = FALSE;
   
-  if (GLOBAL->input->escape)
+  if (key_pressed(KEY_ESCAPE))
   {
     result = TRUE;
   }
@@ -172,8 +191,11 @@ Entity *get_first_entity_of_type(Game *game, EntityType type)
     if (e->type == type)
     {
       result = e;
+      break;
     }
   }
+
+  ASSERT(result != NULL);
 
   return result;
 }

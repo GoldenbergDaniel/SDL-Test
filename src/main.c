@@ -70,6 +70,8 @@ i32 main(void)
       // Handle events
       if (!game.first_frame)
       {
+        clear_last_frames_input();
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -133,7 +135,7 @@ void handle_input(SDL_Event *event, bool *should_quit)
 {
   Input *input = GLOBAL->input;
 
-  SDL_GetMouseState(&input->mouse_x, &input->mouse_y);
+  SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
 
   switch (event->type)
   {
@@ -144,18 +146,53 @@ void handle_input(SDL_Event *event, bool *should_quit)
       switch (event->key.keysym.scancode)
       {
         default: break;
-        case SDL_SCANCODE_ESCAPE: input->escape = TRUE;
+        case SDL_SCANCODE_A:
+        {
+          if (!input->key_down[KEY_A])
+            input->key_just_down[KEY_A] = TRUE;
+
+          input->key_down[KEY_A] = TRUE;
+        }
         break;
-        case SDL_SCANCODE_SPACE: input->space = TRUE;
+        case SDL_SCANCODE_D:
+        {
+          if (!input->key_down[KEY_D])
+            input->key_just_down[KEY_D] = TRUE;
+
+          input->key_down[KEY_D] = TRUE;
+        }
         break;
-        case SDL_SCANCODE_A: input->a = TRUE;
+        case SDL_SCANCODE_S:
+        {
+          if (!input->key_down[KEY_S])
+            input->key_just_down[KEY_S] = TRUE;
+
+          input->key_down[KEY_S] = TRUE;
+        }
         break;
-        case SDL_SCANCODE_D: input->d = TRUE;
+        case SDL_SCANCODE_W: 
+        {
+          if (!input->key_down[KEY_W])
+            input->key_just_down[KEY_W] = TRUE;
+
+          input->key_down[KEY_W] = TRUE;
+        }
         break;
-        case SDL_SCANCODE_S: input->s = TRUE;
+        case SDL_SCANCODE_ESCAPE:
+        {
+          if (!input->key_down[KEY_ESCAPE])
+            input->key_just_down[KEY_ESCAPE] = TRUE;
+
+          input->key_down[KEY_ESCAPE] = TRUE;
+        }
         break;
-        case SDL_SCANCODE_W: input->w = TRUE;
-        break;
+        case SDL_SCANCODE_SPACE:
+        {
+          if (!input->key_down[KEY_SPACE])
+            input->key_just_down[KEY_SPACE] = TRUE;
+
+          input->key_down[KEY_SPACE] = TRUE;
+        }
       }
       break;
     }
@@ -164,18 +201,53 @@ void handle_input(SDL_Event *event, bool *should_quit)
       switch (event->key.keysym.scancode)
       {
         default: break;
-        case SDL_SCANCODE_ESCAPE: input->escape = FALSE;
+        case SDL_SCANCODE_A:
+        {
+          if (input->key_down[KEY_A])
+            input->key_just_up[KEY_A] = TRUE;
+
+          input->key_down[KEY_A] = FALSE;
+        }
         break;
-        case SDL_SCANCODE_SPACE: input->space = FALSE;
+        case SDL_SCANCODE_D:
+        {
+          if (input->key_down[KEY_D])
+            input->key_just_up[KEY_D] = TRUE;
+
+          input->key_down[KEY_D] = FALSE;
+        }
         break;
-        case SDL_SCANCODE_A: input->a = FALSE;
+        case SDL_SCANCODE_S:
+        {
+          if (input->key_down[KEY_S])
+            input->key_just_up[KEY_S] = TRUE;
+
+          input->key_down[KEY_S] = FALSE;
+        }
         break;
-        case SDL_SCANCODE_D: input->d = FALSE;
+        case SDL_SCANCODE_W: 
+        {
+          if (input->key_down[KEY_W])
+            input->key_just_up[KEY_W] = TRUE;
+
+          input->key_down[KEY_W] = FALSE;
+        }
         break;
-        case SDL_SCANCODE_S: input->s = FALSE;
+        case SDL_SCANCODE_ESCAPE:
+        {
+          if (input->key_down[KEY_ESCAPE])
+            input->key_just_up[KEY_ESCAPE] = TRUE;
+
+          input->key_down[KEY_ESCAPE] = FALSE;
+        }
         break;
-        case SDL_SCANCODE_W: input->w = FALSE;
-        break;
+        case SDL_SCANCODE_SPACE:
+        {
+          if (input->key_down[KEY_SPACE])
+            input->key_just_up[KEY_SPACE] = TRUE;
+
+          input->key_down[KEY_SPACE] = FALSE;
+        }
       }
       break;
     }

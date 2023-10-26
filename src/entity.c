@@ -96,17 +96,16 @@ void update_projectile_entity_movement(Game *game, Entity *entity)
 
 void update_controlled_entity_movement(Game *game, Entity *entity)
 {
-  Input *input = GLOBAL->input;
   f64 dt = game->dt;
 
-  if (input->a) entity->rot += 200.0f * game->dt;
-  if (input->d) entity->rot -= 200.0f * game->dt;
+  if (key_pressed(KEY_A)) entity->rot += 200.0f * game->dt;
+  if (key_pressed(KEY_D)) entity->rot -= 200.0f * game->dt;
 
-  if (input->w && !input->s)
+  if (key_pressed(KEY_W) && !key_pressed(KEY_S))
   {
     entity->speed = lerp_1f(entity->speed, PLAYER_SPEED * 4.0f, PLAYER_ACC * dt);
   }
-  else if (!input->w && input->s)
+  else if (!key_pressed(KEY_W) && key_pressed(KEY_S))
   {
     entity->speed = lerp_1f(entity->speed, PLAYER_SPEED * 0.5f, PLAYER_FRIC * dt);
   }
@@ -176,12 +175,11 @@ void update_targetting_entity_movement(Game *game, Entity *entity)
 
 void update_controlled_entity_combat(Game *game, Entity *entity)
 {
-  Input *input = GLOBAL->input;
-
-  if (input->space)
+  if (key_just_pressed(KEY_SPACE))
   {
     EventDescriptor descripter = 
     {
+      .type = EntityType_Laser,
       .position = entity->pos,
       .rotation = entity->rot,
       .speed = 1000.0f,

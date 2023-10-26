@@ -29,6 +29,18 @@ union Vec2F
   f32 elements[2];
 };
 
+typedef union Vec2I Vec2I;
+union Vec2I
+{
+  struct
+  {
+    i32 x;
+    i32 y;
+  };
+
+  i32 elements[2];
+};
+
 typedef union Vec3F Vec3F;
 union Vec3F
 {

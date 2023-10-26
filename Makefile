@@ -3,7 +3,7 @@ CC = cc
 
 CFLAGS = -Iext/ \
 				 -std=c17 \
-				 -O1 \
+				 -O0 \
 				 -Wall \
 				 -Wpedantic \
 				 -Wno-missing-braces \
@@ -19,6 +19,7 @@ EXT = ext/glad/glad.c \
 
 SRC = src/gfx/gl_render.c \
 			src/gfx/draw.c \
+			src/global.c \
 			src/component.c \
 			src/event.c \
 			src/entity.c \
@@ -36,7 +37,7 @@ compile:
 	@echo "Compilation complete!"
 
 compile_t:
-	@echo "Compiling timed compilation..."
+	@echo "Timing compilation..."
 	@time $(CC) $(CFLAGS) $(LDFLAGS) $(EXT) $(SRC) -o $(NAME)
 	@echo "Compilation complete!"
 
