@@ -12,28 +12,25 @@
 
 Global *GLOBAL;
 
-static
-void set_gl_attributes(void);
+static void set_gl_attributes(void);
+static void handle_input(SDL_Event *event, bool *running);
 
 i32 main(void)
 {
   Game game = {0};
   game.arena = arena_create(MEGABYTES(16));
-  GLOBAL = arena_alloc(&game.arena, sizeof (Global));
-  GLOBAL->input = arena_alloc(&game.arena, sizeof (Input));
-  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (*GLOBAL->renderer));
 
   srand(time(NULL));
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   set_gl_attributes();
 
   SDL_Window *window = SDL_CreateWindow(
-                                        W_NAME,
-                                        W_CENTERED, 
-                                        W_CENTERED, 
+                                        "SPACE GAME",
+                                        SDL_WINDOWPOS_CENTERED, 
+                                        SDL_WINDOWPOS_CENTERED, 
                                         W_WIDTH, 
                                         W_HEIGHT, 
-                                        W_FLAGS);
+                                        SDL_WINDOW_OPENGL);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
@@ -45,11 +42,12 @@ i32 main(void)
     return 1;
   }
 
+  GLOBAL = arena_alloc(&game.arena, sizeof (Global));
+  GLOBAL->input = arena_alloc(&game.arena, sizeof (Input));
+  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (*GLOBAL->renderer));
   d_init_renderer(GLOBAL->renderer);
 
   init(&game);
-  game.running = TRUE;
-  game.first_frame = TRUE;
 
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
@@ -75,17 +73,18 @@ i32 main(void)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-          handle_input(&game, &event);
+          handle_input(&event, &game.running);
         }
       }
 
-      if (should_quit())
+      if (should_quit(&game))
       {
         game.running = FALSE;
       }
 
       game.t = elapsed_time;
       game.dt = time_step;
+
       update(&game);
       handle_events(&game);
 
@@ -127,4 +126,58 @@ void set_gl_attributes(void)
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+}
+
+static
+void handle_input(SDL_Event *event, bool *should_quit)
+{
+  Input *input = GLOBAL->input;
+
+  SDL_GetMouseState(&input->mouse_x, &input->mouse_y);
+
+  switch (event->type)
+  {
+    case SDL_QUIT: *should_quit = TRUE;
+    break;
+    case SDL_KEYDOWN: 
+    {
+      switch (event->key.keysym.scancode)
+      {
+        default: break;
+        case SDL_SCANCODE_ESCAPE: input->escape = TRUE;
+        break;
+        case SDL_SCANCODE_SPACE: input->space = TRUE;
+        break;
+        case SDL_SCANCODE_A: input->a = TRUE;
+        break;
+        case SDL_SCANCODE_D: input->d = TRUE;
+        break;
+        case SDL_SCANCODE_S: input->s = TRUE;
+        break;
+        case SDL_SCANCODE_W: input->w = TRUE;
+        break;
+      }
+      break;
+    }
+    case SDL_KEYUP: 
+    {
+      switch (event->key.keysym.scancode)
+      {
+        default: break;
+        case SDL_SCANCODE_ESCAPE: input->escape = FALSE;
+        break;
+        case SDL_SCANCODE_SPACE: input->space = FALSE;
+        break;
+        case SDL_SCANCODE_A: input->a = FALSE;
+        break;
+        case SDL_SCANCODE_D: input->d = FALSE;
+        break;
+        case SDL_SCANCODE_S: input->s = FALSE;
+        break;
+        case SDL_SCANCODE_W: input->w = FALSE;
+        break;
+      }
+      break;
+    }
+  }
 }

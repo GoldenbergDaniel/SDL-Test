@@ -6,6 +6,16 @@
 #include "event.h"
 #include "entity.h"
 
+#define TARGET_FPS 60
+
+#define VSYNC_AUTO -1
+#define VSYNC_OFF 0
+#define VSYNC_ON 1
+
+#define W_WIDTH 1200
+#define W_HEIGHT 675
+
+
 #define COLOR_BLACK ((Vec4F) {0.05f, 0.05f, 0.05f, 1.0f})
 #define COLOR_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
 #define COLOR_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
@@ -21,6 +31,7 @@ struct Game
   EventQueue event_queue;
   Mat3x3F camera;
   bool running;
+  bool should_quit;
   bool first_frame;
   f64 t;
   f64 dt;
@@ -32,9 +43,7 @@ struct Game
 
 void init(Game *game);
 void update(Game *game);
-void draw(Game *game);
 void handle_events(Game *game);
-bool should_quit(void);
-Entity *get_player(Game *game);
-Entity *spawn_laser(Game *game, Vec2F pos, f32 rot);
-void handle_input(Game *game, SDL_Event *event);
+void draw(Game *game);
+bool should_quit(Game *game);
+Entity *get_first_entity_of_type(Game *game, EntityType type);

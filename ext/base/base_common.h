@@ -33,15 +33,3 @@ typedef double f64;
 #ifndef NULL
 #define NULL (void *) 0
 #endif
-
-#define TARGET_FPS 60
-
-#define VSYNC_AUTO -1
-#define VSYNC_OFF 0
-#define VSYNC_ON 1
-
-#define W_NAME "SPACE GAME"
-#define W_WIDTH 1200
-#define W_HEIGHT 675
-#define W_CENTERED SDL_WINDOWPOS_CENTERED
-#define W_FLAGS SDL_WINDOW_OPENGL

@@ -1,20 +1,21 @@
 NAME = SpaceGame
 CC = cc
 
-CFLAGS = -Iextern/ \
-				 -std=c17 -O1 \
-				 -Wall -Wextra -Wpedantic \
+CFLAGS = -Iext/ \
+				 -std=c17 \
+				 -O1 \
+				 -Wall \
+				 -Wpedantic \
 				 -Wno-missing-braces \
-				 -Wno-unused-parameter \
 				 -Wno-unused-function \
 
 LDFLAGS = -framework OpenGL \
 					-lsdl2 \
 
-EXTERN = extern/glad/glad.c \
-				 extern/base/base_os.c \
-				 extern/base/base_arena.c \
-				 extern/base/base_math.c \
+EXT = ext/glad/glad.c \
+			ext/base/base_os.c \
+			ext/base/base_arena.c \
+			ext/base/base_math.c \
 
 SRC = src/gfx/gl_render.c \
 			src/gfx/draw.c \
@@ -31,12 +32,12 @@ all: compile run
 compile:
 	@echo "Compiling project..."
 	@./ParseShaders
-	@$(CC) $(CFLAGS) $(LDFLAGS) $(EXTERN) $(SRC) -o $(NAME)
+	@$(CC) $(CFLAGS) $(LDFLAGS) $(EXT) $(SRC) -o $(NAME)
 	@echo "Compilation complete!"
 
 compile_t:
 	@echo "Compiling timed compilation..."
-	@time $(CC) $(CFLAGS) $(LDFLAGS) $(EXTERN) $(SRC) -o $(NAME)
+	@time $(CC) $(CFLAGS) $(LDFLAGS) $(EXT) $(SRC) -o $(NAME)
 	@echo "Compilation complete!"
 
 run:

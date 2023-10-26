@@ -3,6 +3,7 @@
 #include "base/base_arena.h"
 
 #include "../global.h"
+#include "../game.h"
 #include "gl_render.h"
 #include "shaders.h"
 #include "draw.h"
