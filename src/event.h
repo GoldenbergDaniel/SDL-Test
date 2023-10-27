@@ -14,6 +14,7 @@ typedef enum EventType
 typedef struct EventDescriptor EventDescriptor;
 struct EventDescriptor
 {
+  u64 id;
   u64 type;
   b64 props;
   Vec2F position;

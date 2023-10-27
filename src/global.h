@@ -14,14 +14,17 @@ typedef enum Key
   KEY_W,
   KEY_SPACE,
   KEY_ESCAPE,
+  KEY_ENTER,
+  KEY_BACKSPACE,
+  _KEY_COUNT,
 } Key;
 
 typedef struct Input Input;
 struct Input
 {
-  u8 key_down[6];
-  u8 key_just_down[6];
-  u8 key_just_up[6];
+  u8 key_down[_KEY_COUNT];
+  u8 key_just_down[_KEY_COUNT];
+  u8 key_just_up[_KEY_COUNT];
   Vec2I mouse_pos;
 };
 
@@ -29,7 +32,7 @@ bool key_pressed(Key key);
 bool key_just_pressed(Key key);
 bool key_just_released(Key key);
 Vec2I mouse_position(void);
-void clear_last_frames_input(void);
+void clear_last_frame_input(void);
 
 // @Global =====================================================================================
 

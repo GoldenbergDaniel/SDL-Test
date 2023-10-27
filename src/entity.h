@@ -1,9 +1,8 @@
 #pragma once
 
 #include "base/base_common.h"
-#include "base/base_math.h"
 #include "base/base_arena.h"
-#include "component.h"
+#include "base/base_math.h"
 
 typedef struct Game Game;
 
@@ -24,12 +23,24 @@ typedef enum EntityProp
   EntityProp_Projectile = 1 << 5,
 } EntityProp;
 
+typedef struct Timer Timer;
+struct Timer
+{
+  f64 start_duration;
+  f64 curr_duration;
+  bool should_tick;
+  bool ticking;
+  bool timeout;
+  bool loop;
+};
+
 typedef struct Entity Entity;
 struct Entity
 {
   Entity *next;
 
   // General
+  u64 id;
   EntityType type;
   b64 props;
   f32 rot;
@@ -38,6 +49,7 @@ struct Entity
   f32 height;
   Mat3x3F xform;
   Vec4F color;
+  u16 z_index; // NOTE: probably just use inserion sort for now?
   bool active;
 
   // Physics

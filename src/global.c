@@ -28,7 +28,7 @@ Vec2I mouse_position(void)
   return GLOBAL->input->mouse_pos;
 }
 
-void clear_last_frames_input(void)
+void clear_last_frame_input(void)
 {
   for (u8 i = 0; i < sizeof (GLOBAL->input->key_just_down); i++)
   {

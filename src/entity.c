@@ -11,22 +11,26 @@
 
 extern Global *GLOBAL;
 
-static void init_timers(Entity *entity);
+static u64 random_u64(u64 min, u64 max);
 static Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
+static void init_timers(Entity *entity);
+static void timer_start(Timer *timer, bool start_at_zero);
+static bool timer_tick(Timer *timer, f64 dt);
 
 Entity *create_player_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->id = random_u64(0, UINT64_MAX);
   entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
-  entity->pos = v2f(W_WIDTH / 2.0f, 0.0f);
+  entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
   entity->vel = V2F_ZERO;
   entity->scale = v2f(1.0f, 1.0f);
   entity->rot = 0.0f;
   entity->speed = PLAYER_SPEED;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-  entity->color = COLOR_BLUE;
+  entity->color = COLOR_WHITE;
   entity->active = TRUE;
 
   init_timers(entity);
@@ -37,6 +41,7 @@ Entity *create_player_entity(Game *game)
 Entity *create_enemy_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->id = random_u64(0, UINT64_MAX);
   entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
@@ -58,16 +63,17 @@ Entity *create_enemy_entity(Game *game)
 Entity *create_laser_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  entity->id = random_u64(0, UINT64_MAX);
   entity->type = EntityType_Laser;
   entity->props = LASER_PROPS;
   entity->pos = V2F_ZERO;
   entity->vel = V2F_ZERO;
-  entity->scale = v2f(3.0f, 0.25f);
+  entity->scale = v2f(3.0f, 0.15f);
   entity->rot = 0.0f;
   entity->speed = 0.0f;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-  entity->color = COLOR_YELLOW;
+  entity->color = COLOR_GREEN;
   entity->active = TRUE;
   entity->next = NULL;
 
@@ -82,13 +88,14 @@ void update_entity_xform(Game *game, Entity *entity)
   xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
   xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
   xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
-  xform = mul_3x3f(translate_3x3f(entity->width/2, entity->height/2), xform);
+  // xform = mul_3x3f(translate_3x3f(entity->width/2.0f, entity->height/2.0f), xform);
   entity->xform = xform;
 }
 
 void update_projectile_entity_movement(Game *game, Entity *entity)
 {
   entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * game->dt;
+  entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * game->dt;
   entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * game->dt;
 
   entity->pos = add_2f(entity->pos, entity->vel);
@@ -99,6 +106,7 @@ void update_controlled_entity_movement(Game *game, Entity *entity)
   f64 dt = game->dt;
 
   if (key_pressed(KEY_A)) entity->rot += 200.0f * game->dt;
+  
   if (key_pressed(KEY_D)) entity->rot -= 200.0f * game->dt;
 
   if (key_pressed(KEY_W) && !key_pressed(KEY_S))
@@ -177,10 +185,12 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
 {
   if (key_just_pressed(KEY_SPACE))
   {
+    Vec2F shot_point = v2f(entity->pos.x, entity->pos.y);
+
     EventDescriptor descripter = 
     {
       .type = EntityType_Laser,
-      .position = entity->pos,
+      .position = shot_point,
       .rotation = entity->rot,
       .speed = 1000.0f,
     };
@@ -266,6 +276,8 @@ void hurt_entity(Game *game, Entity *entity)
   }
 }
 
+// @Timer ======================================================================================
+
 static
 void init_timers(Entity *entity)
 {
@@ -288,6 +300,38 @@ void init_timers(Entity *entity)
     .timeout = FALSE,
     .loop = FALSE
   };
+}
+
+static
+void timer_start(Timer *timer, bool start_at_zero)
+{
+  timer->curr_duration = start_at_zero ? 0.0f : timer->start_duration;
+  timer->ticking = TRUE;
+  timer->timeout = FALSE;
+  timer->should_tick = TRUE;
+}
+
+static
+bool timer_tick(Timer *timer, f64 dt)
+{
+  if (timer->should_tick)
+  {
+    timer->curr_duration -= dt;
+
+    if (timer->curr_duration <= 0.0f)
+    {
+      timer->timeout = TRUE;
+      timer->ticking = FALSE;
+    }
+  }
+
+  return timer->timeout;
+}
+
+static inline
+u64 random_u64(u64 min, u64 max)
+{
+  return rand() % max + min;
 }
 
 static inline

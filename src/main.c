@@ -1,14 +1,12 @@
-#include <time.h>
 #include <SDL2/SDL.h>
 
-#include "glad/glad.h"
 #include "base/base_common.h"
 
 #include "global.h"
 #include "game.h"
 
 #define DEBUG
-//#define LOG_PERF
+// #define LOG_PERF
 
 Global *GLOBAL;
 
@@ -34,7 +32,7 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_AUTO);
+  SDL_GL_SetSwapInterval(VSYNC_ON);
 
   if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
   {
@@ -67,16 +65,12 @@ i32 main(void)
 
     while (accumulator >= time_step)
     {
-      // Handle events
-      if (!game.first_frame)
-      {
-        clear_last_frames_input();
+      clear_last_frame_input();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-          handle_input(&event, &game.running);
-        }
+      SDL_Event event;
+      while (SDL_PollEvent(&event))
+      {
+        handle_input(&event, &game.running);
       }
 
       if (should_quit(&game))
@@ -84,11 +78,14 @@ i32 main(void)
         game.running = FALSE;
       }
 
-      game.t = elapsed_time;
-      game.dt = time_step;
+      if (!game.first_frame)
+      {
+        game.t = elapsed_time;
+        game.dt = time_step;
 
-      update(&game);
-      handle_events(&game);
+        update(&game);
+        handle_events(&game);
+      }
 
       elapsed_time += time_step;
       accumulator -= time_step;
@@ -100,7 +97,7 @@ i32 main(void)
     u64 frame_end = SDL_GetPerformanceCounter();
     u64 frequency = SDL_GetPerformanceFrequency();
     f64 frame_diff = (f64) (frame_end - frame_start) / frequency * 1000.0f;
-    printf("%.2lf ms\n", frame_diff);
+    printf("%.6lf ms\n", frame_diff);
     #endif
 
     draw(&game);
@@ -193,6 +190,22 @@ void handle_input(SDL_Event *event, bool *should_quit)
 
           input->key_down[KEY_SPACE] = TRUE;
         }
+        break;
+        case SDL_SCANCODE_RETURN:
+        {
+          if (!input->key_down[KEY_ENTER])
+            input->key_just_down[KEY_ENTER] = TRUE;
+
+          input->key_down[KEY_ENTER] = TRUE;
+        }
+        break;
+        case SDL_SCANCODE_BACKSPACE:
+        {
+          if (!input->key_down[KEY_BACKSPACE])
+            input->key_just_down[KEY_BACKSPACE] = TRUE;
+
+          input->key_down[KEY_BACKSPACE] = TRUE;
+        }
       }
       break;
     }
@@ -247,6 +260,22 @@ void handle_input(SDL_Event *event, bool *should_quit)
             input->key_just_up[KEY_SPACE] = TRUE;
 
           input->key_down[KEY_SPACE] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_RETURN:
+        {
+          if (input->key_down[KEY_ENTER])
+            input->key_just_up[KEY_ENTER] = TRUE;
+
+          input->key_down[KEY_ENTER] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_BACKSPACE:
+        {
+          if (input->key_down[KEY_ENTER])
+            input->key_just_up[KEY_ENTER] = TRUE;
+
+          input->key_down[KEY_ENTER] = FALSE;
         }
       }
       break;

@@ -15,12 +15,12 @@
 #define W_WIDTH 1200
 #define W_HEIGHT 675
 
-
-#define COLOR_BLACK ((Vec4F) {0.05f, 0.05f, 0.05f, 1.0f})
+#define COLOR_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
 #define COLOR_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
 #define COLOR_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
-#define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
+#define COLOR_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
 #define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
+#define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
 typedef union SDL_Event SDL_Event;
 
@@ -46,4 +46,5 @@ void update(Game *game);
 void handle_events(Game *game);
 void draw(Game *game);
 bool should_quit(Game *game);
+Entity *get_entity_by_id(Game *game, u64 id);
 Entity *get_first_entity_of_type(Game *game, EntityType type);

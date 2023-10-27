@@ -6,7 +6,6 @@
 
 #include "gfx/draw.h"
 #include "global.h"
-#include "component.h"
 #include "event.h"
 #include "entity.h"
 #include "game.h"
@@ -14,6 +13,9 @@
 extern Global *GLOBAL;
 
 static void push_entity(Game *game, Entity *entity);
+static void pop_entity(Game *game, u64 id);
+
+// @Init =======================================================================================
 
 void init(Game *game)
 {
@@ -36,6 +38,8 @@ void init(Game *game)
 
   GLOBAL->renderer->camera = &game->camera;
 }
+
+// @Update =====================================================================================
 
 void update(Game *game)
 {
@@ -88,7 +92,20 @@ void update(Game *game)
       }
     }
   }
+
+  // if (key_just_pressed(KEY_BACKSPACE))
+  // {
+  //   Entity *e = get_first_entity_of_type(game, EntityType_Player);
+  //   EventDescriptor desc = 
+  //   {
+  //     .id = e->id
+  //   };
+
+  //   push_event(&game->event_queue, EventType_KillEntity, desc);
+  // }
 }
+
+// @HandleEvents ===============================================================================
 
 void handle_events(Game *game)
 {
@@ -130,6 +147,7 @@ void handle_events(Game *game)
       case EventType_KillEntity:
       {
         // Kill entity
+        pop_entity(game, event.descripter.id);
       }
       break;
     }
@@ -137,6 +155,8 @@ void handle_events(Game *game)
     pop_event(queue);
   }
 }
+
+// @Draw =======================================================================================
 
 void draw(Game *game)
 {
@@ -182,6 +202,24 @@ bool should_quit(Game *game)
   return result;
 }
 
+// @EntityList =================================================================================
+
+Entity *get_entity_by_id(Game *game, u64 id)
+{
+  Entity *result = NULL;
+  
+  for (Entity *e = game->entity_head; e != NULL; e = e->next)
+  {
+    if (e->id == id)
+    {
+      result = e;
+      break;
+    }
+  }
+
+  return result;
+}
+
 Entity *get_first_entity_of_type(Game *game, EntityType type)
 {
   Entity *result = NULL;
@@ -195,12 +233,10 @@ Entity *get_first_entity_of_type(Game *game, EntityType type)
     }
   }
 
-  ASSERT(result != NULL);
-
   return result;
 }
 
-static
+static 
 void push_entity(Game *game, Entity *entity)
 {
   if (game->entity_head == NULL)
@@ -217,5 +253,33 @@ void push_entity(Game *game, Entity *entity)
   game->entity_tail = entity;
   game->entity_count++;
 
-  printf("Entity count: %u\n", game->entity_count);
+  // printf("Entity count: %u\n", game->entity_count);
+}
+
+static 
+void pop_entity(Game *game, u64 id)
+{
+  Entity *prev = NULL;
+  Entity *curr = game->entity_head;
+
+  while (curr != NULL)
+  {
+    if (curr->id == id)
+    {
+      if (prev != NULL)
+      {
+        prev->next = curr->next;
+      }
+      else
+      {
+        game->entity_head = curr->next;
+      }
+
+      curr->active = FALSE;
+      break;
+    }
+
+    prev = curr;
+    curr = curr->next;
+  }
 }
