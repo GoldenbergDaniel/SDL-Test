@@ -17,10 +17,12 @@ static void init_timers(Entity *entity);
 static void timer_start(Timer *timer, bool start_at_zero);
 static bool timer_tick(Timer *timer, f64 dt);
 
+// @Entity =====================================================================================
+
 Entity *create_player_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX);
+  entity->id = random_u64(0, UINT64_MAX/2);
   entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
   entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
@@ -41,7 +43,7 @@ Entity *create_player_entity(Game *game)
 Entity *create_enemy_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX);
+  entity->id = random_u64(0, UINT64_MAX/2);
   entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
@@ -63,7 +65,7 @@ Entity *create_enemy_entity(Game *game)
 Entity *create_laser_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX);
+  entity->id = random_u64(0, UINT64_MAX/2);
   entity->type = EntityType_Laser;
   entity->props = LASER_PROPS;
   entity->pos = V2F_ZERO;
@@ -80,6 +82,15 @@ Entity *create_laser_entity(Game *game)
   init_timers(entity);
 
   return entity;
+}
+
+void reset_entity(Entity *entity)
+{
+  u64 id = entity->id;
+  Entity *next = entity->next;
+  *entity = (Entity) {0};
+  entity->id = id++;
+  entity->next = next;
 }
 
 void update_entity_xform(Game *game, Entity *entity)
@@ -187,7 +198,7 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
   {
     Vec2F shot_point = v2f(entity->pos.x, entity->pos.y);
 
-    EventDescriptor descripter = 
+    EventDescriptor desc = 
     {
       .type = EntityType_Laser,
       .position = shot_point,
@@ -195,7 +206,7 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
       .speed = 1000.0f,
     };
 
-    push_event(&game->event_queue, EventType_SpawnEntity, descripter);
+    push_event(game, EventType_SpawnEntity, desc);
   }
 
   Timer *timer = &entity->timers[TIMER_HEALTH];
@@ -223,9 +234,9 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
   }
 }
 
-void set_entity_target(Game *game, Entity *entity, Entity *target)
+void set_entity_target(Game *game, Entity *entity, EntityRef target)
 {
-  Vec2F target_pos = target->pos;
+  Vec2F target_pos = target.entity->pos;
 
   if (distance_2f(entity->pos, target_pos) <= entity->view_dist)
   {
@@ -234,7 +245,6 @@ void set_entity_target(Game *game, Entity *entity, Entity *target)
     f32 dist_x = target_pos.x - entity->pos.x;
     f32 dist_y = target_pos.y - entity->pos.y;
 
-    entity->target_pos = target_pos;
     entity->target_angle = atan2(dist_x, dist_y);
   }
   else
@@ -274,6 +284,75 @@ void hurt_entity(Game *game, Entity *entity)
     entity->active = FALSE;
     printf("Player ded\n");
   }
+}
+
+// @EntityRef ==================================================================================
+
+inline
+EntityRef entity_ref(Entity *entity)
+{
+  return (EntityRef) {entity, entity->id};
+}
+
+// @EntityList =================================================================================
+
+Entity *get_entity_by_id(Game *game, u64 id)
+{
+  Entity *result = NULL;
+  
+  for (Entity *e = game->entities.head; e != NULL; e = e->next)
+  {
+    if (e->id == id)
+    {
+      result = e;
+      break;
+    }
+  }
+
+  return result;
+}
+
+Entity *get_first_entity_of_type(Game *game, EntityType type)
+{
+  Entity *result = NULL;
+
+  for (Entity *e = game->entities.head; e != NULL; e = e->next)
+  {
+    if (e->type == type)
+    {
+      result = e;
+      break;
+    }
+  }
+
+  return result;
+}
+
+void push_entity(Game *game, Entity *entity)
+{
+  if (game->entities.head == NULL)
+  {
+    game->entities.head = entity;
+  }
+
+  if (game->entities.tail != NULL)
+  {
+    game->entities.tail->next = entity;
+  }
+
+  entity->next = NULL;
+  game->entities.tail = entity;
+  game->entities.count++;
+
+  // printf("Entity count: %u\n", game->entity_count);
+}
+
+void pop_entity(Game *game, u64 id)
+{
+  Entity *entity = get_entity_by_id(game, id);
+  reset_entity(entity);
+  // entity->active = FALSE;
+  // entity->id++;
 }
 
 // @Timer ======================================================================================

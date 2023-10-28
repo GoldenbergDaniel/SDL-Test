@@ -29,16 +29,13 @@ struct Game
 {
   Arena arena;
   EventQueue event_queue;
+  EntityList entities;
   Mat3x3F camera;
   bool running;
   bool should_quit;
   bool first_frame;
   f64 t;
   f64 dt;
-  Entity *entity_head;
-  Entity *entity_tail;
-  Entity *entity_first_free;
-  u16 entity_count;
 };
 
 void init(Game *game);
@@ -46,5 +43,3 @@ void update(Game *game);
 void handle_events(Game *game);
 void draw(Game *game);
 bool should_quit(Game *game);
-Entity *get_entity_by_id(Game *game, u64 id);
-Entity *get_first_entity_of_type(Game *game, EntityType type);

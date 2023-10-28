@@ -12,9 +12,6 @@
 
 extern Global *GLOBAL;
 
-static void push_entity(Game *game, Entity *entity);
-static void pop_entity(Game *game, u64 id);
-
 // @Init =======================================================================================
 
 void init(Game *game)
@@ -28,8 +25,8 @@ void init(Game *game)
   Entity *entity = create_player_entity(game);
   push_entity(game, entity);
 
-  entity = game->entity_head;
-  for (u32 i = 0; i < 3; i++)
+  entity = game->entities.head;
+  for (u32 i = 0; i < 1; i++)
   {
     entity->next = create_enemy_entity(game);
     push_entity(game, entity->next);
@@ -43,8 +40,10 @@ void init(Game *game)
 
 void update(Game *game)
 {
-  for (Entity *e = game->entity_head; e != NULL; e = e->next)
+  for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
+    if (!e->active) continue;
+    
     b64 props = e->props;
 
     if (props & EntityProp_Movable)
@@ -77,43 +76,37 @@ void update(Game *game)
       
       if (props & EntityProp_Targetting)
       {
-        Entity *player = get_first_entity_of_type(game, EntityType_Player);
-
         update_targetting_entity_combat(game, e);
 
-        if (player->active)
+        Entity *player = get_first_entity_of_type(game, EntityType_Player);
+
+        if (player != NULL && player->active)
         {
-          set_entity_target(game, e, player);
+          set_entity_target(game, e, entity_ref(player));
         }
         else
         {
-          set_entity_target(game, e, e);
+          e->has_target = FALSE;
         }
       }
     }
   }
 
-  // if (key_just_pressed(KEY_BACKSPACE))
-  // {
-  //   Entity *e = get_first_entity_of_type(game, EntityType_Player);
-  //   EventDescriptor desc = 
-  //   {
-  //     .id = e->id
-  //   };
-
-  //   push_event(&game->event_queue, EventType_KillEntity, desc);
-  // }
+  if (key_just_pressed(KEY_BACKSPACE))
+  {
+    Entity *entity = get_first_entity_of_type(game, EntityType_Player);
+    EventDescriptor desc = {.id = entity->id};
+    push_event(game, EventType_KillEntity, desc);
+  }
 }
 
 // @HandleEvents ===============================================================================
 
 void handle_events(Game *game)
 {
-  EventQueue *queue = &game->event_queue;
-
-  while (queue->count > 0)
+  while (game->event_queue.count > 0)
   {
-    Event event = peek_event(queue);
+    Event event = peek_event(game);
 
     switch (event.type)
     {
@@ -121,21 +114,21 @@ void handle_events(Game *game)
       {
         Entity *entity = NULL;
 
-        switch (event.descripter.type)
+        switch (event.descriptor.type)
         {
           case EntityType_EnemyShip:
           {
             entity = create_enemy_entity(game);
-            entity->pos = event.descripter.position;
-            entity->rot = event.descripter.rotation;
+            entity->pos = event.descriptor.position;
+            entity->rot = event.descriptor.rotation;
           }
           break;
           case EntityType_Laser:
           {
             entity = create_laser_entity(game);
-            entity->pos = event.descripter.position;
-            entity->rot = event.descripter.rotation;
-            entity->speed = event.descripter.speed;
+            entity->pos = event.descriptor.position;
+            entity->rot = event.descriptor.rotation;
+            entity->speed = event.descriptor.speed;
           }
           break;
           default: ASSERT(FALSE);
@@ -147,12 +140,12 @@ void handle_events(Game *game)
       case EventType_KillEntity:
       {
         // Kill entity
-        pop_entity(game, event.descripter.id);
+        pop_entity(game, event.descriptor.id);
       }
       break;
     }
 
-    pop_event(queue);
+    pop_event(game);
   }
 }
 
@@ -162,29 +155,28 @@ void draw(Game *game)
 {
   d_clear(COLOR_BLACK);
 
-  for (Entity *e = game->entity_head; e != NULL; e = e->next)
+  for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (e->active)
+    if (!e->active) continue;
+
+    switch (e->type)
     {
-      switch (e->type)
+      case EntityType_Player:
       {
-        case EntityType_Player:
-        {
-          d_triangle(e->xform, e->color);
-        }
-        break;
-        case EntityType_EnemyShip:
-        {
-          d_triangle(e->xform, e->color);
-        }
-        break;
-        case EntityType_Laser:
-        {
-          d_rectangle(e->xform, e->color);
-        }
-        break;
-        default: break;
+        d_triangle(e->xform, e->color);
       }
+      break;
+      case EntityType_EnemyShip:
+      {
+        d_triangle(e->xform, e->color);
+      }
+      break;
+      case EntityType_Laser:
+      {
+        d_rectangle(e->xform, e->color);
+      }
+      break;
+      default: break;
     }
   }
 }
@@ -200,86 +192,4 @@ bool should_quit(Game *game)
   }
 
   return result;
-}
-
-// @EntityList =================================================================================
-
-Entity *get_entity_by_id(Game *game, u64 id)
-{
-  Entity *result = NULL;
-  
-  for (Entity *e = game->entity_head; e != NULL; e = e->next)
-  {
-    if (e->id == id)
-    {
-      result = e;
-      break;
-    }
-  }
-
-  return result;
-}
-
-Entity *get_first_entity_of_type(Game *game, EntityType type)
-{
-  Entity *result = NULL;
-
-  for (Entity *e = game->entity_head; e != NULL; e = e->next)
-  {
-    if (e->type == type)
-    {
-      result = e;
-      break;
-    }
-  }
-
-  return result;
-}
-
-static 
-void push_entity(Game *game, Entity *entity)
-{
-  if (game->entity_head == NULL)
-  {
-    game->entity_head = entity;
-  }
-
-  if (game->entity_tail != NULL)
-  {
-    game->entity_tail->next = entity;
-  }
-
-  entity->next = NULL;
-  game->entity_tail = entity;
-  game->entity_count++;
-
-  // printf("Entity count: %u\n", game->entity_count);
-}
-
-static 
-void pop_entity(Game *game, u64 id)
-{
-  Entity *prev = NULL;
-  Entity *curr = game->entity_head;
-
-  while (curr != NULL)
-  {
-    if (curr->id == id)
-    {
-      if (prev != NULL)
-      {
-        prev->next = curr->next;
-      }
-      else
-      {
-        game->entity_head = curr->next;
-      }
-
-      curr->active = FALSE;
-      break;
-    }
-
-    prev = curr;
-    curr = curr->next;
-  }
 }

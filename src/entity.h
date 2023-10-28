@@ -6,8 +6,14 @@
 
 typedef struct Game Game;
 
+typedef struct Entity Entity;
+typedef struct EntityRef EntityRef;
+typedef struct EntityList EntityList;
+typedef struct Timer Timer;
+
 typedef enum EntityType
 {
+  EntityType_Nil,
   EntityType_Player,
   EntityType_EnemyShip,
   EntityType_Laser,
@@ -23,7 +29,6 @@ typedef enum EntityProp
   EntityProp_Projectile = 1 << 5,
 } EntityProp;
 
-typedef struct Timer Timer;
 struct Timer
 {
   f64 start_duration;
@@ -34,7 +39,12 @@ struct Timer
   bool loop;
 };
 
-typedef struct Entity Entity;
+struct EntityRef
+{
+  Entity *entity;
+  u64 id;
+};
+
 struct Entity
 {
   Entity *next;
@@ -71,6 +81,14 @@ struct Entity
   i8 health;
 };
 
+struct EntityList
+{
+  Entity *head;
+  Entity *tail;
+  Entity *first_free;
+  u16 count;
+};
+
 #define PLAYER_HEALTH 3
 #define PLAYER_SPEED 120.0f
 #define PLAYER_ACC 2.5f
@@ -83,9 +101,13 @@ struct Entity
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
 
+// @Entity =====================================================================================
+
 Entity *create_player_entity(Game *game);
 Entity *create_enemy_entity(Game *game);
 Entity *create_laser_entity(Game *game);
+
+void reset_entity(Entity *entity);
 
 void update_entity_xform(Game *game, Entity *entity);
 void update_controlled_entity_movement(Game *game, Entity *entity);
@@ -94,6 +116,17 @@ void update_projectile_entity_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 
-void set_entity_target(Game *game, Entity *entity, Entity *target);
+void set_entity_target(Game *game, Entity *entity, EntityRef target);
 void wrap_entity_at_edges(Entity *entity);
 void hurt_entity(Game *game, Entity *entity);
+
+// @EntityRef ==================================================================================
+
+EntityRef entity_ref(Entity *entity);
+
+// @EntityList =================================================================================
+
+void push_entity(Game *game, Entity *entity);
+void pop_entity(Game *game, u64 id);
+Entity *get_entity_by_id(Game *game, u64 id);
+Entity *get_first_entity_of_type(Game *game, EntityType type);
