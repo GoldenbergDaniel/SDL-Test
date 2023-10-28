@@ -3,7 +3,7 @@
 #include "base/base_common.h"
 #include "base/base_math.h"
 
-#include "entity.h"
+typedef struct Game Game;
 
 typedef enum EventType
 {
@@ -27,7 +27,7 @@ struct Event
 {
   Event *next;
   EventType type;
-  EventDescriptor descripter;
+  EventDescriptor descriptor;
 };
 
 typedef struct EventQueue EventQueue;
@@ -38,7 +38,7 @@ struct EventQueue
   u64 count;
 };
 
-void push_event(EventQueue *queue, EventType type, EventDescriptor desc);
-void pop_event(EventQueue *queue);
-Event peek_event(EventQueue *queue);
-void clear_event_queue(EventQueue *queue);
+void push_event(Game *game, EventType type, EventDescriptor desc);
+void pop_event(Game *game);
+Event peek_event(Game *game);
+void clear_event_queue(Game *game);

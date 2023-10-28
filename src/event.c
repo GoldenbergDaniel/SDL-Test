@@ -1,13 +1,15 @@
 #include "base/base_common.h"
 #include "base/base_os.h"
 
+#include "game.h"
 #include "event.h"
 
-void push_event(EventQueue *queue, EventType type, EventDescriptor desc)
+void push_event(Game *game, EventType type, EventDescriptor desc)
 {
+  EventQueue *queue = &game->event_queue;
   Event *new_back = os_alloc(sizeof (Event));
   new_back->type = type;
-  new_back->descripter = desc;
+  new_back->descriptor = desc;
 
   if (queue->front == NULL)
   {
@@ -23,8 +25,9 @@ void push_event(EventQueue *queue, EventType type, EventDescriptor desc)
   queue->count++;
 }
 
-void pop_event(EventQueue *queue)
+void pop_event(Game *game)
 {
+  EventQueue *queue = &game->event_queue;
   ASSERT(queue->count > 0);
 
   Event *next = queue->front->next;
@@ -39,13 +42,14 @@ void pop_event(EventQueue *queue)
   queue->count--;
 }
 
-Event peek_event(EventQueue *queue)
+Event peek_event(Game *game)
 {
-  return *queue->front;
+  return *game->event_queue.front;
 }
 
-void clear_event_queue(EventQueue *queue)
+void clear_event_queue(Game *game)
 {
+  EventQueue *queue = &game->event_queue;
   Event *curr = queue->front;
   while (curr != NULL)
   {
