@@ -19,18 +19,16 @@ void init(Game *game)
   game->event_queue = (EventQueue) {0};
   game->camera = translate_3x3f(0.0f, 0.0f);
   game->running = TRUE;
-  game->should_quit = FALSE;
   game->first_frame = TRUE;
+  game->should_quit = FALSE;
 
-  Entity *entity = create_player_entity(game);
-  push_entity(game, entity);
+  Entity *entity = alloc_entity(game);
+  init_player_entity(entity);
 
-  entity = game->entities.head;
-  for (u32 i = 0; i < 1; i++)
+  for (u32 i = 0; i < 3; i++)
   {
-    entity->next = create_enemy_entity(game);
-    push_entity(game, entity->next);
-    entity = entity->next;
+    entity = alloc_entity(game);
+    init_enemy_entity(entity);
   }
 
   GLOBAL->renderer->camera = &game->camera;
@@ -42,7 +40,7 @@ void update(Game *game)
 {
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->active) continue;
+    if (!e->simulating) continue;
     
     b64 props = e->props;
 
@@ -78,11 +76,11 @@ void update(Game *game)
       {
         update_targetting_entity_combat(game, e);
 
-        Entity *player = get_first_entity_of_type(game, EntityType_Player);
+        Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
-        if (player != NULL && player->active)
+        if (player != NULL && player->simulating)
         {
-          set_entity_target(game, e, ref_from_entity(player));
+          set_entity_target(e, ref_from_entity(player));
         }
         else
         {
@@ -94,8 +92,12 @@ void update(Game *game)
 
   if (key_just_pressed(KEY_BACKSPACE))
   {
-    Entity *entity = get_first_entity_of_type(game, EntityType_Player);
-    EventDescriptor desc = {.id = entity->id};
+    Entity *entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+    EventDesc desc = 
+    {
+      .id = entity->id
+    };
+
     push_event(game, EventType_KillEntity, desc);
   }
 }
@@ -106,41 +108,41 @@ void handle_events(Game *game)
 {
   while (game->event_queue.count > 0)
   {
-    Event event = peek_event(game);
+    Event event = get_next_event(game);
 
     switch (event.type)
     {
       case EventType_SpawnEntity:
       {
-        Entity *entity = NULL;
-
         switch (event.descriptor.type)
         {
           case EntityType_EnemyShip:
           {
-            entity = create_enemy_entity(game);
-            entity->pos = event.descriptor.position;
-            entity->rot = event.descriptor.rotation;
+            Entity *entity = alloc_entity(game);
+            init_enemy_entity(entity);
           }
           break;
           case EntityType_Laser:
           {
-            entity = create_laser_entity(game);
+            Entity *entity = alloc_entity(game);
+            init_laser_entity(entity);
             entity->pos = event.descriptor.position;
             entity->rot = event.descriptor.rotation;
             entity->speed = event.descriptor.speed;
           }
           break;
-          default: ASSERT(FALSE);
+          default: 
+          {
+            printf("Error: Cannot spawn entity. Invalid type!");
+            ASSERT(FALSE);
+          }
         }
-
-        push_entity(game, entity);
       }
       break;
       case EventType_KillEntity:
       {
-        // Kill entity
-        pop_entity(game, event.descriptor.id);
+        Entity *entity = get_entity_of_id(game, event.descriptor.id);
+        free_entity(game, entity);
       }
       break;
     }
@@ -157,7 +159,7 @@ void draw(Game *game)
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->active) continue;
+    if (!e->visible) continue;
 
     switch (e->type)
     {
@@ -186,7 +188,7 @@ bool should_quit(Game *game)
 {
   bool result = FALSE;
   
-  if (key_pressed(KEY_ESCAPE))
+  if (game->should_quit || key_pressed(KEY_ESCAPE))
   {
     result = TRUE;
   }

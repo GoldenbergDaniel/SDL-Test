@@ -5,13 +5,12 @@
 #include "global.h"
 #include "game.h"
 
-#define DEBUG
 // #define LOG_PERF
 
 Global *GLOBAL;
 
 static void set_gl_attributes(void);
-static void handle_input(SDL_Event *event, bool *running);
+static void handle_input(SDL_Event *event, Game *game);
 
 i32 main(void)
 {
@@ -70,7 +69,7 @@ i32 main(void)
       SDL_Event event;
       while (SDL_PollEvent(&event))
       {
-        handle_input(&event, &game.running);
+        handle_input(&event, &game);
       }
 
       if (should_quit(&game))
@@ -128,7 +127,7 @@ void set_gl_attributes(void)
 }
 
 static
-void handle_input(SDL_Event *event, bool *should_quit)
+void handle_input(SDL_Event *event, Game *game)
 {
   Input *input = GLOBAL->input;
 
@@ -136,7 +135,7 @@ void handle_input(SDL_Event *event, bool *should_quit)
 
   switch (event->type)
   {
-    case SDL_QUIT: *should_quit = TRUE;
+    case SDL_QUIT: game->should_quit = TRUE;
     break;
     case SDL_KEYDOWN: 
     {

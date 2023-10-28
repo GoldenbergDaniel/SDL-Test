@@ -5,14 +5,17 @@
 
 typedef struct Game Game;
 
+typedef struct Event Event;
+typedef struct EventDesc EventDesc;
+typedef struct EventQueue EventQueue;
+
 typedef enum EventType
 {
   EventType_SpawnEntity,
   EventType_KillEntity,
 } EventType;
 
-typedef struct EventDescriptor EventDescriptor;
-struct EventDescriptor
+struct EventDesc
 {
   u64 id;
   u64 type;
@@ -22,15 +25,13 @@ struct EventDescriptor
   f32 speed;
 };
 
-typedef struct Event Event;
 struct Event
 {
   Event *next;
   EventType type;
-  EventDescriptor descriptor;
+  EventDesc descriptor;
 };
 
-typedef struct EventQueue EventQueue;
 struct EventQueue
 {
   Event *front;
@@ -38,7 +39,7 @@ struct EventQueue
   u64 count;
 };
 
-void push_event(Game *game, EventType type, EventDescriptor desc);
+void push_event(Game *game, EventType type, EventDesc desc);
 void pop_event(Game *game);
-Event peek_event(Game *game);
+Event get_next_event(Game *game);
 void clear_event_queue(Game *game);

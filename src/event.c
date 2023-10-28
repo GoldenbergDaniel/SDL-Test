@@ -4,7 +4,7 @@
 #include "game.h"
 #include "event.h"
 
-void push_event(Game *game, EventType type, EventDescriptor desc)
+void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
   Event *new_back = os_alloc(sizeof (Event));
@@ -42,7 +42,7 @@ void pop_event(Game *game)
   queue->count--;
 }
 
-Event peek_event(Game *game)
+Event get_next_event(Game *game)
 {
   return *game->event_queue.front;
 }

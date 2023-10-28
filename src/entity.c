@@ -4,10 +4,11 @@
 
 #include "base/base_common.h"
 #include "base/base_math.h"
-#include "game.h"
+
 #include "global.h"
 #include "event.h"
 #include "entity.h"
+#include "game.h"
 
 extern Global *GLOBAL;
 
@@ -16,13 +17,12 @@ static Vec2F random_position(u32 min_x, u32 max_x, u32 min_y, u32 max_y);
 static void init_timers(Entity *entity);
 static void timer_start(Timer *timer, bool start_at_zero);
 static bool timer_tick(Timer *timer, f64 dt);
+static void print_lists(Game *game);
 
 // @Entity =====================================================================================
 
-Entity *create_player_entity(Game *game)
+void init_player_entity(Entity *entity)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
   entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
@@ -33,17 +33,14 @@ Entity *create_player_entity(Game *game)
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_WHITE;
-  entity->active = TRUE;
+  entity->simulating = TRUE;
+  entity->visible = TRUE;
 
   init_timers(entity);
-
-  return entity;
 }
 
-Entity *create_enemy_entity(Game *game)
+void init_enemy_entity(Entity *entity)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
@@ -55,17 +52,14 @@ Entity *create_enemy_entity(Game *game)
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_RED;
   entity->view_dist = 250;
-  entity->active = TRUE;
+  entity->simulating = TRUE;
+  entity->visible = TRUE;
 
   init_timers(entity);
-
-  return entity;
 }
 
-Entity *create_laser_entity(Game *game)
+void init_laser_entity(Entity *entity)
 {
-  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_Laser;
   entity->props = LASER_PROPS;
   entity->pos = V2F_ZERO;
@@ -76,20 +70,16 @@ Entity *create_laser_entity(Game *game)
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_GREEN;
-  entity->active = TRUE;
-  entity->next = NULL;
+  entity->simulating = TRUE;
+  entity->visible = TRUE;
 
   init_timers(entity);
-
-  return entity;
 }
 
 void reset_entity(Entity *entity)
 {
-  u64 id = entity->id;
   Entity *next = entity->next;
   *entity = (Entity) {0};
-  entity->id = id++;
   entity->next = next;
 }
 
@@ -105,6 +95,27 @@ void update_entity_xform(Game *game, Entity *entity)
 
 void update_projectile_entity_movement(Game *game, Entity *entity)
 {
+  Timer *timer = &entity->timers[TIMER_KILL];
+
+  if (timer->ticking)
+  {
+    timer_tick(timer, game->dt);
+
+    if (timer->timeout)
+    {
+      EventDesc desc = 
+      {
+        .id = entity->id
+      };
+
+      push_event(game, EventType_KillEntity, desc);
+    }
+  }
+  else
+  {
+    timer_start(timer, FALSE);
+  }
+
   entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * game->dt;
   entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * game->dt;
   entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * game->dt;
@@ -143,7 +154,7 @@ void update_targetting_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
-  if (entity->has_target && entity->active)
+  if (entity->has_target && entity->simulating)
   {
     entity->dir.x = sinf(entity->target_angle);
     entity->dir.y = cosf(entity->target_angle);
@@ -197,8 +208,7 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
   if (key_just_pressed(KEY_SPACE))
   {
     Vec2F shot_point = v2f(entity->pos.x, entity->pos.y);
-
-    EventDescriptor desc = 
+    EventDesc desc = 
     {
       .type = EntityType_Laser,
       .position = shot_point,
@@ -208,33 +218,14 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
 
     push_event(game, EventType_SpawnEntity, desc);
   }
-
-  Timer *timer = &entity->timers[TIMER_HEALTH];
-
-  if (timer->ticking)
-  {
-    timer_tick(timer, game->dt);
-
-    if (timer->timeout)
-    {
-      // printf("Tick!\n");
-    }
-  }
-  else
-  {
-    timer_start(timer, FALSE);
-  }
 }
 
 void update_targetting_entity_combat(Game *game, Entity *entity)
 {
-  if (entity->has_target)
-  {
-    // printf("Entity shot!\n");
-  }
+  // Do combat
 }
 
-void set_entity_target(Game *game, Entity *entity, EntityRef target)
+void set_entity_target(Entity *entity, EntityRef target)
 {
   Entity *target_entity = entity_from_ref(target);
   
@@ -276,14 +267,15 @@ void wrap_entity_at_edges(Entity *entity)
   }
 }
 
-void hurt_entity(Game *game, Entity *entity)
+void damage_entity(Entity *entity, i8 damage)
 {
-  entity->health -= 1;
+  entity->health -= damage;
 
   if (entity->health <= 0)
   {
     entity->health = 0;
-    entity->active = FALSE;
+    entity->simulating = FALSE;
+    entity->visible = FALSE;
     printf("Player ded\n");
   }
 }
@@ -304,7 +296,74 @@ Entity *entity_from_ref(EntityRef ref)
 
 // @EntityList =================================================================================
 
-Entity *get_entity_by_id(Game *game, u64 id)
+Entity *alloc_entity(Game *game)
+{
+  EntityList *entities = &game->entities;
+  Entity *new_entity = game->entities.first_free;
+
+  if (new_entity == NULL)
+  {
+    new_entity = arena_alloc(&game->arena, sizeof (Entity));
+
+    if (entities->head == NULL)
+    {
+      entities->head = new_entity;
+    }
+
+    if (entities->tail != NULL)
+    {
+      entities->tail->next = new_entity;
+    }
+
+    new_entity->next = NULL;
+    entities->tail = new_entity;
+    entities->count++;
+  }
+  else
+  {
+    entities->first_free = entities->first_free->next_free;
+  }
+
+  new_entity->id = random_u64(0, UINT64_MAX);
+
+  return new_entity;
+}
+
+void free_entity(Game *game, Entity *entity)
+{
+  EntityList *entities = &game->entities;
+
+  reset_entity(entity);
+  entity->next_free = entities->first_free;
+  entities->first_free = entity;
+}
+
+#ifdef DEBUG
+static
+void print_lists(Game *game)
+{
+  EntityList list = game->entities;
+
+  for (Entity *e = list.head; e != NULL; e = e->next)
+  {
+    printf("[O]%llu -> ", e->id);
+  }
+  
+  printf("NULL\n");
+
+  Entity *curr = list.first_free;
+  while (curr)
+  {
+    printf("[X]%llu -> ", curr->id);
+    curr = curr->next_free;
+  }
+
+  printf("NULL\n");
+  printf("\n");
+}
+#endif
+
+Entity *get_entity_of_id(Game *game, u64 id)
 {
   Entity *result = NULL;
   
@@ -320,47 +379,26 @@ Entity *get_entity_by_id(Game *game, u64 id)
   return result;
 }
 
-Entity *get_first_entity_of_type(Game *game, EntityType type)
+Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type)
 {
   Entity *result = NULL;
+  f32 min_dist = FLT_MAX;
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
     if (e->type == type)
     {
-      result = e;
-      break;
+      f32 dist = distance_2f(e->pos, pos);
+
+      if (dist < min_dist)
+      {
+        result = e;
+        min_dist = dist;
+      }
     }
   }
 
   return result;
-}
-
-void push_entity(Game *game, Entity *entity)
-{
-  if (game->entities.head == NULL)
-  {
-    game->entities.head = entity;
-  }
-
-  if (game->entities.tail != NULL)
-  {
-    game->entities.tail->next = entity;
-  }
-
-  entity->next = NULL;
-  game->entities.tail = entity;
-  game->entities.count++;
-
-  // printf("Entity count: %u\n", game->entity_count);
-}
-
-void pop_entity(Game *game, u64 id)
-{
-  Entity *entity = get_entity_by_id(game, id);
-  reset_entity(entity);
-  // entity->active = FALSE;
-  // entity->id++;
 }
 
 // @Timer ======================================================================================
@@ -370,7 +408,7 @@ void init_timers(Entity *entity)
 {
   entity->timers[TIMER_COMBAT] = (Timer)
   {
-    .start_duration = 1.0f, // shot delay
+    .start_duration = 1.0f,
     .curr_duration = 1.0f,
     .should_tick = FALSE,
     .ticking = FALSE,
@@ -380,8 +418,18 @@ void init_timers(Entity *entity)
 
   entity->timers[TIMER_HEALTH] = (Timer)
   {
-    .start_duration = 1.0f, // invincibility
+    .start_duration = 1.0f,
     .curr_duration = 1.0f,
+    .should_tick = FALSE,
+    .ticking = FALSE,
+    .timeout = FALSE,
+    .loop = FALSE
+  };
+
+  entity->timers[TIMER_KILL] = (Timer)
+  {
+    .start_duration = 5.0f,
+    .curr_duration = 5.0f,
     .should_tick = FALSE,
     .ticking = FALSE,
     .timeout = FALSE,

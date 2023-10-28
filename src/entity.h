@@ -48,6 +48,7 @@ struct EntityRef
 struct Entity
 {
   Entity *next;
+  Entity *next_free;
 
   // General
   u64 id;
@@ -60,13 +61,15 @@ struct Entity
   Mat3x3F xform;
   Vec4F color;
   u16 z_index; // NOTE: probably just use inserion sort for now?
-  bool active;
+  bool simulating;
+  bool visible;
 
   // Physics
   Vec2F pos;
   Vec2F dir;
   Vec2F vel;
   f32 speed;
+  i8 health;
 
   // Targetting
   bool has_target;
@@ -75,10 +78,7 @@ struct Entity
   u16 view_dist;
 
   // Timers
-  Timer timers[2];
-
-  // Health
-  i8 health;
+  Timer timers[3];
 };
 
 struct EntityList
@@ -100,12 +100,13 @@ struct EntityList
 
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
+#define TIMER_KILL 2
 
 // @Entity =====================================================================================
 
-Entity *create_player_entity(Game *game);
-Entity *create_enemy_entity(Game *game);
-Entity *create_laser_entity(Game *game);
+void init_player_entity(Entity *entity);
+void init_enemy_entity(Entity *entity);
+void init_laser_entity(Entity *entity);
 
 void reset_entity(Entity *entity);
 
@@ -116,18 +117,18 @@ void update_projectile_entity_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 
-void set_entity_target(Game *game, Entity *entity, EntityRef target);
+void set_entity_target(Entity *entity, EntityRef target);
 void wrap_entity_at_edges(Entity *entity);
-void hurt_entity(Game *game, Entity *entity);
+void damage_entity(Entity *entity, i8 damage);
 
 // @EntityRef ==================================================================================
 
-EntityRef ref_from_entity(Entity *);
+EntityRef ref_from_entity(Entity *entity);
 Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList =================================================================================
 
-void push_entity(Game *game, Entity *entity);
-void pop_entity(Game *game, u64 id);
-Entity *get_entity_by_id(Game *game, u64 id);
-Entity *get_first_entity_of_type(Game *game, EntityType type);
+Entity *alloc_entity(Game *game);
+void free_entity(Game *game, Entity *entity);
+Entity *get_entity_of_id(Game *game, u64 id);
+Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);

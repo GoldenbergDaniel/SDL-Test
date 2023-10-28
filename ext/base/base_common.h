@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <float.h>
 
 typedef uint8_t bool;
 typedef uint8_t b8;

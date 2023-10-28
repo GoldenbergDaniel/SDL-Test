@@ -39,5 +39,5 @@ test:
 debug:
 	@echo "Compiling debug..."
 	@cd debug; \
-	$(CC) -I../lib/ $(LDFLAGS) ../lib/glad/glad.c ../src/*.c -g
+	$(CC) -I../lib/ $(LDFLAGS) -DDEBUG ../lib/glad/glad.c ../src/*.c -g
 	@echo "Compilation complete!"

@@ -35,8 +35,6 @@ struct R_GL_VAO
   u8 attrib_index;
 };
 
-#define DEBUG
-
 #ifdef DEBUG
 #define GL_ASSERT(call) \
   _r_gl_clear_error(); \
