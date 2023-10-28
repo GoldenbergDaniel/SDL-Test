@@ -22,7 +22,7 @@ static bool timer_tick(Timer *timer, f64 dt);
 Entity *create_player_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX/2);
+  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
   entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
@@ -43,7 +43,7 @@ Entity *create_player_entity(Game *game)
 Entity *create_enemy_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX/2);
+  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
@@ -65,7 +65,7 @@ Entity *create_enemy_entity(Game *game)
 Entity *create_laser_entity(Game *game)
 {
   Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  entity->id = random_u64(0, UINT64_MAX/2);
+  entity->id = random_u64(1, UINT64_MAX/2);
   entity->type = EntityType_Laser;
   entity->props = LASER_PROPS;
   entity->pos = V2F_ZERO;
@@ -236,15 +236,17 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
 
 void set_entity_target(Game *game, Entity *entity, EntityRef target)
 {
-  Vec2F target_pos = target.entity->pos;
+  Entity *target_entity = entity_from_ref(target);
+  
+  if (target_entity == NULL) return;
+
+  Vec2F target_pos = target_entity->pos;
 
   if (distance_2f(entity->pos, target_pos) <= entity->view_dist)
   {
     entity->has_target = TRUE;
-
     f32 dist_x = target_pos.x - entity->pos.x;
     f32 dist_y = target_pos.y - entity->pos.y;
-
     entity->target_angle = atan2(dist_x, dist_y);
   }
   else
@@ -289,9 +291,15 @@ void hurt_entity(Game *game, Entity *entity)
 // @EntityRef ==================================================================================
 
 inline
-EntityRef entity_ref(Entity *entity)
+EntityRef ref_from_entity(Entity *entity)
 {
   return (EntityRef) {entity, entity->id};
+}
+
+inline
+Entity *entity_from_ref(EntityRef ref)
+{
+  return ref.entity->id == ref.id ? ref.entity : NULL;
 }
 
 // @EntityList =================================================================================

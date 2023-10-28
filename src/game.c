@@ -82,7 +82,7 @@ void update(Game *game)
 
         if (player != NULL && player->active)
         {
-          set_entity_target(game, e, entity_ref(player));
+          set_entity_target(game, e, ref_from_entity(player));
         }
         else
         {

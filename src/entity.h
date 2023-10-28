@@ -122,7 +122,8 @@ void hurt_entity(Game *game, Entity *entity);
 
 // @EntityRef ==================================================================================
 
-EntityRef entity_ref(Entity *entity);
+EntityRef ref_from_entity(Entity *);
+Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList =================================================================================
 
