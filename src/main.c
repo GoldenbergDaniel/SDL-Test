@@ -5,8 +5,6 @@
 #include "global.h"
 #include "game.h"
 
-// #define LOG_PERF
-
 Global *GLOBAL;
 
 static void set_gl_attributes(void);
@@ -53,10 +51,6 @@ i32 main(void)
 
   while (game.running)
   {
-    #ifdef LOG_PERF
-    u64 frame_start = SDL_GetPerformanceCounter();
-    #endif
-
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
     current_time = new_time;
@@ -91,13 +85,6 @@ i32 main(void)
 
       game.first_frame = FALSE;
     }
-
-    #ifdef LOG_PERF
-    u64 frame_end = SDL_GetPerformanceCounter();
-    u64 frequency = SDL_GetPerformanceFrequency();
-    f64 frame_diff = (f64) (frame_end - frame_start) / frequency * 1000.0f;
-    printf("%.6lf ms\n", frame_diff);
-    #endif
 
     draw(&game);
     SDL_GL_SwapWindow(window);

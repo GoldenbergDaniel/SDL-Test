@@ -61,7 +61,7 @@ struct Entity
   Mat3x3F xform;
   Vec4F color;
   u16 z_index; // NOTE: probably just use inserion sort for now?
-  bool simulating;
+  bool active;
   bool visible;
 
   // Physics
@@ -108,7 +108,7 @@ void init_player_entity(Entity *entity);
 void init_enemy_entity(Entity *entity);
 void init_laser_entity(Entity *entity);
 
-void reset_entity(Entity *entity);
+void clear_entity(Entity *entity);
 
 void update_entity_xform(Game *game, Entity *entity);
 void update_controlled_entity_movement(Game *game, Entity *entity);

@@ -102,7 +102,7 @@ Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate)
   return scale_2f(sub_2f(target, curr), rate);
 }
 
-// @Vec3F ===================================================================================
+// @Vec3F ======================================================================================
 
 inline
 Vec3F v3f(f32 x, f32 y, f32 z)
@@ -160,12 +160,15 @@ Vec3F scale_3f(Vec3F v, f32 scale)
 Vec3F transform_3f(Vec3F v, Mat3x3F m)
 {
   Vec3F result = {0};
-  for (u8 c = 0; c < 3; c++)
-  {
-    result.x += m.elements[0][c] * v.elements[c];
-    result.y += m.elements[1][c] * v.elements[c];
-    result.z += m.elements[2][c] * v.elements[c];
-  }
+  result.x += m.elements[0][0] * v.elements[0];
+  result.x += m.elements[0][1] * v.elements[1];
+  result.x += m.elements[0][2] * v.elements[2];
+  result.y += m.elements[1][0] * v.elements[0];
+  result.y += m.elements[1][1] * v.elements[1];
+  result.y += m.elements[1][2] * v.elements[2];
+  result.z += m.elements[2][0] * v.elements[0];
+  result.z += m.elements[2][1] * v.elements[1];
+  result.z += m.elements[2][2] * v.elements[2];
 
   return result;
 }
@@ -208,7 +211,7 @@ Vec3F lerp_3f(Vec3F curr, Vec3F target, f32 rate)
   return scale_3f(sub_3f(target, curr), rate);
 }
 
-// @Vec4F ===================================================================================
+// @Vec4F ======================================================================================
 
 inline
 Vec4F v4f(f32 x, f32 y, f32 z, f32 w)
@@ -255,14 +258,22 @@ Vec4F scale_4f(Vec4F v, f32 scale)
 Vec4F transform_4f(Vec4F v, Mat4x4F m)
 {
   Vec4F result = {0};
-
-  for (u8 c = 0; c < 4; c++)
-  {
-    result.x += m.elements[0][c] * v.elements[c];
-    result.y += m.elements[1][c] * v.elements[c];
-    result.z += m.elements[2][c] * v.elements[c];
-    result.w += m.elements[3][c] * v.elements[c];
-  }
+  result.x += m.elements[0][0] * v.elements[0];
+  result.x += m.elements[0][1] * v.elements[1];
+  result.x += m.elements[0][2] * v.elements[2];
+  result.x += m.elements[0][3] * v.elements[3];
+  result.y += m.elements[1][0] * v.elements[0];
+  result.y += m.elements[1][1] * v.elements[1];
+  result.y += m.elements[1][2] * v.elements[2];
+  result.y += m.elements[1][3] * v.elements[3];
+  result.z += m.elements[2][0] * v.elements[0];
+  result.z += m.elements[2][1] * v.elements[1];
+  result.z += m.elements[2][2] * v.elements[2];
+  result.z += m.elements[2][3] * v.elements[3];
+  result.w += m.elements[3][0] * v.elements[0];
+  result.w += m.elements[3][1] * v.elements[1];
+  result.w += m.elements[3][2] * v.elements[2];
+  result.w += m.elements[3][3] * v.elements[3];
 
   return result;
 }
@@ -299,7 +310,7 @@ Vec4F normalize_4f(Vec4F v)
   return scale_4f(v, 1.0f / magnitude_4f(v));
 }
 
-// @Mat3x3F =================================================================================
+// @Mat3x3F ====================================================================================
 
 inline
 Mat3x3F m3x3f(f32 k)
@@ -420,7 +431,7 @@ Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 bot, f32 top)
   return result;
 }
 
-// @Mat4x4F =================================================================================
+// @Mat4x4F ====================================================================================
 
 inline
 Mat4x4F m4x4f(f32 k)
@@ -538,7 +549,7 @@ Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
   return result;
 }
 
-// @Collision ===============================================================================
+// @Collision ==================================================================================
 
 inline
 Vec2F rect_center(Vec2F pos, f32 w, f32 h)
@@ -565,7 +576,7 @@ bool rect_ranges_intersect(Vec2F p1, Vec2F p2, f32 w1, f32 h1, f32 w2, f32 h2)
 
 #ifdef __cplusplus
 
-// @Overloading =============================================================================
+// @Overloading ================================================================================
 
 Vec2F operator+(Vec2F a, Vec2F b)
 {

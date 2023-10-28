@@ -26,14 +26,12 @@ void init_player_entity(Entity *entity)
   entity->type = EntityType_Player;
   entity->props = PLAYER_PROPS;
   entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
-  entity->vel = V2F_ZERO;
   entity->scale = v2f(1.0f, 1.0f);
-  entity->rot = 0.0f;
   entity->speed = PLAYER_SPEED;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_WHITE;
-  entity->simulating = TRUE;
+  entity->active = TRUE;
   entity->visible = TRUE;
 
   init_timers(entity);
@@ -44,15 +42,13 @@ void init_enemy_entity(Entity *entity)
   entity->type = EntityType_EnemyShip;
   entity->props = ENEMY_PROPS;
   entity->pos = random_position(0, W_WIDTH, 0, W_HEIGHT);
-  entity->vel = V2F_ZERO;
   entity->scale = v2f(2.0f, 2.0f);
-  entity->rot = 0.0f;
   entity->speed = 100.0f;
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_RED;
   entity->view_dist = 250;
-  entity->simulating = TRUE;
+  entity->active = TRUE;
   entity->visible = TRUE;
 
   init_timers(entity);
@@ -70,13 +66,13 @@ void init_laser_entity(Entity *entity)
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
   entity->color = COLOR_GREEN;
-  entity->simulating = TRUE;
+  entity->active = TRUE;
   entity->visible = TRUE;
 
   init_timers(entity);
 }
 
-void reset_entity(Entity *entity)
+void clear_entity(Entity *entity)
 {
   Entity *next = entity->next;
   *entity = (Entity) {0};
@@ -154,7 +150,7 @@ void update_targetting_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
-  if (entity->has_target && entity->simulating)
+  if (entity->has_target && entity->active)
   {
     entity->dir.x = sinf(entity->target_angle);
     entity->dir.y = cosf(entity->target_angle);
@@ -274,7 +270,7 @@ void damage_entity(Entity *entity, i8 damage)
   if (entity->health <= 0)
   {
     entity->health = 0;
-    entity->simulating = FALSE;
+    entity->active = FALSE;
     entity->visible = FALSE;
     printf("Player ded\n");
   }
@@ -304,6 +300,7 @@ Entity *alloc_entity(Game *game)
   if (new_entity == NULL)
   {
     new_entity = arena_alloc(&game->arena, sizeof (Entity));
+    clear_entity(new_entity);
 
     if (entities->head == NULL)
     {
@@ -324,7 +321,7 @@ Entity *alloc_entity(Game *game)
     entities->first_free = entities->first_free->next_free;
   }
 
-  new_entity->id = random_u64(0, UINT64_MAX);
+  new_entity->id = random_u64(1, UINT64_MAX);
 
   return new_entity;
 }
@@ -333,35 +330,39 @@ void free_entity(Game *game, Entity *entity)
 {
   EntityList *entities = &game->entities;
 
-  reset_entity(entity);
+  clear_entity(entity);
   entity->next_free = entities->first_free;
   entities->first_free = entity;
 }
 
-#ifdef DEBUG
+// #ifdef DEBUG
 static
 void print_lists(Game *game)
 {
   EntityList list = game->entities;
 
+  printf("Arena: ");
+
   for (Entity *e = list.head; e != NULL; e = e->next)
   {
-    printf("[O]%llu -> ", e->id);
+    printf("%llu -> ", e->id);
   }
   
   printf("NULL\n");
 
+  printf("Freelist: ");
+
   Entity *curr = list.first_free;
   while (curr)
   {
-    printf("[X]%llu -> ", curr->id);
+    printf("%llu -> ", curr->id);
     curr = curr->next_free;
   }
 
   printf("NULL\n");
   printf("\n");
 }
-#endif
+// #endif
 
 Entity *get_entity_of_id(Game *game, u64 id)
 {

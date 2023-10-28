@@ -40,7 +40,7 @@ void update(Game *game)
 {
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->simulating) continue;
+    if (!e->active) continue;
     
     b64 props = e->props;
 
@@ -78,7 +78,7 @@ void update(Game *game)
 
         Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
-        if (player != NULL && player->simulating)
+        if (player != NULL && player->active)
         {
           set_entity_target(e, ref_from_entity(player));
         }
