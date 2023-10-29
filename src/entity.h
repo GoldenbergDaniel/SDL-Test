@@ -48,7 +48,7 @@ struct Collider2D
 
 struct Timer
 {
-  f64 start_duration;
+  f64 max_duration;
   f64 curr_duration;
   bool should_tick;
   bool is_ticking;
@@ -109,11 +109,6 @@ struct EntityList
   u16 count;
 };
 
-#define PLAYER_HEALTH 3
-#define PLAYER_SPEED 100.0f
-#define PLAYER_ACC 2.5f
-#define PLAYER_FRIC 1.5f
-
 #define PLAYER_PROPS EntityProp_Controlled | EntityProp_Movable | EntityProp_Attacker
 #define ENEMY_PROPS EntityProp_Targetting | EntityProp_Movable | EntityProp_Attacker
 #define LASER_PROPS EntityProp_Movable | EntityProp_Projectile
@@ -121,6 +116,11 @@ struct EntityList
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
 #define TIMER_KILL 2
+
+#define PLAYER_HEALTH 3
+#define PLAYER_SPEED 100.0f
+#define PLAYER_ACC 2.5f
+#define PLAYER_FRIC 1.5f
 
 // @Entity =====================================================================================
 

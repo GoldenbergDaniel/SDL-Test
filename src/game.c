@@ -27,6 +27,8 @@ void init(Game *game)
   init_entity(entity, EntityType_Player);
   entity = alloc_entity(game);
   init_entity(entity, EntityType_EnemyShip);
+  entity = alloc_entity(game);
+  init_entity(entity, EntityType_EnemyShip);
 
   GLOBAL->renderer->camera = &game->camera;
 }

@@ -27,6 +27,8 @@ void init_entity(Entity *entity, EntityType type)
   entity->is_active = TRUE;
   entity->is_visible = TRUE;
 
+  init_timers(entity);
+
   switch (type)
   {
     case EntityType_Player:
@@ -36,6 +38,11 @@ void init_entity(Entity *entity, EntityType type)
       entity->scale = v2f(1.0f, 1.0f);
       entity->speed = PLAYER_SPEED;
       entity->color = COLOR_WHITE;
+
+      Timer *timer = get_timer(entity, TIMER_COMBAT);
+      timer->max_duration = 0.25f;
+      timer->curr_duration = 0.0f;
+      timer->should_tick = FALSE;
     }
     break;
     case EntityType_EnemyShip:
@@ -46,6 +53,9 @@ void init_entity(Entity *entity, EntityType type)
       entity->speed = 100.0f;
       entity->color = COLOR_RED;
       entity->view_dist = 350;
+
+      Timer *timer = get_timer(entity, TIMER_COMBAT);
+      timer->should_loop = TRUE;
     }
     break;
     case EntityType_Laser:
@@ -60,8 +70,6 @@ void init_entity(Entity *entity, EntityType type)
       ASSERT(FALSE);
     }
   }
-
-  init_timers(entity);
 }
 
 inline
@@ -105,9 +113,9 @@ void update_controlled_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
-  if (key_pressed(KEY_A)) entity->rot += 200.0f * game->dt;
+  if (key_pressed(KEY_A)) entity->rot += 180.0f * game->dt;
   
-  if (key_pressed(KEY_D)) entity->rot -= 200.0f * game->dt;
+  if (key_pressed(KEY_D)) entity->rot -= 180.0f * game->dt;
 
   if (key_pressed(KEY_W) && !key_pressed(KEY_S))
   {
@@ -185,11 +193,15 @@ void update_targetting_entity_movement(Game *game, Entity *entity)
 void update_controlled_entity_combat(Game *game, Entity *entity)
 {
   Timer *timer = get_timer(entity, TIMER_COMBAT);
-  timer->should_loop = FALSE;
-  timer->start_duration = 0.25f;
-  tick_timer(timer, game->dt);
 
-  if (key_pressed(KEY_SPACE) && timer->timeout)
+  if (timer->should_tick)
+  {
+    tick_timer(timer, game->dt);
+  }
+
+  bool can_shoot = key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
+
+  if (can_shoot)
   {
     Vec2F shot_point = v2f(entity->pos.x, entity->pos.y);
     EventDesc desc = 
@@ -212,10 +224,11 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
   if (entity->has_target)
   {
     Timer *timer = get_timer(entity, TIMER_COMBAT);
-    timer->should_loop = TRUE;
     tick_timer(timer, game->dt);
 
-    if (timer->timeout)
+    bool can_shoot = timer->timeout;
+    
+    if (can_shoot)
     {
       Vec2F shot_point = v2f(entity->pos.x, entity->pos.y);
       EventDesc desc = 
@@ -424,17 +437,17 @@ void init_timers(Entity *entity)
 {
   entity->timers[TIMER_COMBAT] = (Timer)
   {
-    .start_duration = 1.0f,
+    .max_duration = 1.0f,
     .curr_duration = 1.0f,
     .should_tick = TRUE,
     .is_ticking = FALSE,
     .timeout = FALSE,
-    .should_loop = TRUE
+    .should_loop = FALSE
   };
 
   entity->timers[TIMER_HEALTH] = (Timer)
   {
-    .start_duration = 1.0f,
+    .max_duration = 1.0f,
     .curr_duration = 1.0f,
     .should_tick = TRUE,
     .is_ticking = FALSE,
@@ -444,7 +457,7 @@ void init_timers(Entity *entity)
 
   entity->timers[TIMER_KILL] = (Timer)
   {
-    .start_duration = 5.0f,
+    .max_duration = 5.0f,
     .curr_duration = 5.0f,
     .should_tick = TRUE,
     .is_ticking = FALSE,
@@ -462,25 +475,22 @@ Timer *get_timer(Entity *entity, u8 index)
 static
 bool tick_timer(Timer *timer, f64 dt)
 {
-  if (timer->should_tick)
+  if (timer->is_ticking)
   {
-    if (timer->is_ticking)
-    {
-      timer->curr_duration -= dt;
+    timer->curr_duration -= dt;
 
-      if (timer->curr_duration <= 0.0f)
-      {
-        timer->timeout = TRUE;
-        timer->is_ticking = FALSE;
-        timer->should_tick = timer->should_loop ? TRUE : FALSE;
-      }
-    }
-    else
+    if (timer->curr_duration <= 0.0f)
     {
-      timer->curr_duration = timer->start_duration;
-      timer->is_ticking = TRUE;
-      timer->timeout = FALSE;
+      timer->timeout = TRUE;
+      timer->is_ticking = FALSE;
+      timer->should_tick = timer->should_loop;
     }
+  }
+  else
+  {
+    timer->curr_duration = timer->max_duration;
+    timer->timeout = FALSE;
+    timer->is_ticking = TRUE;
   }
 
   return timer->timeout;
