@@ -23,6 +23,7 @@ struct EventDesc
   Vec2F position;
   f32 rotation;
   f32 speed;
+  Vec4F color;
 };
 
 struct Event

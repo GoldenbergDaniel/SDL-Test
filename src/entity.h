@@ -10,6 +10,7 @@ typedef struct Entity Entity;
 typedef struct EntityRef EntityRef;
 typedef struct EntityList EntityList;
 typedef struct Timer Timer;
+typedef struct Collider2D Collider2D;
 
 typedef enum EntityType
 {
@@ -27,16 +28,33 @@ typedef enum EntityProp
   EntityProp_Attacker = 1 << 3,
   EntityProp_Killable = 1 << 4,
   EntityProp_Projectile = 1 << 5,
+  EntityProp_Collides = 1 << 6,
 } EntityProp;
+
+typedef enum ColliderType
+{
+  ColliderType_Circle,
+  ColliderType_Rect,
+} ColliderType;
+
+struct Collider2D
+{
+  ColliderType type;
+  Vec2F pos;
+  u16 radius;
+  u16 width;
+  u16 height;
+};
 
 struct Timer
 {
   f64 start_duration;
   f64 curr_duration;
   bool should_tick;
-  bool ticking;
+  bool is_ticking;
   bool timeout;
-  bool loop;
+  bool should_loop;
+  bool start_at_zero;
 };
 
 struct EntityRef
@@ -50,34 +68,36 @@ struct Entity
   Entity *next;
   Entity *next_free;
 
-  // General
   u64 id;
   EntityType type;
   b64 props;
+
+  Vec2F pos;
   f32 rot;
   Vec2F scale;
   f32 width;
   f32 height;
   Mat3x3F xform;
-  Vec4F color;
-  u16 z_index; // NOTE: probably just use inserion sort for now?
-  bool active;
-  bool visible;
-
-  // Physics
-  Vec2F pos;
   Vec2F dir;
   Vec2F vel;
+  
+  Vec4F color;
+  u16 z_index;
+  bool is_active;
+  bool is_visible;
+
   f32 speed;
   i8 health;
 
-  // Targetting
+  Collider2D col;
+  u8 col_layer;
+  b8 col_mask;
+
   bool has_target;
   Vec2F target_pos;
   f32 target_angle;
   u16 view_dist;
 
-  // Timers
   Timer timers[3];
 };
 
@@ -90,7 +110,7 @@ struct EntityList
 };
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 120.0f
+#define PLAYER_SPEED 100.0f
 #define PLAYER_ACC 2.5f
 #define PLAYER_FRIC 1.5f
 
@@ -104,10 +124,7 @@ struct EntityList
 
 // @Entity =====================================================================================
 
-void init_player_entity(Entity *entity);
-void init_enemy_entity(Entity *entity);
-void init_laser_entity(Entity *entity);
-
+void init_entity(Entity *entity, EntityType type);
 void clear_entity(Entity *entity);
 
 void update_entity_xform(Game *game, Entity *entity);
@@ -132,3 +149,7 @@ Entity *alloc_entity(Game *game);
 void free_entity(Game *game, Entity *entity);
 Entity *get_entity_of_id(Game *game, u64 id);
 Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
+
+// @Collider2D =================================================================================
+
+

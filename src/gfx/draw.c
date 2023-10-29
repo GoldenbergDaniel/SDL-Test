@@ -2,7 +2,6 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 
-#include "../global.h"
 #include "../game.h"
 #include "gl_render.h"
 #include "shaders.h"

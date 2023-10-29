@@ -5,7 +5,7 @@
 #include "base/base_math.h"
 
 #include "gfx/draw.h"
-#include "global.h"
+#include "input.h"
 #include "event.h"
 #include "entity.h"
 #include "game.h"
@@ -22,14 +22,11 @@ void init(Game *game)
   game->first_frame = TRUE;
   game->should_quit = FALSE;
 
-  Entity *entity = alloc_entity(game);
-  init_player_entity(entity);
-
-  for (u32 i = 0; i < 3; i++)
-  {
-    entity = alloc_entity(game);
-    init_enemy_entity(entity);
-  }
+  Entity *entity;
+  entity = alloc_entity(game);
+  init_entity(entity, EntityType_Player);
+  entity = alloc_entity(game);
+  init_entity(entity, EntityType_EnemyShip);
 
   GLOBAL->renderer->camera = &game->camera;
 }
@@ -40,24 +37,22 @@ void update(Game *game)
 {
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->active) continue;
-    
-    b64 props = e->props;
+    if (!e->is_active) continue;
 
-    if (props & EntityProp_Movable)
+    if (e->props & EntityProp_Movable)
     {
-      if (props & EntityProp_Controlled)
+      if (e->props & EntityProp_Controlled)
       {
         update_controlled_entity_movement(game, e);
         wrap_entity_at_edges(e);
       }
 
-      if (props & EntityProp_Targetting)
+      if (e->props & EntityProp_Targetting)
       {
         update_targetting_entity_movement(game, e);
       }
 
-      if (props & EntityProp_Projectile)
+      if (e->props & EntityProp_Projectile)
       {
         update_projectile_entity_movement(game, e);
       }
@@ -65,20 +60,18 @@ void update(Game *game)
       update_entity_xform(game, e);
     }
 
-    if (props & EntityProp_Attacker)
+    if (e->props & EntityProp_Attacker)
     {
-      if (props & EntityProp_Controlled)
+      if (e->props & EntityProp_Controlled)
       {
         update_controlled_entity_combat(game, e);
       }
       
-      if (props & EntityProp_Targetting)
+      if (e->props & EntityProp_Targetting)
       {
-        update_targetting_entity_combat(game, e);
-
         Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
-        if (player != NULL && player->active)
+        if (player != NULL && player->is_active)
         {
           set_entity_target(e, ref_from_entity(player));
         }
@@ -86,6 +79,8 @@ void update(Game *game)
         {
           e->has_target = FALSE;
         }
+
+        update_targetting_entity_combat(game, e);
       }
     }
   }
@@ -93,11 +88,7 @@ void update(Game *game)
   if (key_just_pressed(KEY_BACKSPACE))
   {
     Entity *entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-    EventDesc desc = 
-    {
-      .id = entity->id
-    };
-
+    EventDesc desc = {.id = entity->id};
     push_event(game, EventType_KillEntity, desc);
   }
 }
@@ -114,26 +105,27 @@ void handle_events(Game *game)
     {
       case EventType_SpawnEntity:
       {
+        Entity *entity = alloc_entity(game);
+
         switch (event.descriptor.type)
         {
           case EntityType_EnemyShip:
           {
-            Entity *entity = alloc_entity(game);
-            init_enemy_entity(entity);
+            init_entity(entity, event.descriptor.type);
           }
           break;
           case EntityType_Laser:
           {
-            Entity *entity = alloc_entity(game);
-            init_laser_entity(entity);
+            init_entity(entity, event.descriptor.type);
             entity->pos = event.descriptor.position;
             entity->rot = event.descriptor.rotation;
             entity->speed = event.descriptor.speed;
+            entity->color = event.descriptor.color;
           }
           break;
           default: 
           {
-            printf("Error: Cannot spawn entity. Invalid type!");
+            printf("ERROR: Failed to spawn entity. Invalid type!");
             ASSERT(FALSE);
           }
         }
@@ -159,7 +151,7 @@ void draw(Game *game)
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->visible) continue;
+    if (!e->is_visible) continue;
 
     switch (e->type)
     {

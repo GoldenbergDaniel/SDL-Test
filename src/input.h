@@ -2,9 +2,8 @@
 
 #include "base/base_common.h"
 #include "base/base_math.h"
-#include "gfx/draw.h"
 
-// @Input ======================================================================================
+typedef union SDL_Event SDL_Event;
 
 typedef enum Key
 {
@@ -33,12 +32,4 @@ bool key_just_pressed(Key key);
 bool key_just_released(Key key);
 Vec2I mouse_position(void);
 void clear_last_frame_input(void);
-
-// @Global =====================================================================================
-
-typedef struct Global Global;
-struct Global
-{
-  Input *input;
-  D_Renderer *renderer;
-};
+void handle_input(SDL_Event *event, bool *should_close);

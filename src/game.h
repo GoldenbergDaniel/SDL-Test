@@ -3,6 +3,7 @@
 #include "base/base_common.h"
 #include "base/base_arena.h"
 #include "gfx/draw.h"
+#include "input.h"
 #include "event.h"
 #include "entity.h"
 
@@ -12,8 +13,8 @@
 #define VSYNC_OFF 0
 #define VSYNC_ON 1
 
-#define W_WIDTH 1200
-#define W_HEIGHT 675
+#define W_WIDTH 1024
+#define W_HEIGHT 640
 
 #define COLOR_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
 #define COLOR_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
@@ -36,6 +37,13 @@ struct Game
   bool first_frame;
   f64 t;
   f64 dt;
+};
+
+typedef struct Global Global;
+struct Global
+{
+  Input *input;
+  D_Renderer *renderer;
 };
 
 void init(Game *game);

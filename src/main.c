@@ -2,13 +2,12 @@
 
 #include "base/base_common.h"
 
-#include "global.h"
+#include "input.h"
 #include "game.h"
 
 Global *GLOBAL;
 
 static void set_gl_attributes(void);
-static void handle_input(SDL_Event *event, Game *game);
 
 i32 main(void)
 {
@@ -63,7 +62,7 @@ i32 main(void)
       SDL_Event event;
       while (SDL_PollEvent(&event))
       {
-        handle_input(&event, &game);
+        handle_input(&event, &game.should_quit);
       }
 
       if (should_quit(&game))
@@ -111,160 +110,4 @@ void set_gl_attributes(void)
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-}
-
-static
-void handle_input(SDL_Event *event, Game *game)
-{
-  Input *input = GLOBAL->input;
-
-  SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
-
-  switch (event->type)
-  {
-    case SDL_QUIT: game->should_quit = TRUE;
-    break;
-    case SDL_KEYDOWN: 
-    {
-      switch (event->key.keysym.scancode)
-      {
-        default: break;
-        case SDL_SCANCODE_A:
-        {
-          if (!input->key_down[KEY_A])
-            input->key_just_down[KEY_A] = TRUE;
-
-          input->key_down[KEY_A] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_D:
-        {
-          if (!input->key_down[KEY_D])
-            input->key_just_down[KEY_D] = TRUE;
-
-          input->key_down[KEY_D] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_S:
-        {
-          if (!input->key_down[KEY_S])
-            input->key_just_down[KEY_S] = TRUE;
-
-          input->key_down[KEY_S] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_W: 
-        {
-          if (!input->key_down[KEY_W])
-            input->key_just_down[KEY_W] = TRUE;
-
-          input->key_down[KEY_W] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_ESCAPE:
-        {
-          if (!input->key_down[KEY_ESCAPE])
-            input->key_just_down[KEY_ESCAPE] = TRUE;
-
-          input->key_down[KEY_ESCAPE] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_SPACE:
-        {
-          if (!input->key_down[KEY_SPACE])
-            input->key_just_down[KEY_SPACE] = TRUE;
-
-          input->key_down[KEY_SPACE] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_RETURN:
-        {
-          if (!input->key_down[KEY_ENTER])
-            input->key_just_down[KEY_ENTER] = TRUE;
-
-          input->key_down[KEY_ENTER] = TRUE;
-        }
-        break;
-        case SDL_SCANCODE_BACKSPACE:
-        {
-          if (!input->key_down[KEY_BACKSPACE])
-            input->key_just_down[KEY_BACKSPACE] = TRUE;
-
-          input->key_down[KEY_BACKSPACE] = TRUE;
-        }
-      }
-      break;
-    }
-    case SDL_KEYUP: 
-    {
-      switch (event->key.keysym.scancode)
-      {
-        default: break;
-        case SDL_SCANCODE_A:
-        {
-          if (input->key_down[KEY_A])
-            input->key_just_up[KEY_A] = TRUE;
-
-          input->key_down[KEY_A] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_D:
-        {
-          if (input->key_down[KEY_D])
-            input->key_just_up[KEY_D] = TRUE;
-
-          input->key_down[KEY_D] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_S:
-        {
-          if (input->key_down[KEY_S])
-            input->key_just_up[KEY_S] = TRUE;
-
-          input->key_down[KEY_S] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_W: 
-        {
-          if (input->key_down[KEY_W])
-            input->key_just_up[KEY_W] = TRUE;
-
-          input->key_down[KEY_W] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_ESCAPE:
-        {
-          if (input->key_down[KEY_ESCAPE])
-            input->key_just_up[KEY_ESCAPE] = TRUE;
-
-          input->key_down[KEY_ESCAPE] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_SPACE:
-        {
-          if (input->key_down[KEY_SPACE])
-            input->key_just_up[KEY_SPACE] = TRUE;
-
-          input->key_down[KEY_SPACE] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_RETURN:
-        {
-          if (input->key_down[KEY_ENTER])
-            input->key_just_up[KEY_ENTER] = TRUE;
-
-          input->key_down[KEY_ENTER] = FALSE;
-        }
-        break;
-        case SDL_SCANCODE_BACKSPACE:
-        {
-          if (input->key_down[KEY_ENTER])
-            input->key_just_up[KEY_ENTER] = TRUE;
-
-          input->key_down[KEY_ENTER] = FALSE;
-        }
-      }
-      break;
-    }
-  }
 }
