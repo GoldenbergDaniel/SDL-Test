@@ -18,28 +18,30 @@
 
 #define COLOR_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
 #define COLOR_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
+#define COLOR_GRAY ((Vec4F) {0.5f, 0.5f, 0.5f, 1.0f})
 #define COLOR_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
 #define COLOR_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
 #define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
-typedef union SDL_Event SDL_Event;
+#define GRAVITY 9.18f
 
 typedef struct Game Game;
+typedef struct Global Global;
+
 struct Game
 {
   Arena arena;
   EventQueue event_queue;
   EntityList entities;
   Mat3x3F camera;
-  bool running;
-  bool should_quit;
-  bool first_frame;
+  u8 round;
   f64 t;
   f64 dt;
+  bool is_running;
+  bool should_quit;
 };
 
-typedef struct Global Global;
 struct Global
 {
   Input *input;

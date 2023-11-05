@@ -18,6 +18,13 @@
 #define dir(a) (((a) != 0) ? ((a) / abs(a)) : 0)
 
 typedef union Vec2F Vec2F;
+typedef union Vec2I Vec2I;
+typedef union Vec3F Vec3F;
+typedef union Vec4F Vec4F;
+typedef union Mat2x2F Mat2x2F;
+typedef union Mat3x3F Mat3x3F;
+typedef union Mat4x4F Mat4x4F;
+
 union Vec2F
 {
   struct
@@ -29,7 +36,6 @@ union Vec2F
   f32 elements[2];
 };
 
-typedef union Vec2I Vec2I;
 union Vec2I
 {
   struct
@@ -41,7 +47,6 @@ union Vec2I
   i32 elements[2];
 };
 
-typedef union Vec3F Vec3F;
 union Vec3F
 {
   struct
@@ -54,7 +59,6 @@ union Vec3F
   f32 elements[3];
 };
 
-typedef union Vec4F Vec4F;
 union Vec4F
 {
   struct
@@ -68,27 +72,34 @@ union Vec4F
   f32 elements[4];
 };
 
-typedef struct Mat3x3F Mat3x3F;
-struct Mat3x3F
+union Mat2x2F
+{
+  f32 elements[2][2];
+  Vec2F columns[2];
+};
+
+union Mat3x3F
 {
   f32 elements[3][3];
+  Vec3F columns[3];
 };
 
-typedef struct Mat4x4F Mat4x4F;
-struct Mat4x4F
+union Mat4x4F
 {
   f32 elements[4][4];
+  Vec4F columns[4];
 };
 
-// @Scalar ==================================================================================
+// @Scalar =====================================================================================
 
 f32 lerp_1f(f32 curr, f32 target, f32 rate);
 
-// @Vec2F ===================================================================================
+// @Vec2F ======================================================================================
 
 #define V2F_ZERO ((Vec2F) {0.0f, 0.0f})
 
 Vec2F v2f(f32 x, f32 y);
+Vec2I v2i(i32 x, i32 y);
 
 Vec2F add_2f(Vec2F a, Vec2F b);
 Vec2F sub_2f(Vec2F a, Vec2F b);
@@ -97,16 +108,22 @@ Vec2F div_2f(Vec2F a, Vec2F b);
 f32 dot_2f(Vec2F a, Vec2F b);
 f32 cross_2f(Vec2F a, Vec2F b);
 Vec2F scale_2f(Vec2F v, f32 scale);
+Vec2F shift_2f(Vec2F v, f32 shift);
+Vec2F transform_2f(Vec2F v, Mat2x2F m);
 
 f32 magnitude_2f(Vec2F a);
 f32 magnitude_squared_2f(Vec2F a);
 f32 distance_2f(Vec2F a, Vec2F b);
 f32 distance_squared_2f(Vec2F a, Vec2F b);
 Vec2F normalize_2f(Vec2F a);
+Vec2F project_2f(Vec2F a, Vec2F b);
 
 Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate);
+Vec2F normal_2f(Vec2F a, Vec2F b);
+Vec2F midpoint_2f(Vec2F a, Vec2F b);
+Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d);
 
-// @Vec3F ===================================================================================
+// @Vec3F ======================================================================================
 
 #define V3F_ZERO ((Vec3F) {0.0f, 0.0f, 0.0f})
 
@@ -129,7 +146,7 @@ Vec3F normalize_3f(Vec3F v);
 
 Vec3F lerp_3f(Vec3F curr, Vec3F target, f32 rate);
 
-// @Vec4F ===================================================================================
+// @Vec4F ======================================================================================
 
 #define V4F_ZERO ((Vec4F) {0.0f, 0.0f, 0.0f, 0.0f})
 
@@ -149,10 +166,19 @@ f32 distance_4f(Vec4F a, Vec4F b);
 f32 distance_squared_4f(Vec4F a, Vec4F b);
 Vec4F normalize_4f(Vec4F v);
 
+// @Mat2x2F =================================================================================
+
+Mat2x2F m2x2f(f32 k);
+Mat2x2F rows_2x2f(Vec2F v1, Vec2F v2);
+Mat2x2F cols_2x2f(Vec2F v1, Vec2F v2);
+
+Mat2x2F mul_2x2f(Mat2x2F a, Mat2x2F b);
+Mat2x2F transpose_2x2f(Mat2x2F m);
+Mat2x2F inverse_2x2f(Mat2x2F m);
+
 // @Mat3x3F =================================================================================
 
 Mat3x3F m3x3f(f32 k);
-
 Mat3x3F rows_3x3f(Vec3F v1, Vec3F v2, Vec3F v3);
 Mat3x3F cols_3x3f(Vec3F v1, Vec3F v2, Vec3F v3);
 
@@ -166,10 +192,9 @@ Mat3x3F shear_3x3f(f32 x_shear, f32 y_shear);
 
 Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 bot, f32 top);
 
-// @Mat4x4F =================================================================================
+// @Mat4x4F ===================================================================================
 
 Mat4x4F m4x4f(f32 k);
-
 Mat4x4F rows_4x4f(Vec4F v1, Vec4F v2, Vec4F v3, Vec4F v4);
 Mat4x4F cols_4x4f(Vec4F v1, Vec4F v2, Vec4F v3, Vec4F v4);
 Mat4x4F m4x4f(f32 k);
@@ -184,7 +209,7 @@ Mat4x4F shear_4x4f(f32 x_shear, f32 y_shear, f32 z_shear);
 
 Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 top, f32 bot);
 
-// @Collision ===============================================================================
+// @Collision ==================================================================================
 
 Vec2F rect_center(Vec2F pos, f32 w, f32 h);
 
@@ -194,7 +219,7 @@ bool rect_intersect(void);
 
 #ifdef __cplusplus
 
-// @Overloading =============================================================================
+// @Overloading ================================================================================
 
 Vec2F operator+(Vec2F a, Vec2F b);
 Vec3F operator+(Vec3F a, Vec3F b);

@@ -89,10 +89,8 @@ void d_triangle(Mat3x3F xform, Vec4F color)
   Renderer *renderer = GLOBAL->renderer;
   Object object = renderer->triangle;
 
-  Mat3x3F projection = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
-  Mat3x3F transform = mul_3x3f(mul_3x3f(projection, *renderer->camera), xform);
   r_gl_bind_shader(&object.shader);
-  r_gl_set_uniform_3x3f(&object.shader, "u_xform", transform);
+  r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
   r_gl_set_uniform_4f(&object.shader, "u_color", color);
 
   r_gl_bind_vertex_array(&object.vao);
@@ -105,10 +103,8 @@ void d_rectangle(Mat3x3F xform, Vec4F color)
   Renderer *renderer = GLOBAL->renderer;
   Object object = renderer->rectangle;
 
-  Mat3x3F projection = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
-  Mat3x3F transform = mul_3x3f(mul_3x3f(projection, *renderer->camera), xform);
   r_gl_bind_shader(&object.shader);
-  r_gl_set_uniform_3x3f(&object.shader, "u_xform", transform);
+  r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
   r_gl_set_uniform_4f(&object.shader, "u_color", color);
 
   r_gl_bind_vertex_array(&object.vao);

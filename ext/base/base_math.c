@@ -21,6 +21,12 @@ Vec2F v2f(f32 x, f32 y)
 }
 
 inline
+Vec2I v2i(i32 x, i32 y)
+{
+  return (Vec2I) {x, y};
+}
+
+inline
 Vec2F add_2f(Vec2F a, Vec2F b)
 {
   return (Vec2F) {a.x + b.x, a.y + b.y};
@@ -66,6 +72,24 @@ Vec2F scale_2f(Vec2F v, f32 scale)
 }
 
 inline
+Vec2F shift_2f(Vec2F v, f32 shift)
+{
+  return (Vec2F) {v.x + shift, v.y + shift};
+}
+
+inline
+Vec2F transform_2f(Vec2F v, Mat2x2F m)
+{
+  Vec2F result = {0};
+  result.x += m.elements[0][0] * v.elements[0];
+  result.x += m.elements[0][1] * v.elements[1];
+  result.y += m.elements[1][0] * v.elements[0];
+  result.y += m.elements[1][1] * v.elements[1];
+
+  return result;
+}
+
+inline
 f32 magnitude_2f(Vec2F v)
 {
   return sqrtf(powf(v.x, 2.0f) + powf(v.y, 2.0f));
@@ -98,9 +122,37 @@ Vec2F normalize_2f(Vec2F v)
 }
 
 inline
+Vec2F project_2f(Vec2F a, Vec2F b)
+{
+  return scale_2f(b, dot_2f(a, b) / dot_2f(b, b));
+}
+
+inline
 Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate)
 {
   return scale_2f(sub_2f(target, curr), rate);
+}
+
+inline
+Vec2F normal_2f(Vec2F a, Vec2F b)
+{
+  return normalize_2f(v2f(-(b.y - a.y), (b.x - a.x)));
+}
+
+inline
+Vec2F midpoint_2f(Vec2F a, Vec2F b)
+{
+  return v2f((a.x+b.x)/2.0f, (a.y+b.y)/2.0f);
+}
+
+Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d)
+{
+  Vec2F ab = sub_2f(b, a);
+  Vec2F cd = sub_2f(d, c);
+  Vec2F ac = sub_2f(c, a);
+  f32 t = cross_2f(ac, cd) / cross_2f(ab, cd);
+
+  return add_2f(a, scale_2f(ab, t));
 }
 
 // @Vec3F ======================================================================================
@@ -309,6 +361,85 @@ inline
 Vec4F normalize_4f(Vec4F v)
 {
   return scale_4f(v, 1.0f / magnitude_4f(v));
+}
+
+// @Mat2x2F =================================================================================
+
+Mat2x2F m2x2f(f32 k)
+{
+  return (Mat2x2F)
+  {
+    {
+      {k, 0},
+      {0, k}
+    }
+  };
+}
+
+Mat2x2F rows_2x2f(Vec2F v1, Vec2F v2)
+{
+  return (Mat2x2F)
+  {
+    {
+      {v1.x, v1.y},
+      {v2.x, v2.y},
+    }
+  };
+}
+
+Mat2x2F cols_2x2f(Vec2F v1, Vec2F v2)
+{
+  return (Mat2x2F)
+  {
+    {
+      {v1.x, v2.x},
+      {v1.y, v2.y},
+    }
+  };
+}
+
+Mat2x2F mul_2x2f(Mat2x2F a, Mat2x2F b)
+{
+  Mat2x2F result = {0};
+
+  for (u8 r = 0; r < 2; r++)
+  {
+    for (u8 c = 0; c < 2; c++)
+    {
+      result.elements[r][c] += a.elements[r][0] * b.elements[0][c];
+      result.elements[r][c] += a.elements[r][1] * b.elements[1][c];
+    }
+  }
+
+  return result;
+}
+
+Mat2x2F transpose_2x2f(Mat2x2F m)
+{
+  Mat2x2F result = m;
+  result.elements[0][1] = m.elements[1][0];
+  result.elements[1][0] = m.elements[0][1];
+
+  return result;
+}
+
+Mat2x2F inverse_2x2f(Mat2x2F m)
+{
+  Mat2x2F result =
+  {
+    {
+      {m.elements[1][1], -m.elements[0][1]},
+      {-m.elements[1][0], m.elements[0][0]}
+    }
+  };
+
+  f32 det = (m.elements[0][0] * m.elements[1][1]) - (m.elements[0][0] * m.elements[1][1]);
+  result.elements[0][0] = (1.0f / det) * result.elements[0][0];
+  result.elements[0][1] = (1.0f / det) * result.elements[0][1];
+  result.elements[1][0] = (1.0f / det) * result.elements[1][0];
+  result.elements[1][1] = (1.0f / det) * result.elements[1][1];
+
+  return result;
 }
 
 // @Mat3x3F ====================================================================================

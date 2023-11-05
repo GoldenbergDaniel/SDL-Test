@@ -1,4 +1,3 @@
-#include <SDL2/SDL.h>
 #include "glad/glad.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG

@@ -4,13 +4,14 @@
 #include "base/base_arena.h"
 #include "base/base_math.h"
 
+#include "phys/phys.h"
+
 typedef struct Game Game;
 
 typedef struct Entity Entity;
 typedef struct EntityRef EntityRef;
 typedef struct EntityList EntityList;
 typedef struct Timer Timer;
-typedef struct Collider2D Collider2D;
 
 typedef enum EntityType
 {
@@ -18,6 +19,8 @@ typedef enum EntityType
   EntityType_Player,
   EntityType_EnemyShip,
   EntityType_Laser,
+  EntityType_Wall,
+  EntityType_DebugLine,
 } EntityType;
 
 typedef enum EntityProp
@@ -29,22 +32,8 @@ typedef enum EntityProp
   EntityProp_Killable = 1 << 4,
   EntityProp_Projectile = 1 << 5,
   EntityProp_Collides = 1 << 6,
+  EntityProp_Rendered = 1 << 7,
 } EntityProp;
-
-typedef enum ColliderType
-{
-  ColliderType_Circle,
-  ColliderType_Rect,
-} ColliderType;
-
-struct Collider2D
-{
-  ColliderType type;
-  Vec2F pos;
-  u16 radius;
-  u16 width;
-  u16 height;
-};
 
 struct Timer
 {
@@ -59,7 +48,7 @@ struct Timer
 
 struct EntityRef
 {
-  Entity *entity;
+  Entity *ptr;
   u64 id;
 };
 
@@ -67,10 +56,16 @@ struct Entity
 {
   Entity *next;
   Entity *next_free;
+  Entity *parent;
+  Entity *first_child;
+  Entity *last_child;
+  Entity *next_child;
 
   u64 id;
   EntityType type;
   b64 props;
+  bool is_active;
+  bool is_visible;
 
   Vec2F pos;
   f32 rot;
@@ -78,16 +73,15 @@ struct Entity
   f32 width;
   f32 height;
   Mat3x3F xform;
-  Vec2F dir;
+  Vec2F pos_offset;
   Vec2F vel;
+  Vec2F dir;
+  Vec2F input_dir;
   
   Vec4F color;
   u16 z_index;
-  bool is_active;
-  bool is_visible;
-
   f32 speed;
-  i8 health;
+  i8 curr_health;
 
   Collider2D col;
   u8 col_layer;
@@ -109,17 +103,19 @@ struct EntityList
   u16 count;
 };
 
-#define PLAYER_PROPS EntityProp_Controlled | EntityProp_Movable | EntityProp_Attacker
-#define ENEMY_PROPS EntityProp_Targetting | EntityProp_Movable | EntityProp_Attacker
-#define LASER_PROPS EntityProp_Movable | EntityProp_Projectile
+#define PLAYER_PROPS EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable \
+  | EntityProp_Attacker | EntityProp_Collides
+#define ENEMY_PROPS EntityProp_Rendered | EntityProp_Targetting | EntityProp_Movable \
+  | EntityProp_Attacker
+#define LASER_PROPS EntityProp_Rendered | EntityProp_Movable | EntityProp_Projectile
 
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
 #define TIMER_KILL 2
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 100.0f
-#define PLAYER_ACC 2.5f
+#define PLAYER_SPEED 220.0f
+#define PLAYER_ACC 1.5f
 #define PLAYER_FRIC 1.5f
 
 // @Entity =====================================================================================
@@ -127,7 +123,8 @@ struct EntityList
 void init_entity(Entity *entity, EntityType type);
 void clear_entity(Entity *entity);
 
-void update_entity_xform(Game *game, Entity *entity);
+void update_entity_collider(Entity *entity);
+void update_entity_xform(Entity *entity);
 void update_controlled_entity_movement(Game *game, Entity *entity);
 void update_targetting_entity_movement(Game *game, Entity *entity);
 void update_projectile_entity_movement(Game *game, Entity *entity);
@@ -135,6 +132,9 @@ void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 
 void set_entity_target(Entity *entity, EntityRef target);
+void set_entity_size(Entity *entity, f32 width, f32 height);
+void set_entity_scale(Entity *entity, Vec2F scale);
+void set_entity_origin(Entity *entity, Vec2I origin);
 void wrap_entity_at_edges(Entity *entity);
 void damage_entity(Entity *entity, i8 damage);
 
@@ -147,9 +147,18 @@ Entity *entity_from_ref(EntityRef ref);
 
 Entity *alloc_entity(Game *game);
 void free_entity(Game *game, Entity *entity);
-Entity *get_entity_of_id(Game *game, u64 id);
-Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
+EntityRef get_entity_of_id(Game *game, u64 id);
+EntityRef get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
+
+// @EntityTree =================================================================================
+
+void set_entity_parent(Entity *entity, EntityRef *parent);
+void add_entity_child(Entity *entity, EntityRef *child);
+void remove_entity_child(Entity *entity, EntityRef *child);
+EntityRef get_entity_child_of_id(Entity *entity, u64 id);
+EntityRef get_entity_child_at_index(Entity *entity, u8 index);
+EntityRef get_entity_first_child_of_type(Entity *entity, EntityType type);
 
 // @Collider2D =================================================================================
 
-
+bool entity_collision(Entity *a, Entity *b);

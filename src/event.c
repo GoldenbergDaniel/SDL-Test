@@ -7,21 +7,21 @@
 void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
-  Event *new_back = os_alloc(sizeof (Event));
-  new_back->type = type;
-  new_back->descriptor = desc;
+  Event *new_event = os_alloc(sizeof (Event));
+  new_event->type = type;
+  new_event->desc = desc;
 
   if (queue->front == NULL)
   {
-    queue->front = new_back;
+    queue->front = new_event;
   }
   else
   {
-    queue->back->next = new_back;
+    queue->back->next = new_event;
   }
 
-  new_back->next = NULL;
-  queue->back = new_back;
+  new_event->next = NULL;
+  queue->back = new_event;
   queue->count++;
 }
 
@@ -29,7 +29,6 @@ void pop_event(Game *game)
 {
   EventQueue *queue = &game->event_queue;
   ASSERT(queue->count > 0);
-
   Event *next = queue->front->next;
   os_free(queue->front, sizeof (Event));
   
@@ -51,6 +50,7 @@ void clear_event_queue(Game *game)
 {
   EventQueue *queue = &game->event_queue;
   Event *curr = queue->front;
+
   while (curr != NULL)
   {
     Event *next = curr->next;

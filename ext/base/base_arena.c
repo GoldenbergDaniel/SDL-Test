@@ -8,8 +8,6 @@
 #define SCRATCH_SIZE MEGABYTES(4)
 #endif
 
-// @Arena ===================================================================================
-
 Arena arena_create(u64 size)
 {
   Arena arena;
@@ -69,55 +67,4 @@ Arena arena_get_scratch(Arena *conflict)
   else if (conflict == &scratch_2) scratch = scratch_1;
 
   return scratch;
-}
-
-// @ChainArena ==============================================================================
-
-ChainArena chain_arena_create(u64 size)
-{
-  ChainArena arena;
-  arena.regions->prev = NULL;
-  arena.regions->memory = os_alloc(size);
-  arena.regions->size = size;
-  arena.regions->used = 0;
-
-  return arena;
-}
-
-void chain_arena_destroy(ChainArena *arena)
-{
-  for (Arena *curr = arena->regions; curr != NULL;)
-  {
-    Arena *next = curr->prev;
-    os_free(curr->memory, curr->size);
-    os_free(curr, sizeof (Arena));
-    curr = next;
-  }
-}
-
-void *chain_arena_alloc(ChainArena *arena, u64 size)
-{
-  if (arena->regions->size < arena->regions->used + size)
-  {
-    Arena *new_region = os_alloc(arena->region_size);
-    new_region->prev = arena->regions;
-    arena->regions = new_region;
-    printf("Created a new region!");
-  }
-
-  Arena *curr = arena->regions;
-  byte *allocated = curr->memory + curr->used;
-  curr->used += size;
-
-  return allocated;
-}
-
-void chain_arena_clear(ChainArena *arena)
-{
-  for (Arena *curr = arena->regions; curr != NULL;)
-  {
-    Arena *next = curr->prev;
-    next->used = 0;
-    curr = next;
-  }
 }

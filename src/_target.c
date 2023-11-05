@@ -9,6 +9,9 @@
 
 #include "gfx/gl_render.c"
 #include "gfx/draw.c"
+
+#include "phys/phys.c"
+
 #include "input.c"
 #include "event.c"
 #include "entity.c"
