@@ -11,7 +11,7 @@ Global *GLOBAL;
 i32 main(void)
 {
   Game game = {0};
-  game.arena = arena_create(MEGABYTES(16));
+  game.arena = create_arena(MiB(16));
 
   srand(time(NULL));
 
@@ -53,7 +53,7 @@ i32 main(void)
   GLOBAL->renderer = arena_alloc(&game.arena, sizeof (*GLOBAL->renderer));
   d_init_renderer(GLOBAL->renderer);
 
-  init(&game);
+  init_game(&game);
 
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
@@ -77,7 +77,7 @@ i32 main(void)
         handle_input(&event, &game.should_quit);
       }
 
-      if (should_quit(&game))
+      if (game_should_quit(&game))
       {
         game.is_running = FALSE;
         break;
@@ -88,9 +88,9 @@ i32 main(void)
         game.t = elapsed_time;
         game.dt = time_step;
 
-        update(&game);
-        handle_events(&game);
-        draw(&game);
+        update_game(&game);
+        handle_game_events(&game);
+        draw_game(&game);
 
         SDL_GL_SwapWindow(window);
       }

@@ -20,9 +20,15 @@ bool p_polygon_y_range_intersect(Collider2D *a, Vec2F v1, Vec2F v2)
 
   for (u8 i = 0; i < a->vertex_count; i++)
   {
-    if (a->vertices[a->edges[i][0]].y >= v1.y && a->vertices[a->edges[i][1]].y <= v2.y)
+    if (a->vertices[a->edges[i][0]].x >= v1.x && 
+        a->vertices[a->edges[i][1]].x <= v2.x)
     {
-      result = TRUE;
+      if (a->vertices[a->edges[i][0]].y >= v1.y && 
+          a->vertices[a->edges[i][1]].y >= v2.y)
+      {
+        result = TRUE;
+        break;
+      }
     }
   }
 

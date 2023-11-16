@@ -16,51 +16,80 @@ extern Global *GLOBAL;
 
 // @Init =======================================================================================
 
-void init(Game *game)
+void init_game(Game *game)
 {
   game->event_queue = (EventQueue) {0};
   game->camera = translate_3x3f(0.0f, 0.0f);
   game->is_running = TRUE;
   game->should_quit = FALSE;
 
-  GLOBAL->renderer->camera = &game->camera;
+  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+  zero(*entity);
+  GLOBAL->nil_entity = entity;
 
-  Entity *entity;
-  entity = alloc_entity(game);
+  entity = create_entity(game);
   init_entity(entity, EntityType_Wall);
   entity->pos = v2f(0.0f, 200);
   entity->color = COLOR_GRAY;
   set_entity_size(entity, W_WIDTH, 200);
   set_entity_origin(entity, v2i(-1, 1));
 
-  entity = alloc_entity(game);
+  entity = create_entity(game);
   init_entity(entity, EntityType_Player);
-  // entity = alloc_entity(game);
-  // init_entity(entity, EntityType_EnemyShip);
-  entity = alloc_entity(game);
-  init_entity(entity, EntityType_Wall);
 
-  entity = alloc_entity(game);
+  // entity = create_entity(game);
+  // init_entity(entity, EntityType_EnemyShip);
+  
+  entity = create_entity(game);
+  init_entity(entity, EntityType_Wall);
+  entity->color = COLOR_BLUE;
+
+  entity = create_entity(game);
   init_entity(entity, EntityType_DebugLine);
   set_entity_size(entity, 100, 3);
   set_entity_origin(entity, v2i(-1, 0));
+
+  Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+  set_entity_parent(entity, player);
+  entity->pos.x = player->pos.x;
+  entity->pos.y = player->pos.y;
+  entity->local_pos.x = 15.0f;
 
   // printf("%lu\n", sizeof (Entity));
 }
 
 // @Update =====================================================================================
 
-void update(Game *game)
+void update_game(Game *game)
 {
+  Vec2I mouse_pos = get_mouse_position();
+  Vec2F player_pos = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player)->pos;
+  printf("Mouse pos: %i, %i\n", mouse_pos.x, mouse_pos.y);
+  printf("Player pos: %f, %f\n", player_pos.x, player_pos.y);
+
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
     if (!e->is_active) continue;
+
+    if (e->props & EntityProp_Collides)
+    {
+      update_entity_collider(e);
+    }
 
     if (e->props & EntityProp_Movable)
     {
       if (e->props & EntityProp_Controlled)
       {
         update_controlled_entity_movement(game, e);
+        if (!p_polygon_y_range_intersect(&e->col, v2f(0.0f, 440.0f), v2f(1024.0f, 440.0f)))
+        {
+          
+        }
+        else
+        {
+          printf("collided?\n");
+        }
+
         wrap_entity_at_edges(e);
       }
 
@@ -77,7 +106,7 @@ void update(Game *game)
 
     if (e->props & EntityProp_Rendered)
     {
-      update_entity_xform(e);
+      update_entity_xform(game, e);
     }
 
     if (e->props & EntityProp_Attacker)
@@ -89,11 +118,11 @@ void update(Game *game)
       
       if (e->props & EntityProp_Targetting)
       {
-        EntityRef player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
+        Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
-        if (entity_from_ref(player) && player.ptr->is_active)
+        if (player && player->is_active)
         {
-          set_entity_target(e, player);
+          set_entity_target(e, ref_from_entity(player));
         }
         else
         {
@@ -105,32 +134,17 @@ void update(Game *game)
     }
   }
 
-  EntityRef player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-  EntityRef line = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_DebugLine);
-
-  if (entity_from_ref(player) && entity_from_ref(line))
-  {
-    line.ptr->pos.x = player.ptr->pos.x;
-    line.ptr->pos.y = player.ptr->pos.y + 10;
-    line.ptr->rot = player.ptr->rot;
-
-    // if (p_polygon_y_range_intersect(&player.ptr->col, v2f(0, 200), v2f(W_WIDTH, 200)))
-    // {
-    //   printf("collided!\n");
-    // }
-  }
-
   if (key_just_pressed(KEY_BACKSPACE))
   {
-    EntityRef entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-    EventDesc desc = {.id = entity.id};
+    Entity *entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+    EventDesc desc = {.id = entity->id};
     push_event(game, EventType_KillEntity, desc);
   }
 }
 
 // @HandleEvents ===============================================================================
 
-void handle_events(Game *game)
+void handle_game_events(Game *game)
 {
   while (game->event_queue.count > 0)
   {
@@ -140,7 +154,7 @@ void handle_events(Game *game)
     {
       case EventType_SpawnEntity:
       {
-        Entity *entity = alloc_entity(game);
+        Entity *entity = create_entity(game);
 
         switch (event.desc.type)
         {
@@ -168,15 +182,19 @@ void handle_events(Game *game)
           default: 
           {
             printf("ERROR: Failed to spawn entity. Invalid type!");
+            printf("Entity ID: %llu\n", entity->id);
+            printf("Entity Type: %i\n", entity->type);
             ASSERT(FALSE);
           }
         }
+
+        update_entity_xform(game, entity);
       }
       break;
       case EventType_KillEntity:
       {
-        EntityRef entity = get_entity_of_id(game, event.desc.id);
-        free_entity(game, entity.ptr);
+        Entity *entity = get_entity_of_id(game, event.desc.id);
+        destroy_entity(game, entity);
       }
       break;
       case EventType_EntityKilled:
@@ -197,7 +215,7 @@ void handle_events(Game *game)
 
 // @Draw =======================================================================================
 
-void draw(Game *game)
+void draw_game(Game *game)
 {
   d_clear(COLOR_BLACK);
 
@@ -238,7 +256,7 @@ void draw(Game *game)
 }
 
 inline
-bool should_quit(Game *game)
+bool game_should_quit(Game *game)
 {
   bool result = FALSE;
   

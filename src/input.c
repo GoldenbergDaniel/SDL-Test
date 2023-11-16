@@ -26,7 +26,7 @@ bool key_just_released(Key key)
 }
 
 inline
-Vec2I mouse_position(void)
+Vec2I get_mouse_position(void)
 {
   return GLOBAL->input->mouse_pos;
 }

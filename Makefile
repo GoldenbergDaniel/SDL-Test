@@ -1,7 +1,7 @@
 NAME = Game
 CC = cc
 
-CFLAGS_R = -std=c17 \
+CFLAGS_R = -std=gnu17 \
 					 -O0 \
 					 -Iext/ \
 					 -I/usr/local/Cellar/sdl2/2.28.4/include \
@@ -9,8 +9,9 @@ CFLAGS_R = -std=c17 \
 					 -Wpedantic \
 					 -Wno-missing-braces \
 					 -Wno-unused-function \
+					 -Wno-language-extension-token \
 
-CFLAGS_D = -std=c17 \
+CFLAGS_D = -std=gnu17 \
 					 -DDEBUG \
 					 -I../ext/ \
 					 -I/usr/local/Cellar/sdl2/2.28.4/include \
@@ -18,6 +19,7 @@ CFLAGS_D = -std=c17 \
 					 -Wextra \
 					 -Wpedantic \
 					 -Wno-missing-braces \
+					 -Wno-language-extension-token \
 
 LDFLAGS = -lsdl2 \
 					ext/glad/glad.c \
@@ -47,5 +49,5 @@ test:
 debug:
 	@echo "Compiling debug..."
 	@cd debug; \
-		$(CC) $(CFLAGS_D) $(LDFLAGS) ../ext/glad/glad.c ../src/_target.c -g
+		$(CC) $(CFLAGS_D) -lsdl2 ../ext/glad/glad.c ../src/_target.c -g
 	@echo "Compilation complete!"

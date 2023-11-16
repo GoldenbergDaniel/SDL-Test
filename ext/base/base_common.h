@@ -24,8 +24,6 @@ typedef double f64;
 #define THREAD_LOCAL __thread
 
 #define ASSERT(exp) assert(exp)
-#define ARGL_LEN(arr) (sizeof (arr) / sizeof (arr[0]))
-
 #define SCOPE(title)
 
 #define TRUE 1
@@ -34,3 +32,6 @@ typedef double f64;
 #ifndef NULL
 #define NULL (void *) 0
 #endif
+
+#define zero(x) x = ((typeof (x)) {0})
+#define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))

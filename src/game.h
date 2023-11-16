@@ -45,11 +45,12 @@ struct Game
 struct Global
 {
   Input *input;
-  D_Renderer *renderer;
+  Renderer *renderer;
+  Entity *nil_entity;
 };
 
-void init(Game *game);
-void update(Game *game);
-void handle_events(Game *game);
-void draw(Game *game);
-bool should_quit(Game *game);
+void init_game(Game *game);
+void update_game(Game *game);
+void handle_game_events(Game *game);
+void draw_game(Game *game);
+bool game_should_quit(Game *game);

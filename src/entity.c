@@ -5,6 +5,7 @@
 #include "base/base_math.h"
 #include "base/base_random.h"
 
+#include "phys/phys.h"
 #include "input.h"
 #include "event.h"
 #include "entity.h"
@@ -19,7 +20,7 @@ static void init_timers(Entity *entity);
 static Timer *get_timer(Entity *entity, u8 index);
 static bool tick_timer(Timer *timer, f64 dt);
 
-// @Entity =====================================================================================
+// @InitEntity =================================================================================
 
 void init_entity(Entity *entity, EntityType type)
 {
@@ -88,15 +89,28 @@ void init_entity(Entity *entity, EntityType type)
     default:
     {
       printf("ERROR: Failed to initialize entity. Invalid type!");
+      printf("Entity ID: %llu\n", entity->id);
+      printf("Entity Type: %i\n", entity->type);
+      printf("Vertex Count: %i\n", entity->col.vertex_count);
       ASSERT(FALSE);
     }
   }
 
   entity->width = 20.0f * entity->scale.x;
   entity->height = 20.0f * entity->scale.y;
-
-  update_entity_xform(entity);
 }
+
+inline
+void clear_entity(Entity *entity)
+{
+  Entity *next = entity->next;
+  Entity *next_free = entity->next_free;
+  zero(*entity);
+  entity->next = next;
+  entity->next_free = next_free;
+}
+
+// @UpdateEntity ===============================================================================
 
 void update_entity_collider(Entity *entity)
 {
@@ -172,34 +186,47 @@ void update_entity_collider(Entity *entity)
       }
     }
     break;
-    default: break;
+    case ColliderType_Circle:
+    {
+
+    }
+    break;
+    default: 
+    {
+      printf("ERROR: Failed to update collider. Invalid type!");
+      ASSERT(FALSE);
+    }
   }
 }
 
-inline
-void clear_entity(Entity *entity)
-{
-  Entity *next = entity->next;
-  Entity *next_free = entity->next_free;
-  *entity = (Entity) {0};
-  entity->next = next;
-  entity->next_free = next_free;
-}
-
-void update_entity_xform(Entity *entity)
+void update_entity_xform(Game *game, Entity *entity)
 {
   Mat3x3F xform = m3x3f(1.0f);
-  xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
-  xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
-  xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
-  xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
+  Entity *parent = entity_from_ref(entity->parent);
 
-  Mat3x3F camera = *GLOBAL->renderer->camera;
+  if (entity_is_valid(parent))
+  {
+    xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
+    xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
+    xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
+    xform = mul_3x3f(translate_3x3f(entity->local_pos.x, entity->local_pos.y), xform);
+    xform = mul_3x3f(parent->model, xform);
+  }
+  else
+  {
+    xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
+    xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
+    xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
+    xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
+    entity->model = xform;
+  }
+
+  Mat3x3F camera = game->camera;
   xform = mul_3x3f(camera, xform);
 
   Mat3x3F ortho = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
   xform = mul_3x3f(ortho, xform);
-  
+
   entity->xform = xform;
 }
 
@@ -319,7 +346,6 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
   }
 
   bool can_shoot = key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
-
   if (can_shoot)
   {
     EventDesc desc = 
@@ -345,7 +371,6 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
     tick_timer(timer, game->dt);
 
     bool can_shoot = timer->timeout;
-    
     if (can_shoot)
     {
       EventDesc desc = 
@@ -362,34 +387,14 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
   }
 }
 
-void set_entity_target(Entity *entity, EntityRef target)
-{
-  Entity *target_entity = entity_from_ref(target);
-  
-  if (target_entity == NULL) return;
-
-  Vec2F target_pos = target_entity->pos;
-
-  if (distance_2f(entity->pos, target_pos) <= entity->view_dist)
-  {
-    f32 dist_x = target_pos.x - entity->pos.x;
-    f32 dist_y = target_pos.y - entity->pos.y;
-    entity->target_angle = atan2(dist_x, dist_y);
-    entity->has_target = TRUE;
-  }
-  else
-  {
-    entity->target_pos = V2F_ZERO;
-    entity->has_target = FALSE;
-  }
-}
+// @SetEntity ==================================================================================
 
 inline
 void set_entity_size(Entity *entity, f32 width, f32 height)
 {
   entity->width = width;
   entity->height = height;
-  entity->scale = v2f(entity->width / 20.0f, entity->height / 20.0f);
+  entity->scale = v2f(entity->width/20.0f, entity->height/20.0f);
 }
 
 inline
@@ -418,6 +423,42 @@ void set_entity_origin(Entity *entity, Vec2I origin)
   {
     entity->pos_offset = v2f(entity->width/2.0f, -entity->height/2.0f);
   }
+}
+
+void set_entity_target(Entity *entity, EntityRef target)
+{
+  Entity *target_entity = entity_from_ref(target);
+  
+  if (target_entity == NULL) return;
+
+  Vec2F target_pos = target_entity->pos;
+
+  if (distance_2f(entity->pos, target_pos) <= entity->view_dist)
+  {
+    f32 dist_x = target_pos.x - entity->pos.x;
+    f32 dist_y = target_pos.y - entity->pos.y;
+    entity->target_angle = atan2(dist_x, dist_y);
+    entity->has_target = TRUE;
+  }
+  else
+  {
+    entity->target_pos = V2F_ZERO;
+    entity->has_target = FALSE;
+  }
+}
+
+// @OtherEntity ================================================================================
+
+inline
+bool entity_is_valid(Entity *entity)
+{
+  return (entity != NULL && entity->type != EntityType_Nil);
+}
+
+inline
+void resolve_entity_collision(Entity *a, Entity *b)
+{
+
 }
 
 void wrap_entity_at_edges(Entity *entity)
@@ -464,7 +505,7 @@ EntityRef ref_from_entity(Entity *entity)
 inline
 Entity *entity_from_ref(EntityRef ref)
 {
-  Entity *result = NULL;
+  Entity *result = GLOBAL->nil_entity;
 
   if (ref.ptr != NULL && ref.ptr->id == ref.id)
   {
@@ -476,33 +517,33 @@ Entity *entity_from_ref(EntityRef ref)
 
 // @EntityList =================================================================================
 
-Entity *alloc_entity(Game *game)
+Entity *create_entity(Game *game)
 {
-  EntityList *entities = &game->entities;
-  Entity *new_entity = game->entities.first_free;
+  EntityList *list = &game->entities;
+  Entity *new_entity = list->first_free;
 
   if (new_entity == NULL)
   {
     new_entity = arena_alloc(&game->arena, sizeof (Entity));
     clear_entity(new_entity);
 
-    if (entities->head == NULL)
+    if (list->head == NULL)
     {
-      entities->head = new_entity;
+      list->head = new_entity;
     }
 
-    if (entities->tail != NULL)
+    if (list->tail != NULL)
     {
-      entities->tail->next = new_entity;
+      list->tail->next = new_entity;
     }
 
     new_entity->next = NULL;
-    entities->tail = new_entity;
-    entities->count++;
+    list->tail = new_entity;
+    list->count++;
   }
   else
   {
-    entities->first_free = entities->first_free->next_free;
+    list->first_free = list->first_free->next_free;
   }
 
   new_entity->id = random_u64(1, UINT64_MAX);
@@ -510,47 +551,17 @@ Entity *alloc_entity(Game *game)
   return new_entity;
 }
 
-void free_entity(Game *game, Entity *entity)
+void destroy_entity(Game *game, Entity *entity)
 {
-  EntityList *entities = &game->entities;
-
+  EntityList *list = &game->entities;
   clear_entity(entity);
-  entity->next_free = entities->first_free;
-  entities->first_free = entity;
+  entity->next_free = list->first_free;
+  list->first_free = entity;
 }
 
-#ifdef DEBUG
-static
-void print_lists(Game *game)
+Entity *get_entity_of_id(Game *game, u64 id)
 {
-  EntityList list = game->entities;
-
-  printf("Arena: ");
-
-  for (Entity *e = list.head; e != NULL; e = e->next)
-  {
-    printf("%llu -> ", e->id);
-  }
-  
-  printf("NULL\n");
-
-  printf("Freelist: ");
-
-  Entity *curr = list.first_free;
-  while (curr)
-  {
-    printf("%llu -> ", curr->id);
-    curr = curr->next_free;
-  }
-
-  printf("NULL\n");
-  printf("\n");
-}
-#endif
-
-EntityRef get_entity_of_id(Game *game, u64 id)
-{
-  Entity *result = NULL;
+  Entity *result = GLOBAL->nil_entity;
   
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
@@ -561,17 +572,12 @@ EntityRef get_entity_of_id(Game *game, u64 id)
     }
   }
 
-  if (result == NULL)
-  {
-    return (EntityRef) {NULL, 0};
-  }
-
-  return ref_from_entity(result);
+  return result;
 }
 
-EntityRef get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type)
+Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type)
 {
-  Entity *result = NULL;
+  Entity *result = GLOBAL->nil_entity;
   f32 min_dist = FLT_MAX;
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
@@ -588,51 +594,101 @@ EntityRef get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type)
     }
   }
 
-  if (result == NULL)
-  {
-    return (EntityRef) {NULL, 0};
-  }
-
-  return ref_from_entity(result);
+  return result;
 }
 
 // @EntityTree =================================================================================
 
-void set_entity_parent(Entity *entity, EntityRef *parent)
+void set_entity_parent(Entity *entity, Entity *parent)
 {
+  entity->parent = ref_from_entity(parent);
 
+  if (parent->first_child == NULL)
+  {
+    parent->first_child = entity;
+  }
+  else
+  {
+    parent->last_child->next_child = entity;
+  }
+
+  parent->last_child = entity;
 }
 
-void add_entity_child(Entity *entity, EntityRef *child)
+void add_entity_child(Entity *entity, Entity *child)
 {
-
+  entity->last_child->next_child = child;
+  entity->last_child = child;
+  child->parent = ref_from_entity(entity);
 }
 
-void remove_entity_child(Entity *entity, EntityRef *child)
+// NOTE: NEED TO TEST!
+void remove_entity_child(Entity *entity, u64 id)
 {
+  Entity *prev = NULL;
 
+  for (Entity *curr = entity->first_child; curr != NULL; curr = curr->next_child)
+  {
+    if (curr->id == id)
+    {
+      zero(curr->parent);
+      prev->next_child = curr->next_child;
+      break;
+    }
+
+    prev = curr;
+  }
 }
 
-EntityRef get_entity_child_of_id(Entity *entity, u64 id)
+Entity *get_entity_child_at_index(Entity *entity, u8 index)
 {
-  return (EntityRef) {0};
+  Entity *result = GLOBAL->nil_entity;
+
+  u8 i = 0;
+  for (Entity *curr = entity->first_child; curr != NULL; curr = curr->next_child)
+  {
+    if (i == index)
+    {
+      result = curr;
+      break;
+    }
+
+    i++;
+  }
+
+  return result;
 }
 
-EntityRef get_entity_child_at_index(Entity *entity, u8 index)
+Entity *get_entity_child_of_id(Entity *entity, u64 id)
 {
-  return (EntityRef) {0};
+  Entity *result = {0};
+
+  for (Entity *curr = entity->first_child; curr != NULL; curr = curr->next_child)
+  {
+    if (curr->id == id)
+    {
+      result = curr;
+      break;
+    }
+  }
+
+  return result;
 }
 
-EntityRef get_entity_first_child_of_type(Entity *entity, EntityType type)
+Entity *get_entity_child_of_type(Entity *entity, EntityType type)
 {
-  return (EntityRef) {0};
-}
+  Entity *result = {0};
 
-// @Collider2D =================================================================================
+  for (Entity *curr = entity->first_child; curr != NULL; curr = curr->next_child)
+  {
+    if (curr->type == type)
+    {
+      result = curr;
+      break;
+    }
+  }
 
-bool entity_collision(Entity *a, Entity *b)
-{
-  return FALSE;
+  return result;
 }
 
 // @Timer ======================================================================================

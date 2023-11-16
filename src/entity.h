@@ -56,10 +56,12 @@ struct Entity
 {
   Entity *next;
   Entity *next_free;
-  Entity *parent;
   Entity *first_child;
   Entity *last_child;
   Entity *next_child;
+  u8 child_count;
+
+  EntityRef parent;
 
   u64 id;
   EntityType type;
@@ -68,11 +70,15 @@ struct Entity
   bool is_visible;
 
   Vec2F pos;
+  Vec2F local_pos;
   f32 rot;
+  f32 local_rot;
   Vec2F scale;
+  Vec2F local_scale;
   f32 width;
   f32 height;
   Mat3x3F xform;
+  Mat3x3F model;
   Vec2F pos_offset;
   Vec2F vel;
   Vec2F dir;
@@ -118,23 +124,32 @@ struct EntityList
 #define PLAYER_ACC 1.5f
 #define PLAYER_FRIC 1.5f
 
-// @Entity =====================================================================================
+// @InitEntity =================================================================================
 
 void init_entity(Entity *entity, EntityType type);
 void clear_entity(Entity *entity);
 
+// @UpdateEntity ===============================================================================
+
 void update_entity_collider(Entity *entity);
-void update_entity_xform(Entity *entity);
+void update_entity_xform(Game *game, Entity *entity);
 void update_controlled_entity_movement(Game *game, Entity *entity);
 void update_targetting_entity_movement(Game *game, Entity *entity);
 void update_projectile_entity_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 
-void set_entity_target(Entity *entity, EntityRef target);
+// @SetEntity ==================================================================================
+
 void set_entity_size(Entity *entity, f32 width, f32 height);
 void set_entity_scale(Entity *entity, Vec2F scale);
 void set_entity_origin(Entity *entity, Vec2I origin);
+void set_entity_target(Entity *entity, EntityRef target);
+
+// @OtherEntity ================================================================================
+
+bool entity_is_valid(Entity *entity);
+void resolve_entity_collision(Entity *a, Entity *b);
 void wrap_entity_at_edges(Entity *entity);
 void damage_entity(Entity *entity, i8 damage);
 
@@ -145,20 +160,16 @@ Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList =================================================================================
 
-Entity *alloc_entity(Game *game);
-void free_entity(Game *game, Entity *entity);
-EntityRef get_entity_of_id(Game *game, u64 id);
-EntityRef get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
+Entity *create_entity(Game *game);
+void destroy_entity(Game *game, Entity *entity);
+Entity *get_entity_of_id(Game *game, u64 id);
+Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
 
 // @EntityTree =================================================================================
 
-void set_entity_parent(Entity *entity, EntityRef *parent);
-void add_entity_child(Entity *entity, EntityRef *child);
-void remove_entity_child(Entity *entity, EntityRef *child);
-EntityRef get_entity_child_of_id(Entity *entity, u64 id);
-EntityRef get_entity_child_at_index(Entity *entity, u8 index);
-EntityRef get_entity_first_child_of_type(Entity *entity, EntityType type);
-
-// @Collider2D =================================================================================
-
-bool entity_collision(Entity *a, Entity *b);
+void set_entity_parent(Entity *entity, Entity *parent);
+void add_entity_child(Entity *entity, Entity *child);
+void remove_entity_child(Entity *entity, u64 id);
+Entity *get_entity_child_at_index(Entity *entity, u8 index);
+Entity *get_entity_child_of_id(Entity *entity, u64 id);
+Entity *get_entity_child_of_type(Entity *entity, EntityType type);

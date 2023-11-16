@@ -39,6 +39,8 @@ struct EventDesc
 struct Event
 {
   Event *next;
+  Event *next_free;
+  
   EventType type;
   EventDesc desc;
 };
@@ -47,6 +49,8 @@ struct EventQueue
 {
   Event *front;
   Event *back;
+  Event *first_free;
+
   u64 count;
 };
 

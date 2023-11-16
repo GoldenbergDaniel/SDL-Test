@@ -72,3 +72,34 @@ RAYCAST
       printf("No hit.\n");
     }
   }
+
+PRINT LISTS
+
+#ifdef DEBUG
+static
+void print_lists(Game *game)
+{
+  EntityList list = game->entities;
+
+  printf("Arena: ");
+
+  for (Entity *e = list.head; e != NULL; e = e->next)
+  {
+    printf("%llu -> ", e->id);
+  }
+  
+  printf("NULL\n");
+
+  printf("Freelist: ");
+
+  Entity *curr = list.first_free;
+  while (curr)
+  {
+    printf("%llu -> ", curr->id);
+    curr = curr->next_free;
+  }
+
+  printf("NULL\n");
+  printf("\n");
+}
+#endif

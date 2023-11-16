@@ -7,8 +7,6 @@
 #include "shaders.h"
 #include "draw.h"
 
-typedef D_Object Object;
-typedef D_Renderer Renderer;
 typedef R_Vertex Vertex;
 typedef R_Shader Shader;
 typedef R_Texture2D Texture2D;
@@ -86,8 +84,7 @@ void d_clear(Vec4F color)
 
 void d_triangle(Mat3x3F xform, Vec4F color)
 {
-  Renderer *renderer = GLOBAL->renderer;
-  Object object = renderer->triangle;
+  DrawState object = GLOBAL->renderer->triangle;
 
   r_gl_bind_shader(&object.shader);
   r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
@@ -100,8 +97,7 @@ void d_triangle(Mat3x3F xform, Vec4F color)
 
 void d_rectangle(Mat3x3F xform, Vec4F color)
 {
-  Renderer *renderer = GLOBAL->renderer;
-  Object object = renderer->rectangle;
+  DrawState object = GLOBAL->renderer->rectangle;
 
   r_gl_bind_shader(&object.shader);
   r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
