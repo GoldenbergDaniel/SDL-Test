@@ -29,7 +29,7 @@ void destroy_arena(Arena *arena)
 void *arena_alloc(Arena *arena, u64 size)
 {
   // printf("%llu\n", arena->used + size);
-  ASSERT(arena->size >= arena->used + size);
+  assert(arena->size >= arena->used + size);
 
   byte *allocated = arena->memory + arena->used;
   arena->used += size;
@@ -39,7 +39,7 @@ void *arena_alloc(Arena *arena, u64 size)
 
 void arena_free(Arena *arena, u64 size)
 {
-  ASSERT(arena->used - size >= 0);
+  assert(arena->used - size >= 0);
 
   arena->used -= size;
 }
@@ -51,9 +51,9 @@ void clear_arena(Arena *arena)
 
 Arena get_scratch_arena(Arena *conflict)
 {
-  static THREAD_LOCAL Arena scratch_1;
-  static THREAD_LOCAL Arena scratch_2;
-  static THREAD_LOCAL bool init = TRUE;
+  static thread_local Arena scratch_1;
+  static thread_local Arena scratch_2;
+  static thread_local bool init = TRUE;
 
   if (init)
   {

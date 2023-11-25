@@ -21,9 +21,8 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
-#define THREAD_LOCAL __thread
+#define thread_local __thread
 
-#define ASSERT(exp) assert(exp)
 #define SCOPE(title)
 
 #define TRUE 1

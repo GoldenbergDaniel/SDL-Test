@@ -8,8 +8,8 @@
 #include "gl_render.h"
 
 typedef R_Shader Shader;
-typedef R_Texture2D Texture2D;
-typedef R_GL_VAO VAO;
+typedef R_Texture Texture;
+typedef R_VAO VAO;
 
 static void verify_shader(u32 id, u32 type);
 
@@ -100,7 +100,7 @@ void r_gl_unbind_vertex_array(void)
   glBindVertexArray(0);
 }
 
-void r_gl_set_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
+void r_gl_add_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
 {
   typedef struct Layout Layout;
   struct Layout
@@ -120,7 +120,7 @@ void r_gl_set_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
     case GL_SHORT: type_size = sizeof (i16); break;
     case GL_INT:   type_size = sizeof (i32); break;
     case GL_FLOAT: type_size = sizeof (f32); break;
-    default: ASSERT(FALSE);
+    default: assert(FALSE);
   }
 
   Layout layout = 
@@ -294,11 +294,11 @@ void verify_shader(u32 id, u32 type)
   }
 }
 
-// @Texture2D ==================================================================================
+// @Texture ====================================================================================
 
-Texture2D r_gl_create_texture2d(const i8 *path)
+Texture r_gl_create_texture(const i8 *path)
 {
-  Texture2D tex;
+  Texture tex;
   stbi_set_flip_vertically_on_load(TRUE);
   tex.data = stbi_load(path, &tex.width, &tex.height, &tex.channel_count, 4);
 
@@ -329,14 +329,14 @@ Texture2D r_gl_create_texture2d(const i8 *path)
 }
 
 inline
-void r_gl_bind_texture2d(Texture2D *texture, u32 slot)
+void r_gl_bind_texture(Texture *texture, u32 slot)
 {
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
 inline
-void r_gl_unbind_texture2d(void)
+void r_gl_unbind_texture(void)
 {
   glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -9,8 +9,8 @@
 
 typedef R_Vertex Vertex;
 typedef R_Shader Shader;
-typedef R_Texture2D Texture2D;
-typedef R_GL_VAO GL_VAO;
+typedef R_Texture Texture;
+typedef R_VAO VAO;
 
 extern Global *GLOBAL;
 
@@ -30,11 +30,11 @@ void d_init_renderer(Renderer *renderer)
       0, 1, 2
     };
 
-    GL_VAO vao = r_gl_create_vertex_array(3);
+    VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
 
     renderer->triangle.vao = vao;
     renderer->triangle.vbo = vbo;
@@ -62,11 +62,11 @@ void d_init_renderer(Renderer *renderer)
       1, 2, 3  // second triangle
     };
 
-    GL_VAO vao = r_gl_create_vertex_array(3);
+    VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
 
     renderer->rectangle.vao = vao;
     renderer->rectangle.vbo = vbo;
@@ -97,12 +97,12 @@ void d_init_renderer(Renderer *renderer)
       1, 2, 3  // second triangle 
     };
 
-    GL_VAO vao = r_gl_create_vertex_array(3);
+    VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // color
-    r_gl_set_vertex_attribute(&vao, GL_FLOAT, 3); // texture coordinate
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // texture coordinate
 
     renderer->sprite.vao = vao;
     renderer->sprite.vbo = vbo;
@@ -111,13 +111,8 @@ void d_init_renderer(Renderer *renderer)
     Shader shader = r_gl_create_shader(sprite_vert_src, sprite_frag_src);
     renderer->sprite.shader = shader;
 
-    Texture2D texture = r_gl_create_texture2d("res/player.png");
-    u32 slot = 0;
-    renderer->sprite.texture2d = texture;
-    renderer->sprite.texture2d_slot = slot;
-    r_gl_bind_texture2d(&texture, slot);
-    r_gl_set_uniform_1i(&shader, "u_tex", slot);
-    r_gl_unbind_texture2d();
+    Texture texture = r_gl_create_texture("res/texture/player.png");
+    renderer->sprite.texture = texture;
 
     r_gl_unbind_vertex_array();
   }
@@ -132,50 +127,50 @@ void d_clear(Vec4F color)
 inline
 void d_triangle(Mat3x3F xform, Vec4F color)
 {
-  RenderState object = GLOBAL->renderer->triangle;
+  RenderState state = GLOBAL->renderer->triangle;
 
-  r_gl_bind_shader(&object.shader);
-  r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
-  r_gl_set_uniform_4f(&object.shader, "u_color", color);
+  r_gl_bind_shader(&state.shader);
+  r_gl_set_uniform_3x3f(&state.shader, "u_xform", xform);
+  r_gl_set_uniform_4f(&state.shader, "u_color", color);
 
-  r_gl_bind_vertex_array(&object.vao);
+  r_gl_bind_vertex_array(&state.vao);
   r_gl_draw_triangles(3);
   
   r_gl_unbind_vertex_array();
-  r_gl_unbind_shader();
 }
 
 inline
 void d_rectangle(Mat3x3F xform, Vec4F color)
 {
-  RenderState object = GLOBAL->renderer->rectangle;
+  RenderState state = GLOBAL->renderer->rectangle;
 
-  r_gl_bind_shader(&object.shader);
-  r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
-  r_gl_set_uniform_4f(&object.shader, "u_color", color);
+  r_gl_bind_shader(&state.shader);
+  r_gl_set_uniform_3x3f(&state.shader, "u_xform", xform);
+  r_gl_set_uniform_4f(&state.shader, "u_color", color);
 
-  r_gl_bind_vertex_array(&object.vao);
+  r_gl_bind_vertex_array(&state.vao);
   r_gl_draw_triangles(6);
 
   r_gl_unbind_vertex_array();
-  r_gl_unbind_shader();
 }
 
 inline
-void d_sprite(Mat3x3F xform, Vec4F color)
+void d_sprite(Mat3x3F xform, Vec4F color, u16 texture_id)
 {
-  RenderState object = GLOBAL->renderer->sprite;
+  RenderState state = GLOBAL->renderer->sprite;
 
-  r_gl_bind_texture2d(&object.texture2d, object.texture2d_slot);
+  // get texture from id
 
-  r_gl_bind_shader(&object.shader);
-  r_gl_set_uniform_3x3f(&object.shader, "u_xform", xform);
-  r_gl_set_uniform_4f(&object.shader, "u_color", color);
+  r_gl_bind_texture(&state.texture, texture_id);
 
-  r_gl_bind_vertex_array(&object.vao);
+  r_gl_bind_shader(&state.shader);
+  r_gl_set_uniform_3x3f(&state.shader, "u_xform", xform);
+  r_gl_set_uniform_4f(&state.shader, "u_color", color);
+  r_gl_set_uniform_1i(&state.shader, "u_tex", texture_id);
+
+  r_gl_bind_vertex_array(&state.vao);
   r_gl_draw_triangles(6);
 
   r_gl_unbind_vertex_array();
-  r_gl_unbind_texture2d();
-  r_gl_unbind_shader();
+  r_gl_unbind_texture();
 }

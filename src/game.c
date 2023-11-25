@@ -20,42 +20,42 @@ void init_game(Game *game)
 {
   game->event_queue = (EventQueue) {0};
   game->camera = translate_3x3f(0.0f, 0.0f);
-  game->is_running = TRUE;
   game->should_quit = FALSE;
 
-  Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
-  zero(*entity);
-  GLOBAL->nil_entity = entity;
+  SCOPE("Create starting entities")
+  {
+    Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+    zero(*entity);
+    GLOBAL->nil_entity = entity;
 
-  entity = create_entity(game);
-  init_entity(entity, EntityType_Wall);
-  entity->pos = v2f(0.0f, 200);
-  entity->color = COLOR_GRAY;
-  set_entity_size(entity, W_WIDTH, 200);
-  set_entity_origin(entity, v2i(-1, 1));
+    entity = create_entity(game);
+    init_entity(entity, EntityType_Wall);
+    entity->pos = v2f(0.0f, 200);
+    entity->color = COLOR_GRAY;
+    set_entity_size(entity, W_WIDTH, 200);
+    set_entity_origin(entity, v2i(-1, 1));
 
-  entity = create_entity(game);
-  init_entity(entity, EntityType_Player);
+    entity = create_entity(game);
+    init_entity(entity, EntityType_Player);
 
-  // entity = create_entity(game);
-  // init_entity(entity, EntityType_EnemyShip);
-  
-  entity = create_entity(game);
-  init_entity(entity, EntityType_Wall);
-  entity->color = COLOR_BLUE;
+    // entity = create_entity(game);
+    // init_entity(entity, EntityType_EnemyShip);
+    
+    entity = create_entity(game);
+    init_entity(entity, EntityType_Wall);
+    entity->color = COLOR_BLUE;
 
-  entity = create_entity(game);
-  init_entity(entity, EntityType_DebugLine);
-  set_entity_size(entity, 100, 3);
-  set_entity_origin(entity, v2i(-1, 0));
+    entity = create_entity(game);
+    init_entity(entity, EntityType_DebugLine);
+    set_entity_size(entity, 100, 3);
+    set_entity_origin(entity, v2i(-1, 0));
 
-  Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-  set_entity_parent(entity, player);
-  entity->pos.x = player->pos.x;
-  entity->pos.y = player->pos.y;
-  entity->local_pos.x = 15.0f;
-
-  // printf("%lu\n", sizeof (Entity));
+    Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+    set_entity_parent(entity, player);
+    entity->pos.x = player->pos.x;
+    entity->pos.y = player->pos.y;
+    entity->local_pos.x = 15.0f;
+  }
 }
 
 // @Update =====================================================================================
@@ -80,27 +80,13 @@ void update_game(Game *game)
     {
       if (e->props & EntityProp_Controlled)
       {
-        update_entity_walking_movement(game, e);
-        // if (!p_polygon_y_range_intersect(&e->col, v2f(0.0f, 200.0f), v2f(1024.0f, 200.0f)))
-        // {
-          
-        // }
-        // else
-        // {
-        //   printf("collided?\n");
-        // }
-
+        update_controlled_entity_movement(game, e);
         wrap_entity_at_edges(e);
       }
 
-      if (e->props & EntityProp_Autonomous && e->props & EntityProp_Hostile)
+      if (e->props & EntityProp_Autonomous)
       {
-        update_entity_flying_movement(game, e);
-      }
-
-      if (e->move_type & MoveType_Projectile)
-      {
-        update_entity_projectile_movement(game, e);
+        update_autonomous_entity_movement(game, e);
       }
     }
 
@@ -134,6 +120,7 @@ void update_game(Game *game)
     }
   }
 
+  // DEBUG: Kill player on backspace
   if (key_just_pressed(KEY_BACKSPACE))
   {
     Entity *entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
@@ -184,7 +171,7 @@ void handle_game_events(Game *game)
             printf("ERROR: Failed to spawn entity. Invalid type!");
             printf("Entity ID: %llu\n", entity->id);
             printf("Entity Type: %i\n", entity->type);
-            ASSERT(FALSE);
+            assert(FALSE);
           }
         }
 
@@ -206,7 +193,11 @@ void handle_game_events(Game *game)
           // game_over = TRUE
         }
       }
-      default: break;
+      default: 
+      {
+        printf("ERROR: Failed to process event. Invalid type!");
+        assert(FALSE);
+      }
     }
 
     pop_event(game);
@@ -227,7 +218,7 @@ void draw_game(Game *game)
     {
       case EntityType_Player:
       {
-        d_sprite(e->xform, e->color);
+        d_sprite(e->xform, e->color, 0);
       }
       break;
       case EntityType_EnemyShip:

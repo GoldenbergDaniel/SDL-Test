@@ -71,13 +71,14 @@ struct Entity
 {
   Entity *next;
   Entity *next_free;
+
+  EntityRef parent;
   Entity *first_child;
   Entity *last_child;
   Entity *next_child;
-  u8 child_count;
+  u16 child_count;
 
-  EntityRef parent;
-
+  // General
   u64 id;
   EntityType type;
   MoveType move_type;
@@ -101,21 +102,24 @@ struct Entity
   Vec2F input_dir;
 
   // Physics
-  Vec2F vel;
   Vec2F dir;
+  Vec2F vel;
+  f32 speed;
   f32 gravity;
   
   // Sprite
   Vec4F color;
+  u16 texture_id;
   u16 z_index;
-  f32 speed;
   bool flip_x;
   bool flip_y;
 
+  // Collision
   Collider2D col;
   u8 col_layer;
   b8 col_mask;
 
+  // Targetting
   bool has_target;
   Vec2F target_pos;
   f32 target_angle;
@@ -152,9 +156,8 @@ void clear_entity(Entity *entity);
 
 void update_entity_collider(Entity *entity);
 void update_entity_xform(Game *game, Entity *entity);
-void update_entity_walking_movement(Game *game, Entity *entity);
-void update_entity_sliding_movement(Game *game, Entity *entity);
-void update_entity_flying_movement(Game *game, Entity *entity);
+void update_controlled_entity_movement(Game *game, Entity *entity);
+void update_autonomous_entity_movement(Game *game, Entity *entity);
 void update_entity_projectile_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);

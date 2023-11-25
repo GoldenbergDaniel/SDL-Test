@@ -35,10 +35,8 @@ struct Game
   EventQueue event_queue;
   EntityList entities;
   Mat3x3F camera;
-  u8 round;
   f64 t;
   f64 dt;
-  bool is_running;
   bool should_quit;
 };
 

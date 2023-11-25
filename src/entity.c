@@ -25,7 +25,7 @@ const b64 PLAYER_PROPS = EntityProp_Rendered | EntityProp_Controlled | EntityPro
 
 const b64 ENEMY_PROPS = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Hostile | EntityProp_Movable | EntityProp_Combatant;
 
-const b64 LASER_PROPS = EntityProp_Rendered | EntityProp_Movable;
+const b64 LASER_PROPS = EntityProp_Rendered | EntityProp_Movable | EntityProp_Autonomous;
 
 // @InitEntity =================================================================================
 
@@ -105,7 +105,7 @@ void init_entity(Entity *entity, EntityType type)
       printf("Entity ID: %llu\n", entity->id);
       printf("Entity Type: %i\n", entity->type);
       printf("Vertex Count: %i\n", entity->col.vertex_count);
-      ASSERT(FALSE);
+      assert(FALSE);
     }
   }
 
@@ -194,7 +194,7 @@ void update_entity_collider(Entity *entity)
           printf("Entity ID: %llu\n", entity->id);
           printf("Entity Type: %i\n", entity->type);
           printf("Vertex Count: %i\n", entity->col.vertex_count);
-          ASSERT(FALSE);
+          assert(FALSE);
         }
       }
     }
@@ -207,7 +207,7 @@ void update_entity_collider(Entity *entity)
     default: 
     {
       printf("ERROR: Failed to update collider. Invalid type!");
-      ASSERT(FALSE);
+      assert(FALSE);
     }
   }
 }
@@ -217,14 +217,16 @@ void update_entity_xform(Game *game, Entity *entity)
   Mat3x3F xform = m3x3f(1.0f);
   Entity *parent = entity_from_ref(entity->parent);
 
+  if (entity->flip_x) xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
+  if (entity->flip_y) xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform);
+
+  // NOTE: You are not properly updating global position. Shoud you?
   if (entity_is_valid(parent))
   {
     xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
     xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
     xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
     xform = mul_3x3f(translate_3x3f(entity->local_pos.x, entity->local_pos.y), xform);
-    if (entity->flip_x) 
-      xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
     
     xform = mul_3x3f(parent->model, xform);
   }
@@ -233,16 +235,12 @@ void update_entity_xform(Game *game, Entity *entity)
     xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
     xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
     xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
-    if (entity->flip_x) 
-      xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
-
     xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
   }
 
   entity->model = xform;
 
-  Mat3x3F camera = game->camera;
-  xform = mul_3x3f(camera, xform);
+  xform = mul_3x3f(game->camera, xform);
 
   Mat3x3F ortho = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
   xform = mul_3x3f(ortho, xform);
@@ -250,146 +248,142 @@ void update_entity_xform(Game *game, Entity *entity)
   entity->xform = xform;
 }
 
-void update_entity_walking_movement(Game *game, Entity *entity)
+void update_controlled_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
-  if (key_pressed(KEY_A) && !key_pressed(KEY_D))
+  if (entity->move_type == MoveType_Walking)
   {
-    entity->speed = lerp_1f(entity->speed, -PLAYER_SPEED, PLAYER_ACC * dt);
-    entity->input_dir.x = -1.0f;
-    // entity->rot = 180.0f;
-    entity->flip_x = TRUE;
-  }
+    if (key_pressed(KEY_A) && !key_pressed(KEY_D))
+    {
+      entity->speed = lerp_1f(entity->speed, -PLAYER_SPEED, PLAYER_ACC * dt);
+      entity->input_dir.x = -1.0f;
+      entity->flip_x = TRUE;
+    }
 
-  if (key_pressed(KEY_D) && !key_pressed(KEY_A))
-  {
-    entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
-    entity->input_dir.x = 1.0f;
-    // entity->rot = 0.0f;
-    entity->flip_x = FALSE;
-  }
+    if (key_pressed(KEY_D) && !key_pressed(KEY_A))
+    {
+      entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
+      entity->input_dir.x = 1.0f;
+      entity->flip_x = FALSE;
+    }
 
-  if (key_pressed(KEY_A) && key_pressed(KEY_D))
-  {
-    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 3.0f * dt);
-    entity->speed = to_zero(entity->speed, 1.0f);
-  }
-  
-  if (!key_pressed(KEY_A) && !key_pressed(KEY_D))
-  {
-    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
-    entity->speed = to_zero(entity->speed, 1.0f);
-  }
+    if (key_pressed(KEY_A) && key_pressed(KEY_D))
+    {
+      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 3.0f * dt);
+      entity->speed = to_zero(entity->speed, 1.0f);
+    }
+    
+    if (!key_pressed(KEY_A) && !key_pressed(KEY_D))
+    {
+      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
+      entity->speed = to_zero(entity->speed, 1.0f);
+    }
 
-  entity->vel.x = entity->speed * dt;
-  // entity->vel.y -= GRAVITY * dt;
+    entity->vel.x = entity->speed * dt;
+    // entity->vel.y -= GRAVITY * dt;
+  }
+  else if (entity->move_type == MoveType_Flying)
+  {
+    f32 omega = clamp(90.0f * magnitude_2f(entity->vel), 100.0f, 180.0f);
+    // printf("Omega: %f\n", omega);
+
+    if (key_pressed(KEY_A)) entity->rot += omega * dt;
+    if (key_pressed(KEY_D)) entity->rot -= omega * dt;
+
+    if (key_pressed(KEY_W) && !key_pressed(KEY_S))
+    {
+      entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
+    }
+    else if (!key_pressed(KEY_W) && key_pressed(KEY_S))
+    {
+      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 2 * dt);
+      entity->speed = to_zero(entity->speed, 1.0f);
+    }
+    else
+    {
+      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
+      entity->speed = to_zero(entity->speed, 1.0f);
+    }
+
+    entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * dt;
+    entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * dt;
+
+    entity->dir = scale_2f(entity->vel, 1.0f / magnitude_2f(entity->vel));
+  }
 
   entity->pos = add_2f(entity->pos, entity->vel);
 }
 
-void update_entity_sliding_movement(Game *game, Entity *entity)
-{
-  f64 dt = game->dt;
-  f32 omega = clamp(90.0f * magnitude_2f(entity->vel), 100.0f, 180.0f);
-  // printf("Omega: %f\n", omega);
-
-  if (key_pressed(KEY_A)) entity->rot += omega * dt;
-  if (key_pressed(KEY_D)) entity->rot -= omega * dt;
-
-  if (key_pressed(KEY_W) && !key_pressed(KEY_S))
-  {
-    entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
-  }
-  else if (!key_pressed(KEY_W) && key_pressed(KEY_S))
-  {
-    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 2 * dt);
-    entity->speed = to_zero(entity->speed, 1.0f);
-  }
-  else
-  {
-    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
-    entity->speed = to_zero(entity->speed, 1.0f);
-  }
-
-  entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * dt;
-  entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * dt;
-
-  entity->dir = scale_2f(entity->vel, 1.0f / magnitude_2f(entity->vel));
-  entity->pos = add_2f(entity->pos, entity->vel);
-}
-
-void update_entity_flying_movement(Game *game, Entity *entity)
+void update_autonomous_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
-  if (entity->has_target && entity->is_active)
+  if (entity->move_type == MoveType_Flying)
   {
-    entity->input_dir.x = sinf(entity->target_angle);
-    entity->input_dir.y = cosf(entity->target_angle);
+    if (entity->has_target)
+    {
+      entity->input_dir.x = sinf(entity->target_angle);
+      entity->input_dir.y = cosf(entity->target_angle);
 
-    entity->rot = -(entity->target_angle * DEGREES + 270.0f);
+      entity->rot = -(entity->target_angle * DEGREES + 270.0f);
+    }
+    else
+    {
+      entity->input_dir = V2F_ZERO;
+    }
+
+    if (entity->input_dir.x != 0.0f || entity->input_dir.y != 0.0f)
+    {
+      entity->input_dir = normalize_2f(entity->input_dir);
+    }
+
+    // X Acceleration
+    if (entity->input_dir.x != 0.0f)
+    {
+      entity->vel.x += PLAYER_ACC * dir(entity->input_dir.x) * dt;
+      entity->vel.x = clamp(
+                            entity->vel.x, 
+                            -entity->speed * abs(entity->input_dir.x) * dt,
+                            entity->speed * abs(entity->input_dir.x) * dt);
+    }
+    else
+    {
+      entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
+      entity->vel.x = to_zero(entity->vel.x, 0.1f);
+    }
+
+    // Y Acceleration
+    if (entity->input_dir.y != 0.0f)
+    {
+      entity->vel.y += PLAYER_ACC * dir(entity->input_dir.y) * dt;
+      entity->vel.y = clamp(
+                            entity->vel.y, 
+                            -entity->speed * abs(entity->input_dir.y) * dt, 
+                            entity->speed * abs(entity->input_dir.y) * dt);
+    }
+    else 
+    {
+      entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
+      entity->vel.y = to_zero(entity->vel.y, 0.1f);
+    }
+
+    entity->dir = scale_2f(entity->vel, 1.0f / magnitude_2f(entity->vel));
   }
-  else
+  else if (entity->move_type == MoveType_Projectile)
   {
-    entity->input_dir = V2F_ZERO;
+    Timer *timer = get_timer(entity, TIMER_KILL);
+    tick_timer(timer, dt);
+
+    if (timer->timeout)
+    {
+      EventDesc desc = {.id = entity->id};
+      push_event(game, EventType_KillEntity, desc);
+    }
+
+    entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * dt;
+    entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * dt;
   }
-
-  if (entity->input_dir.x != 0.0f || entity->input_dir.y != 0.0f)
-  {
-    entity->input_dir = normalize_2f(entity->input_dir);
-  }
-
-  // X Acceleration
-  if (entity->input_dir.x != 0.0f)
-  {
-    entity->vel.x += PLAYER_ACC * dir(entity->input_dir.x) * dt;
-    entity->vel.x = clamp(
-                          entity->vel.x, 
-                          -entity->speed * abs(entity->input_dir.x) * dt,
-                          entity->speed * abs(entity->input_dir.x) * dt);
-  }
-  else
-  {
-    entity->vel.x = lerp_1f(entity->vel.x, 0.0f, PLAYER_FRIC * dt);
-    entity->vel.x = to_zero(entity->vel.x, 0.1f);
-  }
-
-  // Y Acceleration
-  if (entity->input_dir.y != 0.0f)
-  {
-    entity->vel.y += PLAYER_ACC * dir(entity->input_dir.y) * dt;
-    entity->vel.y = clamp(
-                          entity->vel.y, 
-                          -entity->speed * abs(entity->input_dir.y) * dt, 
-                          entity->speed * abs(entity->input_dir.y) * dt);
-  }
-  else 
-  {
-    entity->vel.y = lerp_1f(entity->vel.y, 0.0f, PLAYER_FRIC * dt);
-    entity->vel.y = to_zero(entity->vel.y, 0.1f);
-  }
-
-  entity->dir = scale_2f(entity->vel, 1.0f / magnitude_2f(entity->vel));
-  entity->pos = add_2f(entity->pos, entity->vel);
-
-  // printf("Dir: %.2f, %.2f\n", entity->dir.x, entity->dir.y);
-}
-
-void update_entity_projectile_movement(Game *game, Entity *entity)
-{
-  f64 dt = game->dt;
-  Timer *timer = get_timer(entity, TIMER_KILL);
-  tick_timer(timer, dt);
-
-  if (timer->timeout)
-  {
-    EventDesc desc = {.id = entity->id};
-    push_event(game, EventType_KillEntity, desc);
-  }
-
-  entity->vel.x = cosf(entity->rot * RADIANS) * entity->speed * dt;
-  entity->vel.y = sinf(entity->rot * RADIANS) * entity->speed * dt;
 
   entity->pos = add_2f(entity->pos, entity->vel);
 }

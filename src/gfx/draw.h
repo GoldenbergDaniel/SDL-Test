@@ -11,9 +11,8 @@ typedef struct RenderState RenderState;
 struct RenderState
 {
   R_Shader shader;
-  R_Texture2D texture2d;
-  u8 texture2d_slot;
-  R_GL_VAO vao;
+  R_Texture texture;
+  R_VAO vao;
   u32 vbo;
   u32 ibo;
 };
@@ -29,4 +28,4 @@ void d_init_renderer(Renderer *renderer);
 void d_clear(Vec4F color);
 void d_triangle(Mat3x3F xform, Vec4F color);
 void d_rectangle(Mat3x3F xform, Vec4F color);
-void d_sprite(Mat3x3F xform, Vec4F color);
+void d_sprite(Mat3x3F xform, Vec4F color, u16 texture_id);

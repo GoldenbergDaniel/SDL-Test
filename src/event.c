@@ -38,7 +38,7 @@ void push_event(Game *game, EventType type, EventDesc desc)
 
 void pop_event(Game *game)
 {
-  ASSERT(game->event_queue.count > 0);
+  assert(game->event_queue.count > 0);
 
   EventQueue *queue = &game->event_queue;
   Event *next = queue->front->next;

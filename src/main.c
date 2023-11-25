@@ -60,7 +60,8 @@ i32 main(void)
   f64 time_step = 1.0f / TARGET_FPS;
   f64 accumulator = 0.0f;
 
-  while (game.is_running)
+  bool is_running = TRUE;
+  while (is_running)
   {
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
@@ -79,7 +80,7 @@ i32 main(void)
 
       if (game_should_quit(&game))
       {
-        game.is_running = FALSE;
+        is_running = FALSE;
         break;
       }
 
