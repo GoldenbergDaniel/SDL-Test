@@ -62,10 +62,10 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
-  Vec2I mouse_pos = get_mouse_position();
-  Vec2F player_pos = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player)->pos;
-  printf("Mouse pos: %i, %i\n", mouse_pos.x, mouse_pos.y);
-  printf("Player pos: %f, %f\n", player_pos.x, player_pos.y);
+  // Vec2I mouse_pos = get_mouse_position();
+  // Vec2F player_pos = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player)->pos;
+  // printf("Mouse pos: %i, %i\n", mouse_pos.x, mouse_pos.y);
+  // printf("Player pos: %f, %f\n", player_pos.x, player_pos.y);
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
@@ -80,27 +80,27 @@ void update_game(Game *game)
     {
       if (e->props & EntityProp_Controlled)
       {
-        update_controlled_entity_movement(game, e);
-        if (!p_polygon_y_range_intersect(&e->col, v2f(0.0f, 440.0f), v2f(1024.0f, 440.0f)))
-        {
+        update_entity_walking_movement(game, e);
+        // if (!p_polygon_y_range_intersect(&e->col, v2f(0.0f, 200.0f), v2f(1024.0f, 200.0f)))
+        // {
           
-        }
-        else
-        {
-          printf("collided?\n");
-        }
+        // }
+        // else
+        // {
+        //   printf("collided?\n");
+        // }
 
         wrap_entity_at_edges(e);
       }
 
-      if (e->props & EntityProp_Targetting)
+      if (e->props & EntityProp_Autonomous && e->props & EntityProp_Hostile)
       {
-        update_targetting_entity_movement(game, e);
+        update_entity_flying_movement(game, e);
       }
 
-      if (e->props & EntityProp_Projectile)
+      if (e->move_type & MoveType_Projectile)
       {
-        update_projectile_entity_movement(game, e);
+        update_entity_projectile_movement(game, e);
       }
     }
 
@@ -109,14 +109,14 @@ void update_game(Game *game)
       update_entity_xform(game, e);
     }
 
-    if (e->props & EntityProp_Attacker)
+    if (e->props & EntityProp_Combatant)
     {
       if (e->props & EntityProp_Controlled)
       {
         update_controlled_entity_combat(game, e);
       }
       
-      if (e->props & EntityProp_Targetting)
+      if (e->props & EntityProp_Autonomous && e->props & EntityProp_Hostile)
       {
         Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
@@ -227,7 +227,7 @@ void draw_game(Game *game)
     {
       case EntityType_Player:
       {
-        d_triangle(e->xform, e->color);
+        d_sprite(e->xform, e->color);
       }
       break;
       case EntityType_EnemyShip:

@@ -20,6 +20,13 @@ static void init_timers(Entity *entity);
 static Timer *get_timer(Entity *entity, u8 index);
 static bool tick_timer(Timer *timer, f64 dt);
 
+const b64 PLAYER_PROPS = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable
+  | EntityProp_Combatant | EntityProp_Collides;
+
+const b64 ENEMY_PROPS = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Hostile | EntityProp_Movable | EntityProp_Combatant;
+
+const b64 LASER_PROPS = EntityProp_Rendered | EntityProp_Movable;
+
 // @InitEntity =================================================================================
 
 void init_entity(Entity *entity, EntityType type)
@@ -35,12 +42,14 @@ void init_entity(Entity *entity, EntityType type)
   {
     case EntityType_Player:
     {
+      entity->move_type = MoveType_Walking;
+      entity->combat_type = CombatType_Ranged;
       entity->props = PLAYER_PROPS;
       entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
       entity->color = COLOR_WHITE;
-      entity->col.vertex_count = 3;
+      entity->col.vertex_count = 4;
 
-      set_entity_scale(entity, v2f(1.0f, 1.0f));
+      set_entity_scale(entity, v2f(4.0f, 4.0f));
 
       Timer *timer = get_timer(entity, TIMER_COMBAT);
       timer->max_duration = 0.25f;
@@ -51,6 +60,8 @@ void init_entity(Entity *entity, EntityType type)
     break;
     case EntityType_EnemyShip:
     {
+      entity->move_type = MoveType_Flying;
+      entity->combat_type = CombatType_Ranged;
       entity->props = ENEMY_PROPS;
       entity->pos = v2f(random_u32(0, W_WIDTH), random_u32(0, W_HEIGHT));
       entity->speed = 100.0f;
@@ -65,6 +76,8 @@ void init_entity(Entity *entity, EntityType type)
     break;
     case EntityType_Laser:
     {
+      entity->move_type = MoveType_Projectile;
+      entity->combat_type = CombatType_Melee;
       entity->props = LASER_PROPS;
       set_entity_scale(entity, v2f(3.0f, 0.15f));
     }
@@ -210,6 +223,9 @@ void update_entity_xform(Game *game, Entity *entity)
     xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
     xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
     xform = mul_3x3f(translate_3x3f(entity->local_pos.x, entity->local_pos.y), xform);
+    if (entity->flip_x) 
+      xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
+    
     xform = mul_3x3f(parent->model, xform);
   }
   else
@@ -217,9 +233,13 @@ void update_entity_xform(Game *game, Entity *entity)
     xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
     xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
     xform = mul_3x3f(rotate_3x3f(entity->rot * RADIANS), xform);
+    if (entity->flip_x) 
+      xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
+
     xform = mul_3x3f(translate_3x3f(entity->pos.x, entity->pos.y), xform);
-    entity->model = xform;
   }
+
+  entity->model = xform;
 
   Mat3x3F camera = game->camera;
   xform = mul_3x3f(camera, xform);
@@ -230,7 +250,45 @@ void update_entity_xform(Game *game, Entity *entity)
   entity->xform = xform;
 }
 
-void update_controlled_entity_movement(Game *game, Entity *entity)
+void update_entity_walking_movement(Game *game, Entity *entity)
+{
+  f64 dt = game->dt;
+
+  if (key_pressed(KEY_A) && !key_pressed(KEY_D))
+  {
+    entity->speed = lerp_1f(entity->speed, -PLAYER_SPEED, PLAYER_ACC * dt);
+    entity->input_dir.x = -1.0f;
+    // entity->rot = 180.0f;
+    entity->flip_x = TRUE;
+  }
+
+  if (key_pressed(KEY_D) && !key_pressed(KEY_A))
+  {
+    entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
+    entity->input_dir.x = 1.0f;
+    // entity->rot = 0.0f;
+    entity->flip_x = FALSE;
+  }
+
+  if (key_pressed(KEY_A) && key_pressed(KEY_D))
+  {
+    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 3.0f * dt);
+    entity->speed = to_zero(entity->speed, 1.0f);
+  }
+  
+  if (!key_pressed(KEY_A) && !key_pressed(KEY_D))
+  {
+    entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
+    entity->speed = to_zero(entity->speed, 1.0f);
+  }
+
+  entity->vel.x = entity->speed * dt;
+  // entity->vel.y -= GRAVITY * dt;
+
+  entity->pos = add_2f(entity->pos, entity->vel);
+}
+
+void update_entity_sliding_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
   f32 omega = clamp(90.0f * magnitude_2f(entity->vel), 100.0f, 180.0f);
@@ -261,7 +319,7 @@ void update_controlled_entity_movement(Game *game, Entity *entity)
   entity->pos = add_2f(entity->pos, entity->vel);
 }
 
-void update_targetting_entity_movement(Game *game, Entity *entity)
+void update_entity_flying_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
@@ -318,7 +376,7 @@ void update_targetting_entity_movement(Game *game, Entity *entity)
   // printf("Dir: %.2f, %.2f\n", entity->dir.x, entity->dir.y);
 }
 
-void update_projectile_entity_movement(Game *game, Entity *entity)
+void update_entity_projectile_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
   Timer *timer = get_timer(entity, TIMER_KILL);
@@ -445,6 +503,16 @@ void set_entity_target(Entity *entity, EntityRef target)
     entity->target_pos = V2F_ZERO;
     entity->has_target = FALSE;
   }
+}
+
+void flip_entity_x(Entity *entity)
+{
+  
+}
+
+void flip_entity_y(Entity *entity)
+{
+
 }
 
 // @OtherEntity ================================================================================

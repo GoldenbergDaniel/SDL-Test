@@ -26,14 +26,29 @@ typedef enum EntityType
 typedef enum EntityProp
 {
   EntityProp_Controlled = 1 << 0,
-  EntityProp_Targetting = 1 << 1,
-  EntityProp_Movable = 1 << 2,
-  EntityProp_Attacker = 1 << 3,
-  EntityProp_Killable = 1 << 4,
-  EntityProp_Projectile = 1 << 5,
+  EntityProp_Autonomous = 1 << 1,
+  EntityProp_Hostile = 1 << 2,
+  EntityProp_Movable = 1 << 3,
+  EntityProp_Combatant = 1 << 4,
+  EntityProp_Killable = 1 << 5,
   EntityProp_Collides = 1 << 6,
   EntityProp_Rendered = 1 << 7,
+  EntityProp_Affected_By_Gravity = 1 << 8,
 } EntityProp;
+
+typedef enum MoveType
+{
+  MoveType_Walking,
+  MoveType_Sliding,
+  MoveType_Projectile,
+  MoveType_Flying,
+} MoveType;
+
+typedef enum CombatType
+{
+  CombatType_Melee,
+  CombatType_Ranged,
+} CombatType;
 
 struct Timer
 {
@@ -65,12 +80,16 @@ struct Entity
 
   u64 id;
   EntityType type;
+  MoveType move_type;
+  CombatType combat_type;
   b64 props;
   bool is_active;
   bool is_visible;
 
+  // Transform
   Vec2F pos;
   Vec2F local_pos;
+  Vec2F pos_offset;
   f32 rot;
   f32 local_rot;
   Vec2F scale;
@@ -79,15 +98,19 @@ struct Entity
   f32 height;
   Mat3x3F xform;
   Mat3x3F model;
-  Vec2F pos_offset;
+  Vec2F input_dir;
+
+  // Physics
   Vec2F vel;
   Vec2F dir;
-  Vec2F input_dir;
+  f32 gravity;
   
+  // Sprite
   Vec4F color;
   u16 z_index;
   f32 speed;
-  i8 curr_health;
+  bool flip_x;
+  bool flip_y;
 
   Collider2D col;
   u8 col_layer;
@@ -97,6 +120,8 @@ struct Entity
   Vec2F target_pos;
   f32 target_angle;
   u16 view_dist;
+
+  i8 curr_health;
 
   Timer timers[3];
 };
@@ -109,20 +134,14 @@ struct EntityList
   u16 count;
 };
 
-#define PLAYER_PROPS EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable \
-  | EntityProp_Attacker | EntityProp_Collides
-#define ENEMY_PROPS EntityProp_Rendered | EntityProp_Targetting | EntityProp_Movable \
-  | EntityProp_Attacker
-#define LASER_PROPS EntityProp_Rendered | EntityProp_Movable | EntityProp_Projectile
-
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
 #define TIMER_KILL 2
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 220.0f
-#define PLAYER_ACC 1.5f
-#define PLAYER_FRIC 1.5f
+#define PLAYER_SPEED 400.0f
+#define PLAYER_ACC 3.0f
+#define PLAYER_FRIC 3.0f
 
 // @InitEntity =================================================================================
 
@@ -133,9 +152,10 @@ void clear_entity(Entity *entity);
 
 void update_entity_collider(Entity *entity);
 void update_entity_xform(Game *game, Entity *entity);
-void update_controlled_entity_movement(Game *game, Entity *entity);
-void update_targetting_entity_movement(Game *game, Entity *entity);
-void update_projectile_entity_movement(Game *game, Entity *entity);
+void update_entity_walking_movement(Game *game, Entity *entity);
+void update_entity_sliding_movement(Game *game, Entity *entity);
+void update_entity_flying_movement(Game *game, Entity *entity);
+void update_entity_projectile_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 

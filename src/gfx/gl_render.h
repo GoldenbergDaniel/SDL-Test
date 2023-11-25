@@ -9,6 +9,7 @@ struct R_Vertex
 {
   Vec3F position;
   Vec3F color;
+  Vec3F texture_coordinate;
 };
 
 typedef struct R_Shader R_Shader;
@@ -23,7 +24,7 @@ struct R_Texture2D
   u32 id;
   i32 width;
   i32 height;
-  i32 num_channels;
+  i32 channel_count;
   u8 *data;
 };
 
@@ -69,19 +70,19 @@ void r_gl_set_vertex_attribute(R_GL_VAO *vao, GLenum data_type, u32 count);
 R_Shader r_gl_create_shader(const i8 *vert_src, const i8 *frag_src);
 void r_gl_bind_shader(R_Shader *shader);
 void r_gl_unbind_shader(void);
-i32 r_gl_set_uniform_1u(R_Shader *shader, i8 *name, u32 val);
-i32 r_gl_set_uniform_1i(R_Shader *shader, i8 *name, i32 val);
-i32 r_gl_set_uniform_1f(R_Shader *shader, i8 *name, f32 val);
-i32 r_gl_set_uniform_2f(R_Shader *shader, i8 *name, Vec2F vec);
-i32 r_gl_set_uniform_3f(R_Shader *shader, i8 *name, Vec3F vec);
-i32 r_gl_set_uniform_4f(R_Shader *shader, i8 *name, Vec4F vec);
-i32 r_gl_set_uniform_3x3f(R_Shader *shader, i8 *name, Mat3x3F mat);
-i32 r_gl_set_uniform_4x4f(R_Shader *shader, i8 *name, Mat4x4F mat);
+i32 r_gl_set_uniform_1u(R_Shader *shader, i8 *name, u32 v);
+i32 r_gl_set_uniform_1i(R_Shader *shader, i8 *name, i32 v);
+i32 r_gl_set_uniform_1f(R_Shader *shader, i8 *name, f32 v);
+i32 r_gl_set_uniform_2f(R_Shader *shader, i8 *name, Vec2F v);
+i32 r_gl_set_uniform_3f(R_Shader *shader, i8 *name, Vec3F v);
+i32 r_gl_set_uniform_4f(R_Shader *shader, i8 *name, Vec4F v);
+i32 r_gl_set_uniform_3x3f(R_Shader *shader, i8 *name, Mat3x3F m);
+i32 r_gl_set_uniform_4x4f(R_Shader *shader, i8 *name, Mat4x4F m);
 
 // @Texture2D ==================================================================================
 
 R_Texture2D r_gl_create_texture2d(const i8 *path);
-void r_gl_bind_texture2d(R_Texture2D *texture);
+void r_gl_bind_texture2d(R_Texture2D *texture, u32 slot);
 void r_gl_unbind_texture2d(void);
 
 // @Draw =======================================================================================

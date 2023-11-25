@@ -190,65 +190,74 @@ void r_gl_unbind_shader(void)
   glUseProgram(0);
 }
 
-i32 r_gl_set_uniform_1u(Shader *shader, i8 *name, u32 val)
+inline
+i32 r_gl_set_uniform_1u(Shader *shader, i8 *name, u32 v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1ui(loc, val);
+  glUniform1ui(loc, v);
   
   return loc;
 }
 
-i32 r_gl_set_uniform_1(Shader *shader, i8 *name, i32 val)
+inline
+i32 r_gl_set_uniform_1i(Shader *shader, i8 *name, i32 v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1i(loc, val);
+  glUniform1i(loc, v);
+
   return loc;
 }
 
-i32 r_gl_set_uniform_1f(Shader *shader, i8 *name, f32 val)
+inline
+i32 r_gl_set_uniform_1f(Shader *shader, i8 *name, f32 v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1f(loc, val);
+  glUniform1f(loc, v);
   
   return loc;
 }
 
-i32 r_gl_set_uniform_2f(Shader *shader, i8 *name, Vec2F vec)
+inline
+i32 r_gl_set_uniform_2f(Shader *shader, i8 *name, Vec2F v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform2f(loc, vec.x, vec.y);
+  glUniform2f(loc, v.x, v.y);
 
   return loc;
 }
 
-i32 r_gl_set_uniform_3f(Shader *shader, i8 *name, Vec3F vec)
+inline
+i32 r_gl_set_uniform_3f(Shader *shader, i8 *name, Vec3F v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform3f(loc, vec.x, vec.y, vec.z);
+  glUniform3f(loc, v.x, v.y, v.z);
   
   return loc;
 }
 
-i32 r_gl_set_uniform_4f(Shader *shader, i8 *name, Vec4F vec)
+inline
+i32 r_gl_set_uniform_4f(Shader *shader, i8 *name, Vec4F v)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
+  glUniform4f(loc, v.x, v.y, v.z, v.w);
   
   return loc;
 }
 
-i32 r_gl_set_uniform_4x4f(Shader *shader, i8 *name, Mat4x4F mat)
+inline
+i32 r_gl_set_uniform_4x4f(Shader *shader, i8 *name, Mat4x4F m)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix4fv(loc, 1, FALSE, &mat.elements[0][0]);
+  glUniformMatrix4fv(loc, 1, FALSE, &m.elements[0][0]);
   
   return loc;
 }
 
-i32 r_gl_set_uniform_3x3f(Shader *shader, i8 *name, Mat3x3F mat)
+inline
+i32 r_gl_set_uniform_3x3f(Shader *shader, i8 *name, Mat3x3F m)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix3fv(loc, 1, FALSE, &mat.elements[0][0]);
+  glUniformMatrix3fv(loc, 1, FALSE, &m.elements[0][0]);
   
   return loc;
 }
@@ -287,31 +296,42 @@ void verify_shader(u32 id, u32 type)
 
 // @Texture2D ==================================================================================
 
-Texture2D r_gl_load_texture2d(const i8 *path)
+Texture2D r_gl_create_texture2d(const i8 *path)
 {
   Texture2D tex;
+  stbi_set_flip_vertically_on_load(TRUE);
+  tex.data = stbi_load(path, &tex.width, &tex.height, &tex.channel_count, 4);
+
   glGenTextures(1, &tex.id);
-  tex.data = stbi_load(path, &tex.width, &tex.height, &tex.num_channels, 0);
+  glBindTexture(GL_TEXTURE_2D, tex.id);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glTexImage2D(
                GL_TEXTURE_2D, 
                0, 
-               GL_RGB, 
+               GL_RGBA8, 
                tex.width, 
                tex.height, 
                0, 
-               GL_RGB, 
+               GL_RGBA, 
                GL_UNSIGNED_BYTE, 
                tex.data);
 
   glGenerateMipmap(GL_TEXTURE_2D);
 
+  stbi_image_free(tex.data);
+
   return tex;
 }
 
 inline
-void r_gl_bind_texture2d(Texture2D *texture)
+void r_gl_bind_texture2d(Texture2D *texture, u32 slot)
 {
+  glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
