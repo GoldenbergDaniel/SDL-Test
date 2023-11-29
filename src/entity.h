@@ -4,7 +4,7 @@
 #include "base/base_arena.h"
 #include "base/base_math.h"
 
-#include "phys/phys.h"
+#include "physx/physx.h"
 
 typedef struct Game Game;
 
@@ -104,6 +104,7 @@ struct Entity
   // Physics
   Vec2F dir;
   Vec2F vel;
+  Vec2F dv;
   f32 speed;
   f32 gravity;
   
@@ -143,9 +144,9 @@ struct EntityList
 #define TIMER_KILL 2
 
 #define PLAYER_HEALTH 3
-#define PLAYER_SPEED 400.0f
-#define PLAYER_ACC 3.0f
-#define PLAYER_FRIC 3.0f
+#define PLAYER_SPEED 600.0f
+#define PLAYER_ACC 4.0f
+#define PLAYER_FRIC 8.0f
 
 // @InitEntity =================================================================================
 

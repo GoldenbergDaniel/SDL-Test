@@ -6,7 +6,7 @@
 #include "base/base_math.h"
 
 #include "gfx/draw.h"
-#include "phys/phys.h"
+#include "physx/physx.h"
 #include "input.h"
 #include "event.h"
 #include "entity.h"
@@ -30,13 +30,15 @@ void init_game(Game *game)
 
     entity = create_entity(game);
     init_entity(entity, EntityType_Wall);
-    entity->pos = v2f(0.0f, 200);
+    f32 wall_y = 200.0f;
+    entity->pos = v2f(0.0f, wall_y);
     entity->color = COLOR_GRAY;
-    set_entity_size(entity, W_WIDTH, 200);
+    set_entity_size(entity, W_WIDTH, wall_y);
     set_entity_origin(entity, v2i(-1, 1));
 
     entity = create_entity(game);
     init_entity(entity, EntityType_Player);
+    entity->pos.y = 240;
 
     // entity = create_entity(game);
     // init_entity(entity, EntityType_EnemyShip);
@@ -47,7 +49,7 @@ void init_game(Game *game)
 
     entity = create_entity(game);
     init_entity(entity, EntityType_DebugLine);
-    set_entity_size(entity, 100, 3);
+    set_entity_size(entity, 100, 1);
     set_entity_origin(entity, v2i(-1, 0));
 
     Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
@@ -64,7 +66,7 @@ void update_game(Game *game)
 {
   // Vec2I mouse_pos = get_mouse_position();
   // Vec2F player_pos = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player)->pos;
-  // printf("Mouse pos: %i, %i\n", mouse_pos.x, mouse_pos.y);
+  // printf("MOUSE POS: %i, %i\n", mouse_pos.x, mouse_pos.y);
   // printf("Player pos: %f, %f\n", player_pos.x, player_pos.y);
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
@@ -82,6 +84,12 @@ void update_game(Game *game)
       {
         update_controlled_entity_movement(game, e);
         wrap_entity_at_edges(e);
+
+        if (e->type == EntityType_Player)
+        {
+          Entity *wall = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Wall);
+          // resolve_entity_collision(e, wall);
+        }
       }
 
       if (e->props & EntityProp_Autonomous)
@@ -121,7 +129,7 @@ void update_game(Game *game)
   }
 
   // DEBUG: Kill player on backspace
-  if (key_just_pressed(KEY_BACKSPACE))
+  if (is_key_just_pressed(KEY_BACKSPACE))
   {
     Entity *entity = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
     EventDesc desc = {.id = entity->id};
@@ -251,7 +259,7 @@ bool game_should_quit(Game *game)
 {
   bool result = FALSE;
   
-  if (game->should_quit || key_pressed(KEY_ESCAPE))
+  if (game->should_quit || is_key_pressed(KEY_ESCAPE))
   {
     result = TRUE;
   }

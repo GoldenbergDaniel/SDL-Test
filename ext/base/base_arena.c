@@ -21,9 +21,7 @@ Arena create_arena(u64 size)
 void destroy_arena(Arena *arena)
 {
   os_free(arena->memory, arena->size);
-  arena->memory = NULL;
-  arena->size = 0;
-  arena->used = 0;
+  zero(*arena);
 }
 
 void *arena_alloc(Arena *arena, u64 size)

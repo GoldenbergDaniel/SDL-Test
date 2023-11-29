@@ -24,7 +24,7 @@
 #define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
-#define GRAVITY 9.18f
+#define GRAVITY 10.0f
 
 typedef struct Game Game;
 typedef struct Global Global;

@@ -3,7 +3,7 @@
 #include "game.h"
 #include "event.h"
 
-void push_event(Game *game, EventType type, EventDesc desc)
+void push_event(Game *game, EventType type, EventDesc desc)      
 {
   EventQueue *queue = &game->event_queue;
   Event *new_event = queue->first_free;
@@ -73,3 +73,8 @@ void clear_event_queue(Game *game)
 
   zero(*queue);
 }
+
+// Entity spawn_entity(Game *game, EventDesc desc)
+// {
+//   push_event(game, EventType_SpawnEntity, desc);
+// }

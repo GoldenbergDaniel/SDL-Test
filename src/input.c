@@ -8,19 +8,19 @@
 extern Global *GLOBAL;
 
 inline
-bool key_pressed(Key key)
+bool is_key_pressed(Key key)
 {
   return GLOBAL->input->key_down[key];
 }
 
 inline
-bool key_just_pressed(Key key)
+bool is_key_just_pressed(Key key)
 {
   return GLOBAL->input->key_just_down[key];
 }
 
 inline
-bool key_just_released(Key key)
+bool is_key_just_released(Key key)
 {
   return GLOBAL->input->key_just_up[key];
 }

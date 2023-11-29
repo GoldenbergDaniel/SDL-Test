@@ -31,7 +31,7 @@ i32 main(void)
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   SDL_Window *window = SDL_CreateWindow(
-                                        "GAME",
+                                        "SPACE GAME",
                                         SDL_WINDOWPOS_CENTERED, 
                                         SDL_WINDOWPOS_CENTERED, 
                                         W_WIDTH, 

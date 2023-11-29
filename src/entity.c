@@ -5,11 +5,11 @@
 #include "base/base_math.h"
 #include "base/base_random.h"
 
-#include "phys/phys.h"
+#include "physx/physx.h"
 #include "input.h"
 #include "event.h"
-#include "entity.h"
 #include "game.h"
+#include "entity.h"
 
 #define DEBUG
 
@@ -35,6 +35,8 @@ void init_entity(Entity *entity, EntityType type)
   entity->xform = m3x3f(1.0f);
   entity->is_active = TRUE;
   entity->is_visible = TRUE;
+  entity->gravity = GRAVITY;
+  // entity->gravity = 0.0f;
 
   init_timers(entity);
 
@@ -46,6 +48,7 @@ void init_entity(Entity *entity, EntityType type)
       entity->combat_type = CombatType_Ranged;
       entity->props = PLAYER_PROPS;
       entity->pos = v2f(W_WIDTH / 2.0f, W_HEIGHT / 2.0f);
+      entity->speed = PLAYER_SPEED;
       entity->color = COLOR_WHITE;
       entity->col.vertex_count = 4;
 
@@ -55,7 +58,6 @@ void init_entity(Entity *entity, EntityType type)
       timer->max_duration = 0.25f;
       timer->curr_duration = 0.0f;
       timer->should_tick = FALSE;
-      
     }
     break;
     case EntityType_EnemyShip:
@@ -101,16 +103,13 @@ void init_entity(Entity *entity, EntityType type)
     break;
     default:
     {
-      printf("ERROR: Failed to initialize entity. Invalid type!");
-      printf("Entity ID: %llu\n", entity->id);
-      printf("Entity Type: %i\n", entity->type);
-      printf("Vertex Count: %i\n", entity->col.vertex_count);
+      fprintf(stderr, "ERROR: Failed to initialize entity. Invalid type!");
+      fprintf(stderr, "Entity ID: %llu\n", entity->id);
+      fprintf(stderr, "Entity Type: %i\n", entity->type);
+      fprintf(stderr, "Vertex Count: %i\n", entity->col.vertex_count);
       assert(FALSE);
     }
   }
-
-  entity->width = 20.0f * entity->scale.x;
-  entity->height = 20.0f * entity->scale.y;
 }
 
 inline
@@ -190,10 +189,10 @@ void update_entity_collider(Entity *entity)
         break;
         default:
         {
-          printf("ERROR: Invalid number of vertices in collider!\n");
-          printf("Entity ID: %llu\n", entity->id);
-          printf("Entity Type: %i\n", entity->type);
-          printf("Vertex Count: %i\n", entity->col.vertex_count);
+          fprintf(stderr, "ERROR: Invalid number of vertices in collider!\n");
+          fprintf(stderr, "Entity ID: %llu\n", entity->id);
+          fprintf(stderr, "Entity Type: %i\n", entity->type);
+          fprintf(stderr, "Vertex Count: %i\n", entity->col.vertex_count);
           assert(FALSE);
         }
       }
@@ -241,61 +240,74 @@ void update_entity_xform(Game *game, Entity *entity)
   entity->model = xform;
 
   xform = mul_3x3f(game->camera, xform);
-
   Mat3x3F ortho = orthographic_3x3f(0.0f, W_WIDTH, 0.0f, W_HEIGHT);
   xform = mul_3x3f(ortho, xform);
 
   entity->xform = xform;
 }
 
+// TODO: Change lerp to exerp for decelertion due to friction
 void update_controlled_entity_movement(Game *game, Entity *entity)
 {
   f64 dt = game->dt;
 
   if (entity->move_type == MoveType_Walking)
   {
-    if (key_pressed(KEY_A) && !key_pressed(KEY_D))
+    if (is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
     {
-      entity->speed = lerp_1f(entity->speed, -PLAYER_SPEED, PLAYER_ACC * dt);
+      entity->dv.x = lerp_1f(entity->dv.x, -entity->speed, PLAYER_ACC * dt);
       entity->input_dir.x = -1.0f;
       entity->flip_x = TRUE;
     }
 
-    if (key_pressed(KEY_D) && !key_pressed(KEY_A))
+    if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
     {
-      entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
+      entity->dv.x = lerp_1f(entity->dv.x, entity->speed, PLAYER_ACC * dt);
       entity->input_dir.x = 1.0f;
       entity->flip_x = FALSE;
     }
 
-    if (key_pressed(KEY_A) && key_pressed(KEY_D))
+    if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
     {
-      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 3.0f * dt);
-      entity->speed = to_zero(entity->speed, 1.0f);
+      entity->dv.x = lerp_1f(entity->dv.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
+      entity->dv.x = to_zero(entity->dv.x, 1.0f);
     }
     
-    if (!key_pressed(KEY_A) && !key_pressed(KEY_D))
+    if (!is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
     {
-      entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * dt);
-      entity->speed = to_zero(entity->speed, 1.0f);
+      entity->dv.x = lerp_1f(entity->dv.x, 0.0f, PLAYER_FRIC * dt);
+      entity->dv.x = to_zero(entity->dv.x, 1.0f);
     }
 
-    entity->vel.x = entity->speed * dt;
-    // entity->vel.y -= GRAVITY * dt;
+    // JUMPING 
+    if (is_key_pressed(KEY_W))
+    {
+      entity->dv.y += sqrtf(2.0f * GRAVITY * 200.0f);
+    }
+
+    if (entity->dv.y >= -1000.0f)
+    {
+      entity->dv.y += -entity->gravity;
+    }
+
+    entity->vel.x = entity->dv.x * dt;
+    entity->vel.y = entity->dv.y * dt;
+
+    printf("VelX: %f\n", entity->vel.x);
+    printf("VelY: %f\n", entity->vel.y);
   }
   else if (entity->move_type == MoveType_Flying)
   {
     f32 omega = clamp(90.0f * magnitude_2f(entity->vel), 100.0f, 180.0f);
-    // printf("Omega: %f\n", omega);
 
-    if (key_pressed(KEY_A)) entity->rot += omega * dt;
-    if (key_pressed(KEY_D)) entity->rot -= omega * dt;
+    if (is_key_pressed(KEY_A)) entity->rot += omega * dt;
+    if (is_key_pressed(KEY_D)) entity->rot -= omega * dt;
 
-    if (key_pressed(KEY_W) && !key_pressed(KEY_S))
+    if (is_key_pressed(KEY_W) && !is_key_pressed(KEY_S))
     {
       entity->speed = lerp_1f(entity->speed, PLAYER_SPEED, PLAYER_ACC * dt);
     }
-    else if (!key_pressed(KEY_W) && key_pressed(KEY_S))
+    else if (!is_key_pressed(KEY_W) && is_key_pressed(KEY_S))
     {
       entity->speed = lerp_1f(entity->speed, 0.0f, PLAYER_FRIC * 2 * dt);
       entity->speed = to_zero(entity->speed, 1.0f);
@@ -397,16 +409,16 @@ void update_controlled_entity_combat(Game *game, Entity *entity)
     tick_timer(timer, game->dt);
   }
 
-  bool can_shoot = key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
+  bool can_shoot = is_key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
   if (can_shoot)
   {
     EventDesc desc = 
     {
       .type = EntityType_Laser,
-      .position = v2f(entity->pos.x, entity->pos.y),
-      .rotation = entity->rot,
-      .speed = 1000.0f,
-      .color = COLOR_BLUE
+      .position = v2f(entity->pos.x, entity->pos.y + 10.0f),
+      .rotation = entity->flip_x ? (entity->rot + 180.0f) : entity->rot,
+      .speed = 500.0f,
+      .color = COLOR_BLUE,
     };
     
     push_event(game, EventType_SpawnEntity, desc);
@@ -431,7 +443,7 @@ void update_targetting_entity_combat(Game *game, Entity *entity)
         .position = v2f(entity->pos.x, entity->pos.y),
         .rotation = entity->rot,
         .speed = 1000.0f,
-        .color = COLOR_GREEN
+        .color = COLOR_GREEN,
       };
 
       push_event(game, EventType_SpawnEntity, desc);
@@ -499,16 +511,6 @@ void set_entity_target(Entity *entity, EntityRef target)
   }
 }
 
-void flip_entity_x(Entity *entity)
-{
-  
-}
-
-void flip_entity_y(Entity *entity)
-{
-
-}
-
 // @OtherEntity ================================================================================
 
 inline
@@ -520,7 +522,11 @@ bool entity_is_valid(Entity *entity)
 inline
 void resolve_entity_collision(Entity *a, Entity *b)
 {
-
+  if (a->pos.y + a->vel.y - a->height/2.0f <= b->pos.y)
+  {
+    a->pos.y = b->pos.y + a->height/2.0f;
+    // a->vel.y = 0.0f;
+  }
 }
 
 void wrap_entity_at_edges(Entity *entity)
