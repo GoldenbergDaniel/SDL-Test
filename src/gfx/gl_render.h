@@ -7,9 +7,9 @@
 typedef struct R_Vertex R_Vertex;
 struct R_Vertex
 {
-  Vec3F position;
-  Vec3F color;
-  Vec3F texture_coordinate;
+  Vec4F position;
+  Vec4F color;
+  Vec4F texture_coord;
 };
 
 typedef struct R_Shader R_Shader;

@@ -1,10 +1,10 @@
 NAME = Game
-CC = cc
+CC = clang
 
 CFLAGS_R = -std=gnu17 \
 					 -O0 \
 					 -Iext/ \
-					 -I/usr/local/Cellar/sdl2/2.28.4/include \
+					 -Iext/sdl2/inc \
 					 -Wall \
 					 -Wpedantic \
 					 -Wno-missing-braces \
@@ -14,14 +14,14 @@ CFLAGS_R = -std=gnu17 \
 CFLAGS_D = -std=gnu17 \
 					 -DDEBUG \
 					 -I../ext/ \
-					 -I/usr/local/Cellar/sdl2/2.28.4/include \
 					 -Wall \
 					 -Wextra \
 					 -Wpedantic \
 					 -Wno-missing-braces \
 					 -Wno-language-extension-token \
 
-LDFLAGS = -lsdl2 \
+LDFLAGS = -Lext/sdl2/lib \
+					-lsdl2 \
 					ext/glad/glad.c \
 
 .PHONY: all compile compile_t run test debug

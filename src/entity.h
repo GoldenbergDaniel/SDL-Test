@@ -132,7 +132,6 @@ struct Entity
   Timer timers[3];
 };
 
-// EntityArray
 struct EntityList
 {
   Entity *head;
@@ -147,6 +146,7 @@ struct EntityList
 
 #define PLAYER_HEALTH 3
 #define PLAYER_SPEED 600.0f
+#define PLAYER_JUMP_HEIGH 500.0f
 #define PLAYER_ACC 4.0f
 #define PLAYER_FRIC 8.0f
 

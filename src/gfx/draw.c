@@ -53,9 +53,9 @@ Renderer d_create_renderer(void)
   {
     Vertex vertices[3] = 
     {
-      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-      {{ 20.0f,  0.0f,  1.0f},  {0.0f, 0.0f, 0.0f}}, // right
-      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
+      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
+      {{ 20.0f,  0.0f,  1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // right
+      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
     };
 
     u32 indices[3] = 
@@ -66,8 +66,8 @@ Renderer d_create_renderer(void)
     VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // color
 
     renderer.triangle.vao = vao;
     renderer.triangle.vbo = vbo;
@@ -83,10 +83,10 @@ Renderer d_create_renderer(void)
   {
     Vertex vertices[4] = 
     {
-      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top left
-      {{ 10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // top right
-      {{ 10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}, // bottom right
-      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f}}  // bottom left
+      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
+      {{ 10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top right
+      {{ 10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // bottom right
+      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
     };
 
     u32 indices[6] = 
@@ -98,8 +98,8 @@ Renderer d_create_renderer(void)
     VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // color
 
     renderer.rectangle.vao = vao;
     renderer.rectangle.vbo = vbo;
@@ -118,10 +118,10 @@ Renderer d_create_renderer(void)
 
     Vertex vertices[4] = 
     {
-      {{-10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // top left
-      {{ 10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}}, // top right
-      {{ 10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // bottom right
-      {{-10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}  // bottom left
+      {{-10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
+      {{ 10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top right
+      {{ 10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom right
+      {{-10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}  // bottom left
     };
 
     u32 indices[6] = 
@@ -133,9 +133,9 @@ Renderer d_create_renderer(void)
     VAO vao = r_gl_create_vertex_array(3);
     u32 vbo = r_gl_create_vertex_buffer(&vertices, sizeof (vertices));
     u32 ibo = r_gl_create_index_buffer(&indices, sizeof (indices));
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
-    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // texture coordinate
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // position
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // color
+    r_gl_add_vertex_attribute(&vao, GL_FLOAT, 4); // texture coordinate
 
     renderer.sprite.vao = vao;
     renderer.sprite.vbo = vbo;
@@ -144,7 +144,9 @@ Renderer d_create_renderer(void)
     Shader shader = r_gl_create_shader(sprite_vert_src, sprite_frag_src);
     renderer.sprite.shader = shader;
 
-    Texture texture = r_gl_create_texture("res/texture/player.png");
+    Texture texture;
+    texture = r_gl_create_texture("res/texture/player.png");
+    // texture = r_gl_create_texture("res/texture/gun.png");
     renderer.sprite.texture = texture;
 
     r_gl_unbind_vertex_array();

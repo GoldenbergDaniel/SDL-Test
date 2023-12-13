@@ -28,11 +28,8 @@ typedef double f64;
 #define TRUE 1
 #define FALSE 0
 
-#define and &&
-#define or || 
-
 #ifndef NULL
-#define NULL (void *) 0
+#define NULL ((void *) 0)
 #endif
 
 #define zero(x) x = ((typeof (x)) {0})
