@@ -28,6 +28,9 @@ typedef double f64;
 #define TRUE 1
 #define FALSE 0
 
+#define and &&
+#define or || 
+
 #ifndef NULL
 #define NULL (void *) 0
 #endif

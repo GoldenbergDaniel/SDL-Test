@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 
 #include "base/base_common.h"
+#include "base/base_string.h"
 #include "base/base_math.h"
 
 #include "input.h"
@@ -11,7 +12,9 @@ Global *GLOBAL;
 i32 main(void)
 {
   Game game = {0};
-  game.arena = create_arena(MiB(16));
+  game.perm_arena = create_arena(MiB(8));
+  game.frame_arena = create_arena(MiB(8));
+  game.entity_arena = create_arena(MiB(16));
 
   srand(time(NULL));
 
@@ -48,10 +51,9 @@ i32 main(void)
     return 1;
   }
 
-  GLOBAL = arena_alloc(&game.arena, sizeof (Global));
-  GLOBAL->input = arena_alloc(&game.arena, sizeof (Input));
-  GLOBAL->renderer = arena_alloc(&game.arena, sizeof (*GLOBAL->renderer));
-  d_init_renderer(GLOBAL->renderer);
+  GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
+  GLOBAL->assets = d_load_assets(&game.perm_arena, str("res/"));
+  GLOBAL->renderer = d_create_renderer();
 
   init_game(&game);
 
@@ -60,8 +62,8 @@ i32 main(void)
   f64 time_step = 1.0f / TARGET_FPS;
   f64 accumulator = 0.0f;
 
-  bool is_running = TRUE;
-  while (is_running)
+  bool running = TRUE;
+  while (running)
   {
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
@@ -80,11 +82,11 @@ i32 main(void)
 
       if (game_should_quit(&game))
       {
-        is_running = FALSE;
+        running = FALSE;
         break;
       }
 
-      if (elapsed_time > 0.1f)
+    if (elapsed_time > 0.1f)
       {
         game.t = elapsed_time;
         game.dt = time_step;
@@ -92,7 +94,8 @@ i32 main(void)
         update_game(&game);
         handle_game_events(&game);
         draw_game(&game);
-
+        clear_game_frame_arena(&game);
+        
         SDL_GL_SwapWindow(window);
       }
 

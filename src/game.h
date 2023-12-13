@@ -24,14 +24,16 @@
 #define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
-#define GRAVITY 10.0f
+#define GRAVITY 20.0f
 
 typedef struct Game Game;
 typedef struct Global Global;
 
 struct Game
 {
-  Arena arena;
+  Arena perm_arena;
+  Arena frame_arena;
+  Arena entity_arena;
   EventQueue event_queue;
   EntityList entities;
   Mat3x3F camera;
@@ -42,8 +44,9 @@ struct Game
 
 struct Global
 {
-  Input *input;
-  Renderer *renderer;
+  Input input;
+  D_Assets assets;
+  D_Renderer renderer;
   Entity *nil_entity;
 };
 
@@ -51,4 +54,5 @@ void init_game(Game *game);
 void update_game(Game *game);
 void handle_game_events(Game *game);
 void draw_game(Game *game);
+void clear_game_frame_arena(Game *game);
 bool game_should_quit(Game *game);

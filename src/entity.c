@@ -33,9 +33,8 @@ void init_entity(Entity *entity, EntityType type)
 {
   entity->type = type;
   entity->xform = m3x3f(1.0f);
-  entity->is_active = TRUE;
-  entity->is_visible = TRUE;
-  entity->gravity = GRAVITY;
+  entity->active = TRUE;
+  entity->visible = TRUE;
   // entity->gravity = 0.0f;
 
   init_timers(entity);
@@ -220,7 +219,7 @@ void update_entity_xform(Game *game, Entity *entity)
   if (entity->flip_y) xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform);
 
   // NOTE: You are not properly updating global position. Shoud you?
-  if (entity_is_valid(parent))
+  if (is_entity_valid(parent))
   {
     xform = mul_3x3f(scale_3x3f(entity->scale.x, entity->scale.y), xform);
     xform = mul_3x3f(translate_3x3f(entity->pos_offset.x, entity->pos_offset.y), xform);
@@ -279,22 +278,30 @@ void update_controlled_entity_movement(Game *game, Entity *entity)
       entity->dv.x = to_zero(entity->dv.x, 1.0f);
     }
 
-    // JUMPING 
-    if (is_key_pressed(KEY_W))
+    // GRAVITY
+    if (entity->dv.y >= -1000.0f and !entity->grounded)
     {
-      entity->dv.y += sqrtf(2.0f * GRAVITY * 200.0f);
+      entity->dv.y -= GRAVITY;
     }
 
-    if (entity->dv.y >= -1000.0f)
+    // JUMPING 
+    if (is_key_pressed(KEY_W) and entity->grounded)
     {
-      entity->dv.y += -entity->gravity;
+      entity->dv.y += 500.0f;
+      entity->grounded = FALSE;
+    }
+
+    if (entity->grounded)
+    {
+      entity->vel.y = 0.0f;
+      entity->dv.y = 0.0f;
     }
 
     entity->vel.x = entity->dv.x * dt;
     entity->vel.y = entity->dv.y * dt;
 
-    printf("VelX: %f\n", entity->vel.x);
-    printf("VelY: %f\n", entity->vel.y);
+    printf("VelX: %.02f\n", entity->vel.x);
+    printf("VelY: %.02f\n", entity->vel.y);
   }
   else if (entity->move_type == MoveType_Flying)
   {
@@ -513,8 +520,18 @@ void set_entity_target(Entity *entity, EntityRef target)
 
 // @OtherEntity ================================================================================
 
+void sort_entities_by_z_index(Game *game)
+{
+  EntityList entities = game->entities;
+
+  for (u64 i = 0; i < entities.count; i++)
+  {
+    
+  }
+}
+
 inline
-bool entity_is_valid(Entity *entity)
+bool is_entity_valid(Entity *entity)
 {
   return (entity != NULL && entity->type != EntityType_Nil);
 }
@@ -525,7 +542,12 @@ void resolve_entity_collision(Entity *a, Entity *b)
   if (a->pos.y + a->vel.y - a->height/2.0f <= b->pos.y)
   {
     a->pos.y = b->pos.y + a->height/2.0f;
-    // a->vel.y = 0.0f;
+    a->vel.y = 0.0f;
+    a->grounded = TRUE;
+  }
+  else
+  {
+    a->grounded = FALSE;
   }
 }
 
@@ -549,15 +571,15 @@ void wrap_entity_at_edges(Entity *entity)
   }
 }
 
-void damage_entity(Entity *entity, i8 damage)
+void damage_entity(Entity *entity, u8 damage)
 {
   entity->curr_health -= damage;
 
   if (entity->curr_health <= 0)
   {
     entity->curr_health = 0;
-    entity->is_active = FALSE;
-    entity->is_visible = FALSE;
+    entity->active = FALSE;
+    entity->visible = FALSE;
     printf("Player ded\n");
   }
 }
@@ -592,7 +614,7 @@ Entity *create_entity(Game *game)
 
   if (new_entity == NULL)
   {
-    new_entity = arena_alloc(&game->arena, sizeof (Entity));
+    new_entity = arena_alloc(&game->entity_arena, sizeof (Entity));
     clear_entity(new_entity);
 
     if (list->head == NULL)
@@ -627,7 +649,7 @@ void destroy_entity(Game *game, Entity *entity)
   list->first_free = entity;
 }
 
-Entity *get_entity_of_id(Game *game, u64 id)
+Entity *get_entity_by_id(Game *game, u64 id)
 {
   Entity *result = GLOBAL->nil_entity;
   
@@ -769,7 +791,7 @@ void init_timers(Entity *entity)
     .max_duration = 1.0f,
     .curr_duration = 1.0f,
     .should_tick = TRUE,
-    .is_ticking = FALSE,
+    .ticking = FALSE,
     .timeout = FALSE,
     .should_loop = FALSE
   };
@@ -779,7 +801,7 @@ void init_timers(Entity *entity)
     .max_duration = 1.0f,
     .curr_duration = 1.0f,
     .should_tick = TRUE,
-    .is_ticking = FALSE,
+    .ticking = FALSE,
     .timeout = FALSE,
     .should_loop = FALSE
   };
@@ -789,7 +811,7 @@ void init_timers(Entity *entity)
     .max_duration = 5.0f,
     .curr_duration = 5.0f,
     .should_tick = TRUE,
-    .is_ticking = FALSE,
+    .ticking = FALSE,
     .timeout = FALSE,
     .should_loop = FALSE
   };
@@ -804,14 +826,14 @@ Timer *get_timer(Entity *entity, u8 index)
 static
 bool tick_timer(Timer *timer, f64 dt)
 {
-  if (timer->is_ticking)
+  if (timer->ticking)
   {
     timer->curr_duration -= dt;
 
     if (timer->curr_duration <= 0.0f)
     {
       timer->timeout = TRUE;
-      timer->is_ticking = FALSE;
+      timer->ticking = FALSE;
       timer->should_tick = timer->should_loop;
     }
   }
@@ -819,7 +841,7 @@ bool tick_timer(Timer *timer, f64 dt)
   {
     timer->curr_duration = timer->max_duration;
     timer->timeout = FALSE;
-    timer->is_ticking = TRUE;
+    timer->ticking = TRUE;
   }
 
   return timer->timeout;

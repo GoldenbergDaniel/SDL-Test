@@ -10,7 +10,7 @@ void push_event(Game *game, EventType type, EventDesc desc)
 
   if (new_event == NULL)
   {
-    new_event = arena_alloc(&game->arena, sizeof (Event));
+    new_event = arena_alloc(&game->frame_arena, sizeof (Event));
     zero(*new_event);
   }
   else

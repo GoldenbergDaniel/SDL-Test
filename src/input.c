@@ -10,40 +10,40 @@ extern Global *GLOBAL;
 inline
 bool is_key_pressed(Key key)
 {
-  return GLOBAL->input->key_down[key];
+  return GLOBAL->input.key_down[key];
 }
 
 inline
 bool is_key_just_pressed(Key key)
 {
-  return GLOBAL->input->key_just_down[key];
+  return GLOBAL->input.key_just_down[key];
 }
 
 inline
 bool is_key_just_released(Key key)
 {
-  return GLOBAL->input->key_just_up[key];
+  return GLOBAL->input.key_just_up[key];
 }
 
 inline
 Vec2I get_mouse_position(void)
 {
-  return GLOBAL->input->mouse_pos;
+  return GLOBAL->input.mouse_pos;
 }
 
 inline
 void clear_last_frame_input(void)
 {
-  for (u8 i = 0; i < sizeof (GLOBAL->input->key_just_down); i++)
+  for (u8 i = 0; i < sizeof (GLOBAL->input.key_just_down); i++)
   {
-    GLOBAL->input->key_just_down[i] = FALSE;
-    GLOBAL->input->key_just_up[i] = FALSE;
+    GLOBAL->input.key_just_down[i] = FALSE;
+    GLOBAL->input.key_just_up[i] = FALSE;
   }
 }
 
 void handle_input(SDL_Event *event, bool *should_quit)
 {
-  Input *input = GLOBAL->input;
+  Input *input = &GLOBAL->input;
 
   SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
 

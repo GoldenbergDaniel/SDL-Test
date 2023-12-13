@@ -2,13 +2,21 @@
 
 #include "base/base_common.h"
 #include "base/base_arena.h"
+#include "base/base_string.h"
 #include "base/base_math.h"
 #include "gl_render.h"
 
-typedef struct Renderer Renderer;
-typedef struct RenderState RenderState;
+typedef struct D_Assets D_Assets;
+typedef struct D_Renderer D_Renderer;
+typedef struct D_RenderState D_RenderState;
 
-struct RenderState
+struct D_Assets
+{
+  R_Texture *textures;
+  R_Shader *shaders;
+};
+
+struct D_RenderState
 {
   R_Shader shader;
   R_Texture texture;
@@ -17,14 +25,25 @@ struct RenderState
   u32 ibo;
 };
 
-struct Renderer
+struct D_Renderer
 {
-  RenderState triangle;
-  RenderState rectangle;
-  RenderState sprite;
+  D_RenderState triangle;
+  D_RenderState rectangle;
+  D_RenderState sprite;
 };
 
-void d_init_renderer(Renderer *renderer);
+// Assets ======================================================================================
+
+#define TEXTURE_COUNT 16
+#define SHADER_COUNT 16
+
+D_Assets d_load_assets(Arena *arena, const String path);
+R_Texture d_get_texture(const String name);
+R_Shader d_get_shader(const String name);
+
+// Renderer ====================================================================================
+
+D_Renderer d_create_renderer(void);
 void d_clear(Vec4F color);
 void d_triangle(Mat3x3F xform, Vec4F color);
 void d_rectangle(Mat3x3F xform, Vec4F color);

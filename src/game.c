@@ -24,7 +24,7 @@ void init_game(Game *game)
 
   SCOPE("Create starting entities")
   {
-    Entity *entity = arena_alloc(&game->arena, sizeof (Entity));
+    Entity *entity = arena_alloc(&game->perm_arena, sizeof (Entity));
     zero(*entity);
     GLOBAL->nil_entity = entity;
 
@@ -71,7 +71,7 @@ void update_game(Game *game)
 
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->is_active) continue;
+    if (!e->active) continue;
 
     if (e->props & EntityProp_Collides)
     {
@@ -84,11 +84,11 @@ void update_game(Game *game)
       {
         update_controlled_entity_movement(game, e);
         wrap_entity_at_edges(e);
-
+        
         if (e->type == EntityType_Player)
         {
           Entity *wall = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Wall);
-          // resolve_entity_collision(e, wall);
+          resolve_entity_collision(e, wall);
         }
       }
 
@@ -114,7 +114,7 @@ void update_game(Game *game)
       {
         Entity *player = get_nearest_entity_of_type(game, e->pos, EntityType_Player);
 
-        if (player && player->is_active)
+        if (player && player->active)
         {
           set_entity_target(e, ref_from_entity(player));
         }
@@ -126,7 +126,7 @@ void update_game(Game *game)
         update_targetting_entity_combat(game, e);
       }
     }
-  }
+}
 
   // DEBUG: Kill player on backspace
   if (is_key_just_pressed(KEY_BACKSPACE))
@@ -188,7 +188,7 @@ void handle_game_events(Game *game)
       break;
       case EventType_KillEntity:
       {
-        Entity *entity = get_entity_of_id(game, event.desc.id);
+        Entity *entity = get_entity_by_id(game, event.desc.id);
         destroy_entity(game, entity);
       }
       break;
@@ -218,9 +218,11 @@ void draw_game(Game *game)
 {
   d_clear(COLOR_BLACK);
 
+  sort_entities_by_z_index(game);
+
   for (Entity *e = game->entities.head; e != NULL; e = e->next)
   {
-    if (!e->is_visible) continue;
+    if (!e->visible) continue;
 
     switch (e->type)
     {
@@ -234,16 +236,8 @@ void draw_game(Game *game)
         d_triangle(e->xform, e->color);
       }
       break;
-      case EntityType_Laser:
-      {
-        d_rectangle(e->xform, e->color);
-      }
-      break;
       case EntityType_Wall:
-      {
-        d_rectangle(e->xform, e->color);
-      }
-      break;
+      case EntityType_Laser:
       case EntityType_DebugLine:
       {
         d_rectangle(e->xform, e->color);
@@ -252,6 +246,12 @@ void draw_game(Game *game)
       default: break;
     }
   }
+}
+
+inline
+void clear_game_frame_arena(Game *game)
+{
+  clear_arena(&game->frame_arena);
 }
 
 inline

@@ -33,7 +33,6 @@ typedef enum EntityProp
   EntityProp_Killable = 1 << 5,
   EntityProp_Collides = 1 << 6,
   EntityProp_Rendered = 1 << 7,
-  EntityProp_Affected_By_Gravity = 1 << 8,
 } EntityProp;
 
 typedef enum MoveType
@@ -55,7 +54,7 @@ struct Timer
   f64 max_duration;
   f64 curr_duration;
   bool should_tick;
-  bool is_ticking;
+  bool ticking;
   bool timeout;
   bool should_loop;
   bool start_at_zero;
@@ -65,6 +64,7 @@ struct EntityRef
 {
   Entity *ptr;
   u64 id;
+  u64 gen;
 };
 
 struct Entity
@@ -80,12 +80,13 @@ struct Entity
 
   // General
   u64 id;
+  u64 gen;
   EntityType type;
   MoveType move_type;
   CombatType combat_type;
   b64 props;
-  bool is_active;
-  bool is_visible;
+  bool active;
+  bool visible;
 
   // Transform
   Vec2F pos;
@@ -106,7 +107,7 @@ struct Entity
   Vec2F vel;
   Vec2F dv;
   f32 speed;
-  f32 gravity;
+  bool grounded;
   
   // Sprite
   Vec4F color;
@@ -131,6 +132,7 @@ struct Entity
   Timer timers[3];
 };
 
+// EntityArray
 struct EntityList
 {
   Entity *head;
@@ -172,10 +174,11 @@ void set_entity_target(Entity *entity, EntityRef target);
 
 // @OtherEntity ================================================================================
 
-bool entity_is_valid(Entity *entity);
+void sort_entities_by_z_index(Game *game);
+bool is_entity_valid(Entity *entity);
 void resolve_entity_collision(Entity *a, Entity *b);
 void wrap_entity_at_edges(Entity *entity);
-void damage_entity(Entity *entity, i8 damage);
+void damage_entity(Entity *entity, u8 damage);
 
 // @EntityRef ==================================================================================
 
@@ -186,7 +189,7 @@ Entity *entity_from_ref(EntityRef ref);
 
 Entity *create_entity(Game *game);
 void destroy_entity(Game *game, Entity *entity);
-Entity *get_entity_of_id(Game *game, u64 id);
+Entity *get_entity_by_id(Game *game, u64 id);
 Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
 
 // @EntityTree =================================================================================

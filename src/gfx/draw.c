@@ -7,6 +7,10 @@
 #include "shaders.h"
 #include "draw.h"
 
+typedef D_Assets Assets;
+typedef D_Renderer Renderer;
+typedef D_RenderState RenderState;
+
 typedef R_Vertex Vertex;
 typedef R_Shader Shader;
 typedef R_Texture Texture;
@@ -14,8 +18,37 @@ typedef R_VAO VAO;
 
 extern Global *GLOBAL;
 
-void d_init_renderer(Renderer *renderer)
+// Assets ======================================================================================
+
+Assets d_load_assets(Arena *arena, const String path)
 {
+  Assets assets = {0};
+  assets.textures = arena_alloc(arena, sizeof (Texture) * TEXTURE_COUNT);
+  assets.shaders = arena_alloc(arena, sizeof (Shader) * SHADER_COUNT);
+
+  return assets;
+}
+
+Texture d_get_texture(const String name)
+{
+  Texture result = {0};
+
+  return result;
+}
+
+Shader d_get_shader(const String name)
+{
+  Shader result = {0};
+  
+  return result;
+}
+
+// Renderer ====================================================================================
+
+Renderer d_create_renderer(void)
+{
+  Renderer renderer = {0};
+
   SCOPE("Triangle")
   {
     Vertex vertices[3] = 
@@ -36,12 +69,12 @@ void d_init_renderer(Renderer *renderer)
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
 
-    renderer->triangle.vao = vao;
-    renderer->triangle.vbo = vbo;
-    renderer->triangle.ibo = ibo;
+    renderer.triangle.vao = vao;
+    renderer.triangle.vbo = vbo;
+    renderer.triangle.ibo = ibo;
 
     Shader shader = r_gl_create_shader(primitive_vert_src, primitive_frag_src);
-    renderer->triangle.shader = shader;
+    renderer.triangle.shader = shader;
 
     r_gl_unbind_vertex_array();
   }
@@ -68,12 +101,12 @@ void d_init_renderer(Renderer *renderer)
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // position
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
 
-    renderer->rectangle.vao = vao;
-    renderer->rectangle.vbo = vbo;
-    renderer->rectangle.ibo = ibo;
+    renderer.rectangle.vao = vao;
+    renderer.rectangle.vbo = vbo;
+    renderer.rectangle.ibo = ibo;
 
     Shader shader = r_gl_create_shader(primitive_vert_src, primitive_frag_src);
-    renderer->rectangle.shader = shader;
+    renderer.rectangle.shader = shader;
 
     r_gl_unbind_vertex_array();
   }
@@ -104,18 +137,20 @@ void d_init_renderer(Renderer *renderer)
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // color
     r_gl_add_vertex_attribute(&vao, GL_FLOAT, 3); // texture coordinate
 
-    renderer->sprite.vao = vao;
-    renderer->sprite.vbo = vbo;
-    renderer->sprite.ibo = ibo;
+    renderer.sprite.vao = vao;
+    renderer.sprite.vbo = vbo;
+    renderer.sprite.ibo = ibo;
 
     Shader shader = r_gl_create_shader(sprite_vert_src, sprite_frag_src);
-    renderer->sprite.shader = shader;
+    renderer.sprite.shader = shader;
 
     Texture texture = r_gl_create_texture("res/texture/player.png");
-    renderer->sprite.texture = texture;
+    renderer.sprite.texture = texture;
 
     r_gl_unbind_vertex_array();
   }
+
+  return renderer;
 }
 
 inline
@@ -127,7 +162,7 @@ void d_clear(Vec4F color)
 inline
 void d_triangle(Mat3x3F xform, Vec4F color)
 {
-  RenderState state = GLOBAL->renderer->triangle;
+  RenderState state = GLOBAL->renderer.triangle;
 
   r_gl_bind_shader(&state.shader);
   r_gl_set_uniform_3x3f(&state.shader, "u_xform", xform);
@@ -142,7 +177,7 @@ void d_triangle(Mat3x3F xform, Vec4F color)
 inline
 void d_rectangle(Mat3x3F xform, Vec4F color)
 {
-  RenderState state = GLOBAL->renderer->rectangle;
+  RenderState state = GLOBAL->renderer.rectangle;
 
   r_gl_bind_shader(&state.shader);
   r_gl_set_uniform_3x3f(&state.shader, "u_xform", xform);
@@ -157,7 +192,7 @@ void d_rectangle(Mat3x3F xform, Vec4F color)
 inline
 void d_sprite(Mat3x3F xform, Vec4F color, u16 texture_id)
 {
-  RenderState state = GLOBAL->renderer->sprite;
+  RenderState state = GLOBAL->renderer.sprite;
 
   // get texture from id
 
