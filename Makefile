@@ -7,18 +7,19 @@ CFLAGS_R = -std=gnu17 \
 					 -Iext/sdl2/inc \
 					 -Wall \
 					 -Wpedantic \
+					 -Wno-language-extension-token \
 					 -Wno-missing-braces \
 					 -Wno-unused-function \
-					 -Wno-language-extension-token \
 
 CFLAGS_D = -std=gnu17 \
 					 -DDEBUG \
 					 -I../ext/ \
+					 -I../ext/sdl2/inc \
 					 -Wall \
 					 -Wextra \
 					 -Wpedantic \
-					 -Wno-missing-braces \
 					 -Wno-language-extension-token \
+					 -Wno-missing-braces \
 
 LDFLAGS = -Lext/sdl2/lib \
 					-lsdl2 \
@@ -48,6 +49,6 @@ test:
 
 debug:
 	@echo "Compiling debug..."
-	@cd debug; \
-		$(CC) $(CFLAGS_D) -lsdl2 ../ext/glad/glad.c ../src/_target.c -g
+	@cd dbg; \
+		$(CC) $(CFLAGS_D) -Lext/sdl2/lib -lsdl2 ../ext/glad/glad.c ../src/_target.c -g
 	@echo "Compilation complete!"
