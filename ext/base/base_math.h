@@ -2,9 +2,9 @@
 
 #include "base_common.h"
 
-#define PI 3.14159265359
-#define RADIANS (PI / 180)
-#define DEGREES (180 / PI)
+#define PI 3.14159265359f
+#define RADIANS (PI / 180.0f)
+#define DEGREES (180.0f / PI)
 
 #define abs(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -33,7 +33,7 @@ union Vec2F
     f32 y;
   };
 
-  f32 elements[2];
+  f32 e[2];
 };
 
 union Vec2I
@@ -44,7 +44,7 @@ union Vec2I
     i32 y;
   };
 
-  i32 elements[2];
+  i32 e[2];
 };
 
 union Vec3F
@@ -56,7 +56,7 @@ union Vec3F
     f32 z;
   };
 
-  f32 elements[3];
+  f32 e[3];
 };
 
 union Vec4F
@@ -69,28 +69,32 @@ union Vec4F
     union { f32 w; f32 a; };
   };
 
-  f32 elements[4];
+  f32 e[4];
 };
 
 union Mat2x2F
 {
-  f32 elements[2][2];
-  Vec2F columns[2];
+  f32 e[2][2];
+  Vec2F cols[2];
 };
 
 union Mat3x3F
 {
-  f32 elements[3][3];
-  Vec3F columns[3];
+  f32 e[3][3];
+  Vec3F cols[3];
 };
 
 union Mat4x4F
 {
-  f32 elements[4][4];
-  Vec4F columns[4];
+  f32 e[4][4];
+  Vec4F cols[4];
 };
 
 // @Scalar =====================================================================================
+
+f32 sin_1f(f32 angle);
+f32 cos_1f(f32 angle);
+f32 tan_1f(f32 angle);
 
 f32 lerp_1f(f32 curr, f32 target, f32 rate);
 
@@ -122,6 +126,8 @@ Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate);
 Vec2F normal_2f(Vec2F a, Vec2F b);
 Vec2F midpoint_2f(Vec2F a, Vec2F b);
 Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d);
+
+f32 atan_2f(Vec2F a);
 
 // @Vec3F ======================================================================================
 

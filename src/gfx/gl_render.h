@@ -53,7 +53,8 @@ void _r_gl_clear_error(void);
 
 // @Buffer =====================================================================================
 
-u32 r_gl_create_vertex_buffer(void *data, u32 size);
+u32 r_gl_create_vertex_buffer(void *data, u32 size, bool dynamic);
+void r_gl_update_vertex_buffer(void *data, u32 size, u32 offset);
 u32 r_gl_create_index_buffer(void *data, u32 size);
 void r_gl_bind_vertex_buffer(u32 id);
 void r_gl_unbind_vertex_buffer(void);

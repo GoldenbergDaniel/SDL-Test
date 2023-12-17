@@ -7,6 +7,9 @@
 #include "input.h"
 #include "game.h"
 
+#define TARGET_FPS 60
+#define VSYNC 1
+
 Global *GLOBAL;
 
 i32 main(void)
@@ -43,7 +46,7 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_ON);
+  SDL_GL_SetSwapInterval(VSYNC);
 
   if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
   {
@@ -52,7 +55,7 @@ i32 main(void)
   }
 
   GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
-  GLOBAL->assets = d_load_assets(&game.perm_arena, str("res/"));
+  GLOBAL->resources = d_load_resources(&game.perm_arena, str("res/"));
   GLOBAL->renderer = d_create_renderer();
 
   init_game(&game);
@@ -86,18 +89,15 @@ i32 main(void)
         break;
       }
 
-    if (elapsed_time > 0.1f)
-      {
-        game.t = elapsed_time;
-        game.dt = time_step;
+      game.t = elapsed_time;
+      game.dt = time_step;
 
-        update_game(&game);
-        handle_game_events(&game);
-        draw_game(&game);
-        clear_game_frame_arena(&game);
-        
-        SDL_GL_SwapWindow(window);
-      }
+      update_game(&game);
+      handle_game_events(&game);
+      draw_game(&game);
+      clear_game_frame_arena(&game);
+      
+      SDL_GL_SwapWindow(window);
 
       elapsed_time += time_step;
       accumulator -= time_step;

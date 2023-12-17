@@ -6,8 +6,18 @@
 
 #include "physx/physx.h"
 
-typedef struct Game Game;
+#define GRAVITY 48.0f // 0.8 p/f^2
 
+#define PLAYER_SPEED 600.0f // 10 p/f
+#define PLAYER_JUMP_FORCE 12.0f // 12.0 p/f
+#define PLAYER_ACC 3.0f // 0.05 p/f^2
+#define PLAYER_FRIC 8.0f // 0.13 p/f^2
+
+#define TIMER_COMBAT 0
+#define TIMER_HEALTH 1
+#define TIMER_KILL 2
+
+typedef struct Game Game;
 typedef struct Entity Entity;
 typedef struct EntityRef EntityRef;
 typedef struct EntityList EntityList;
@@ -16,6 +26,7 @@ typedef struct Timer Timer;
 typedef enum EntityType
 {
   EntityType_Nil,
+  EntityType_General,
   EntityType_Player,
   EntityType_EnemyShip,
   EntityType_Laser,
@@ -41,6 +52,7 @@ typedef enum MoveType
   MoveType_Sliding,
   MoveType_Projectile,
   MoveType_Flying,
+  MoveType_Rocket,
 } MoveType;
 
 typedef enum CombatType
@@ -105,7 +117,7 @@ struct Entity
   // Physics
   Vec2F dir;
   Vec2F vel;
-  Vec2F dv;
+  Vec2F new_vel;
   f32 speed;
   bool grounded;
   
@@ -139,16 +151,6 @@ struct EntityList
   Entity *first_free;
   u16 count;
 };
-
-#define TIMER_COMBAT 0
-#define TIMER_HEALTH 1
-#define TIMER_KILL 2
-
-#define PLAYER_HEALTH 3
-#define PLAYER_SPEED 600.0f
-#define PLAYER_JUMP_HEIGH 500.0f
-#define PLAYER_ACC 4.0f
-#define PLAYER_FRIC 8.0f
 
 // @InitEntity =================================================================================
 

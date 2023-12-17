@@ -33,14 +33,21 @@ void _r_gl_clear_error(void)
 
 // @Buffer =====================================================================================
 
-u32 r_gl_create_vertex_buffer(void *data, u32 size)
+u32 r_gl_create_vertex_buffer(void *data, u32 size, bool dynamic)
 {
   u32 id;
   glGenBuffers(1, &id);
   glBindBuffer(GL_ARRAY_BUFFER, id);
-  glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+
+  GLenum draw_type = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+  glBufferData(GL_ARRAY_BUFFER, size, data, draw_type);
 
   return id;
+}
+
+void r_gl_update_vertex_buffer(void *data, u32 size, u32 offset)
+{
+  glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 }
 
 inline
@@ -248,7 +255,7 @@ inline
 i32 r_gl_set_uniform_4x4f(Shader *shader, i8 *name, Mat4x4F m)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix4fv(loc, 1, FALSE, &m.elements[0][0]);
+  glUniformMatrix4fv(loc, 1, FALSE, &m.e[0][0]);
   
   return loc;
 }
@@ -257,7 +264,7 @@ inline
 i32 r_gl_set_uniform_3x3f(Shader *shader, i8 *name, Mat3x3F m)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix3fv(loc, 1, FALSE, &m.elements[0][0]);
+  glUniformMatrix3fv(loc, 1, FALSE, &m.e[0][0]);
   
   return loc;
 }

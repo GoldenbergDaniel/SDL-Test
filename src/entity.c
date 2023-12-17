@@ -1,15 +1,14 @@
 #include <stdio.h>
-#include <math.h>
 
 #include "base/base_common.h"
 #include "base/base_math.h"
 #include "base/base_random.h"
 
-#include "physx/physx.h"
 #include "input.h"
 #include "event.h"
 #include "game.h"
 #include "entity.h"
+#include "physx/physx.h"
 
 #define DEBUG
 
@@ -35,12 +34,16 @@ void init_entity(Entity *en, EntityType type)
   en->xform = m3x3f(1.0f);
   en->active = TRUE;
   en->visible = TRUE;
-  // en->gravity = 0.0f;
 
   init_timers(en);
 
   switch (type)
   {
+    case EntityType_General:
+    {
+
+    }
+    break;
     case EntityType_Player:
     {
       en->move_type = MoveType_Walking;
@@ -247,7 +250,7 @@ void update_entity_xform(Game *game, Entity *en)
 
 void update_controlled_entity_movement(Game *game, Entity *en)
 {
-  f64 dt = game->dt;
+  f32 dt = game->dt;
 
   switch (en->move_type)
   {
@@ -255,80 +258,57 @@ void update_controlled_entity_movement(Game *game, Entity *en)
     {
       if (is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
       {
-        en->dv.x = lerp_1f(en->dv.x, -en->speed, PLAYER_ACC * dt);
+        en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
         en->input_dir.x = -1.0f;
         en->flip_x = TRUE;
       }
 
       if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
       {
-        en->dv.x = lerp_1f(en->dv.x, en->speed, PLAYER_ACC * dt);
+        en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
         en->input_dir.x = 1.0f;
         en->flip_x = FALSE;
       }
 
       if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
       {
-        en->dv.x = lerp_1f(en->dv.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
-        en->dv.x = to_zero(en->dv.x, 1.0f);
+        en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
+        en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
       }
       
       if (!is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
       {
-        en->dv.x = lerp_1f(en->dv.x, 0.0f, PLAYER_FRIC * dt);
-        en->dv.x = to_zero(en->dv.x, 1.0f);
+        en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
+        en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
       }
 
       // GRAVITY
-      if (en->dv.y >= -1000.0f && !en->grounded)
+      if (!en->grounded)
       {
-        en->dv.y -= GRAVITY;
+        en->new_vel.y -= GRAVITY * dt;
       }
 
       // JUMPING
       if (is_key_pressed(KEY_W) && en->grounded)
       {
-        en->dv.y += PLAYER_JUMP_HEIGH;
+        en->new_vel.y += PLAYER_JUMP_FORCE;
         en->grounded = FALSE;
       }
 
-      en->vel = scale_2f(en->dv, dt);
-
-      printf("VelX: %.02f\n", en->vel.x);
-      printf("VelY: %.02f\n", en->vel.y);
+      en->vel = en->new_vel;
     }
     break;
-    case MoveType_Flying:
+    case MoveType_Rocket:
     {
-      f32 omega = clamp(90.0f * magnitude_2f(en->vel), 100.0f, 180.0f);
-
-      if (is_key_pressed(KEY_A)) en->rot += omega * dt;
-      if (is_key_pressed(KEY_D)) en->rot -= omega * dt;
-
-      if (is_key_pressed(KEY_W) && !is_key_pressed(KEY_S))
-      {
-        en->speed = lerp_1f(en->speed, PLAYER_SPEED, PLAYER_ACC * dt);
-      }
-      else if (!is_key_pressed(KEY_W) && is_key_pressed(KEY_S))
-      {
-        en->speed = lerp_1f(en->speed, 0.0f, PLAYER_FRIC * 2 * dt);
-        en->speed = to_zero(en->speed, 1.0f);
-      }
-      else
-      {
-        en->speed = lerp_1f(en->speed, 0.0f, PLAYER_FRIC * dt);
-        en->speed = to_zero(en->speed, 1.0f);
-      }
-
-      en->vel.x = cosf(en->rot * RADIANS) * en->speed * dt;
-      en->vel.y = sinf(en->rot * RADIANS) * en->speed * dt;
-
-      en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
+      
     }
     default: break;
   }
 
   en->pos = add_2f(en->pos, en->vel);
+
+  // printf("VelX: %.02f p/f\n", en->vel.x);
+  // printf("VelY: %.02f p/f\n", en->vel.y);
 }
 
 void update_autonomous_entity_movement(Game *game, Entity *en)
@@ -339,8 +319,8 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
   {
     if (en->has_target)
     {
-      en->input_dir.x = sinf(en->target_angle);
-      en->input_dir.y = cosf(en->target_angle);
+      en->input_dir.x = sin_1f(en->target_angle);
+      en->input_dir.y = cos_1f(en->target_angle);
 
       en->rot = -(en->target_angle * DEGREES + 270.0f);
     }
@@ -359,9 +339,9 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
     {
       en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
       en->vel.x = clamp(
-                            en->vel.x, 
-                            -en->speed * abs(en->input_dir.x) * dt,
-                            en->speed * abs(en->input_dir.x) * dt);
+                        en->vel.x, 
+                        -en->speed * abs(en->input_dir.x) * dt,
+                        en->speed * abs(en->input_dir.x) * dt);
     }
     else
     {
@@ -374,9 +354,9 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
     {
       en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
       en->vel.y = clamp(
-                            en->vel.y, 
-                            -en->speed * abs(en->input_dir.y) * dt, 
-                            en->speed * abs(en->input_dir.y) * dt);
+                        en->vel.y, 
+                        -en->speed * abs(en->input_dir.y) * dt, 
+                        en->speed * abs(en->input_dir.y) * dt);
     }
     else 
     {
@@ -397,8 +377,8 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
       push_event(game, EventType_KillEntity, desc);
     }
 
-    en->vel.x = cosf(en->rot * RADIANS) * en->speed * dt;
-    en->vel.y = sinf(en->rot * RADIANS) * en->speed * dt;
+    en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
+    en->vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
   }
 
   en->pos = add_2f(en->pos, en->vel);
@@ -503,9 +483,8 @@ void set_entity_target(Entity *en, EntityRef target)
 
   if (distance_2f(en->pos, target_pos) <= en->view_dist)
   {
-    f32 dist_x = target_pos.x - en->pos.x;
-    f32 dist_y = target_pos.y - en->pos.y;
-    en->target_angle = atan2(dist_x, dist_y);
+    Vec2F dist = v2f(target_pos.x - en->pos.x, target_pos.y - en->pos.y);
+    en->target_angle = atan_2f(dist);
     en->has_target = TRUE;
   }
   else
@@ -540,7 +519,7 @@ void resolve_entity_collision(Entity *a, Entity *b)
   {
     a->pos.y = b->pos.y + a->height/2.0f;
     a->vel.y = 0.0f;
-    a->dv.y = 0.0f;
+    a->new_vel.y = 0.0f;
     a->grounded = TRUE;
   }
   else

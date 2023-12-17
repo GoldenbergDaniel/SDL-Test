@@ -6,6 +6,24 @@
 
 // @Scalar =====================================================================================
 
+inline
+f32 sin_1f(f32 angle)
+{
+  return sinf(angle);
+}
+
+inline
+f32 cos_1f(f32 angle)
+{
+  return cosf(angle);
+}
+
+inline
+f32 tan_1f(f32 angle)
+{
+  return tanf(angle);
+}
+
 inline 
 f32 lerp_1f(f32 curr, f32 target, f32 rate)
 {
@@ -81,10 +99,10 @@ inline
 Vec2F transform_2f(Vec2F v, Mat2x2F m)
 {
   Vec2F result = {0};
-  result.x += m.elements[0][0] * v.elements[0];
-  result.x += m.elements[0][1] * v.elements[1];
-  result.y += m.elements[1][0] * v.elements[0];
-  result.y += m.elements[1][1] * v.elements[1];
+  result.x += m.e[0][0] * v.e[0];
+  result.x += m.e[0][1] * v.e[1];
+  result.y += m.e[1][0] * v.e[0];
+  result.y += m.e[1][1] * v.e[1];
 
   return result;
 }
@@ -155,6 +173,12 @@ Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d)
   return add_2f(a, scale_2f(ab, t));
 }
 
+inline
+f32 atan_2f(Vec2F a)
+{
+  return atan2f(a.x, a.y);
+}
+
 // @Vec3F ======================================================================================
 
 inline
@@ -213,15 +237,15 @@ Vec3F scale_3f(Vec3F v, f32 scale)
 Vec3F transform_3f(Vec3F v, Mat3x3F m)
 {
   Vec3F result = {0};
-  result.x += m.elements[0][0] * v.elements[0];
-  result.x += m.elements[0][1] * v.elements[1];
-  result.x += m.elements[0][2] * v.elements[2];
-  result.y += m.elements[1][0] * v.elements[0];
-  result.y += m.elements[1][1] * v.elements[1];
-  result.y += m.elements[1][2] * v.elements[2];
-  result.z += m.elements[2][0] * v.elements[0];
-  result.z += m.elements[2][1] * v.elements[1];
-  result.z += m.elements[2][2] * v.elements[2];
+  result.x += m.e[0][0] * v.e[0];
+  result.x += m.e[0][1] * v.e[1];
+  result.x += m.e[0][2] * v.e[2];
+  result.y += m.e[1][0] * v.e[0];
+  result.y += m.e[1][1] * v.e[1];
+  result.y += m.e[1][2] * v.e[2];
+  result.z += m.e[2][0] * v.e[0];
+  result.z += m.e[2][1] * v.e[1];
+  result.z += m.e[2][2] * v.e[2];
 
   return result;
 }
@@ -311,22 +335,22 @@ Vec4F scale_4f(Vec4F v, f32 scale)
 Vec4F transform_4f(Vec4F v, Mat4x4F m)
 {
   Vec4F result = {0};
-  result.x += m.elements[0][0] * v.elements[0];
-  result.x += m.elements[0][1] * v.elements[1];
-  result.x += m.elements[0][2] * v.elements[2];
-  result.x += m.elements[0][3] * v.elements[3];
-  result.y += m.elements[1][0] * v.elements[0];
-  result.y += m.elements[1][1] * v.elements[1];
-  result.y += m.elements[1][2] * v.elements[2];
-  result.y += m.elements[1][3] * v.elements[3];
-  result.z += m.elements[2][0] * v.elements[0];
-  result.z += m.elements[2][1] * v.elements[1];
-  result.z += m.elements[2][2] * v.elements[2];
-  result.z += m.elements[2][3] * v.elements[3];
-  result.w += m.elements[3][0] * v.elements[0];
-  result.w += m.elements[3][1] * v.elements[1];
-  result.w += m.elements[3][2] * v.elements[2];
-  result.w += m.elements[3][3] * v.elements[3];
+  result.x += m.e[0][0] * v.e[0];
+  result.x += m.e[0][1] * v.e[1];
+  result.x += m.e[0][2] * v.e[2];
+  result.x += m.e[0][3] * v.e[3];
+  result.y += m.e[1][0] * v.e[0];
+  result.y += m.e[1][1] * v.e[1];
+  result.y += m.e[1][2] * v.e[2];
+  result.y += m.e[1][3] * v.e[3];
+  result.z += m.e[2][0] * v.e[0];
+  result.z += m.e[2][1] * v.e[1];
+  result.z += m.e[2][2] * v.e[2];
+  result.z += m.e[2][3] * v.e[3];
+  result.w += m.e[3][0] * v.e[0];
+  result.w += m.e[3][1] * v.e[1];
+  result.w += m.e[3][2] * v.e[2];
+  result.w += m.e[3][3] * v.e[3];
 
   return result;
 }
@@ -406,8 +430,8 @@ Mat2x2F mul_2x2f(Mat2x2F a, Mat2x2F b)
   {
     for (u8 c = 0; c < 2; c++)
     {
-      result.elements[r][c] += a.elements[r][0] * b.elements[0][c];
-      result.elements[r][c] += a.elements[r][1] * b.elements[1][c];
+      result.e[r][c] += a.e[r][0] * b.e[0][c];
+      result.e[r][c] += a.e[r][1] * b.e[1][c];
     }
   }
 
@@ -417,8 +441,8 @@ Mat2x2F mul_2x2f(Mat2x2F a, Mat2x2F b)
 Mat2x2F transpose_2x2f(Mat2x2F m)
 {
   Mat2x2F result = m;
-  result.elements[0][1] = m.elements[1][0];
-  result.elements[1][0] = m.elements[0][1];
+  result.e[0][1] = m.e[1][0];
+  result.e[1][0] = m.e[0][1];
 
   return result;
 }
@@ -428,16 +452,16 @@ Mat2x2F inverse_2x2f(Mat2x2F m)
   Mat2x2F result =
   {
     {
-      {m.elements[1][1], -m.elements[0][1]},
-      {-m.elements[1][0], m.elements[0][0]}
+      {m.e[1][1], -m.e[0][1]},
+      {-m.e[1][0], m.e[0][0]}
     }
   };
 
-  f32 det = (m.elements[0][0] * m.elements[1][1]) - (m.elements[0][0] * m.elements[1][1]);
-  result.elements[0][0] = (1.0f / det) * result.elements[0][0];
-  result.elements[0][1] = (1.0f / det) * result.elements[0][1];
-  result.elements[1][0] = (1.0f / det) * result.elements[1][0];
-  result.elements[1][1] = (1.0f / det) * result.elements[1][1];
+  f32 det = (m.e[0][0] * m.e[1][1]) - (m.e[0][0] * m.e[1][1]);
+  result.e[0][0] = (1.0f / det) * result.e[0][0];
+  result.e[0][1] = (1.0f / det) * result.e[0][1];
+  result.e[1][0] = (1.0f / det) * result.e[1][0];
+  result.e[1][1] = (1.0f / det) * result.e[1][1];
 
   return result;
 }
@@ -491,9 +515,9 @@ Mat3x3F mul_3x3f(Mat3x3F a, Mat3x3F b)
   {
     for (u8 c = 0; c < 3; c++)
     {
-      result.elements[r][c] += a.elements[r][0] * b.elements[0][c];
-      result.elements[r][c] += a.elements[r][1] * b.elements[1][c];
-      result.elements[r][c] += a.elements[r][2] * b.elements[2][c];
+      result.e[r][c] += a.e[r][0] * b.e[0][c];
+      result.e[r][c] += a.e[r][1] * b.e[1][c];
+      result.e[r][c] += a.e[r][2] * b.e[2][c];
     }
   }
 
@@ -503,12 +527,12 @@ Mat3x3F mul_3x3f(Mat3x3F a, Mat3x3F b)
 Mat3x3F transpose_3x3f(Mat3x3F m)
 {
   Mat3x3F result = m;
-  result.elements[0][1] = m.elements[1][0];
-  result.elements[0][2] = m.elements[2][0];
-  result.elements[1][0] = m.elements[0][1];
-  result.elements[1][2] = m.elements[2][1];
-  result.elements[2][0] = m.elements[0][2];
-  result.elements[2][1] = m.elements[1][2];
+  result.e[0][1] = m.e[1][0];
+  result.e[0][2] = m.e[2][0];
+  result.e[1][0] = m.e[0][1];
+  result.e[1][2] = m.e[2][1];
+  result.e[2][0] = m.e[0][2];
+  result.e[2][1] = m.e[1][2];
 
   return result;
 }
@@ -516,8 +540,8 @@ Mat3x3F transpose_3x3f(Mat3x3F m)
 Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.elements[0][2] = x_shift;
-  result.elements[1][2] = y_shift;
+  result.e[0][2] = x_shift;
+  result.e[1][2] = y_shift;
 
   return result;
 }
@@ -525,10 +549,10 @@ Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
 Mat3x3F rotate_3x3f(f32 angle)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.elements[0][0] = cos(angle);
-  result.elements[0][1] = -sin(angle);
-  result.elements[1][0] = sin(angle);
-  result.elements[1][1] = cos(angle);
+  result.e[0][0] = cos(angle);
+  result.e[0][1] = -sin(angle);
+  result.e[1][0] = sin(angle);
+  result.e[1][1] = cos(angle);
 
   return result;
 }
@@ -536,8 +560,8 @@ Mat3x3F rotate_3x3f(f32 angle)
 Mat3x3F scale_3x3f(f32 x_scale, f32 y_scale)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.elements[0][0] = x_scale;
-  result.elements[1][1] = y_scale;
+  result.e[0][0] = x_scale;
+  result.e[1][1] = y_scale;
 
   return result;
 }
@@ -545,8 +569,8 @@ Mat3x3F scale_3x3f(f32 x_scale, f32 y_scale)
 Mat3x3F shear_3x3f(f32 x_shear, f32 y_shear)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.elements[0][1] = x_shear;
-  result.elements[1][0] = y_shear;
+  result.e[0][1] = x_shear;
+  result.e[1][0] = y_shear;
 
   return result;
 }
@@ -554,11 +578,11 @@ Mat3x3F shear_3x3f(f32 x_shear, f32 y_shear)
 Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 bot, f32 top)
 {
   Mat3x3F result = m3x3f(0.0f);
-  result.elements[0][0] = 2.0f / (right - left);
-  result.elements[1][1] = 2.0f / (top - bot);
-  result.elements[0][2] = -(right + left) / (right - left);
-  result.elements[1][2] = -(top + bot) / (top - bot);
-  result.elements[2][2] = 1.0f;
+  result.e[0][0] = 2.0f / (right - left);
+  result.e[1][1] = 2.0f / (top - bot);
+  result.e[0][2] = -(right + left) / (right - left);
+  result.e[1][2] = -(top + bot) / (top - bot);
+  result.e[2][2] = 1.0f;
 
   return result;
 }
@@ -615,10 +639,10 @@ Mat4x4F mul_4x4f(Mat4x4F a, Mat4x4F b)
   {
     for (u8 c = 0; c < 4; c++)
     {
-      result.elements[r][c] += a.elements[0][c] * b.elements[r][0];
-      result.elements[r][c] += a.elements[1][c] * b.elements[r][1];
-      result.elements[r][c] += a.elements[2][c] * b.elements[r][2];
-      result.elements[r][c] += a.elements[3][c] * b.elements[r][3];
+      result.e[r][c] += a.e[0][c] * b.e[r][0];
+      result.e[r][c] += a.e[1][c] * b.e[r][1];
+      result.e[r][c] += a.e[2][c] * b.e[r][2];
+      result.e[r][c] += a.e[3][c] * b.e[r][3];
     }
   }
 
@@ -628,18 +652,18 @@ Mat4x4F mul_4x4f(Mat4x4F a, Mat4x4F b)
 Mat4x4F transpose_4x4f(Mat4x4F m)
 {
   Mat4x4F result = m;
-  result.elements[0][1] = m.elements[1][0];
-  result.elements[0][2] = m.elements[2][0];
-  result.elements[0][3] = m.elements[3][0];
-  result.elements[1][0] = m.elements[0][1];
-  result.elements[1][2] = m.elements[2][1];
-  result.elements[1][3] = m.elements[3][1];
-  result.elements[2][0] = m.elements[0][2];
-  result.elements[2][1] = m.elements[1][2];
-  result.elements[2][3] = m.elements[3][2];
-  result.elements[3][0] = m.elements[0][3];
-  result.elements[3][1] = m.elements[1][3];
-  result.elements[3][2] = m.elements[2][3];
+  result.e[0][1] = m.e[1][0];
+  result.e[0][2] = m.e[2][0];
+  result.e[0][3] = m.e[3][0];
+  result.e[1][0] = m.e[0][1];
+  result.e[1][2] = m.e[2][1];
+  result.e[1][3] = m.e[3][1];
+  result.e[2][0] = m.e[0][2];
+  result.e[2][1] = m.e[1][2];
+  result.e[2][3] = m.e[3][2];
+  result.e[3][0] = m.e[0][3];
+  result.e[3][1] = m.e[1][3];
+  result.e[3][2] = m.e[2][3];
 
   return result;
 }
@@ -647,9 +671,9 @@ Mat4x4F transpose_4x4f(Mat4x4F m)
 Mat4x4F translate_4x4f(f32 x_shift, f32 y_shift, f32 z_shift)
 {
   Mat4x4F result = m4x4f(1.0f);
-  result.elements[0][3] = x_shift;
-  result.elements[1][3] = y_shift;
-  result.elements[2][3] = z_shift;
+  result.e[0][3] = x_shift;
+  result.e[1][3] = y_shift;
+  result.e[2][3] = z_shift;
 
   return result;
 }
@@ -657,9 +681,9 @@ Mat4x4F translate_4x4f(f32 x_shift, f32 y_shift, f32 z_shift)
 Mat4x4F scale_4x4f(f32 x_scale, f32 y_scale, f32 z_scale)
 {
   Mat4x4F result = m4x4f(1.0f);
-  result.elements[0][0] = x_scale;
-  result.elements[1][1] = y_scale;
-  result.elements[2][2] = z_scale;
+  result.e[0][0] = x_scale;
+  result.e[1][1] = y_scale;
+  result.e[2][2] = z_scale;
 
   return result;
 }
@@ -670,13 +694,13 @@ Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
   const f32 far = 1.0f;
 
   Mat4x4F result = {0};
-  result.elements[0][0] = 2.0f / (right - left);
-  result.elements[1][1] = 2.0f / (top - bot);
-  result.elements[2][2] = -2.0f / (far - near);
-  result.elements[0][3] = -(right + left) / (right - left);
-  result.elements[1][3] = -(top + bot) / (top - bot);
-  result.elements[2][3] = -(far + near) / (far - near);
-  result.elements[3][3] = 1.0f;
+  result.e[0][0] = 2.0f / (right - left);
+  result.e[1][1] = 2.0f / (top - bot);
+  result.e[2][2] = -2.0f / (far - near);
+  result.e[0][3] = -(right + left) / (right - left);
+  result.e[1][3] = -(top + bot) / (top - bot);
+  result.e[2][3] = -(far + near) / (far - near);
+  result.e[3][3] = 1.0f;
 
   return result;
 }

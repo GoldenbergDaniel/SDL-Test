@@ -7,12 +7,6 @@
 #include "event.h"
 #include "entity.h"
 
-#define TARGET_FPS 60
-
-#define VSYNC_AUTO -1
-#define VSYNC_OFF 0
-#define VSYNC_ON 1
-
 #define W_WIDTH 1024
 #define W_HEIGHT 640
 
@@ -23,8 +17,6 @@
 #define COLOR_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
 #define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
-
-#define GRAVITY 20.0f
 
 typedef struct Game Game;
 typedef struct Global Global;
@@ -45,7 +37,7 @@ struct Game
 struct Global
 {
   Input input;
-  D_Assets assets;
+  D_Resources resources;
   D_Renderer renderer;
   Entity *nil_entity;
 };

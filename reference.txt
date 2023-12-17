@@ -103,3 +103,32 @@ void print_lists(Game *game)
   printf("\n");
 }
 #endif
+
+CONTROLLED FLYING
+    case MoveType_Flying:
+    {
+      f32 omega = clamp(90.0f * magnitude_2f(en->vel), 100.0f, 180.0f);
+
+      if (is_key_pressed(KEY_A)) en->rot += omega * dt;
+      if (is_key_pressed(KEY_D)) en->rot -= omega * dt;
+
+      if (is_key_pressed(KEY_W) && !is_key_pressed(KEY_S))
+      {
+        en->speed = lerp_1f(en->speed, PLAYER_SPEED, PLAYER_ACC * dt);
+      }
+      else if (!is_key_pressed(KEY_W) && is_key_pressed(KEY_S))
+      {
+        en->speed = lerp_1f(en->speed, 0.0f, PLAYER_FRIC * 2 * dt);
+        en->speed = to_zero(en->speed, 1.0f);
+      }
+      else
+      {
+        en->speed = lerp_1f(en->speed, 0.0f, PLAYER_FRIC * dt);
+        en->speed = to_zero(en->speed, 1.0f);
+      }
+
+      en->vel.x = cosf(en->rot * RADIANS) * en->speed * dt;
+      en->vel.y = sinf(en->rot * RADIANS) * en->speed * dt;
+
+      en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
+    }

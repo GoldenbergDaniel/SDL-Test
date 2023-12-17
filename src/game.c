@@ -18,7 +18,7 @@ extern Global *GLOBAL;
 
 void init_game(Game *game)
 {
-  game->event_queue = (EventQueue) {0};
+  zero(game->event_queue);
   game->camera = translate_3x3f(0.0f, 0.0f);
   game->should_quit = FALSE;
 
@@ -38,7 +38,7 @@ void init_game(Game *game)
 
     en = create_entity(game);
     init_entity(en, EntityType_Player);
-    en->pos.y = 240;
+    en->pos.y = 400;
 
     // en = create_entity(game);
     // init_entity(en, EntityType_EnemyShip);
@@ -228,7 +228,7 @@ void draw_game(Game *game)
     {
       case EntityType_Player:
       {
-        d_sprite(en->xform, en->color, 0);
+        d_sprite(en->xform, en->color, D_TEXTURE_PLAYER);
       }
       break;
       case EntityType_EnemyShip:
