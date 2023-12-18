@@ -29,8 +29,17 @@ union Vec2F
 {
   struct
   {
-    f32 x;
-    f32 y;
+    union
+    {
+      f32 x;
+      f32 width;
+    };
+
+    union
+    {
+      f32 y;
+      f32 height;
+    };
   };
 
   f32 e[2];
@@ -40,8 +49,17 @@ union Vec2I
 {
   struct
   {
-    i32 x;
-    i32 y;
+    union
+    {
+      i32 x;
+      i32 width;
+    };
+
+    union
+    {
+      i32 y;
+      i32 height;
+    };
   };
 
   i32 e[2];
@@ -190,6 +208,7 @@ Mat3x3F cols_3x3f(Vec3F v1, Vec3F v2, Vec3F v3);
 
 Mat3x3F mul_3x3f(Mat3x3F a, Mat3x3F b);
 Mat3x3F transpose_3x3f(Mat3x3F m);
+Mat3x3F invert_3x3f(Mat3x3F m);
 
 Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift);
 Mat3x3F rotate_3x3f(f32 angle);

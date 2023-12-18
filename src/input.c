@@ -44,7 +44,6 @@ void clear_last_frame_input(void)
 void handle_input(SDL_Event *event, bool *should_quit)
 {
   Input *input = &GLOBAL->input;
-
   SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
 
   switch (event->type)
@@ -86,6 +85,38 @@ void handle_input(SDL_Event *event, bool *should_quit)
             input->key_just_down[KEY_W] = TRUE;
 
           input->key_down[KEY_W] = TRUE;
+        }
+        break;
+        case SDL_SCANCODE_0:
+        {
+          if (!input->key_down[KEY_0])
+            input->key_just_down[KEY_0] = TRUE;
+
+          input->key_down[KEY_0] = TRUE;
+        }
+        break;
+        case SDL_SCANCODE_1: 
+        {
+          if (!input->key_down[KEY_1])
+            input->key_just_down[KEY_1] = TRUE;
+
+          input->key_down[KEY_1] = TRUE;
+        }
+        break;
+        case SDL_SCANCODE_2: 
+        {
+          if (!input->key_down[KEY_2])
+            input->key_just_down[KEY_2] = TRUE;
+
+          input->key_down[KEY_2] = TRUE;
+        }
+        break;
+        case SDL_SCANCODE_3:
+        {
+          if (!input->key_down[KEY_3])
+            input->key_just_down[KEY_3] = TRUE;
+
+          input->key_down[KEY_3] = TRUE;
         }
         break;
         case SDL_SCANCODE_ESCAPE:
@@ -157,6 +188,38 @@ void handle_input(SDL_Event *event, bool *should_quit)
             input->key_just_up[KEY_W] = TRUE;
 
           input->key_down[KEY_W] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_0:
+        {
+          if (!input->key_down[KEY_0])
+            input->key_just_up[KEY_0] = TRUE;
+
+          input->key_down[KEY_0] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_1:
+        {
+          if (!input->key_down[KEY_1])
+            input->key_just_up[KEY_1] = TRUE;
+
+          input->key_down[KEY_1] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_2:
+        {
+          if (!input->key_down[KEY_2])
+            input->key_just_up[KEY_2] = TRUE;
+
+          input->key_down[KEY_2] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_3:
+        {
+          if (!input->key_down[KEY_3])
+            input->key_just_up[KEY_3] = TRUE;
+
+          input->key_down[KEY_3] = FALSE;
         }
         break;
         case SDL_SCANCODE_ESCAPE:

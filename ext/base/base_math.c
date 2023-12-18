@@ -537,6 +537,24 @@ Mat3x3F transpose_3x3f(Mat3x3F m)
   return result;
 }
 
+// TODO: Learn how this works
+Mat3x3F invert_3x3f(Mat3x3F m)
+{
+  Mat3x3F cross;
+  cross.cols[0] = cross_3f(m.cols[1], m.cols[2]);
+  cross.cols[1] = cross_3f(m.cols[2], m.cols[0]);
+  cross.cols[2] = cross_3f(m.cols[0], m.cols[1]);
+
+  f32 inv_det = 1.0f / dot_3f(cross.cols[2], m.cols[2]);
+
+  Mat3x3F result;
+  result.cols[0] = scale_3f(cross.cols[0], inv_det);
+  result.cols[1] = scale_3f(cross.cols[1], inv_det);
+  result.cols[2] = scale_3f(cross.cols[2], inv_det);
+
+  return transpose_3x3f(result);
+}
+
 Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
 {
   Mat3x3F result = m3x3f(1.0f);

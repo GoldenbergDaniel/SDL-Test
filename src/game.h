@@ -7,16 +7,8 @@
 #include "event.h"
 #include "entity.h"
 
-#define W_WIDTH 1024
-#define W_HEIGHT 640
-
-#define COLOR_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
-#define COLOR_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
-#define COLOR_GRAY ((Vec4F) {0.5f, 0.5f, 0.5f, 1.0f})
-#define COLOR_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
-#define COLOR_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
-#define COLOR_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
-#define COLOR_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
+#define WIDTH 1024
+#define HEIGHT 640
 
 typedef struct Game Game;
 typedef struct Global Global;
@@ -46,5 +38,4 @@ void init_game(Game *game);
 void update_game(Game *game);
 void handle_game_events(Game *game);
 void draw_game(Game *game);
-void clear_game_frame_arena(Game *game);
 bool game_should_quit(Game *game);

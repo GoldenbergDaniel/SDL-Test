@@ -24,39 +24,54 @@ void init_game(Game *game)
 
   SCOPE("Create starting entities")
   {
+    Entity *player = {0};
+    
     Entity *en = arena_alloc(&game->perm_arena, sizeof (Entity));
     zero(*en);
     GLOBAL->nil_entity = en;
 
     en = create_entity(game);
     init_entity(en, EntityType_Wall);
-    f32 wall_y = 200.0f;
-    en->pos = v2f(0.0f, wall_y);
-    en->color = COLOR_GRAY;
-    set_entity_size(en, W_WIDTH, wall_y);
-    set_entity_origin(en, v2i(-1, 1));
+    en->origin = v2i(0, 1);
+    en->pos = v2f(WIDTH/2.0f, 200.0f);
+    en->scale = v2f(120.0f, 20.0f);
 
     en = create_entity(game);
     init_entity(en, EntityType_Player);
     en->pos.y = 400;
+    player = en;
+
+    en = create_entity(game);
+    init_entity(en, EntityType_Equipped);
+    set_entity_parent(en, player);
+    en->pos.x = 40;
+    en->pos.y = 1;
+    en->rot = 45;
+    en->scale = v2f(1.0f, 1.0f);
+
+    Entity *gun = en;
+
+    en = create_entity(game);
+    init_entity(en, EntityType_Equipped);
+    set_entity_parent(en, gun);
+    en->pos.x = 40;
+    en->pos.y = 1;
+    en->rot = 45;
+    en->scale = v2f(1.0f, 1.0f);
 
     // en = create_entity(game);
     // init_entity(en, EntityType_EnemyShip);
     
     en = create_entity(game);
     init_entity(en, EntityType_Wall);
-    en->color = COLOR_BLUE;
+    en->color = D_BLUE;
 
-    en = create_entity(game);
-    init_entity(en, EntityType_DebugLine);
-    set_entity_size(en, 100, 1);
-    set_entity_origin(en, v2i(-1, 0));
-
-    Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-    set_entity_parent(en, player);
-    en->pos.x = player->pos.x;
-    en->pos.y = player->pos.y;
-    en->local_pos.x = 15.0f;
+    // en = create_entity(game);
+    // init_entity(en, EntityType_DebugLine);
+    // set_entity_parent(en, player);
+    // en->origin = v2i(-1, 0);
+    // en->scale = v2f(20.0f, 1.0f);
+    // en->pos.x = 20.0f;
   }
 }
 
@@ -126,14 +141,38 @@ void update_game(Game *game)
         update_targetting_entity_combat(game, en);
       }
     }
-}
+
+    if (en->props & EntityProp_Equipped)
+    {
+      // update_equipped_entity(game, en);
+    }
+  }
 
   // DEBUG: Kill player on backspace
-  if (is_key_just_pressed(KEY_BACKSPACE))
+  {
+    if (is_key_just_pressed(KEY_BACKSPACE))
+    {
+      Entity *en = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+      EventDesc desc = {.id = en->id};
+      push_event(game, EventType_KillEntity, desc);
+    }
+  }
+
+  // DEBUG: Switch player texture
   {
     Entity *en = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-    EventDesc desc = {.id = en->id};
-    push_event(game, EventType_KillEntity, desc);
+    if (is_key_just_pressed(KEY_1))
+    {
+      en->texture = D_TEXTURE_PLAYER;
+    }
+    else if (is_key_just_pressed(KEY_2))
+    {
+      en->texture = D_TEXTURE_ALIEN;
+    }
+    else if (is_key_just_pressed(KEY_3))
+    {
+      en->texture = D_TEXTURE_GUN;
+    }
   }
 }
 
@@ -171,7 +210,7 @@ void handle_game_events(Game *game)
           {
             init_entity(en, event.desc.type);
             en->pos = event.desc.position;
-            en->scale = v2f(0.1, 0.1);
+            en->scale = v2f(0.1f, 0.1f);
           }
           break;
           default: 
@@ -188,7 +227,7 @@ void handle_game_events(Game *game)
       break;
       case EventType_KillEntity:
       {
-        Entity *en = get_entity_by_id(game, event.desc.id);
+        Entity *en = get_entity_of_id(game, event.desc.id);
         destroy_entity(game, en);
       }
       break;
@@ -216,7 +255,7 @@ void handle_game_events(Game *game)
 
 void draw_game(Game *game)
 {
-  d_clear(COLOR_BLACK);
+  d_clear(D_BLACK);
 
   sort_entities_by_z_index(game);
 
@@ -227,8 +266,9 @@ void draw_game(Game *game)
     switch (en->type)
     {
       case EntityType_Player:
-      {
-        d_sprite(en->xform, en->color, D_TEXTURE_PLAYER);
+      case EntityType_Equipped:
+      { 
+        d_sprite(en->xform, en->color, en->texture);
       }
       break;
       case EntityType_EnemyShip:
@@ -246,12 +286,6 @@ void draw_game(Game *game)
       default: break;
     }
   }
-}
-
-inline
-void clear_game_frame_arena(Game *game)
-{
-  clear_arena(&game->frame_arena);
 }
 
 inline

@@ -4,6 +4,7 @@
 #include "base/base_arena.h"
 #include "base/base_math.h"
 
+#include "gfx/draw.h"
 #include "physx/physx.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2
@@ -29,6 +30,7 @@ typedef enum EntityType
   EntityType_General,
   EntityType_Player,
   EntityType_EnemyShip,
+  EntityType_Equipped,
   EntityType_Laser,
   EntityType_Wall,
   EntityType_DebugLine,
@@ -44,7 +46,15 @@ typedef enum EntityProp
   EntityProp_Killable = 1 << 5,
   EntityProp_Collides = 1 << 6,
   EntityProp_Rendered = 1 << 7,
+  EntityProp_Equipped = 1 << 8,
 } EntityProp;
+
+typedef enum EntityFlag
+{
+  EntityFlag_AbsolutePosition = 1 << 0,
+  EntityFlag_AbsoluteRotation = 1 << 1,
+  EntityFlag_AbsoluteScale = 1 << 2,
+} EntityIgnore;
 
 typedef enum MoveType
 {
@@ -60,6 +70,13 @@ typedef enum CombatType
   CombatType_Melee,
   CombatType_Ranged,
 } CombatType;
+
+typedef enum DrawType
+{
+  DrawType_Triangle,
+  DrawType_Rectangle,
+  DrawType_Sprite,
+} DrawType;
 
 struct Timer
 {
@@ -97,21 +114,18 @@ struct Entity
   MoveType move_type;
   CombatType combat_type;
   b64 props;
+  b16 flags;
   bool active;
   bool visible;
 
   // Transform
   Vec2F pos;
-  Vec2F local_pos;
-  Vec2F pos_offset;
+  Vec2I origin;
   f32 rot;
-  f32 local_rot;
   Vec2F scale;
-  Vec2F local_scale;
-  f32 width;
-  f32 height;
   Mat3x3F xform;
-  Mat3x3F model;
+  Mat3x3F model_mat;
+  Mat3x3F scale_mat;
   Vec2F input_dir;
 
   // Physics
@@ -121,12 +135,14 @@ struct Entity
   f32 speed;
   bool grounded;
   
-  // Sprite
+  // Drawing
+  DrawType draw_type;
   Vec4F color;
-  u16 texture_id;
-  u16 z_index;
+  D_TextureID texture;
+  Vec2F size;
   bool flip_x;
   bool flip_y;
+  u16 z_index;
 
   // Collision
   Collider2D col;
@@ -161,20 +177,26 @@ void clear_entity(Entity *entity);
 
 void update_entity_collider(Entity *entity);
 void update_entity_xform(Game *game, Entity *entity);
+
 void update_controlled_entity_movement(Game *game, Entity *entity);
 void update_autonomous_entity_movement(Game *game, Entity *entity);
 void update_entity_projectile_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
-
-// @SetEntity ==================================================================================
-
-void set_entity_size(Entity *entity, f32 width, f32 height);
-void set_entity_scale(Entity *entity, Vec2F scale);
-void set_entity_origin(Entity *entity, Vec2I origin);
-void set_entity_target(Entity *entity, EntityRef target);
+void update_equipped_entity(Game *game, Entity *entity);
 
 // @OtherEntity ================================================================================
+
+Vec2F pos_from_entity(Entity *entity);
+Vec2F origin_offset_from_entity(Entity *entity);
+f32 rot_from_entity(Entity *entity);
+Vec2F scale_from_entity(Entity *entity);
+Vec2F size_from_entity(Entity *entity);
+bool flip_x_from_entity(Entity *entity);
+bool flip_y_from_entity(Entity *entity);
+
+void set_entity_size(Entity *entity, Vec2F size);
+void set_entity_target(Entity *entity, EntityRef target);
 
 void sort_entities_by_z_index(Game *game);
 bool is_entity_valid(Entity *entity);
@@ -191,7 +213,7 @@ Entity *entity_from_ref(EntityRef ref);
 
 Entity *create_entity(Game *game);
 void destroy_entity(Game *game, Entity *entity);
-Entity *get_entity_by_id(Game *game, u64 id);
+Entity *get_entity_of_id(Game *game, u64 id);
 Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
 
 // @EntityTree =================================================================================

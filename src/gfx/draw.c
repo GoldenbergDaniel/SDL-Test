@@ -61,9 +61,9 @@ Renderer d_create_renderer(void)
   {
     Vertex vertices[3] = 
     {
-      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
-      {{ 20.0f,  0.0f,  1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // right
-      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
+      {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
+      {{ 10.0f, 0.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // right
+      {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
     };
 
     u32 indices[3] = 
@@ -91,10 +91,10 @@ Renderer d_create_renderer(void)
   {
     Vertex vertices[4] = 
     {
-      {{-10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
-      {{ 10.0f,  10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top right
-      {{ 10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // bottom right
-      {{-10.0f, -10.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
+      {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
+      {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top right
+      {{ 5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // bottom right
+      {{-5.0f, -5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}  // bottom left
     };
 
     u32 indices[6] = 
@@ -126,10 +126,10 @@ Renderer d_create_renderer(void)
 
     Vertex vertices[4] = 
     {
-      {{-10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
-      {{ 10.0f,  10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0, 1.0}}, // top right
-      {{ 10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0, 0.0f}}, // bottom right
-      {{-10.0f, -10.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}  // bottom left
+      {{-5.0f,  5.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
+      {{ 5.0f,  5.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0, 1.0}}, // top right
+      {{ 5.0f, -5.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0, 0.0f}}, // bottom right
+      {{-5.0f, -5.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}  // bottom left
     };
 
     u32 indices[6] = 

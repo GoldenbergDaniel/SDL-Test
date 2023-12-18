@@ -1,35 +1,3 @@
-COLLISION??
-
-  // Entity collision detection and resolution
-  // for (u8 i = 1; i < game->entity_count; i++)
-  // {
-  //   if (rect_ranges_intersect(
-  //                             player->pos, 
-  //                             entities[i].pos, 
-  //                             player->width,
-  //                             player->height,
-  //                             entities[i].width, 
-  //                             entities[i].height))
-  //   {
-  //     // NOTE: Broken!
-  //     if (!player->hurt_cooldown.is_running)
-  //     {
-  //       timegl_start(&player->hurt_cooldown, FALSE);
-  //     }
-  //     else
-  //     {
-  //       timegl_tick(&player->hurt_cooldown, game->dt);
-
-  //       if (player->hurt_cooldown.timeout)
-  //       {
-  //         // printf("Timeout!\n");
-  //       }
-
-  //       // printf("Timer: %f\n", player->hurt_cooldown.cugl_duration);
-  //     }
-  //   }
-  // }
-
 RAYCAST
 
   Collider wall = get_nearest_entity_of_type(game, entity->pos, EntityType_Wall)->col;
@@ -132,3 +100,43 @@ CONTROLLED FLYING
 
       en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
     }
+
+
+ALTERNATIVE XFORM UPDATE (doesn't quite work)
+
+// void update_entity_xform(Game *game, Entity *en)
+// {
+//   Mat3x3F xform = m3x3f(1.0f);
+
+//   Vec2F entity_pos = pos_from_entity(en);
+//   Vec2F entity_pos_offset = origin_offset_from_entity(en);
+//   f32 entity_rot = rot_from_entity(en);
+//   Vec2F entity_scale = scale_from_entity(en);
+//   bool entity_flip_x = flip_x_from_entity(en);
+//   bool entity_flip_y = flip_y_from_entity(en);
+
+//   xform = mul_3x3f(scale_3x3f(entity_scale.x, entity_scale.y), xform);
+//   xform = mul_3x3f(translate_3x3f(entity_pos_offset.x, entity_pos_offset.y), xform);
+
+//   if (entity_flip_x)
+//   {
+//     xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
+//   }
+
+//   if (entity_flip_y)
+//   {
+//     xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform);
+//   }
+
+//   // xform = mul_3x3f(translate_3x3f(en->pos.x, en->pos.y), xform);
+//   xform = mul_3x3f(rotate_3x3f(entity_rot * RADIANS), xform);
+//   // xform = mul_3x3f(translate_3x3f(-en->pos.x, -en->pos.y), xform);
+//   xform = mul_3x3f(translate_3x3f(entity_pos.x, entity_pos.y), xform);
+
+//   xform = mul_3x3f(game->camera, xform);
+
+//   Mat3x3F ortho = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
+//   xform = mul_3x3f(ortho, xform);
+
+//   en->xform = xform;
+// }

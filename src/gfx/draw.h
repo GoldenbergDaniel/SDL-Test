@@ -11,14 +11,22 @@
 #define D_SPRITE_SHEET_HEIGHT 128
 
 #define D_TEXTURE_PLAYER v2i(0,0)
-#define D_TEXTURE_GUN v2i(1,0)
-#define D_TEXTURE_ALIEN v2i(2,0)
+#define D_TEXTURE_ALIEN v2i(1,0)
+#define D_TEXTURE_GUN v2i(2,0)
+
+#define D_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
+#define D_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
+#define D_GRAY ((Vec4F) {0.5f, 0.5f, 0.5f, 1.0f})
+#define D_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
+#define D_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
+#define D_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
+#define D_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
 typedef struct D_Resources D_Resources;
 typedef struct D_Renderer D_Renderer;
 typedef struct D_RenderState D_RenderState;
 
-typedef u32 D_ResourceID;
+typedef Vec2I D_TextureID;
 
 struct D_Resources
 {
@@ -29,7 +37,6 @@ struct D_Resources
 struct D_RenderState
 {
   R_Shader shader;
-  // R_Texture texture;
   R_VAO vao;
   u32 vbo;
   u32 ibo;

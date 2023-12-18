@@ -40,8 +40,8 @@ i32 main(void)
                                         "SPACE GAME",
                                         SDL_WINDOWPOS_CENTERED, 
                                         SDL_WINDOWPOS_CENTERED, 
-                                        W_WIDTH, 
-                                        W_HEIGHT, 
+                                        WIDTH, 
+                                        HEIGHT, 
                                         SDL_WINDOW_OPENGL);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
@@ -95,7 +95,8 @@ i32 main(void)
       update_game(&game);
       handle_game_events(&game);
       draw_game(&game);
-      clear_game_frame_arena(&game);
+      
+      clear_arena(&game.frame_arena);
       
       SDL_GL_SwapWindow(window);
 
