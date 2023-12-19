@@ -10,8 +10,6 @@
 #include "entity.h"
 #include "physx/physx.h"
 
-#define DEBUG
-
 extern Global *GLOBAL;
 
 static void print_lists(Game *game);
@@ -31,7 +29,6 @@ const b64 LASER_PROPS = EntityProp_Rendered | EntityProp_Movable | EntityProp_Au
 void init_entity(Entity *en, EntityType type)
 {
   en->type = type;
-  // en->flags = EntityFlag_AbsoluteScale;
   en->xform = m3x3f(1.0f);
   en->size = v2f(10, 10);
   en->active = TRUE;
@@ -233,8 +230,12 @@ void update_entity_xform(Game *game, Entity *en)
 
   xform = mul_3x3f(scale_3x3f(en->scale.x, en->scale.y), xform);
 
-  Vec2F origin_offset = origin_offset_from_entity(en);
-  xform = mul_3x3f(translate_3x3f(origin_offset.x, origin_offset.y), xform);
+  // Adjust position offset based on origin
+  {
+    Vec2F size = mul_2f(en->size, en->scale);
+    Vec2F offset = v2f(size.width/2.0f * -en->origin.x, size.height/2.0f * -en->origin.y);
+    xform = mul_3x3f(translate_3x3f(offset.x, offset.y), xform);
+  }
 
   if (en->flip_x) { xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform); }
   if (en->flip_y) { xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform); }
@@ -259,11 +260,8 @@ void update_entity_xform(Game *game, Entity *en)
 
   en->model_mat = xform;
 
-  Mat3x3F camera = game->camera;
-  xform = mul_3x3f(camera, xform);
-
-  Mat3x3F ortho = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
-  xform = mul_3x3f(ortho, xform);
+  xform = mul_3x3f(game->camera, xform);
+  xform = mul_3x3f(game->projection, xform);
 
   en->xform = xform;
 }
@@ -311,7 +309,7 @@ void update_controlled_entity_movement(Game *game, Entity *en)
       // JUMPING
       if (is_key_pressed(KEY_W) && en->grounded)
       {
-        en->new_vel.y += PLAYER_JUMP_FORCE;
+        en->new_vel.y += PLAYER_JUMP_VEL;
         en->grounded = FALSE;
       }
 
@@ -339,10 +337,10 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
   {
     if (en->has_target)
     {
-      en->input_dir.x = sin_1f(en->target_angle);
-      en->input_dir.y = cos_1f(en->target_angle);
+      en->input_dir.x = cos_1f(en->target_angle);
+      en->input_dir.y = sin_1f(en->target_angle);
 
-      en->rot = -(en->target_angle * DEGREES + 270.0f);
+      en->rot = en->target_angle * DEGREES;
     }
     else
     {
@@ -393,8 +391,7 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
 
     if (timer->timeout)
     {
-      EventDesc desc = {.id = en->id};
-      push_event(game, EventType_KillEntity, desc);
+      kill_entity(game, .entity = en);
     }
 
     en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
@@ -416,16 +413,17 @@ void update_controlled_entity_combat(Game *game, Entity *en)
   bool can_shoot = is_key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
   if (can_shoot)
   {
-    EventDesc desc = 
+    Vec2F spawn_pos = v2f(en->pos.x, en->pos.y + 10.0f);
+    f32 spawn_rot = 0.0f;
+    Entity *gun = get_entity_child_of_type(en, EntityType_Equipped);
+    if (is_entity_valid(gun))
     {
-      .type = EntityType_Laser,
-      .position = v2f(en->pos.x, en->pos.y + 10.0f),
-      .rotation = en->flip_x ? (en->rot + 180.0f) : en->rot,
-      .speed = 700.0f,
-      .color = D_BLUE,
-    };
-    
-    push_event(game, EventType_SpawnEntity, desc);
+      spawn_rot = gun->rot ? !gun->flip_x : gun->rot + 180;
+    }
+
+    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_BLUE);
+    laser->rot = spawn_rot;
+    laser->speed = 700.0f;
 
     timer->should_tick = TRUE;
   }
@@ -441,37 +439,35 @@ void update_targetting_entity_combat(Game *game, Entity *en)
     bool can_shoot = timer->timeout;
     if (can_shoot)
     {
-      EventDesc desc = 
-      {
-        .type = EntityType_Laser,
-        .position = v2f(en->pos.x, en->pos.y),
-        .rotation = en->rot,
-        .speed = 1000.0f,
-        .color = D_GREEN,
-      };
-
-      push_event(game, EventType_SpawnEntity, desc);
+      Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
+      Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_GREEN);
+      laser->rot = en->rot;
+      laser->speed = 700.0f;
     }
   }
 }
 
 void update_equipped_entity(Game *game, Entity *en)
 {
-  // EntityRef parent = en->parent;
-
-  // if (entity_from_ref(parent))
-  // {
-  //   // en->flip_x = parent.ptr->flip_x;
-  // }
-  // else
-  // {
-  //   printf("Invalid parent!\n");
-  // }
-
-  Vec2I mouse_pos = get_mouse_position();
   Vec2F entity_pos = pos_from_entity(en);
-  Vec2F dist = v2f(mouse_pos.x - entity_pos.x, mouse_pos.y - entity_pos.y);
-  f32 angle = (atan_2f(dist) * DEGREES) - 45;
+  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+  Vec2F diff = v2f(mouse_pos.x - entity_pos.x, mouse_pos.y - entity_pos.y);
+  f32 angle = atan_2f(diff) * DEGREES;
+
+  if (!en->parent.ptr->flip_x)
+  {
+    angle = clamp(angle, -90, 90);
+  }
+  else
+  {
+    if (angle < 0)
+    {
+      angle = angle + 360;
+    }
+
+    angle = -clamp(angle, 90, 270) + 180;
+  }
+
   en->rot = angle;
 }
 
@@ -481,15 +477,12 @@ Vec2F pos_from_entity(Entity *en)
 {
   Vec2F result = en->pos;
 
-  if (!(en->flags & EntityFlag_AbsolutePosition))
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
   {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      result.x += parent->pos.x;
-      result.y += parent->pos.y;
-      parent = entity_from_ref(parent->parent);
-    }
+    result.x += parent->pos.x;
+    result.y += parent->pos.y;
+    parent = entity_from_ref(parent->parent);
   }
 
   return result;
@@ -499,14 +492,11 @@ f32 rot_from_entity(Entity *en)
 {
   f32 result = en->rot;
 
-  if (!(en->flags & EntityFlag_AbsoluteRotation))
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
   {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      result += parent->rot;
-      parent = entity_from_ref(parent->parent);
-    }
+    result += parent->rot;
+    parent = entity_from_ref(parent->parent);
   }
 
   return result;
@@ -516,15 +506,12 @@ Vec2F scale_from_entity(Entity *en)
 {
   Vec2F result = en->scale;
 
-  if (!(en->flags & EntityFlag_AbsoluteScale))
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
   {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      result.x *= parent->scale.x;
-      result.y *= parent->scale.y;
-      parent = entity_from_ref(parent->parent);
-    }
+    result.x *= parent->scale.x;
+    result.y *= parent->scale.y;
+    parent = entity_from_ref(parent->parent);
   }
 
   return result;
@@ -536,82 +523,12 @@ Vec2F size_from_entity(Entity *en)
   result.width *= en->scale.x;
   result.height *= en->scale.y;
 
-  if (!(en->flags & EntityFlag_AbsoluteScale))
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
   {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      result.width *= parent->scale.x;
-      result.height *= parent->scale.y;
-      parent = entity_from_ref(parent->parent);
-    }
-  }
-
-  return result;
-}
-
-bool flip_x_from_entity(Entity *en)
-{
-  bool result = en->flip_x;
-
-  if (!(en->flags & EntityFlag_AbsoluteRotation))
-  {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      if (parent->flip_x)
-      {
-        result = !result;
-      }
-
-      parent = entity_from_ref(parent->parent);
-    }
-  }
-
-  return result;
-}
-
-bool flip_y_from_entity(Entity *en)
-{
-  bool result = en->flip_y;
-
-  if (!(en->flags & EntityFlag_AbsoluteRotation))
-  {
-    Entity *parent = entity_from_ref(en->parent);
-    while (is_entity_valid(parent))
-    {
-      if (parent->flip_y)
-      {
-        result = !result;
-      }
-
-      parent = entity_from_ref(parent->parent);
-    }
-  }
-
-  return result;
-}
-
-Vec2F origin_offset_from_entity(Entity *en)
-{
-  Vec2F result = V2F_ZERO;
-  Vec2F size = size_from_entity(en);
-
-  if (en->origin.x == -1 && en->origin.y == 0)
-  {
-    result = v2f(size.width/2.0f, 0.0f);
-  }
-  else if (en->origin.x == 0 && en->origin.y == 1)
-  {
-    result = v2f(0.0f, -size.height/2.0f);
-  }
-  else if (en->origin.x == 1 && en->origin.y == 0)
-  {
-    result = v2f(-size.width/2.0f, 0.0f);
-  }
-  else if (en->origin.x == -1 && en->origin.y == 1)
-  {
-    result = v2f(size.width/2.0f, -size.height/2.0f);
+    result.width *= parent->scale.x;
+    result.height *= parent->scale.y;
+    parent = entity_from_ref(parent->parent);
   }
 
   return result;
@@ -621,30 +538,20 @@ void set_entity_target(Entity *en, EntityRef target)
 {
   Entity *target_entity = entity_from_ref(target);
   
-  if (target_entity == NULL) return;
+  if (!is_entity_valid(target_entity)) return;
 
-  Vec2F target_pos = target_entity->pos;
+  Vec2F target_pos = pos_from_entity(target_entity);
 
   if (distance_2f(en->pos, target_pos) <= en->view_dist)
   {
-    Vec2F dist = v2f(target_pos.x - en->pos.x, target_pos.y - en->pos.y);
-    en->target_angle = atan_2f(dist);
+    Vec2F diff = v2f(target_pos.x - en->pos.x, target_pos.y - en->pos.y);
+    en->target_angle = atan_2f(diff);
     en->has_target = TRUE;
   }
   else
   {
     en->target_pos = V2F_ZERO;
     en->has_target = FALSE;
-  }
-}
-
-void sort_entities_by_z_index(Game *game)
-{
-  EntityList entities = game->entities;
-
-  for (u64 i = 0; i < entities.count; i++)
-  {
-    
   }
 }
 

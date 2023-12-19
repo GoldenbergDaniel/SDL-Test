@@ -26,9 +26,9 @@ bool is_key_just_released(Key key)
 }
 
 inline
-Vec2I get_mouse_position(void)
+Vec2F get_mouse_pos(void)
 {
-  return GLOBAL->input.mouse_pos;
+  return v2f(GLOBAL->input.mouse_pos.x, GLOBAL->input.mouse_pos.y);
 }
 
 inline

@@ -34,6 +34,6 @@ struct Input
 bool is_key_pressed(Key key);
 bool is_key_just_pressed(Key key);
 bool is_key_just_released(Key key);
-Vec2I get_mouse_position(void);
+Vec2F get_mouse_pos(void);
 void clear_last_frame_input(void);
 void handle_input(SDL_Event *event, bool *should_close);

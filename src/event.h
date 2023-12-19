@@ -11,8 +11,6 @@ typedef struct EventQueue EventQueue;
 
 typedef enum EventType
 {
-  EventType_SpawnEntity,
-  EventType_KillEntity,
   EventType_EntityKilled,
 } EventType;
 
@@ -21,19 +19,6 @@ struct EventDesc
   u64 id;
   u64 type;
   b64 props;
-
-  union
-  {
-    // Entity
-    struct
-    {
-      Vec2F position;
-      f32 rotation;
-      Vec2F scale;
-      f32 speed;
-      Vec4F color;
-    };
-  };
 };
 
 struct Event

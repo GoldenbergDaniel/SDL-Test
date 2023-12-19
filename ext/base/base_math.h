@@ -14,7 +14,7 @@
 #define clamp(x, a, b) (((x) < (a)) ? (a) : \
                         ((x) > (b)) ? (b) : (x))
 #define round(a) ((i32) (a) + 0.5f))
-#define to_zero(a, tol) ((abs(a) - abs(tol)) <= 0.0f ? 0.0f : (a))
+#define to_zero(a, tol) ((abs(a) - tol) <= 0.0f ? 0.0f : (a))
 #define dir(a) (((a) != 0) ? ((a) / abs(a)) : 0)
 
 typedef union Vec2F Vec2F;

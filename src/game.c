@@ -20,6 +20,7 @@ void init_game(Game *game)
 {
   zero(game->event_queue);
   game->camera = translate_3x3f(0.0f, 0.0f);
+  game->projection = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
   game->should_quit = FALSE;
 
   SCOPE("Create starting entities")
@@ -32,9 +33,13 @@ void init_game(Game *game)
 
     en = create_entity(game);
     init_entity(en, EntityType_Wall);
-    en->origin = v2i(0, 1);
+    en->origin = v2f(0.0f, 1.0f);
     en->pos = v2f(WIDTH/2.0f, 200.0f);
     en->scale = v2f(120.0f, 20.0f);
+
+    en = create_entity(game);
+    init_entity(en, EntityType_Wall);
+    en->color = D_RED;
 
     en = create_entity(game);
     init_entity(en, EntityType_Player);
@@ -44,34 +49,23 @@ void init_game(Game *game)
     en = create_entity(game);
     init_entity(en, EntityType_Equipped);
     set_entity_parent(en, player);
-    en->pos.x = 40;
-    en->pos.y = 1;
-    en->rot = 45;
-    en->scale = v2f(1.0f, 1.0f);
-
-    Entity *gun = en;
-
-    en = create_entity(game);
-    init_entity(en, EntityType_Equipped);
-    set_entity_parent(en, gun);
-    en->pos.x = 40;
-    en->pos.y = 1;
-    en->rot = 45;
+    en->pos = v2f(30.0f, 1.0f);
     en->scale = v2f(1.0f, 1.0f);
 
     // en = create_entity(game);
     // init_entity(en, EntityType_EnemyShip);
-    
-    en = create_entity(game);
-    init_entity(en, EntityType_Wall);
-    en->color = D_BLUE;
 
-    // en = create_entity(game);
-    // init_entity(en, EntityType_DebugLine);
-    // set_entity_parent(en, player);
-    // en->origin = v2i(-1, 0);
-    // en->scale = v2f(20.0f, 1.0f);
-    // en->pos.x = 20.0f;
+    // Debug line
+    #if 0
+    {
+      en = create_entity(game);
+      init_entity(en, EntityType_DebugLine);
+      set_entity_parent(en, player);
+      en->origin = v2f(-1.0f, 0.0f);
+      en->scale = v2f(3.0f, 0.05f);
+      en->pos.x = 50.0f;
+    }
+    #endif
   }
 }
 
@@ -79,11 +73,6 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
-  // Vec2I mouse_pos = get_mouse_position();
-  // Vec2F player_pos = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player)->pos;
-  // printf("MOUSE POS: %i, %i\n", mouse_pos.x, mouse_pos.y);
-  // printf("Player pos: %f, %f\n", player_pos.x, player_pos.y);
-
   for (Entity *en = game->entities.head; en; en = en->next)
   {
     if (!en->active) continue;
@@ -144,7 +133,7 @@ void update_game(Game *game)
 
     if (en->props & EntityProp_Equipped)
     {
-      // update_equipped_entity(game, en);
+      update_equipped_entity(game, en);
     }
   }
 
@@ -152,9 +141,8 @@ void update_game(Game *game)
   {
     if (is_key_just_pressed(KEY_BACKSPACE))
     {
-      Entity *en = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
-      EventDesc desc = {.id = en->id};
-      push_event(game, EventType_KillEntity, desc);
+      Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+      kill_entity(game, .entity = player);
     }
   }
 
@@ -186,51 +174,6 @@ void handle_game_events(Game *game)
 
     switch (event.type)
     {
-      case EventType_SpawnEntity:
-      {
-        Entity *en = create_entity(game);
-
-        switch (event.desc.type)
-        {
-          case EntityType_EnemyShip:
-          {
-            init_entity(en, event.desc.type);
-          }
-          break;
-          case EntityType_Laser:
-          {
-            init_entity(en, event.desc.type);
-            en->pos = event.desc.position;
-            en->rot = event.desc.rotation;
-            en->speed = event.desc.speed;
-            en->color = event.desc.color;
-          }
-          break;
-          case EntityType_Wall:
-          {
-            init_entity(en, event.desc.type);
-            en->pos = event.desc.position;
-            en->scale = v2f(0.1f, 0.1f);
-          }
-          break;
-          default: 
-          {
-            printf("ERROR: Failed to spawn en. Invalid type!");
-            printf("Entity ID: %llu\n", en->id);
-            printf("Entity Type: %i\n", en->type);
-            assert(FALSE);
-          }
-        }
-
-        update_entity_xform(game, en);
-      }
-      break;
-      case EventType_KillEntity:
-      {
-        Entity *en = get_entity_of_id(game, event.desc.id);
-        destroy_entity(game, en);
-      }
-      break;
       case EventType_EntityKilled:
       {
         EntityType type = event.desc.type;
@@ -256,8 +199,6 @@ void handle_game_events(Game *game)
 void draw_game(Game *game)
 {
   d_clear(D_BLACK);
-
-  sort_entities_by_z_index(game);
 
   for (Entity *en = game->entities.head; en; en = en->next)
   {
@@ -299,4 +240,35 @@ bool game_should_quit(Game *game)
   }
 
   return result;
+}
+
+Entity *_spawn_entity(Game *game, EntityType type, EntitySpawnParams params)
+{
+  Entity *en = create_entity(game);
+  init_entity(en, type);
+  en->props = en->props | params.props;
+  en->pos = params.pos;
+  en->color = params.color;
+
+  return en;
+}
+
+void _kill_entity(Game *game, EntityKillParams params)
+{
+  Entity *en = params.entity;
+  if (en == NULL)
+  {
+    en = get_entity_of_id(game, params.id);
+  }
+
+  destroy_entity(game, en);
+}
+
+Vec2F screen_to_world(Vec2F pos)
+{
+  Vec3F result = v3f(pos.x, pos.y, 1);
+  // result = transform_3f(result, scale_3x3f(1.0f, 1.0f/HEIGHT));
+  result.y = HEIGHT - pos.y; 
+
+  return v2f(result.x, result.y);
 }

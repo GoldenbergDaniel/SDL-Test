@@ -74,4 +74,4 @@ D_Renderer d_create_renderer(void);
 void d_clear(Vec4F color);
 void d_triangle(Mat3x3F xform, Vec4F color);
 void d_rectangle(Mat3x3F xform, Vec4F color);
-void d_sprite(Mat3x3F xform, Vec4F color, Vec2I tex_coord);
+void d_sprite(Mat3x3F xform, Vec4F color, D_TextureID tex_id);

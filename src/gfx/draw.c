@@ -8,6 +8,7 @@
 #include "draw.h"
 
 typedef D_Resources Resources;
+typedef D_TextureID TextureID;
 typedef D_Renderer Renderer;
 typedef D_RenderState RenderState;
 
@@ -27,13 +28,15 @@ Resources d_load_resources(Arena *arena, const String path)
   resources.shaders = arena_alloc(arena, sizeof (Shader) * D_SHADER_COUNT);
 
   Texture texture = {0};
-  // texture = r_gl_create_texture("res/texture/player.png");
-  // resources.textures[D_TEXTURE_PLAYER] = texture;
-  // texture = r_gl_create_texture("res/texture/gun.png");
-  // resources.textures[D_TEXTURE_GUN] = texture;
-  texture = r_gl_create_texture("res/texture/sprites.png");
-  resources.textures[0] = texture;
 
+#ifdef DEBUG
+  texture = r_gl_create_texture("../res/texture/sprites.png");
+  resources.textures[0] = texture;
+#else
+    texture = r_gl_create_texture("res/texture/sprites.png");
+#endif
+
+  resources.textures[0] = texture;
   return resources;
 }
 
@@ -89,7 +92,7 @@ Renderer d_create_renderer(void)
 
   SCOPE("Rectangle")
   {
-    Vertex vertices[4] = 
+   Vertex vertices[4] = 
     {
       {{-5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top left
       {{ 5.0f,  5.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}}, // top right
@@ -195,36 +198,36 @@ void d_rectangle(Mat3x3F xform, Vec4F color)
 }
 
 inline
-void d_sprite(Mat3x3F xform, Vec4F color, Vec2I tex_coord)
+void d_sprite(Mat3x3F xform, Vec4F color, TextureID tex_id)
 {
   RenderState state = GLOBAL->renderer.sprite;
   r_gl_bind_vertex_array(&state.vao);
 
   // fix y-coord
-  tex_coord.y = (D_SPRITE_SHEET_HEIGHT / D_SPRITE_SHEET_SIZE) - tex_coord.y - 1;
+  tex_id.y = (D_SPRITE_SHEET_HEIGHT / D_SPRITE_SHEET_SIZE) - tex_id.y - 1;
 
   const Vec4F top_left =
   {
-    ((f32) tex_coord.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex_coord.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex_id.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) (tex_id.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F top_right =
   {
-    ((f32) (tex_coord.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex_coord.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex_id.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) (tex_id.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_right =
   {
-    ((f32) (tex_coord.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex_coord.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex_id.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) tex_id.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_left =
   {
-    ((f32) tex_coord.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex_coord.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex_id.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) tex_id.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
   r_gl_update_vertex_buffer((f32 *) top_left.e, sizeof (Vec4F), sizeof (Vec4F) * 2);

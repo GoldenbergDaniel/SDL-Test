@@ -176,7 +176,7 @@ Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d)
 inline
 f32 atan_2f(Vec2F a)
 {
-  return atan2f(a.x, a.y);
+  return atan2f(a.y, a.x);
 }
 
 // @Vec3F ======================================================================================

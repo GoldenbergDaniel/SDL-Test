@@ -328,7 +328,7 @@ Texture r_gl_create_texture(const i8 *path)
                GL_UNSIGNED_BYTE, 
                tex.data);
 
-  glGenerateMipmap(GL_TEXTURE_2D);
+  // glGenerateMipmap(GL_TEXTURE_2D);
 
   stbi_image_free(tex.data);
 

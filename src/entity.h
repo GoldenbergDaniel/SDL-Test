@@ -10,7 +10,7 @@
 #define GRAVITY 48.0f // 0.8 p/f^2
 
 #define PLAYER_SPEED 600.0f // 10 p/f
-#define PLAYER_JUMP_FORCE 12.0f // 12.0 p/f
+#define PLAYER_JUMP_VEL 12.0f // 12.0 p/f
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
@@ -48,13 +48,6 @@ typedef enum EntityProp
   EntityProp_Rendered = 1 << 7,
   EntityProp_Equipped = 1 << 8,
 } EntityProp;
-
-typedef enum EntityFlag
-{
-  EntityFlag_AbsolutePosition = 1 << 0,
-  EntityFlag_AbsoluteRotation = 1 << 1,
-  EntityFlag_AbsoluteScale = 1 << 2,
-} EntityIgnore;
 
 typedef enum MoveType
 {
@@ -114,18 +107,16 @@ struct Entity
   MoveType move_type;
   CombatType combat_type;
   b64 props;
-  b16 flags;
   bool active;
   bool visible;
 
   // Transform
   Vec2F pos;
-  Vec2I origin;
+  Vec2F origin;
   f32 rot;
   Vec2F scale;
   Mat3x3F xform;
   Mat3x3F model_mat;
-  Mat3x3F scale_mat;
   Vec2F input_dir;
 
   // Physics
@@ -188,17 +179,13 @@ void update_equipped_entity(Game *game, Entity *entity);
 // @OtherEntity ================================================================================
 
 Vec2F pos_from_entity(Entity *entity);
-Vec2F origin_offset_from_entity(Entity *entity);
 f32 rot_from_entity(Entity *entity);
 Vec2F scale_from_entity(Entity *entity);
 Vec2F size_from_entity(Entity *entity);
-bool flip_x_from_entity(Entity *entity);
-bool flip_y_from_entity(Entity *entity);
 
 void set_entity_size(Entity *entity, Vec2F size);
 void set_entity_target(Entity *entity, EntityRef target);
 
-void sort_entities_by_z_index(Game *game);
 bool is_entity_valid(Entity *entity);
 void resolve_entity_collision(Entity *a, Entity *b);
 void wrap_entity_at_edges(Entity *entity);
