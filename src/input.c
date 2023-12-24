@@ -41,7 +41,7 @@ void clear_last_frame_input(void)
   }
 }
 
-void handle_input(SDL_Event *event, bool *should_quit)
+void handle_input_event(SDL_Event *event, bool *should_quit)
 {
   Input *input = &GLOBAL->input;
   SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
@@ -153,6 +153,30 @@ void handle_input(SDL_Event *event, bool *should_quit)
       }
       break;
     }
+    case SDL_MOUSEBUTTONDOWN:
+    {
+      switch (event->button.button)
+      {
+        default: break;
+        case SDL_BUTTON_LEFT:
+        {
+          if (!input->key_down[KEY_MOUSE_1])
+            input->key_just_down[KEY_MOUSE_1] = TRUE;
+
+          input->key_down[KEY_MOUSE_1] = TRUE;
+        }
+        break;
+        case SDL_BUTTON_RIGHT:
+        {
+          if (!input->key_down[KEY_MOUSE_2])
+            input->key_just_down[KEY_MOUSE_2] = TRUE;
+
+          input->key_down[KEY_MOUSE_2] = TRUE;
+        }
+        break;
+      }
+    }
+    break;
     case SDL_KEYUP: 
     {
       switch (event->key.keysym.scancode)
@@ -255,6 +279,30 @@ void handle_input(SDL_Event *event, bool *should_quit)
         }
       }
       break;
+    }
+    break;
+    case SDL_MOUSEBUTTONUP:
+    {
+      switch (event->button.button)
+      {
+        default: break;
+        case SDL_BUTTON_LEFT:
+        {
+          if (input->key_down[KEY_MOUSE_1])
+            input->key_just_up[KEY_MOUSE_1] = TRUE;
+
+          input->key_down[KEY_MOUSE_1] = FALSE;
+        }
+        break;
+        case SDL_BUTTON_RIGHT:
+        {
+          if (input->key_down[KEY_MOUSE_2])
+            input->key_just_up[KEY_MOUSE_2] = TRUE;
+
+          input->key_down[KEY_MOUSE_2] = FALSE;
+        }
+        break;
+      }
     }
   }
 }

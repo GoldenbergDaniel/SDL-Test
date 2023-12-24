@@ -30,7 +30,7 @@ LDFLAGS = -Lext/sdl2/lib \
 					-lsdl2 \
 					ext/glad/glad.c \
 
-.PHONY: all compile compile_t run test debug
+.PHONY: all compile compile_t run debug
 
 all: compile run
 
@@ -46,11 +46,6 @@ compile_t:
 
 run:
 	./$(NAME)
-
-test:
-	@echo "Compiling test..."
-	@$(CC) $(CFLAGS_R) test/test.c src/base_math.c -o Test1
-	./Test1
 
 debug:
 	@echo "Compiling debug..."

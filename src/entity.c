@@ -17,23 +17,16 @@ static void init_timers(Entity *en);
 static Timer *get_timer(Entity *en, u8 index);
 static bool tick_timer(Timer *timer, f64 dt);
 
-const b64 PLAYER_PROPS = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable
-  | EntityProp_Combatant | EntityProp_Collides;
-
-const b64 ENEMY_PROPS = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Hostile | EntityProp_Movable | EntityProp_Combatant;
-
-const b64 LASER_PROPS = EntityProp_Rendered | EntityProp_Movable | EntityProp_Autonomous;
-
 // @InitEntity =================================================================================
 
 void init_entity(Entity *en, EntityType type)
 {
   en->type = type;
   en->xform = m3x3f(1.0f);
-  en->size = v2f(10, 10);
+  en->scale = v2f(1.0f, 1.0f);
+  en->size = v2f(10.0f, 10.0f);
   en->active = TRUE;
   en->visible = TRUE;
-  en->draw_type = DrawType_Rectangle;
   en->color = D_WHITE;
 
   init_timers(en);
@@ -47,14 +40,14 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Player:
     {
-      en->scale = v2f(8.0f, 8.0f);
+      en->props = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable | EntityProp_Combatant | EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
-      en->texture = D_TEXTURE_PLAYER;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
-      en->props = PLAYER_PROPS;
       en->pos = v2f(WIDTH / 2.0f, HEIGHT / 2.0f);
+      en->scale = v2f(8.0f, 8.0f);
       en->speed = PLAYER_SPEED;
+      en->texture = D_TEXTURE_PLAYER;
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
@@ -65,11 +58,12 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_EnemyShip:
     {
-      en->scale = v2f(1.5f, 1.5f);
+      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Hostile | EntityProp_Movable | EntityProp_Combatant;
+      en->draw_type = DrawType_Triangle;
       en->move_type = MoveType_Flying;
       en->combat_type = CombatType_Ranged;
-      en->props = ENEMY_PROPS;
       en->pos = v2f(random_u32(0, WIDTH), random_u32(0, HEIGHT));
+      en->scale = v2f(1.5f, 1.5f);
       en->speed = 100.0f;
       en->color = D_RED;
       en->view_dist = 350;
@@ -80,42 +74,42 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Equipped:
     {
+      en->props = EntityProp_Rendered | EntityProp_Equipped;
       en->draw_type = DrawType_Sprite;
       en->texture = D_TEXTURE_GUN;
-      en->props = EntityProp_Rendered | EntityProp_Equipped;
     }
     break;
     case EntityType_Laser:
     {
-      en->scale = v2f(6.0f, 0.3f);
+      en->props = EntityProp_Rendered | EntityProp_Movable | EntityProp_Autonomous;
+      en->draw_type = DrawType_Rectangle;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
-      en->props = LASER_PROPS;
+      en->scale = v2f(6.0f, 0.3f);
     }
     break;
     case EntityType_Wall:
     {
-      en->scale = v2f(2.0f, 2.0f);
       en->props = EntityProp_Rendered | EntityProp_Collides;
-      en->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f + 100.0f);
-      en->color = D_GRAY;
+      en->draw_type = DrawType_Rectangle;
+      en->scale = v2f(2.0f, 2.0f);
       en->col.vertex_count = 4;
       
       update_entity_collider(en);
     }
     break;
-    case EntityType_DebugLine:
+    case EntityType_Debug:
     {
       en->props = EntityProp_Rendered;
+      en->draw_type = DrawType_Rectangle;
       en->color = D_YELLOW;
     }
     break;
     default:
     {
-      fprintf(stderr, "ERROR: Failed to initialize en. Invalid type!");
+      fprintf(stderr, "ERROR: Failed to initialize entity. Invalid type!");
       fprintf(stderr, "Entity ID: %llu\n", en->id);
       fprintf(stderr, "Entity Type: %i\n", en->type);
-      fprintf(stderr, "Vertex Count: %i\n", en->col.vertex_count);
       assert(FALSE);
     }
   }
@@ -209,11 +203,6 @@ void update_entity_collider(Entity *en)
       }
     }
     break;
-    case ColliderType_Circle:
-    {
-
-    }
-    break;
     default: 
     {
       printf("ERROR: Failed to update collider. Invalid type!");
@@ -222,27 +211,29 @@ void update_entity_collider(Entity *en)
   }
 }
 
-// TODO: Figure out how to rotate children relative to parent. Maybe use the parent as the pivot point?
 void update_entity_xform(Game *game, Entity *en)
 {
   Mat3x3F xform = m3x3f(1.0f);
   Entity *parent = entity_from_ref(en->parent);
 
+  // Scale
   xform = mul_3x3f(scale_3x3f(en->scale.x, en->scale.y), xform);
 
-  // Adjust position offset based on origin
+  // Offset position based on origin
   {
     Vec2F size = mul_2f(en->size, en->scale);
     Vec2F offset = v2f(size.width/2.0f * -en->origin.x, size.height/2.0f * -en->origin.y);
     xform = mul_3x3f(translate_3x3f(offset.x, offset.y), xform);
   }
 
+  // Flip
   if (en->flip_x) { xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform); }
   if (en->flip_y) { xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform); }
 
+  // Rotate
   xform = mul_3x3f(rotate_3x3f(en->rot * RADIANS), xform);
 
-  // Adjust relative translation based on cumulative parent scale
+  // Translate
   {
     Vec2F scale = v2f(1.0f, 1.0f);
     for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
@@ -253,12 +244,18 @@ void update_entity_xform(Game *game, Entity *en)
     xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
   }
 
-  if (is_entity_valid(parent))
-  {
-    xform = mul_3x3f(parent->model_mat, xform);
-  }
-
   en->model_mat = xform;
+
+  // Adjust xform based on cumulative parent model
+  {
+    Mat3x3F model = m3x3f(1.0f);
+    for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
+    {
+      model = mul_3x3f(parent->model_mat, model);
+    }
+
+    xform = mul_3x3f(model, xform);
+  }
 
   xform = mul_3x3f(game->camera, xform);
   xform = mul_3x3f(game->projection, xform);
@@ -270,6 +267,10 @@ void update_controlled_entity_movement(Game *game, Entity *en)
 {
   f32 dt = game->dt;
 
+  Vec2F player_pos = pos_from_entity(en);
+  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+  en->flip_x = mouse_pos.x < player_pos.x ? TRUE : FALSE;
+
   switch (en->move_type)
   {
     case MoveType_Walking:
@@ -278,14 +279,12 @@ void update_controlled_entity_movement(Game *game, Entity *en)
       {
         en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
         en->input_dir.x = -1.0f;
-        en->flip_x = TRUE;
       }
 
       if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
       {
         en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
         en->input_dir.x = 1.0f;
-        en->flip_x = FALSE;
       }
 
       if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
@@ -382,7 +381,7 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
       en->vel.y = to_zero(en->vel.y, 0.1f);
     }
 
-    en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
+    // en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
   }
   else if (en->move_type == MoveType_Projectile)
   {
@@ -410,18 +409,20 @@ void update_controlled_entity_combat(Game *game, Entity *en)
     tick_timer(timer, game->dt);
   }
 
-  bool can_shoot = is_key_pressed(KEY_SPACE) && (timer->timeout || !timer->should_tick);
+  bool can_shoot = is_key_pressed(KEY_MOUSE_1) && (timer->timeout || !timer->should_tick);
   if (can_shoot)
   {
-    Vec2F spawn_pos = v2f(en->pos.x, en->pos.y + 10.0f);
+    Entity *gun = get_entity_child_at_index(en, 0);
+    Entity *shot_point = get_entity_child_at_index(gun, 0);
+    Vec2F shot_point_pos = pos_from_entity(shot_point);
+
     f32 spawn_rot = 0.0f;
-    Entity *gun = get_entity_child_of_type(en, EntityType_Equipped);
     if (is_entity_valid(gun))
     {
-      spawn_rot = gun->rot ? !gun->flip_x : gun->rot + 180;
+      spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
     }
 
-    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_BLUE);
+    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=shot_point_pos, .color=D_BLUE);
     laser->rot = spawn_rot;
     laser->speed = 700.0f;
 
@@ -452,8 +453,8 @@ void update_equipped_entity(Game *game, Entity *en)
   Vec2F entity_pos = pos_from_entity(en);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
   Vec2F diff = v2f(mouse_pos.x - entity_pos.x, mouse_pos.y - entity_pos.y);
-  f32 angle = atan_2f(diff) * DEGREES;
 
+  f32 angle = atan_2f(diff) * DEGREES;
   if (!en->parent.ptr->flip_x)
   {
     angle = clamp(angle, -90, 90);
@@ -471,21 +472,44 @@ void update_equipped_entity(Game *game, Entity *en)
   en->rot = angle;
 }
 
+// @SpawnKillEntity ============================================================================
+
+Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
+{
+  Entity *en = alloc_entity(game);
+  init_entity(en, type);
+  en->props = en->props | params.props;
+  en->pos = params.pos;
+  en->color = params.color;
+
+  return en;
+}
+
+void _kill_entity(Game *game, KillEntityParams params)
+{
+  Entity *en = params.entity;
+  if (en == NULL)
+  {
+    en = get_entity_of_id(game, params.id);
+  }
+
+  free_entity(game, en);
+}
+
 // @OtherEntity ================================================================================
 
 Vec2F pos_from_entity(Entity *en)
 {
-  Vec2F result = en->pos;
+  Mat3x3F result = en->model_mat;
 
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result.x += parent->pos.x;
-    result.y += parent->pos.y;
+    result = mul_3x3f(parent->model_mat, result);
     parent = entity_from_ref(parent->parent);
   }
 
-  return result;
+  return v2f(result.e[0][2], result.e[1][2]);
 }
 
 f32 rot_from_entity(Entity *en)
@@ -509,8 +533,7 @@ Vec2F scale_from_entity(Entity *en)
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result.x *= parent->scale.x;
-    result.y *= parent->scale.y;
+    result = mul_2f(result, parent->scale);
     parent = entity_from_ref(parent->parent);
   }
 
@@ -520,14 +543,12 @@ Vec2F scale_from_entity(Entity *en)
 Vec2F size_from_entity(Entity *en)
 {
   Vec2F result = en->size;
-  result.width *= en->scale.x;
-  result.height *= en->scale.y;
+  result = mul_2f(result, en->scale);
 
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result.width *= parent->scale.x;
-    result.height *= parent->scale.y;
+    result = mul_2f(result, parent->scale);
     parent = entity_from_ref(parent->parent);
   }
 
@@ -625,7 +646,7 @@ EntityRef ref_from_entity(Entity *en)
 inline
 Entity *entity_from_ref(EntityRef ref)
 {
-  Entity *result = GLOBAL->nil_entity;
+  Entity *result = NULL;
 
   if (ref.ptr != NULL && ref.ptr->id == ref.id)
   {
@@ -637,7 +658,7 @@ Entity *entity_from_ref(EntityRef ref)
 
 // @EntityList =================================================================================
 
-Entity *create_entity(Game *game)
+Entity *alloc_entity(Game *game)
 {
   EntityList *list = &game->entities;
   Entity *new_entity = list->first_free;
@@ -671,7 +692,7 @@ Entity *create_entity(Game *game)
   return new_entity;
 }
 
-void destroy_entity(Game *game, Entity *en)
+void free_entity(Game *game, Entity *en)
 {
   EntityList *list = &game->entities;
   clear_entity(en);
@@ -681,7 +702,7 @@ void destroy_entity(Game *game, Entity *en)
 
 Entity *get_entity_of_id(Game *game, u64 id)
 {
-  Entity *result = GLOBAL->nil_entity;
+  Entity *result = NULL;
   
   for (Entity *en = game->entities.head; en != NULL; en = en->next)
   {
@@ -695,22 +716,16 @@ Entity *get_entity_of_id(Game *game, u64 id)
   return result;
 }
 
-Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type)
+Entity *get_first_entity_of_type(Game *game, EntityType type)
 {
-  Entity *result = GLOBAL->nil_entity;
-  f32 min_dist = FLT_MAX;
+  Entity *result = NULL;
 
   for (Entity *en = game->entities.head; en; en = en->next)
   {
     if (en->type == type)
     {
-      f32 dist = distance_2f(en->pos, pos);
-
-      if (dist < min_dist)
-      {
-        result = en;
-        min_dist = dist;
-      }
+      result = en;
+      break;
     }
   }
 
@@ -762,7 +777,7 @@ void remove_entity_child(Entity *en, u64 id)
 
 Entity *get_entity_child_at_index(Entity *en, u8 index)
 {
-  Entity *result = GLOBAL->nil_entity;
+  Entity *result = NULL;
 
   u8 i = 0;
   for (Entity *curr = en->first_child; curr; curr = curr->next_child)

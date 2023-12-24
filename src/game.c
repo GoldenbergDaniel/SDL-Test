@@ -21,51 +21,32 @@ void init_game(Game *game)
   zero(game->event_queue);
   game->camera = translate_3x3f(0.0f, 0.0f);
   game->projection = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
-  game->should_quit = FALSE;
 
   SCOPE("Create starting entities")
   {
-    Entity *player = {0};
-    
-    Entity *en = arena_alloc(&game->perm_arena, sizeof (Entity));
-    zero(*en);
-    GLOBAL->nil_entity = en;
+    Entity *ground = alloc_entity(game);
+    init_entity(ground, EntityType_Wall);
+    ground->origin = v2f(0.0f, 1.0f);
+    ground->pos = v2f(WIDTH/2.0f, 200.0f);
+    ground->scale = v2f(120.0f, 20.0f);
+    ground->color = D_GRAY;
 
-    en = create_entity(game);
-    init_entity(en, EntityType_Wall);
-    en->origin = v2f(0.0f, 1.0f);
-    en->pos = v2f(WIDTH/2.0f, 200.0f);
-    en->scale = v2f(120.0f, 20.0f);
+    Entity *player = alloc_entity(game);
+    init_entity(player, EntityType_Player);
+    player->pos.y = 400;
 
-    en = create_entity(game);
-    init_entity(en, EntityType_Wall);
-    en->color = D_RED;
+    Entity *gun = alloc_entity(game);
+    init_entity(gun, EntityType_Equipped);
+    set_entity_parent(gun, player);
+    gun->pos = v2f(30.0f, 1.0f);
+    gun->scale = v2f(1.0f, 1.0f);
 
-    en = create_entity(game);
-    init_entity(en, EntityType_Player);
-    en->pos.y = 400;
-    player = en;
-
-    en = create_entity(game);
-    init_entity(en, EntityType_Equipped);
-    set_entity_parent(en, player);
-    en->pos = v2f(30.0f, 1.0f);
-    en->scale = v2f(1.0f, 1.0f);
-
-    // en = create_entity(game);
-    // init_entity(en, EntityType_EnemyShip);
-
-    // Debug line
-    #if 0
-    {
-      en = create_entity(game);
-      init_entity(en, EntityType_DebugLine);
-      set_entity_parent(en, player);
-      en->origin = v2f(-1.0f, 0.0f);
-      en->scale = v2f(3.0f, 0.05f);
-      en->pos.x = 50.0f;
-    }
-    #endif
+    Entity *shot_point = alloc_entity(game);
+    init_entity(shot_point, EntityType_Debug);
+    set_entity_parent(shot_point, gun);
+    shot_point->pos = v2f(24.0f, 2.0f);
+    shot_point->scale = v2f(0.05f, 0.05f);
+    shot_point->visible = FALSE;
   }
 }
 
@@ -91,7 +72,7 @@ void update_game(Game *game)
         
         if (en->type == EntityType_Player)
         {
-          Entity *wall = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Wall);
+          Entity *wall = get_first_entity_of_type(game, EntityType_Wall);
           resolve_entity_collision(en, wall);
         }
       }
@@ -116,7 +97,7 @@ void update_game(Game *game)
       
       if (en->props & EntityProp_Autonomous && en->props & EntityProp_Hostile)
       {
-        Entity *player = get_nearest_entity_of_type(game, en->pos, EntityType_Player);
+        Entity *player = get_first_entity_of_type(game, EntityType_Player);
 
         if (player && player->active)
         {
@@ -141,14 +122,14 @@ void update_game(Game *game)
   {
     if (is_key_just_pressed(KEY_BACKSPACE))
     {
-      Entity *player = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+      Entity *player = get_first_entity_of_type(game, EntityType_Player);
       kill_entity(game, .entity = player);
     }
   }
 
   // DEBUG: Switch player texture
   {
-    Entity *en = get_nearest_entity_of_type(game, V2F_ZERO, EntityType_Player);
+    Entity *en = get_first_entity_of_type(game, EntityType_Player);
     if (is_key_just_pressed(KEY_1))
     {
       en->texture = D_TEXTURE_PLAYER;
@@ -176,16 +157,18 @@ void handle_game_events(Game *game)
     {
       case EventType_EntityKilled:
       {
-        EntityType type = event.desc.type;
-
-        if (type == EntityType_Player)
+        switch (event.desc.type)
         {
-          // game_over = TRUE
+          case EntityType_Player:
+          {
+            // game_over = TRUE
+          }
+          break;
         }
       }
       default: 
       {
-        printf("ERROR: Failed to process event. Invalid type!");
+        fprintf(stderr, "ERROR: Failed to process event. Invalid type!");
         assert(FALSE);
       }
     }
@@ -204,22 +187,19 @@ void draw_game(Game *game)
   {
     if (!en->visible) continue;
 
-    switch (en->type)
+    switch (en->draw_type)
     {
-      case EntityType_Player:
-      case EntityType_Equipped:
+      case DrawType_Sprite:
       { 
         d_sprite(en->xform, en->color, en->texture);
       }
       break;
-      case EntityType_EnemyShip:
+      case DrawType_Triangle:
       {
         d_triangle(en->xform, en->color);
       }
       break;
-      case EntityType_Wall:
-      case EntityType_Laser:
-      case EntityType_DebugLine:
+      case DrawType_Rectangle:
       {
         d_rectangle(en->xform, en->color);
       }
@@ -242,32 +222,9 @@ bool game_should_quit(Game *game)
   return result;
 }
 
-Entity *_spawn_entity(Game *game, EntityType type, EntitySpawnParams params)
-{
-  Entity *en = create_entity(game);
-  init_entity(en, type);
-  en->props = en->props | params.props;
-  en->pos = params.pos;
-  en->color = params.color;
-
-  return en;
-}
-
-void _kill_entity(Game *game, EntityKillParams params)
-{
-  Entity *en = params.entity;
-  if (en == NULL)
-  {
-    en = get_entity_of_id(game, params.id);
-  }
-
-  destroy_entity(game, en);
-}
-
 Vec2F screen_to_world(Vec2F pos)
 {
   Vec3F result = v3f(pos.x, pos.y, 1);
-  // result = transform_3f(result, scale_3x3f(1.0f, 1.0f/HEIGHT));
   result.y = HEIGHT - pos.y; 
 
   return v2f(result.x, result.y);

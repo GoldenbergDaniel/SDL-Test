@@ -19,6 +19,8 @@ typedef enum Key
   KEY_ESCAPE,
   KEY_ENTER,
   KEY_BACKSPACE,
+  KEY_MOUSE_1,
+  KEY_MOUSE_2,
   _KEY_COUNT,
 } Key;
 
@@ -36,4 +38,4 @@ bool is_key_just_pressed(Key key);
 bool is_key_just_released(Key key);
 Vec2F get_mouse_pos(void);
 void clear_last_frame_input(void);
-void handle_input(SDL_Event *event, bool *should_close);
+void handle_input_event(SDL_Event *event, bool *should_close);

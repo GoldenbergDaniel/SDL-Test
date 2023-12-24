@@ -33,7 +33,7 @@ typedef enum EntityType
   EntityType_Equipped,
   EntityType_Laser,
   EntityType_Wall,
-  EntityType_DebugLine,
+  EntityType_Debug,
 } EntityType;
 
 typedef enum EntityProp
@@ -51,6 +51,7 @@ typedef enum EntityProp
 
 typedef enum MoveType
 {
+  MoveType_None,
   MoveType_Walking,
   MoveType_Sliding,
   MoveType_Projectile,
@@ -60,12 +61,14 @@ typedef enum MoveType
 
 typedef enum CombatType
 {
+  CombatType_None,
   CombatType_Melee,
   CombatType_Ranged,
 } CombatType;
 
 typedef enum DrawType
 {
+  DrawType_None,
   DrawType_Triangle,
   DrawType_Rectangle,
   DrawType_Sprite,
@@ -111,8 +114,8 @@ struct Entity
   bool visible;
 
   // Transform
-  Vec2F pos;
   Vec2F origin;
+  Vec2F pos;
   f32 rot;
   Vec2F scale;
   Mat3x3F xform;
@@ -120,7 +123,7 @@ struct Entity
   Vec2F input_dir;
 
   // Physics
-  Vec2F dir;
+  // Vec2F dir;
   Vec2F vel;
   Vec2F new_vel;
   f32 speed;
@@ -176,6 +179,34 @@ void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 void update_equipped_entity(Game *game, Entity *entity);
 
+// @SpawnKillEntity ============================================================================
+
+typedef struct SpawnEntityParams SpawnEntityParams;
+struct SpawnEntityParams
+{
+  b64 props;
+  Vec2F pos;
+  Vec4F color;
+};
+
+typedef struct KillEntityParams KillEntityParams;
+struct KillEntityParams
+{
+  Entity *entity;
+  u64 id;
+};
+
+#define spawn_entity(game, type, ...) \
+  _spawn_entity(game, type, (SpawnEntityParams) \
+                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
+
+#define kill_entity(game, ...) \
+  _kill_entity(game, (KillEntityParams) \
+                {.entity=NULL, .id=0, __VA_ARGS__ })
+
+Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params);
+void _kill_entity(Game *game, KillEntityParams params);
+
 // @OtherEntity ================================================================================
 
 Vec2F pos_from_entity(Entity *entity);
@@ -183,7 +214,6 @@ f32 rot_from_entity(Entity *entity);
 Vec2F scale_from_entity(Entity *entity);
 Vec2F size_from_entity(Entity *entity);
 
-void set_entity_size(Entity *entity, Vec2F size);
 void set_entity_target(Entity *entity, EntityRef target);
 
 bool is_entity_valid(Entity *entity);
@@ -198,10 +228,10 @@ Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList =================================================================================
 
-Entity *create_entity(Game *game);
-void destroy_entity(Game *game, Entity *entity);
+Entity *alloc_entity(Game *game);
+void free_entity(Game *game, Entity *entity);
 Entity *get_entity_of_id(Game *game, u64 id);
-Entity *get_nearest_entity_of_type(Game *game, Vec2F pos, EntityType type);
+Entity *get_first_entity_of_type(Game *game, EntityType type);
 
 // @EntityTree =================================================================================
 

@@ -73,8 +73,3 @@ void clear_event_queue(Game *game)
 
   zero(*queue);
 }
-
-// Entity spawn_entity(Game *game, EventDesc desc)
-// {
-//   push_event(game, EventType_SpawnEntity, desc);
-// }

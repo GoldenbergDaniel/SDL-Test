@@ -48,11 +48,7 @@ i32 main(void)
   SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(VSYNC);
 
-  if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress))
-  {
-    printf("GLAD failed to load!\n");
-    return 1;
-  }
+  gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
   GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
   GLOBAL->resources = d_load_resources(&game.perm_arena, str("res/"));
@@ -77,10 +73,10 @@ i32 main(void)
     {
       clear_last_frame_input();
 
-      SDL_Event event;
+      SDL_Event event = {0};
       while (SDL_PollEvent(&event))
       {
-        handle_input(&event, &game.should_quit);
+        handle_input_event(&event, &game.should_quit);
       }
 
       if (game_should_quit(&game))
