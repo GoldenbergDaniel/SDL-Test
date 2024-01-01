@@ -8,7 +8,6 @@
 #include "event.h"
 #include "game.h"
 #include "entity.h"
-#include "physx/physx.h"
 
 extern Global *GLOBAL;
 
@@ -51,7 +50,7 @@ void init_entity(Entity *en, EntityType type)
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
-      timer->max_duration = 0.25f;
+      timer->max_duration = 0.2f;
       timer->curr_duration = 0.0f;
       timer->should_tick = FALSE;
     }
@@ -85,14 +84,13 @@ void init_entity(Entity *en, EntityType type)
       en->draw_type = DrawType_Rectangle;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
-      en->scale = v2f(6.0f, 0.3f);
+      en->scale = v2f(5.0f, 0.3f);
     }
     break;
     case EntityType_Wall:
     {
       en->props = EntityProp_Rendered | EntityProp_Collides;
       en->draw_type = DrawType_Rectangle;
-      en->scale = v2f(2.0f, 2.0f);
       en->col.vertex_count = 4;
       
       update_entity_collider(en);
@@ -121,8 +119,8 @@ void clear_entity(Entity *en)
   Entity *next = en->next;
   Entity *next_free = en->next_free;
   zero(*en);
-  en->next = next;
   en->next_free = next_free;
+  en->next = next;
 }
 
 // @UpdateEntity ===============================================================================
@@ -472,7 +470,7 @@ void update_equipped_entity(Game *game, Entity *en)
   en->rot = angle;
 }
 
-// @SpawnKillEntity ============================================================================
+// @SpawnEntity ================================================================================
 
 Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
 {
@@ -484,6 +482,8 @@ Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
 
   return en;
 }
+
+// @KillEntity =================================================================================
 
 void _kill_entity(Game *game, KillEntityParams params)
 {
@@ -619,19 +619,6 @@ void wrap_entity_at_edges(Entity *en)
   else if (en->pos.y >= HEIGHT)
   {
     en->pos.y = -(size.height);
-  }
-}
-
-void damage_entity(Entity *en, u8 damage)
-{
-  en->curr_health -= damage;
-
-  if (en->curr_health <= 0)
-  {
-    en->curr_health = 0;
-    en->active = FALSE;
-    en->visible = FALSE;
-    printf("Player ded\n");
   }
 }
 

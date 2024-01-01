@@ -1,5 +1,4 @@
 #include "sdl2/SDL.h"
-
 #include "base/base_common.h"
 #include "base/base_string.h"
 #include "base/base_math.h"
@@ -73,7 +72,7 @@ i32 main(void)
     {
       clear_last_frame_input();
 
-      SDL_Event event = {0};
+      SDL_Event event;
       while (SDL_PollEvent(&event))
       {
         handle_input_event(&event, &game.should_quit);

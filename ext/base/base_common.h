@@ -21,7 +21,16 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
+#if defined(__APPLE__)
+#define RO_SECTION_NAME "__DATA, __const"
+#elif defined(__linux__)
+#define RO_SECTION_NAME ".rodata"
+#endif
+
+#ifdef __GNUC__
 #define thread_local __thread
+#define read_only __attribute__((section(RO_SECTION_NAME)))
+#endif
 
 #define SCOPE(title)
 

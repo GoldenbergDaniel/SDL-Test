@@ -204,7 +204,7 @@ void d_sprite(Mat3x3F xform, Vec4F color, TextureID tex_id)
   r_gl_bind_vertex_array(&state.vao);
 
   // fix y-coord
-  tex_id.y = (D_SPRITE_SHEET_HEIGHT / D_SPRITE_SHEET_SIZE) - tex_id.y - 1;
+  tex_id.y = D_SPRITE_SHEET_COUNT_Y - tex_id.y - 1;
 
   const Vec4F top_left =
   {

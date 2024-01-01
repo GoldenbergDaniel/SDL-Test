@@ -18,11 +18,10 @@ extern Global *GLOBAL;
 
 void init_game(Game *game)
 {
-  zero(game->event_queue);
   game->camera = translate_3x3f(0.0f, 0.0f);
   game->projection = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
 
-  SCOPE("Create starting entities")
+  SCOPE("Starting entities")
   {
     Entity *ground = alloc_entity(game);
     init_entity(ground, EntityType_Wall);
@@ -54,6 +53,8 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
+  Entity *player = get_first_entity_of_type(game, EntityType_Player);
+
   for (Entity *en = game->entities.head; en; en = en->next)
   {
     if (!en->active) continue;
@@ -97,8 +98,6 @@ void update_game(Game *game)
       
       if (en->props & EntityProp_Autonomous && en->props & EntityProp_Hostile)
       {
-        Entity *player = get_first_entity_of_type(game, EntityType_Player);
-
         if (player && player->active)
         {
           set_entity_target(en, ref_from_entity(player));
@@ -118,30 +117,24 @@ void update_game(Game *game)
     }
   }
 
-  // DEBUG: Kill player on backspace
+  // DEBUG: Kill player on backspace press
+  if (is_key_just_pressed(KEY_BACKSPACE))
   {
-    if (is_key_just_pressed(KEY_BACKSPACE))
-    {
-      Entity *player = get_first_entity_of_type(game, EntityType_Player);
-      kill_entity(game, .entity = player);
-    }
+    kill_entity(game, .entity = player);
   }
 
   // DEBUG: Switch player texture
+  if (is_key_just_pressed(KEY_1))
   {
-    Entity *en = get_first_entity_of_type(game, EntityType_Player);
-    if (is_key_just_pressed(KEY_1))
-    {
-      en->texture = D_TEXTURE_PLAYER;
-    }
-    else if (is_key_just_pressed(KEY_2))
-    {
-      en->texture = D_TEXTURE_ALIEN;
-    }
-    else if (is_key_just_pressed(KEY_3))
-    {
-      en->texture = D_TEXTURE_GUN;
-    }
+    player->texture = D_TEXTURE_PLAYER;
+  }
+  else if (is_key_just_pressed(KEY_2))
+  {
+    player->texture = D_TEXTURE_ALIEN;
+  }
+  else if (is_key_just_pressed(KEY_3))
+  {
+    player->texture = D_TEXTURE_GUN;
   }
 }
 
@@ -152,7 +145,6 @@ void handle_game_events(Game *game)
   while (game->event_queue.count > 0)
   {
     Event event = get_next_event(game);
-
     switch (event.type)
     {
       case EventType_EntityKilled:

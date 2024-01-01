@@ -11,4 +11,3 @@
 #include "main.c"
 #include "gfx/gl_render.c"
 #include "gfx/draw.c"
-#include "physx/physx.c"

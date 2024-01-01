@@ -179,7 +179,7 @@ void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targetting_entity_combat(Game *game, Entity *entity);
 void update_equipped_entity(Game *game, Entity *entity);
 
-// @SpawnKillEntity ============================================================================
+// @SpawnEntity ================================================================================
 
 typedef struct SpawnEntityParams SpawnEntityParams;
 struct SpawnEntityParams
@@ -189,6 +189,14 @@ struct SpawnEntityParams
   Vec4F color;
 };
 
+#define spawn_entity(game, type, ...) \
+  _spawn_entity(game, type, (SpawnEntityParams) \
+                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
+
+Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params);
+
+// @KillEntity =================================================================================
+
 typedef struct KillEntityParams KillEntityParams;
 struct KillEntityParams
 {
@@ -196,15 +204,10 @@ struct KillEntityParams
   u64 id;
 };
 
-#define spawn_entity(game, type, ...) \
-  _spawn_entity(game, type, (SpawnEntityParams) \
-                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
-
 #define kill_entity(game, ...) \
   _kill_entity(game, (KillEntityParams) \
                 {.entity=NULL, .id=0, __VA_ARGS__ })
 
-Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params);
 void _kill_entity(Game *game, KillEntityParams params);
 
 // @OtherEntity ================================================================================
@@ -219,7 +222,6 @@ void set_entity_target(Entity *entity, EntityRef target);
 bool is_entity_valid(Entity *entity);
 void resolve_entity_collision(Entity *a, Entity *b);
 void wrap_entity_at_edges(Entity *entity);
-void damage_entity(Entity *entity, u8 damage);
 
 // @EntityRef ==================================================================================
 
