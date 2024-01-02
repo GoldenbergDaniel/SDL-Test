@@ -28,16 +28,17 @@ void init_game(Game *game)
     ground->origin = v2f(0.0f, 1.0f);
     ground->pos = v2f(WIDTH/2.0f, 200.0f);
     ground->scale = v2f(120.0f, 20.0f);
-    ground->color = D_GRAY;
+    ground->color = v4f(0.7f, 0.6f, 0.4f, 1.0f);
 
     Entity *player = alloc_entity(game);
     init_entity(player, EntityType_Player);
-    player->pos.y = 400;
+    player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f + 50.0f);
+    player->scale = v2f(8.0f, 8.0f);
 
     Entity *gun = alloc_entity(game);
     init_entity(gun, EntityType_Equipped);
     set_entity_parent(gun, player);
-    gun->pos = v2f(30.0f, 1.0f);
+    gun->pos = v2f(30.0f, 0.0f);
     gun->scale = v2f(1.0f, 1.0f);
 
     Entity *shot_point = alloc_entity(game);
@@ -64,7 +65,7 @@ void update_game(Game *game)
       update_entity_collider(en);
     }
 
-    if (en->props & EntityProp_Movable)
+    if (en->props & EntityProp_Movable && game->t > 0.5f)
     {
       if (en->props & EntityProp_Controlled)
       {
@@ -173,7 +174,7 @@ void handle_game_events(Game *game)
 
 void draw_game(Game *game)
 {
-  d_clear(D_BLACK);
+  d_clear(v4f(0.5f, 0.32f, 0.32f, 1.0f));
 
   for (Entity *en = game->entities.head; en; en = en->next)
   {
@@ -181,22 +182,13 @@ void draw_game(Game *game)
 
     switch (en->draw_type)
     {
-      case DrawType_Sprite:
-      { 
-        d_sprite(en->xform, en->color, en->texture);
-      }
+      case DrawType_Sprite: d_sprite(en->xform, en->color, en->texture);
       break;
-      case DrawType_Triangle:
-      {
-        d_triangle(en->xform, en->color);
-      }
+      case DrawType_Triangle: d_triangle(en->xform, en->color);
       break;
-      case DrawType_Rectangle:
-      {
-        d_rectangle(en->xform, en->color);
-      }
+      case DrawType_Rectangle: d_rectangle(en->xform, en->color);
       break;
-      default: break;
+      case DrawType_None: break;
     }
   }
 }

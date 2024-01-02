@@ -43,14 +43,13 @@ void init_entity(Entity *en, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
-      en->pos = v2f(WIDTH / 2.0f, HEIGHT / 2.0f);
-      en->scale = v2f(8.0f, 8.0f);
+      en->scale = v2f(1.0f, 1.0f);
       en->speed = PLAYER_SPEED;
       en->texture = D_TEXTURE_PLAYER;
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
-      timer->max_duration = 0.2f;
+      timer->max_duration = 0.5f;
       timer->curr_duration = 0.0f;
       timer->should_tick = FALSE;
     }
@@ -244,7 +243,7 @@ void update_entity_xform(Game *game, Entity *en)
 
   en->model_mat = xform;
 
-  // Adjust xform based on cumulative parent model
+  // Move to world space
   {
     Mat3x3F model = m3x3f(1.0f);
     for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
@@ -420,9 +419,9 @@ void update_controlled_entity_combat(Game *game, Entity *en)
       spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
     }
 
-    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=shot_point_pos, .color=D_BLUE);
+    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=shot_point_pos, .color=D_YELLOW);
     laser->rot = spawn_rot;
-    laser->speed = 700.0f;
+    laser->speed = 800.0f;
 
     timer->should_tick = TRUE;
   }
@@ -611,14 +610,6 @@ void wrap_entity_at_edges(Entity *en)
   else if (en->pos.x >= WIDTH)
   {
     en->pos.x = -(size.width);
-  }
-  else if (en->pos.y + size.height <= 0.0f)
-  {
-    en->pos.y = HEIGHT;
-  }
-  else if (en->pos.y >= HEIGHT)
-  {
-    en->pos.y = -(size.height);
   }
 }
 

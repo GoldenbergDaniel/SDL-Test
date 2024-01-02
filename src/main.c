@@ -36,7 +36,7 @@ i32 main(void)
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   SDL_Window *window = SDL_CreateWindow(
-                                        "SPACE GAME",
+                                        "GAME",
                                         SDL_WINDOWPOS_CENTERED, 
                                         SDL_WINDOWPOS_CENTERED, 
                                         WIDTH, 
@@ -60,12 +60,15 @@ i32 main(void)
   f64 time_step = 1.0f / TARGET_FPS;
   f64 accumulator = 0.0f;
 
+  SDL_PumpEvents();
+
   bool running = TRUE;
   while (running)
   {
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
     current_time = new_time;
+    
     accumulator += frame_time;
 
     while (accumulator >= time_step)
@@ -89,15 +92,14 @@ i32 main(void)
 
       update_game(&game);
       handle_game_events(&game);
-      draw_game(&game);
-      
       clear_arena(&game.frame_arena);
-      
-      SDL_GL_SwapWindow(window);
 
       elapsed_time += time_step;
       accumulator -= time_step;
     }
+
+    draw_game(&game);
+    SDL_GL_SwapWindow(window);
   }
 
   SDL_DestroyWindow(window);
