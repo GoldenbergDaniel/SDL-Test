@@ -4,9 +4,11 @@
 #include "base/base_math.h"
 #include "base/base_random.h"
 
+#include "phys/physics.h"
 #include "input.h"
 #include "event.h"
 #include "game.h"
+#include "global.h"
 #include "entity.h"
 
 extern Global *GLOBAL;
@@ -39,13 +41,13 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Player:
     {
-      en->props = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Movable | EntityProp_Combatant | EntityProp_Collides;
+      en->props = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
       en->scale = v2f(1.0f, 1.0f);
       en->speed = PLAYER_SPEED;
-      en->texture = D_TEXTURE_PLAYER;
+      en->texture = D_TEXTURE_COWBOY;
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
@@ -54,9 +56,27 @@ void init_entity(Entity *en, EntityType type)
       timer->should_tick = FALSE;
     }
     break;
-    case EntityType_EnemyShip:
+    case EntityType_ZombieWalker:
     {
-      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Hostile | EntityProp_Movable | EntityProp_Combatant;
+      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
+      en->draw_type = DrawType_Sprite;
+      en->move_type = MoveType_Walking;
+      en->combat_type = CombatType_Melee;
+      en->texture = D_TEXTURE_ZOMBIE;
+      en->speed = 100.0f;
+      en->view_dist = 350;
+      en->col.vertex_count = 4;
+
+      Timer *timer = get_timer(en, TIMER_COMBAT);
+      timer->max_duration = 1.0f;
+      timer->curr_duration = 0.0f;
+      timer->should_loop = TRUE;
+      timer->should_tick = FALSE;
+    }
+    break;
+    case EntityType_ZombieBird:
+    {
+      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Moves | EntityProp_Combatant;
       en->draw_type = DrawType_Triangle;
       en->move_type = MoveType_Flying;
       en->combat_type = CombatType_Ranged;
@@ -79,7 +99,7 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Laser:
     {
-      en->props = EntityProp_Rendered | EntityProp_Movable | EntityProp_Autonomous;
+      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Autonomous;
       en->draw_type = DrawType_Rectangle;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
@@ -99,6 +119,7 @@ void init_entity(Entity *en, EntityType type)
     {
       en->props = EntityProp_Rendered;
       en->draw_type = DrawType_Rectangle;
+
       en->color = D_YELLOW;
     }
     break;
@@ -112,7 +133,6 @@ void init_entity(Entity *en, EntityType type)
   }
 }
 
-inline
 void clear_entity(Entity *en)
 {
   Entity *next = en->next;
@@ -127,7 +147,7 @@ void clear_entity(Entity *en)
 // NOTE: probably a mess
 void update_entity_collider(Entity *en)
 {
-  Collider2D *col = &en->col;
+  P_Collider *col = &en->col;
   Vec2F size = size_from_entity(en);
 
   switch (col->type)
@@ -238,7 +258,7 @@ void update_entity_xform(Game *game, Entity *en)
       scale = mul_2f(scale, p->scale);
     }
 
-    xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
+  xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
   }
 
   en->model_mat = xform;
@@ -248,7 +268,7 @@ void update_entity_xform(Game *game, Entity *en)
     Mat3x3F model = m3x3f(1.0f);
     for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
     {
-      model = mul_3x3f(parent->model_mat, model);
+      model = mul_3x3f(p->model_mat, model);
     }
 
     xform = mul_3x3f(model, xform);
@@ -264,9 +284,9 @@ void update_controlled_entity_movement(Game *game, Entity *en)
 {
   f32 dt = game->dt;
 
-  Vec2F player_pos = pos_from_entity(en);
+  Vec2F entity_pos = pos_from_entity(en);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
-  en->flip_x = mouse_pos.x < player_pos.x ? TRUE : FALSE;
+  en->flip_x = mouse_pos.x < entity_pos.x ? TRUE : FALSE;
 
   switch (en->move_type)
   {
@@ -312,10 +332,6 @@ void update_controlled_entity_movement(Game *game, Entity *en)
       en->vel = en->new_vel;
     }
     break;
-    case MoveType_Rocket:
-    {
-      
-    }
     default: break;
   }
 
@@ -329,69 +345,89 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
 {
   f64 dt = game->dt;
 
-  if (en->move_type == MoveType_Flying)
+  Entity *player = get_first_entity_of_type(game, EntityType_Player);
+  if (is_entity_valid(player))
   {
-    if (en->has_target)
-    {
-      en->input_dir.x = cos_1f(en->target_angle);
-      en->input_dir.y = sin_1f(en->target_angle);
-
-      en->rot = en->target_angle * DEGREES;
-    }
-    else
-    {
-      en->input_dir = V2F_ZERO;
-    }
-
-    if (en->input_dir.x != 0.0f || en->input_dir.y != 0.0f)
-    {
-      en->input_dir = normalize_2f(en->input_dir);
-    }
-
-    // X Acceleration
-    if (en->input_dir.x != 0.0f)
-    {
-      en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
-      en->vel.x = clamp(
-                        en->vel.x, 
-                        -en->speed * abs(en->input_dir.x) * dt,
-                        en->speed * abs(en->input_dir.x) * dt);
-    }
-    else
-    {
-      en->vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
-      en->vel.x = to_zero(en->vel.x, 0.1f);
-    }
-
-    // Y Acceleration
-    if (en->input_dir.y != 0.0f)
-    {
-      en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
-      en->vel.y = clamp(
-                        en->vel.y, 
-                        -en->speed * abs(en->input_dir.y) * dt, 
-                        en->speed * abs(en->input_dir.y) * dt);
-    }
-    else
-    {
-      en->vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
-      en->vel.y = to_zero(en->vel.y, 0.1f);
-    }
-
-    // en->dir = scale_2f(en->vel, 1.0f / magnitude_2f(en->vel));
+    Vec2F entity_pos = pos_from_entity(en);
+    Vec2F player_pos = pos_from_entity(player);
+    en->flip_x = player_pos.x < entity_pos.x ? TRUE : FALSE;
   }
-  else if (en->move_type == MoveType_Projectile)
+
+  switch (en->move_type)
   {
-    Timer *timer = get_timer(en, TIMER_KILL);
-    tick_timer(timer, dt);
-
-    if (timer->timeout)
+    case MoveType_Walking:
     {
-      kill_entity(game, .entity = en);
+      // GRAVITY
+      if (!en->grounded)
+      {
+        en->vel.y -= GRAVITY * dt;
+      }
     }
+    break;
+    case MoveType_Flying:
+    {
+      if (en->has_target)
+      {
+        en->input_dir.x = cos_1f(en->target_angle);
+        en->input_dir.y = sin_1f(en->target_angle);
 
-    en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
-    en->vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
+        en->rot = en->target_angle * DEGREES;
+      }
+      else
+      {
+        en->input_dir = V2F_ZERO;
+      }
+
+      if (en->input_dir.x != 0.0f || en->input_dir.y != 0.0f)
+      {
+        en->input_dir = normalize_2f(en->input_dir);
+      }
+
+      // X Acceleration
+      if (en->input_dir.x != 0.0f)
+      {
+        en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
+        en->vel.x = clamp(
+                          en->vel.x, 
+                          -en->speed * abs(en->input_dir.x) * dt,
+                          en->speed * abs(en->input_dir.x) * dt);
+      }
+      else
+      {
+        en->vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
+        en->vel.x = to_zero(en->vel.x, 0.1f);
+      }
+
+      // Y Acceleration
+      if (en->input_dir.y != 0.0f)
+      {
+        en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
+        en->vel.y = clamp(
+                          en->vel.y, 
+                          -en->speed * abs(en->input_dir.y) * dt, 
+                          en->speed * abs(en->input_dir.y) * dt);
+      }
+      else
+      {
+        en->vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
+        en->vel.y = to_zero(en->vel.y, 0.1f);
+      }
+    }
+    case MoveType_Projectile:
+    {
+      Timer *timer = get_timer(en, TIMER_KILL);
+      tick_timer(timer, dt);
+
+      if (timer->timeout)
+      {
+        kill_entity(game, .entity = en);
+      }
+
+      en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
+      en->vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
+    }
+    break;
+    default: break;
   }
 
   en->pos = add_2f(en->pos, en->vel);
@@ -429,19 +465,29 @@ void update_controlled_entity_combat(Game *game, Entity *en)
 
 void update_targetting_entity_combat(Game *game, Entity *en)
 {
-  if (en->has_target)
+  switch (en->combat_type)
   {
-    Timer *timer = get_timer(en, TIMER_COMBAT);
-    tick_timer(timer, game->dt);
-
-    bool can_shoot = timer->timeout;
-    if (can_shoot)
+    case CombatType_Melee:
     {
-      Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-      Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_GREEN);
-      laser->rot = en->rot;
-      laser->speed = 700.0f;
+
     }
+    break;
+    case CombatType_Ranged:
+    {
+      Timer *timer = get_timer(en, TIMER_COMBAT);
+      tick_timer(timer, game->dt);
+
+      bool can_shoot = timer->timeout;
+      if (can_shoot)
+      {
+        Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
+        Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_GREEN);
+        laser->rot = en->rot;
+        laser->speed = 700.0f;
+      }
+    }
+    break;
+    default: break;
   }
 }
 
@@ -475,7 +521,7 @@ Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
 {
   Entity *en = alloc_entity(game);
   init_entity(en, type);
-  en->props = en->props | params.props;
+  en->props |= params.props;
   en->pos = params.pos;
   en->color = params.color;
 

@@ -6,11 +6,12 @@
 #include "base/base_math.h"
 
 #include "gfx/draw.h"
-#include "physx/physx.h"
+#include "phys/physics.h"
 #include "input.h"
 #include "event.h"
 #include "entity.h"
 #include "game.h"
+#include "global.h"
 
 extern Global *GLOBAL;
 
@@ -46,7 +47,12 @@ void init_game(Game *game)
     set_entity_parent(shot_point, gun);
     shot_point->pos = v2f(24.0f, 2.0f);
     shot_point->scale = v2f(0.05f, 0.05f);
-    shot_point->visible = FALSE;
+    shot_point->visible = TRUE;
+
+    Entity *zombie = alloc_entity(game);
+    init_entity(zombie, EntityType_ZombieWalker);
+    zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
+    zombie->scale = v2f(8.0f, 8.0f);
   }
 }
 
@@ -60,28 +66,24 @@ void update_game(Game *game)
   {
     if (!en->active) continue;
 
-    if (en->props & EntityProp_Collides)
-    {
-      update_entity_collider(en);
-    }
-
-    if (en->props & EntityProp_Movable && game->t > 0.5f)
+    if (en->props & EntityProp_Moves && game->t > 0.5f)
     {
       if (en->props & EntityProp_Controlled)
       {
         update_controlled_entity_movement(game, en);
         wrap_entity_at_edges(en);
-        
-        if (en->type == EntityType_Player)
-        {
-          Entity *wall = get_first_entity_of_type(game, EntityType_Wall);
-          resolve_entity_collision(en, wall);
-        }
       }
 
       if (en->props & EntityProp_Autonomous)
       {
         update_autonomous_entity_movement(game, en);
+      }
+
+      if (en->props & EntityProp_Collides)
+      {
+        update_entity_collider(en);
+        Entity *ground = get_first_entity_of_type(game, EntityType_Wall);
+        resolve_entity_collision(en, ground);
       }
     }
 
@@ -97,9 +99,9 @@ void update_game(Game *game)
         update_controlled_entity_combat(game, en);
       }
       
-      if (en->props & EntityProp_Autonomous && en->props & EntityProp_Hostile)
+      if (en->props & EntityProp_Autonomous)
       {
-        if (player && player->active)
+        if (is_entity_valid(player) && player->active)
         {
           set_entity_target(en, ref_from_entity(player));
         }
@@ -108,7 +110,10 @@ void update_game(Game *game)
           en->has_target = FALSE;
         }
 
-        update_targetting_entity_combat(game, en);
+        if (en->has_target)
+        {
+          update_targetting_entity_combat(game, en);
+        }
       }
     }
 
@@ -127,11 +132,11 @@ void update_game(Game *game)
   // DEBUG: Switch player texture
   if (is_key_just_pressed(KEY_1))
   {
-    player->texture = D_TEXTURE_PLAYER;
+    player->texture = D_TEXTURE_COWBOY;
   }
   else if (is_key_just_pressed(KEY_2))
   {
-    player->texture = D_TEXTURE_ALIEN;
+    player->texture = D_TEXTURE_ZOMBIE;
   }
   else if (is_key_just_pressed(KEY_3))
   {
@@ -182,11 +187,11 @@ void draw_game(Game *game)
 
     switch (en->draw_type)
     {
-      case DrawType_Sprite: d_sprite(en->xform, en->color, en->texture);
+      case DrawType_Sprite: d_draw_sprite(en->xform, en->color, en->texture);
       break;
-      case DrawType_Triangle: d_triangle(en->xform, en->color);
+      case DrawType_Triangle: d_draw_triangle(en->xform, en->color);
       break;
-      case DrawType_Rectangle: d_rectangle(en->xform, en->color);
+      case DrawType_Rectangle: d_draw_rectangle(en->xform, en->color);
       break;
       case DrawType_None: break;
     }
@@ -204,12 +209,4 @@ bool game_should_quit(Game *game)
   }
 
   return result;
-}
-
-Vec2F screen_to_world(Vec2F pos)
-{
-  Vec3F result = v3f(pos.x, pos.y, 1);
-  result.y = HEIGHT - pos.y; 
-
-  return v2f(result.x, result.y);
 }

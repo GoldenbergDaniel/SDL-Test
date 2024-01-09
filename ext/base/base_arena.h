@@ -10,14 +10,14 @@ typedef struct Arena Arena;
 struct Arena
 {
   Arena *prev;
-  byte *memory;
+  i8 *memory;
   u64 size;
   u64 used;
 };
 
-Arena create_arena(u64 size);
-void destroy_arena(Arena *arena);
+Arena arena_create(u64 size);
+void arena_destroy(Arena *arena);
 void *arena_alloc(Arena *arena, u64 size);
 void arena_free(Arena *arena, u64 size);
-void clear_arena(Arena *arena);
-Arena get_scratch_arena(Arena *conflict);
+void arena_clear(Arena *arena);
+Arena arena_get_scratch(Arena *conflict);

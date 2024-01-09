@@ -3,6 +3,7 @@
 
 // #include "global.h"
 #include "game.h"
+#include "global.h"
 #include "input.h"
 
 extern Global *GLOBAL;

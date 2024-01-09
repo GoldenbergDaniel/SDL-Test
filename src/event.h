@@ -5,15 +5,12 @@
 
 typedef struct Game Game;
 
-typedef struct Event Event;
-typedef struct EventDesc EventDesc;
-typedef struct EventQueue EventQueue;
-
 typedef enum EventType
 {
   EventType_EntityKilled,
 } EventType;
 
+typedef struct EventDesc EventDesc;
 struct EventDesc
 {
   u64 id;
@@ -21,6 +18,7 @@ struct EventDesc
   b64 props;
 };
 
+typedef struct Event Event;
 struct Event
 {
   Event *next;
@@ -30,6 +28,7 @@ struct Event
   EventDesc desc;
 };
 
+typedef struct EventQueue EventQueue;
 struct EventQueue
 {
   Event *front;

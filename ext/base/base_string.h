@@ -13,18 +13,18 @@ typedef struct StringQueue StringQueue;
 
 struct String
 {
-  i8 *str;
+  char *str;
   u32 len;
 };
 
 #define str(s) ((String) {s, cstr_len(s)-1})
 
 String alloc_str(u32 len, Arena *arena);
-String str_from_cstring(i8 *cstr, Arena *arena);
+String str_from_cstring(char *cstr, Arena *arena);
 bool str_equals(String s1, String s2);
 bool str_contains(String s, String substr);
 i64 str_find(String s, String substr, u64 start, u64 end);
-i64 str_find_char(String s, i8 c, u32 start, u64 end);
+i64 str_find_char(String s, char c, u32 start, u64 end);
 String str_copy(String s, Arena *arena);
 String str_copy_into(String src, String *dest);
 String str_insert_at(String s, String substr, u32 loc, Arena *arena);
@@ -86,5 +86,5 @@ void str_queue_clear(StringQueue *queue, Arena *arena);
 
 // @CStr =======================================================================================
 
-u32 cstr_len(i8 *cstr);
-void cstr_copy(String *dest, i8 *src);
+u32 cstr_len(char *cstr);
+void cstr_copy(String *dest, char *src);

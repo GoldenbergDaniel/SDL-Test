@@ -5,35 +5,33 @@
 
 #include "base/base_common.h"
 #include "base/base_math.h"
-#include "gl_render.h"
+#include "render.h"
+// #include "shaders.h"
+#include "../game.h"
+#include "../global.h"
 
+typedef R_Vertex Vertex;
 typedef R_Shader Shader;
 typedef R_Texture Texture;
 typedef R_VAO VAO;
 
+typedef R_BatchRenderer BatchRenderer;
+
+#ifdef DEBUG
 static void verify_shader(u32 id, u32 type);
+#endif
 
-bool _r_gl_check_error(void)
-{
-  bool result = FALSE;
+#define WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
 
-  for (u32 err = -1; (err = glGetError());)
-  {
-    printf("[OpenGL Error]: %u\n", err);
-    result = TRUE;
-  }
-
-  return result;
-}
-
-void _r_gl_clear_error(void)
-{
-  while (glGetError() != GL_NO_ERROR);
-}
+extern Global *GLOBAL;
+extern const char *primitive_vert_src;
+extern const char *primitive_frag_src;
+extern const char *sprite_vert_src;
+extern const char *sprite_frag_src;
 
 // @Buffer =====================================================================================
 
-u32 r_gl_create_vertex_buffer(void *data, u32 size, bool dynamic)
+u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic)
 {
   u32 id;
   glGenBuffers(1, &id);
@@ -45,69 +43,41 @@ u32 r_gl_create_vertex_buffer(void *data, u32 size, bool dynamic)
   return id;
 }
 
-void r_gl_update_vertex_buffer(void *data, u32 size, u32 offset)
+inline
+void r_update_vertex_buffer(void *data, u32 size, u32 offset)
 {
   glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 }
 
-inline
-void r_gl_bind_vertex_buffer(u32 id)
-{
-  glBindBuffer(GL_ARRAY_BUFFER, id);
-}
-
-inline
-void r_gl_unbind_vertex_buffer(void)
-{
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-u32 r_gl_create_index_buffer(void *data, u32 size)
+u32 r_create_index_buffer(void *data, u32 size, bool dynamic)
 {
   u32 id;
   glGenBuffers(1, &id);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+
+  GLenum draw_type = dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, draw_type);
 
   return id;
 }
 
-inline
-void r_gl_bind_index_buffer(u32 id)
-{
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-}
-
-inline
-void r_gl_unbind_index_buffer(void)
-{
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
 // @VAO ========================================================================================
 
-VAO r_gl_create_vertex_array(u8 attrib_count)
+VAO r_create_vertex_array(u8 attrib_count)
 {
   u32 id;
-  GL_ASSERT(glGenVertexArrays(1, &id));
-  GL_ASSERT(glBindVertexArray(id));
+  glGenVertexArrays(1, &id);
+  glBindVertexArray(id);
 
-  return (VAO) {id, attrib_count, 0};
+  return (VAO) 
+  {
+    .id = id, 
+    .attrib_count = attrib_count, 
+    .attrib_index = 0,
+  };
 }
 
-inline
-void r_gl_bind_vertex_array(VAO *vao)
-{
-  GL_ASSERT(glBindVertexArray(vao->id));
-}
-
-inline
-void r_gl_unbind_vertex_array(void)
-{
-  glBindVertexArray(0);
-}
-
-void r_gl_add_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
+void r_push_vertex_attribute(VAO *vao, u32 data_type, u32 count)
 {
   typedef struct Layout Layout;
   struct Layout
@@ -123,7 +93,7 @@ void r_gl_add_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
   u8 type_size;
   switch (data_type)
   {
-    case GL_BYTE:  type_size = sizeof (i8);  break;
+    case GL_BYTE:  type_size = sizeof (i8); break;
     case GL_SHORT: type_size = sizeof (i16); break;
     case GL_INT:   type_size = sizeof (i32); break;
     case GL_FLOAT: type_size = sizeof (f32); break;
@@ -142,20 +112,20 @@ void r_gl_add_vertex_attribute(VAO *vao, GLenum data_type, u32 count)
 
   vao->attrib_index++;
 
-  GL_ASSERT(glVertexAttribPointer(
-                                  layout.index,
-                                  layout.count,
-                                  layout.data_type,
-                                  layout.normalized,
-                                  layout.stride,
-                                  layout.offset));
+  glVertexAttribPointer(
+                        layout.index,
+                        layout.count,
+                        layout.data_type,
+                        layout.normalized,
+                        layout.stride,
+                        layout.offset);
 
-  GL_ASSERT(glEnableVertexAttribArray(layout.index));
+  glEnableVertexAttribArray(layout.index);
 }
 
 // @Shader =====================================================================================
 
-Shader r_gl_create_shader(const i8 *vert_src, const i8 *frag_src)
+Shader r_create_shader(const char *vert_src, const char *frag_src)
 {
   u32 vert = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vert, 1, &vert_src, NULL);
@@ -186,89 +156,55 @@ Shader r_gl_create_shader(const i8 *vert_src, const i8 *frag_src)
 }
 
 inline
-void r_gl_bind_shader(Shader *shader)
-{
-  GL_ASSERT(glUseProgram(shader->id));
-}
-
-inline
-void r_gl_unbind_shader(void)
-{
-  glUseProgram(0);
-}
-
-inline
-i32 r_gl_set_uniform_1u(Shader *shader, i8 *name, u32 v)
+void r_set_uniform_1u(Shader *shader, const char *name, u32 val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1ui(loc, v);
-  
-  return loc;
+  glUniform1ui(loc, val);
 }
 
 inline
-i32 r_gl_set_uniform_1i(Shader *shader, i8 *name, i32 v)
+void r_set_uniform_1i(Shader *shader, const char *name, i32 val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1i(loc, v);
-
-  return loc;
+  glUniform1i(loc, val);
 }
 
 inline
-i32 r_gl_set_uniform_1f(Shader *shader, i8 *name, f32 v)
+void r_set_uniform_1f(Shader *shader, const char *name, f32 val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform1f(loc, v);
-  
-  return loc;
+  glUniform1f(loc, val);
 }
 
 inline
-i32 r_gl_set_uniform_2f(Shader *shader, i8 *name, Vec2F v)
+void r_set_uniform_2f(Shader *shader, const char *name, Vec2F val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform2f(loc, v.x, v.y);
-
-  return loc;
+  glUniform2f(loc, val.x, val.y);
 }
 
 inline
-i32 r_gl_set_uniform_3f(Shader *shader, i8 *name, Vec3F v)
+void r_set_uniform_3f(Shader *shader, const char *name, Vec3F val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform3f(loc, v.x, v.y, v.z);
-  
-  return loc;
+  glUniform3f(loc, val.x, val.y, val.z);
 }
 
 inline
-i32 r_gl_set_uniform_4f(Shader *shader, i8 *name, Vec4F v)
+void r_set_uniform_4f(Shader *shader, const char *name, Vec4F val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniform4f(loc, v.x, v.y, v.z, v.w);
-  
-  return loc;
+  glUniform4f(loc, val.x, val.y, val.z, val.w);
 }
 
 inline
-i32 r_gl_set_uniform_4x4f(Shader *shader, i8 *name, Mat4x4F m)
+void r_set_uniform_3x3f(Shader *shader, const char *name, Mat3x3F val)
 {
   i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix4fv(loc, 1, FALSE, &m.e[0][0]);
-  
-  return loc;
+  glUniformMatrix3fv(loc, 1, FALSE, &val.e[0][0]);
 }
 
-inline
-i32 r_gl_set_uniform_3x3f(Shader *shader, i8 *name, Mat3x3F m)
-{
-  i32 loc = glGetUniformLocation(shader->id, name);
-  glUniformMatrix3fv(loc, 1, FALSE, &m.e[0][0]);
-  
-  return loc;
-}
-
+#ifdef DEBUG
 static
 void verify_shader(u32 id, u32 type)
 {
@@ -285,7 +221,7 @@ void verify_shader(u32 id, u32 type)
   {
     i32 length;
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-    i8 log[length];
+    char log[length];
     glGetShaderInfoLog(id, length, &length, log);
 
     if (type == GL_COMPILE_STATUS)
@@ -300,10 +236,11 @@ void verify_shader(u32 id, u32 type)
     printf("%s", log);
   }
 }
+#endif
 
 // @Texture ====================================================================================
 
-Texture r_gl_create_texture(const i8 *path)
+Texture r_create_texture(const char *path)
 {
   Texture tex;
   stbi_set_flip_vertically_on_load(TRUE);
@@ -328,37 +265,74 @@ Texture r_gl_create_texture(const i8 *path)
                GL_UNSIGNED_BYTE, 
                tex.data);
 
-  // glGenerateMipmap(GL_TEXTURE_2D);
-
   stbi_image_free(tex.data);
 
   return tex;
 }
 
 inline
-void r_gl_bind_texture(Texture *texture, u32 slot)
+void r_bind_texture(Texture *texture, u32 slot)
 {
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
-inline
-void r_gl_unbind_texture(void)
+// @Rendering ==================================================================================
+
+BatchRenderer r_create_batch_renderer(u32 vertex_capacity, Arena *arena)
 {
-  glBindTexture(GL_TEXTURE_2D, 0);
+  u64 buffer_size = sizeof (Vertex) * vertex_capacity;
+  Vertex *vertices = arena_alloc(arena, buffer_size);
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  VAO vao = r_create_vertex_array(3);
+  u32 vbo = r_create_vertex_buffer(NULL, buffer_size, TRUE);
+  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // position
+  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // color
+  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // uv
+
+  Shader shader = r_create_shader(sprite_vert_src, sprite_frag_src);
+  Texture *texture = &GLOBAL->resources.textures[0];
+
+  return (BatchRenderer)
+  {
+    .vertices = vertices,
+    .vertex_count = 0,
+    .vertex_capacity = vertex_capacity,
+    .vao = vao,
+    .vbo = vbo,
+    .ibo = 0,
+    .shader = shader,
+    .texture = texture,
+  };
 }
 
-// @Draw =======================================================================================
-
-inline
-void r_gl_clear_screen(Vec4F color)
+void r_push_vertex(BatchRenderer *renderer, Vec2F pos, Vec2F uv)
 {
-  glClearColor(color.r, color.g, color.b, color.a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  if (renderer->vertex_count == renderer->vertex_capacity)
+  {
+    r_flush(renderer);
+  }
+
+  renderer->vertices[renderer->vertex_count++] = (Vertex)
+  {
+    .position = v4f(pos.x, pos.y, 1.0f, 0.0f),
+    .tint = WHITE,
+    .uv = v4f(uv.x, uv.y, 0.0f, 0.0f),
+  };
 }
 
-inline
-void r_gl_draw_triangles(u32 vertex_count)
+void r_flush(BatchRenderer *renderer)
 {
-  GL_ASSERT(glDrawElements(GL_TRIANGLES, vertex_count, GL_UNSIGNED_INT, NULL));
+  if (renderer->vertex_count == 0) return;
+
+  glUseProgram(renderer->shader.id);
+  r_set_uniform_3x3f(&renderer->shader, "u_xform", m3x3f(1.0f));
+  r_set_uniform_4f(&renderer->shader, "u_color", WHITE);
+  r_set_uniform_1i(&renderer->shader, "u_tex", renderer->texture->id);
+
+  glBindVertexArray(renderer->vao.id);
+  glDrawArrays(GL_TRIANGLES, 6, GL_UNSIGNED_INT);
 }

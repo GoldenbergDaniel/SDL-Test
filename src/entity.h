@@ -5,7 +5,7 @@
 #include "base/base_math.h"
 
 #include "gfx/draw.h"
-#include "physx/physx.h"
+#include "phys/physics.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2
 
@@ -20,16 +20,14 @@
 
 typedef struct Game Game;
 typedef struct Entity Entity;
-typedef struct EntityRef EntityRef;
-typedef struct EntityList EntityList;
-typedef struct Timer Timer;
 
 typedef enum EntityType
 {
   EntityType_Nil,
   EntityType_General,
   EntityType_Player,
-  EntityType_EnemyShip,
+  EntityType_ZombieWalker,
+  EntityType_ZombieBird,
   EntityType_Equipped,
   EntityType_Laser,
   EntityType_Wall,
@@ -40,23 +38,20 @@ typedef enum EntityProp
 {
   EntityProp_Controlled = 1 << 0,
   EntityProp_Autonomous = 1 << 1,
-  EntityProp_Hostile = 1 << 2,
-  EntityProp_Movable = 1 << 3,
-  EntityProp_Combatant = 1 << 4,
-  EntityProp_Killable = 1 << 5,
-  EntityProp_Collides = 1 << 6,
-  EntityProp_Rendered = 1 << 7,
-  EntityProp_Equipped = 1 << 8,
+  EntityProp_Moves = 1 << 2,
+  EntityProp_Combatant = 1 << 3,
+  EntityProp_Killable = 1 << 4,
+  EntityProp_Collides = 1 << 5,
+  EntityProp_Rendered = 1 << 6,
+  EntityProp_Equipped = 1 << 7,
 } EntityProp;
 
 typedef enum MoveType
 {
   MoveType_None,
   MoveType_Walking,
-  MoveType_Sliding,
   MoveType_Projectile,
   MoveType_Flying,
-  MoveType_Rocket,
 } MoveType;
 
 typedef enum CombatType
@@ -74,6 +69,7 @@ typedef enum DrawType
   DrawType_Sprite,
 } DrawType;
 
+typedef struct Timer Timer;
 struct Timer
 {
   f64 max_duration;
@@ -85,6 +81,7 @@ struct Timer
   bool start_at_zero;
 };
 
+typedef struct EntityRef EntityRef;
 struct EntityRef
 {
   Entity *ptr;
@@ -92,6 +89,7 @@ struct EntityRef
   u64 gen;
 };
 
+typedef struct Entity Entity;
 struct Entity
 {
   Entity *next;
@@ -139,7 +137,7 @@ struct Entity
   u16 z_index;
 
   // Collision
-  Collider2D col;
+  P_Collider col;
   u8 col_layer;
   b8 col_mask;
 
@@ -149,11 +147,12 @@ struct Entity
   f32 target_angle;
   u16 view_dist;
 
-  i8 curr_health;
+  char curr_health;
 
   Timer timers[3];
 };
 
+typedef struct EntityList EntityList;
 struct EntityList
 {
   Entity *head;

@@ -5,6 +5,7 @@
 
 #include "input.h"
 #include "game.h"
+#include "global.h"
 
 #define TARGET_FPS 60
 #define VSYNC 1
@@ -14,11 +15,12 @@ Global *GLOBAL;
 i32 main(void)
 {
   Game game = {0};
-  game.perm_arena = create_arena(MiB(8));
-  game.frame_arena = create_arena(MiB(8));
-  game.entity_arena = create_arena(MiB(16));
+  game.perm_arena = arena_create(MiB(8));
+  game.frame_arena = arena_create(MiB(8));
+  game.entity_arena = arena_create(MiB(16));
 
   srand(time(NULL));
+  arena_get_scratch(NULL);
 
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
@@ -60,6 +62,8 @@ i32 main(void)
   f64 time_step = 1.0f / TARGET_FPS;
   f64 accumulator = 0.0f;
 
+  game.dt = time_step;
+
   SDL_PumpEvents();
 
   bool running = TRUE;
@@ -88,18 +92,17 @@ i32 main(void)
       }
 
       game.t = elapsed_time;
-      game.dt = time_step;
 
       update_game(&game);
       handle_game_events(&game);
-      clear_arena(&game.frame_arena);
+      arena_clear(&game.frame_arena);
+
+      draw_game(&game);
+      SDL_GL_SwapWindow(window);
 
       elapsed_time += time_step;
       accumulator -= time_step;
     }
-
-    draw_game(&game);
-    SDL_GL_SwapWindow(window);
   }
 
   SDL_DestroyWindow(window);

@@ -91,7 +91,7 @@ i64 str_find(String s, String substr, u64 start, u64 end)
   return result;
 }
 
-i64 str_find_char(String s, i8 c, u32 start, u64 end)
+i64 str_find_char(String s, char c, u32 start, u64 end)
 {
   if (start >= s.len) return FALSE;
 
@@ -198,7 +198,7 @@ String str_strip_front(String s, String substr, Arena *arena)
   assert(substr.len <= s.len);
 
   String result = s;
-  Arena scratch = get_scratch_arena(arena);
+  Arena scratch = arena_get_scratch(arena);
 
   u32 front_len = substr.len;
   String front = str_substr(s, 0, front_len, &scratch);
@@ -208,7 +208,7 @@ String str_strip_front(String s, String substr, Arena *arena)
     result.len = s.len-front_len;
   }
 
-  clear_arena(&scratch);
+  arena_clear(&scratch);
   
   return result;
 }
@@ -218,7 +218,7 @@ String str_strip_back(String s, String substr, Arena *arena)
   assert(substr.len <= s.len);
 
   String result = s;
-  Arena scratch = get_scratch_arena(arena);
+  Arena scratch = arena_get_scratch(arena);
 
   u32 back_len = s.len - substr.len;
   String back = str_substr(s, back_len, s.len, &scratch);
@@ -228,7 +228,7 @@ String str_strip_back(String s, String substr, Arena *arena)
     result.len = back_len;
   }
 
-  clear_arena(&scratch);
+  arena_clear(&scratch);
   
   return result;
 }
@@ -298,7 +298,7 @@ String str_join(StringArray arr, String delimiter, Arena *arena)
 
   result = alloc_str(total_len, arena);
 
-  Arena scratch = get_scratch_arena(arena);
+  Arena scratch = arena_get_scratch(arena);
 
   size_t start_offset = 0;
   for (size_t i = 0; i < arr.count; i++)
@@ -315,7 +315,7 @@ String str_join(StringArray arr, String delimiter, Arena *arena)
 
   result = str_copy(temp, arena);
   
-  clear_arena(&scratch);
+  arena_clear(&scratch);
 
   return result;
 }
@@ -430,14 +430,14 @@ void str_queue_clear(StringQueue *queue, Arena *arena)
 // @CString ====================================================================================
 
 inline
-u32 cstr_len(i8 *s)
+u32 cstr_len(char *s)
 {
   u32 len = 0;
   for (; s[len]; len++);
   return len+1;
 }
 
-void copy_cstr_into_str(String *dest, i8 *src)
+void copy_cstr_into_str(String *dest, char *src)
 {
   u32 len = cstr_len(src)-1;
   for (u32 i = 0; i < len; i++)

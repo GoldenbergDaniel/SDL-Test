@@ -7,12 +7,7 @@
 #include "event.h"
 #include "entity.h"
 
-#define WIDTH 1024
-#define HEIGHT 640
-
 typedef struct Game Game;
-typedef struct Global Global;
-
 struct Game
 {
   Arena perm_arena;
@@ -27,17 +22,8 @@ struct Game
   bool should_quit;
 };
 
-struct Global
-{
-  Input input;
-  D_Resources resources;
-  D_Renderer renderer;
-};
-
 void init_game(Game *game);
 void update_game(Game *game);
 void handle_game_events(Game *game);
 void draw_game(Game *game);
 bool game_should_quit(Game *game);
-
-Vec2F screen_to_world(Vec2F pos);
