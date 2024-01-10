@@ -44,6 +44,7 @@ compile_r:
 
 compile_d:
 	@echo "Compiling debug..."
+	@./ParseShaders
 	@cd dbg; \
-		$(CC) $(CFLAGS_D) -L../ext/sdl2/lib -lsdl2 ../ext/glad/glad.c ../src/_target.c -g
+		$(CC) $(CFLAGS_D) $(LDFLAGS_D) ../src/_target.c -g
 	@echo "Compilation complete!"

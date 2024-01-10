@@ -3,12 +3,21 @@
 #include "base/base_string.h"
 #include "base/base_math.h"
 
+#include "gfx/render.h"
+#include "gfx/draw.h"
 #include "input.h"
 #include "game.h"
 #include "global.h"
 
 #define TARGET_FPS 60
-#define VSYNC 1
+#define VSYNC_VAR -1
+#define VSYNC_OFF 0
+#define VSYNC_ON 1
+
+extern const char *primitive_vert_src;
+extern const char *primitive_frag_src;
+extern const char *sprite_vert_src;
+extern const char *sprite_frag_src;
 
 Global *GLOBAL;
 
@@ -47,13 +56,13 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC);
+  SDL_GL_SetSwapInterval(VSYNC_ON);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
   GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
   GLOBAL->resources = d_load_resources(&game.perm_arena, str("res/"));
-  GLOBAL->renderer = d_create_renderer();
+  GLOBAL->renderer = r_create_renderer(60000, &game.perm_arena);
 
   init_game(&game);
 
@@ -77,6 +86,8 @@ i32 main(void)
 
     while (accumulator >= time_step)
     {
+      u64 perf_start = SDL_GetPerformanceCounter();
+
       clear_last_frame_input();
 
       SDL_Event event;
@@ -102,6 +113,10 @@ i32 main(void)
 
       elapsed_time += time_step;
       accumulator -= time_step;
+
+      u64 perf_end = SDL_GetPerformanceCounter();
+      f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
+      printf("%u FPS\n", (u32) (1000/perf));
     }
   }
 

@@ -15,7 +15,7 @@ struct Global
 {
   Input input;
   D_Resources resources;
-  D_Renderer renderer;
+  R_Renderer renderer;
 };
 
 Vec2F screen_to_world(Vec2F pos);

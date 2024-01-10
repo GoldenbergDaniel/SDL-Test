@@ -33,33 +33,15 @@ struct D_Resources
   R_Shader *shaders;
 };
 
-typedef struct D_Prefab D_Prefab;
-struct D_Prefab
-{
-  R_Shader shader;
-  R_VAO vao;
-  u32 vbo;
-  u32 ibo;
-};
-
-typedef struct D_Renderer D_Renderer;
-struct D_Renderer
-{
-  D_Prefab triangle;
-  D_Prefab rectangle;
-  D_Prefab sprite;
-};
-
 // Assets ======================================================================================
 
-#define D_TEXTURE_COUNT 2
+#define D_TEXTURE_COUNT 1
+#define D_SHADER_COUNT 2
 
 D_Resources d_load_resources(Arena *arena, const String path);
 
 // Renderer ====================================================================================
 
-D_Renderer d_create_renderer(void);
 void d_clear(Vec4F color);
-void d_draw_triangle(Mat3x3F xform, Vec4F color);
 void d_draw_rectangle(Mat3x3F xform, Vec4F color);
 void d_draw_sprite(Mat3x3F xform, Vec4F color, D_TextureID tex_id);

@@ -42,6 +42,7 @@ struct R_VAO
 u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic);
 void r_update_vertex_buffer(void *data, u32 size, u32 offset);
 u32 r_create_index_buffer(void *data, u32 size, bool dynamic);
+void r_update_index_buffer(void *data, u32 size, u32 offset);
 
 // @VAO ========================================================================================
 
@@ -66,12 +67,15 @@ void r_bind_texture(R_Texture *texture, u32 slot);
 
 // @Rendering ==================================================================================
 
-typedef struct R_BatchRenderer R_BatchRenderer;
-struct R_BatchRenderer
+typedef struct R_Renderer R_Renderer;
+struct R_Renderer
 {
   R_Vertex *vertices;
   u32 vertex_count;
   u32 vertex_capacity;
+
+  u32 *indices;
+  u32 index_count;
 
   R_VAO vao;
   u32 vbo;
@@ -81,6 +85,8 @@ struct R_BatchRenderer
   R_Texture *texture;
 };
 
-R_BatchRenderer r_create_batch_renderer(u32 vertex_capacity, Arena *arena);
-void r_push_vertex(R_BatchRenderer *renderer, Vec2F pos, Vec2F uv);
-void r_flush(R_BatchRenderer *renderer);
+R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
+void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F color, Vec4F uv);
+void r_push_quad_indices(R_Renderer *renderer);
+void r_use_shader(R_Renderer *renderer, R_Shader shader);
+void r_flush(R_Renderer *renderer);

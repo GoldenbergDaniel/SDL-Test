@@ -28,7 +28,7 @@ void init_entity(Entity *en, EntityType type)
   en->size = v2f(10.0f, 10.0f);
   en->active = TRUE;
   en->visible = TRUE;
-  en->color = D_WHITE;
+  en->color = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   init_timers(en);
 
@@ -59,6 +59,7 @@ void init_entity(Entity *en, EntityType type)
     case EntityType_ZombieWalker:
     {
       en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
+      // en->props = EntityProp_Rendered;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Melee;

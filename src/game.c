@@ -66,7 +66,7 @@ void update_game(Game *game)
   {
     if (!en->active) continue;
 
-    if (en->props & EntityProp_Moves && game->t > 0.5f)
+    if (en->props & EntityProp_Moves && game->t > 0.2f)
     {
       if (en->props & EntityProp_Controlled)
       {
@@ -181,21 +181,25 @@ void draw_game(Game *game)
 {
   d_clear(v4f(0.5f, 0.32f, 0.32f, 1.0f));
 
+  r_use_shader(&GLOBAL->renderer, GLOBAL->resources.shaders[0]);
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (!en->visible) continue;
-
-    switch (en->draw_type)
+    if (en->draw_type == DrawType_Rectangle && en->visible)
     {
-      case DrawType_Sprite: d_draw_sprite(en->xform, en->color, en->texture);
-      break;
-      case DrawType_Triangle: d_draw_triangle(en->xform, en->color);
-      break;
-      case DrawType_Rectangle: d_draw_rectangle(en->xform, en->color);
-      break;
-      case DrawType_None: break;
+      d_draw_rectangle(en->xform, en->color);
     }
   }
+
+  r_use_shader(&GLOBAL->renderer, GLOBAL->resources.shaders[1]);
+  for (Entity *en = game->entities.head; en; en = en->next)
+  {
+    if (en->draw_type == DrawType_Sprite && en->visible)
+    {
+      d_draw_sprite(en->xform, en->color, en->texture);
+    }
+  }
+
+  r_flush(&GLOBAL->renderer);
 }
 
 inline
