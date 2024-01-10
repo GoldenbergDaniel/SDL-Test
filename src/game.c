@@ -53,6 +53,15 @@ void init_game(Game *game)
     init_entity(zombie, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
     zombie->scale = v2f(8.0f, 8.0f);
+
+    for (u32 i = 0; i < 1000; i++)
+    {
+      Entity *zombie = alloc_entity(game);
+      init_entity(zombie, EntityType_ZombieWalker);
+      zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
+      zombie->scale = v2f(8.0f, 8.0f);
+      zombie->props = EntityProp_Rendered;
+    }
   }
 }
 

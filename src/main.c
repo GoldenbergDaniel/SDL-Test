@@ -9,8 +9,10 @@
 #include "game.h"
 #include "global.h"
 
+#define PERF
+
 #define TARGET_FPS 60
-#define VSYNC_VAR -1
+#define VSYNC_AUTO -1
 #define VSYNC_OFF 0
 #define VSYNC_ON 1
 
@@ -26,7 +28,7 @@ i32 main(void)
   Game game = {0};
   game.perm_arena = arena_create(MiB(8));
   game.frame_arena = arena_create(MiB(8));
-  game.entity_arena = arena_create(MiB(16));
+  game.entity_arena = arena_create(MiB(64));
 
   srand(time(NULL));
   arena_get_scratch(NULL);
@@ -56,7 +58,7 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_ON);
+  SDL_GL_SetSwapInterval(VSYNC_OFF);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
@@ -86,7 +88,9 @@ i32 main(void)
 
     while (accumulator >= time_step)
     {
+    #ifdef PERF
       u64 perf_start = SDL_GetPerformanceCounter();
+    #endif
 
       clear_last_frame_input();
 
@@ -114,9 +118,12 @@ i32 main(void)
       elapsed_time += time_step;
       accumulator -= time_step;
 
+    #ifdef PERF
       u64 perf_end = SDL_GetPerformanceCounter();
       f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
-      printf("%u FPS\n", (u32) (1000/perf));
+      printf("%.0f ms\n", perf);
+      printf("%u fps\n", (u32) (1000 / perf));
+    #endif
     }
   }
 
