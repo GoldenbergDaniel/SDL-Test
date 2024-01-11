@@ -75,7 +75,7 @@ void update_game(Game *game)
   {
     if (!en->active) continue;
 
-    if (en->props & EntityProp_Moves && game->t > 0.2f)
+    if (en->props & EntityProp_Moves && game->t > 0.35f)
     {
       if (en->props & EntityProp_Controlled)
       {
@@ -141,15 +141,15 @@ void update_game(Game *game)
   // DEBUG: Switch player texture
   if (is_key_just_pressed(KEY_1))
   {
-    player->texture = D_TEXTURE_COWBOY;
+    player->texture = D_SPRITE_COWBOY;
   }
   else if (is_key_just_pressed(KEY_2))
   {
-    player->texture = D_TEXTURE_ZOMBIE;
+    player->texture = D_SPRITE_ZOMBIE;
   }
   else if (is_key_just_pressed(KEY_3))
   {
-    player->texture = D_TEXTURE_GUN;
+    player->texture = D_SPRITE_GUN;
   }
 }
 
@@ -188,9 +188,12 @@ void handle_game_events(Game *game)
 
 void draw_game(Game *game)
 {
+  R_Renderer *renderer = &GLOBAL->renderer;
+  D_Resources *resources = &GLOBAL->resources;
+  
   d_clear(v4f(0.5f, 0.32f, 0.32f, 1.0f));
 
-  r_use_shader(&GLOBAL->renderer, GLOBAL->resources.shaders[0]);
+  r_use_shader(renderer, resources->shaders[D_SHADER_PRIMITIVE]);
   for (Entity *en = game->entities.head; en; en = en->next)
   {
     if (en->draw_type == DrawType_Rectangle && en->visible)
@@ -199,7 +202,8 @@ void draw_game(Game *game)
     }
   }
 
-  r_use_shader(&GLOBAL->renderer, GLOBAL->resources.shaders[1]);
+  r_use_texture(renderer, resources->textures[D_TEXTURE_SPRITE]);
+  r_use_shader(renderer, resources->shaders[D_SHADER_SPRITE]);
   for (Entity *en = game->entities.head; en; en = en->next)
   {
     if (en->draw_type == DrawType_Sprite && en->visible)

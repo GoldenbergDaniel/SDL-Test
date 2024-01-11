@@ -10,9 +10,9 @@
 
 extern Global *GLOBAL;
 
-// Assets ======================================================================================
+// @Assets =====================================================================================
 
-D_Resources d_load_resources(Arena *arena, const String path)
+D_Resources d_load_resources(Arena *arena, String path)
 {
   D_Resources res = {0};
   res.textures = arena_alloc(arena, sizeof (R_Texture) * D_TEXTURE_COUNT);
@@ -24,20 +24,17 @@ D_Resources d_load_resources(Arena *arena, const String path)
   R_Shader sprite_shader = r_create_shader(sprite_vert_src, sprite_frag_src);
   res.shaders[1] = sprite_shader;
 
-#ifdef DEBUG
-  char *sprites_path = "../res/texture/sprites.png";
-#else
-  char *sprites_path = "res/texture/sprites.png";
-#endif
-
-  R_Texture sprites = r_create_texture(sprites_path);
+  Arena scratch = arena_get_scratch(arena);
+  String path_to_sprites = str_concat(path, str("/texture/sprites.png"), &scratch);
+  R_Texture sprites = r_create_texture(path_to_sprites);
+  arena_clear(&scratch);
 
   res.textures[0] = sprites;
 
   return res;
 }
 
-// D_Renderer ====================================================================================
+// @Draw =======================================================================================
 
 #include <stdio.h>
 

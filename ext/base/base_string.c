@@ -9,7 +9,7 @@
 String alloc_str(u32 len, Arena *arena)
 {
   String result;
-  result.str = arena_alloc(arena, len);
+  result.str = arena_alloc(arena, len+1);
   result.len = len;
 
   return result;
@@ -161,7 +161,7 @@ String str_insert_at(String s, String substr, u32 loc, Arena *arena)
 
 String str_concat(String s1, String s2, Arena *arena)
 {
-  String result = alloc_str(s1.len + s2.len, arena);
+  String result = alloc_str(s1.len + s2.len + 1, arena);
 
   for (u32 i = 0; i < s1.len; i++)
   {
@@ -172,6 +172,8 @@ String str_concat(String s1, String s2, Arena *arena)
   {
     result.str[i+s1.len] = s2.str[i];
   }
+
+  result.str[result.len] = '\0';
 
   return result;
 }

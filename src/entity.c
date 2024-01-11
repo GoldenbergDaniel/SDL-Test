@@ -47,7 +47,7 @@ void init_entity(Entity *en, EntityType type)
       en->combat_type = CombatType_Ranged;
       en->scale = v2f(1.0f, 1.0f);
       en->speed = PLAYER_SPEED;
-      en->texture = D_TEXTURE_COWBOY;
+      en->texture = D_SPRITE_COWBOY;
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
@@ -63,7 +63,7 @@ void init_entity(Entity *en, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Melee;
-      en->texture = D_TEXTURE_ZOMBIE;
+      en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
       en->view_dist = 350;
       en->col.vertex_count = 4;
@@ -95,9 +95,9 @@ void init_entity(Entity *en, EntityType type)
     {
       en->props = EntityProp_Rendered | EntityProp_Equipped;
       en->draw_type = DrawType_Sprite;
-      en->texture = D_TEXTURE_GUN;
+      en->texture = D_SPRITE_GUN;
     }
-    break;
+  break;
     case EntityType_Laser:
     {
       en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Autonomous;

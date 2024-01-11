@@ -6,7 +6,7 @@
 #include "base/base_common.h"
 #include "base/base_math.h"
 #include "render.h"
-// #include "shaders.h"
+#include "shaders.h"
 #include "../game.h"
 #include "../global.h"
 
@@ -14,14 +14,7 @@
 static void verify_shader(u32 id, u32 type);
 #endif
 
-#define WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
-#define BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
-
 extern Global *GLOBAL;
-extern const char *primitive_vert_src;
-extern const char *primitive_frag_src;
-extern const char *sprite_vert_src;
-extern const char *sprite_frag_src;
 
 // @Buffer =====================================================================================
 
@@ -75,48 +68,17 @@ R_VAO r_create_vertex_array(u8 attrib_count)
   };
 }
 
-void r_push_vertex_attribute(R_VAO *vao, u32 data_type, u32 count)
+void r_push_vertex_attribute(R_VAO *vao, u32 count)
 {
-  typedef struct Layout Layout;
-  struct Layout
-  {
-    u32 index;
-    u32 count;
-    u32 data_type;
-    bool normalized;
-    u32 stride;
-    void *offset;
-  };
-
-  u8 type_size;
-  switch (data_type)
-  {
-    case GL_BYTE:  type_size = sizeof (i8); break;
-    case GL_SHORT: type_size = sizeof (i16); break;
-    case GL_INT:   type_size = sizeof (i32); break;
-    case GL_FLOAT: type_size = sizeof (f32); break;
-    default: assert(FALSE);
-  }
-
-  Layout layout = 
-  {
-    .index = vao->attrib_index,
-    .count = count,
-    .data_type = data_type,
-    .normalized = FALSE,
-    .stride = count * type_size * vao->attrib_count,
-    .offset = (void *) (u64) (vao->attrib_index * count * type_size)
-  };
-
   glVertexAttribPointer(
-                        layout.index,
-                        layout.count,
-                        layout.data_type,
-                        layout.normalized,
-                        layout.stride,
-                        layout.offset);
+                        vao->attrib_index,
+                        count,
+                        GL_FLOAT,
+                        FALSE,
+                        count * sizeof (f32) * vao->attrib_count,
+                        (void *) (u64) (vao->attrib_index * count * sizeof (f32)));
 
-  glEnableVertexAttribArray(layout.index);
+  glEnableVertexAttribArray(vao->attrib_index);
 
   vao->attrib_index++;
 }
@@ -202,47 +164,16 @@ void r_set_uniform_3x3f(R_Shader *shader, const char *name, Mat3x3F val)
   glUniformMatrix3fv(loc, 1, FALSE, &val.e[0][0]);
 }
 
-#ifdef DEBUG
-static
-void verify_shader(u32 id, u32 type)
-{
-  i32 success;
-
-  if (type == GL_LINK_STATUS)
-  {
-    glValidateProgram(id);
-  }
-
-  glGetShaderiv(id, type, &success);
-
-  if (!success)
-  {
-    i32 length;
-    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-    char log[length];
-    glGetShaderInfoLog(id, length, &length, log);
-
-    if (type == GL_COMPILE_STATUS)
-    {
-      printf("[Error]: Failed to compile shader!\n");
-    }
-    else
-    {
-      printf("[Error]: Failed to link shaders!\n");
-    }
-
-    printf("%s", log);
-  }
-}
-#endif
-
 // @Texture ====================================================================================
 
-R_Texture r_create_texture(const char *path)
+R_Texture r_create_texture(String path)
 {
+  static u8 tex_slot = 0;
   R_Texture tex;
+  tex.slot = tex_slot++;
+
   stbi_set_flip_vertically_on_load(TRUE);
-  tex.data = stbi_load(path, &tex.width, &tex.height, &tex.channel_count, 4);
+  u8 *data = stbi_load(path.str, &tex.width, &tex.height, NULL, 4);
 
   glGenTextures(1, &tex.id);
   glBindTexture(GL_TEXTURE_2D, tex.id);
@@ -261,39 +192,33 @@ R_Texture r_create_texture(const char *path)
                0, 
                GL_RGBA, 
                GL_UNSIGNED_BYTE, 
-               tex.data);
+               data);
 
-  stbi_image_free(tex.data);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  stbi_image_free(data);
 
   return tex;
-}
-
-inline
-void r_bind_texture(R_Texture *texture, u32 slot)
-{
-  glActiveTexture(GL_TEXTURE0 + slot);
-  glBindTexture(GL_TEXTURE_2D, texture->id);
 }
 
 // @Rendering ==================================================================================
 
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
 {
-  u64 buffer_size = sizeof (R_Vertex) * vertex_capacity;
-  R_Vertex *vertices = arena_alloc(arena, buffer_size);
-  u32 *indices = arena_alloc(arena, buffer_size);
+  u64 vbo_size = sizeof (R_Vertex) * vertex_capacity;
+  R_Vertex *vertices = arena_alloc(arena, vbo_size);
+
+  u64 ibo_size = (u64) (sizeof (u32) * vertex_capacity * 1.5f) + 1;
+  u32 *indices = arena_alloc(arena, ibo_size);
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
 
   R_VAO vao = r_create_vertex_array(3);
-  u32 vbo = r_create_vertex_buffer(NULL, buffer_size, TRUE);
-  u32 ibo = r_create_index_buffer(NULL, buffer_size, TRUE);
-  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // position
-  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // color
-  r_push_vertex_attribute(&vao, GL_FLOAT, 4); // uv
-
-  R_Texture *texture = &GLOBAL->resources.textures[0];
+  u32 vbo = r_create_vertex_buffer(NULL, vbo_size, TRUE);
+  u32 ibo = r_create_index_buffer(NULL, ibo_size, TRUE);
+  r_push_vertex_attribute(&vao, 4); // position
+  r_push_vertex_attribute(&vao, 4); // color
+  r_push_vertex_attribute(&vao, 4); // uv
 
   return (R_Renderer)
   {
@@ -306,7 +231,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
     .vbo = vbo,
     .ibo = ibo,
     .shader = (R_Shader) {0},
-    .texture = texture,
+    .texture = (R_Texture) {0},
   };
 }
 
@@ -349,6 +274,18 @@ void r_use_shader(R_Renderer *renderer, R_Shader shader)
   {
     r_flush(renderer);
     renderer->shader = shader;
+    glUseProgram(shader.id);
+  }
+}
+
+void r_use_texture(R_Renderer *renderer, R_Texture texture)
+{
+  if (renderer->texture.id != texture.id)
+  {
+    r_flush(renderer);
+    renderer->texture = texture;
+    glActiveTexture(GL_TEXTURE0 + texture.slot);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
   }
 }
 
@@ -356,10 +293,9 @@ void r_flush(R_Renderer *renderer)
 {
   if (renderer->vertex_count == 0) return;
 
-  glUseProgram(renderer->shader.id);
   r_set_uniform_3x3f(&renderer->shader, "u_xform", m3x3f(1.0f));
-  r_set_uniform_4f(&renderer->shader, "u_color", BLACK);
-  r_set_uniform_1i(&renderer->shader, "u_tex", 0);
+  r_set_uniform_4f(&renderer->shader, "u_color", R_BLACK);
+  r_set_uniform_1i(&renderer->shader, "u_tex", renderer->texture.slot);
 
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
   r_update_vertex_buffer(renderer->vertices, sizeof (R_Vertex) * renderer->vertex_count, 0);
@@ -373,3 +309,39 @@ void r_flush(R_Renderer *renderer)
   renderer->vertex_count = 0;
   renderer->index_count = 0;
 }
+
+// @Debug ======================================================================================
+
+#ifdef DEBUG
+static
+void verify_shader(u32 id, u32 type)
+{
+  i32 success;
+
+  if (type == GL_LINK_STATUS)
+  {
+    glValidateProgram(id);
+  }
+
+  glGetShaderiv(id, type, &success);
+
+  if (!success)
+  {
+    i32 length;
+    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+    char log[length];
+    glGetShaderInfoLog(id, length, &length, log);
+
+    if (type == GL_COMPILE_STATUS)
+    {
+      printf("[Error]: Failed to compile shader!\n");
+    }
+    else
+    {
+      printf("[Error]: Failed to link shaders!\n");
+    }
+
+    printf("%s", log);
+  }
+}
+#endif

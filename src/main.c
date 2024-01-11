@@ -16,11 +16,6 @@
 #define VSYNC_OFF 0
 #define VSYNC_ON 1
 
-extern const char *primitive_vert_src;
-extern const char *primitive_frag_src;
-extern const char *sprite_vert_src;
-extern const char *sprite_frag_src;
-
 Global *GLOBAL;
 
 i32 main(void)
@@ -58,12 +53,17 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_OFF);
+  SDL_GL_SetSwapInterval(VSYNC_ON);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
+  String path_to_res = str("res");
+  #ifdef DEBUG
+  path_to_res = str("../res");
+  #endif
+
   GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
-  GLOBAL->resources = d_load_resources(&game.perm_arena, str("res/"));
+  GLOBAL->resources = d_load_resources(&game.perm_arena, path_to_res);
   GLOBAL->renderer = r_create_renderer(60000, &game.perm_arena);
 
   init_game(&game);
