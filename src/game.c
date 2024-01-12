@@ -6,12 +6,11 @@
 #include "base/base_math.h"
 
 #include "gfx/draw.h"
-#include "phys/physics.h"
 #include "input.h"
 #include "event.h"
 #include "entity.h"
-#include "game.h"
 #include "global.h"
+#include "game.h"
 
 extern Global *GLOBAL;
 
@@ -47,21 +46,12 @@ void init_game(Game *game)
     set_entity_parent(shot_point, gun);
     shot_point->pos = v2f(24.0f, 2.0f);
     shot_point->scale = v2f(0.05f, 0.05f);
-    shot_point->visible = TRUE;
+    shot_point->visible = FALSE;
 
     Entity *zombie = alloc_entity(game);
     init_entity(zombie, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
     zombie->scale = v2f(8.0f, 8.0f);
-
-    for (u32 i = 0; i < 1000; i++)
-    {
-      Entity *zombie = alloc_entity(game);
-      init_entity(zombie, EntityType_ZombieWalker);
-      zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
-      zombie->scale = v2f(8.0f, 8.0f);
-      zombie->props = EntityProp_Rendered;
-    }
   }
 }
 
@@ -187,28 +177,28 @@ void handle_game_events(Game *game)
 // @Draw =======================================================================================
 
 void draw_game(Game *game)
-{
-  R_Renderer *renderer = &GLOBAL->renderer;
-  D_Resources *resources = &GLOBAL->resources;
-  
+{  
   d_clear(v4f(0.5f, 0.32f, 0.32f, 1.0f));
 
-  r_use_shader(renderer, resources->shaders[D_SHADER_PRIMITIVE]);
-  for (Entity *en = game->entities.head; en; en = en->next)
+  SCOPE("Primitive Batch")
   {
-    if (en->draw_type == DrawType_Rectangle && en->visible)
+    for (Entity *en = game->entities.head; en; en = en->next)
     {
-      d_draw_rectangle(en->xform, en->color);
+      if (en->draw_type == DrawType_Rectangle && en->visible)
+      {
+        d_draw_rectangle(en->xform, en->color);
+      }
     }
   }
 
-  r_use_texture(renderer, resources->textures[D_TEXTURE_SPRITE]);
-  r_use_shader(renderer, resources->shaders[D_SHADER_SPRITE]);
-  for (Entity *en = game->entities.head; en; en = en->next)
+  SCOPE("Sprite Batch")
   {
-    if (en->draw_type == DrawType_Sprite && en->visible)
+    for (Entity *en = game->entities.head; en; en = en->next)
     {
-      d_draw_sprite(en->xform, en->color, en->texture);
+      if (en->draw_type == DrawType_Sprite && en->visible)
+      {
+        d_draw_sprite(en->xform, en->color, en->texture);
+      }
     }
   }
 

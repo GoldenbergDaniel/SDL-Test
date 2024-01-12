@@ -1,5 +1,5 @@
 // @Vertex =====================================================================================
-#version 410 core
+#version 410 core \n
 
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec4 a_color;
@@ -18,7 +18,7 @@ void main()
 }
 
 // @Fragment ===================================================================================
-#version 410 core
+#version 410 core \n
 
 in vec4 color;
 in vec2 tex_coord;

@@ -112,55 +112,58 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   glDeleteShader(vert);
   glDeleteShader(frag);
 
-  return (R_Shader) {id};
+  i16 u_xform = glGetUniformLocation(id, "u_xform");
+  i16 u_color = glGetUniformLocation(id, "u_color");
+  i16 u_tex = glGetUniformLocation(id, "u_tex");
+
+  return (R_Shader)
+  {
+    .id = id,
+    .u_xform = u_xform,
+    .u_color = u_color,
+    .u_tex = u_tex,
+  };
 }
 
 inline
-void r_set_uniform_1u(R_Shader *shader, const char *name, u32 val)
+void r_set_uniform_1u(R_Shader *shader, i32 loc, u32 val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform1ui(loc, val);
 }
 
 inline
-void r_set_uniform_1i(R_Shader *shader, const char *name, i32 val)
+void r_set_uniform_1i(R_Shader *shader, i32 loc, i32 val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform1i(loc, val);
 }
 
 inline
-void r_set_uniform_1f(R_Shader *shader, const char *name, f32 val)
+void r_set_uniform_1f(R_Shader *shader, i32 loc, f32 val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform1f(loc, val);
 }
 
 inline
-void r_set_uniform_2f(R_Shader *shader, const char *name, Vec2F val)
+void r_set_uniform_2f(R_Shader *shader, i32 loc, Vec2F val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform2f(loc, val.x, val.y);
 }
 
 inline
-void r_set_uniform_3f(R_Shader *shader, const char *name, Vec3F val)
+void r_set_uniform_3f(R_Shader *shader, i32 loc, Vec3F val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform3f(loc, val.x, val.y, val.z);
 }
 
 inline
-void r_set_uniform_4f(R_Shader *shader, const char *name, Vec4F val)
+void r_set_uniform_4f(R_Shader *shader, i32 loc, Vec4F val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniform4f(loc, val.x, val.y, val.z, val.w);
 }
 
 inline
-void r_set_uniform_3x3f(R_Shader *shader, const char *name, Mat3x3F val)
+void r_set_uniform_3x3f(R_Shader *shader, i32 loc, Mat3x3F val)
 {
-  i32 loc = glGetUniformLocation(shader->id, name);
   glUniformMatrix3fv(loc, 1, FALSE, &val.e[0][0]);
 }
 
@@ -230,8 +233,8 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
     .vao = vao,
     .vbo = vbo,
     .ibo = ibo,
-    .shader = (R_Shader) {0},
-    .texture = (R_Texture) {0},
+    .shader = R_NIL_SHADER,
+    .texture = R_NIL_TEXTURE,
   };
 }
 
@@ -268,24 +271,26 @@ void r_push_quad_indices(R_Renderer *renderer)
   renderer->indices[index_count - 1] = layout[5] + offset;
 }
 
-void r_use_shader(R_Renderer *renderer, R_Shader shader)
+void r_use_shader(R_Renderer *renderer, R_Shader *shader)
 {
-  if (renderer->shader.id != shader.id)
+  if (renderer->shader->id != shader->id)
   {
     r_flush(renderer);
+
     renderer->shader = shader;
-    glUseProgram(shader.id);
+    glUseProgram(shader->id);
   }
 }
 
-void r_use_texture(R_Renderer *renderer, R_Texture texture)
+void r_use_texture(R_Renderer *renderer, R_Texture *texture)
 {
-  if (renderer->texture.id != texture.id)
+  if (renderer->texture->id != texture->id)
   {
     r_flush(renderer);
+
     renderer->texture = texture;
-    glActiveTexture(GL_TEXTURE0 + texture.slot);
-    glBindTexture(GL_TEXTURE_2D, texture.id);
+    glActiveTexture(GL_TEXTURE0 + texture->slot);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
   }
 }
 
@@ -293,9 +298,10 @@ void r_flush(R_Renderer *renderer)
 {
   if (renderer->vertex_count == 0) return;
 
-  r_set_uniform_3x3f(&renderer->shader, "u_xform", m3x3f(1.0f));
-  r_set_uniform_4f(&renderer->shader, "u_color", R_BLACK);
-  r_set_uniform_1i(&renderer->shader, "u_tex", renderer->texture.slot);
+  R_Shader *shader = renderer->shader;
+  r_set_uniform_3x3f(shader, shader->u_xform, m3x3f(1.0f));
+  r_set_uniform_4f(shader, shader->u_color, R_BLACK);
+  r_set_uniform_1i(shader, shader->u_tex, renderer->texture->slot);
 
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
   r_update_vertex_buffer(renderer->vertices, sizeof (R_Vertex) * renderer->vertex_count, 0);

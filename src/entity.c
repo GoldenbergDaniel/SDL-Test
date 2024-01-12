@@ -138,7 +138,7 @@ void clear_entity(Entity *en)
 {
   Entity *next = en->next;
   Entity *next_free = en->next_free;
-  zero(*en);
+  zero(*en, Entity);
   en->next_free = next_free;
   en->next = next;
 }
@@ -791,7 +791,7 @@ void remove_entity_child(Entity *en, u64 id)
   {
     if (curr->id == id)
     {
-      zero(curr->parent);
+      zero(curr->parent, EntityRef);
       prev->next_child = curr->next_child;
       break;
     }

@@ -18,6 +18,9 @@ typedef struct R_Shader R_Shader;
 struct R_Shader
 {
   u32 id;
+  i16 u_xform;
+  i16 u_color;
+  i16 u_tex;
 };
 
 typedef struct R_Texture R_Texture;
@@ -51,9 +54,12 @@ struct R_Renderer
   u32 vbo;
   u32 ibo;
 
-  R_Shader shader;
-  R_Texture texture;
+  R_Shader *shader;
+  R_Texture *texture;
 };
+
+static R_Shader *R_NIL_SHADER = &(R_Shader) {0};
+static R_Texture *R_NIL_TEXTURE = &(R_Texture) {0};
 
 #define R_BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
 #define R_WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
@@ -73,13 +79,13 @@ void r_push_vertex_attribute(R_VAO *vao, u32 count);
 // @Shader =====================================================================================
 
 R_Shader r_create_shader(const char *vert_src, const char *frag_src);
-void r_set_uniform_1u(R_Shader *shader, const char *name, u32 val);
-void r_set_uniform_1i(R_Shader *shader, const char *name, i32 val);
-void r_set_uniform_1f(R_Shader *shader, const char *name, f32 val);
-void r_set_uniform_2f(R_Shader *shader, const char *name, Vec2F val);
-void r_set_uniform_3f(R_Shader *shader, const char *name, Vec3F val);
-void r_set_uniform_4f(R_Shader *shader, const char *name, Vec4F val);
-void r_set_uniform_3x3f(R_Shader *shader, const char *name, Mat3x3F val);
+void r_set_uniform_1u(R_Shader *shader, i32 loc, u32 val);
+void r_set_uniform_1i(R_Shader *shader, i32 loc, i32 val);
+void r_set_uniform_1f(R_Shader *shader, i32 loc, f32 val);
+void r_set_uniform_2f(R_Shader *shader, i32 loc, Vec2F val);
+void r_set_uniform_3f(R_Shader *shader, i32 loc, Vec3F val);
+void r_set_uniform_4f(R_Shader *shader, i32 loc, Vec4F val);
+void r_set_uniform_3x3f(R_Shader *shader, i32 loc, Mat3x3F val);
 
 // @Texture ====================================================================================
 
@@ -90,6 +96,6 @@ R_Texture r_create_texture(String path);
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
 void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F color, Vec4F uv);
 void r_push_quad_indices(R_Renderer *renderer);
-void r_use_shader(R_Renderer *renderer, R_Shader shader);
-void r_use_texture(R_Renderer *renderer, R_Texture texture);
+void r_use_shader(R_Renderer *renderer, R_Shader *shader);
+void r_use_texture(R_Renderer *renderer, R_Texture *texture);
 void r_flush(R_Renderer *renderer);

@@ -50,40 +50,6 @@ struct StringArray
 StringArray create_str_array(u64 count, Arena *arena);
 void clear_str_array(StringArray *arr, Arena *arena);
 
-// @StringStack ================================================================================
-
-struct StringNode
-{
-  StringNode *next;
-  StringNode *prev;
-  String data;
-};
-
-struct StringStack
-{
-  StringNode *top;
-  u64 count;
-};
-
-void str_stack_push(StringStack *stack, String data, Arena *arena);
-String str_stack_pop(StringStack *stack, Arena *arena);
-String str_stack_peek(StringStack *stack, Arena *arena);
-void str_stack_clear(StringStack *stack, Arena *arena);
-
-// @StringQueue ================================================================================
-
-struct StringQueue
-{
-  StringNode *front;
-  StringNode *back;
-  u64 count;
-};
-
-void str_queue_push(StringQueue *queue, String data, Arena *arena);
-String str_queue_pop(StringQueue *queue, Arena *arena);
-String str_queue_peek(StringQueue *queue, Arena *arena);
-void str_queue_clear(StringQueue *queue, Arena *arena);
-
 // @CStr =======================================================================================
 
 u32 cstr_len(char *cstr);

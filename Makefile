@@ -1,4 +1,4 @@
-NAME = Game
+NAME = UndeadWest
 CC = cc
 
 CFLAGS_R = -std=gnu17 \
@@ -13,14 +13,15 @@ CFLAGS_R = -std=gnu17 \
 					 -Wno-initializer-overrides \
 
 CFLAGS_D = -std=gnu17 \
+           -g \
 					 -DDEBUG \
 					 -I../ext/ \
 					 -I../ext/sdl2/inc \
 					 -Wall \
-					 -Wextra \
 					 -Wpedantic \
 					 -Wno-language-extension-token \
 					 -Wno-missing-braces \
+					 -Wno-unused-function \
 					 -Wno-initializer-overrides \
 
 LDFLAGS_R = -Lext/sdl2/lib \
@@ -46,5 +47,5 @@ compile_d:
 	@echo "Compiling debug..."
 	@./ParseShaders
 	@cd dbg; \
-		$(CC) $(CFLAGS_D) $(LDFLAGS_D) ../src/_target.c -g
+		$(CC) $(CFLAGS_D) $(LDFLAGS_D) ../src/_target.c -o $(NAME)_D
 	@echo "Compilation complete!"

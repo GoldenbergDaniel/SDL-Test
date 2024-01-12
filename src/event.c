@@ -11,7 +11,7 @@ void push_event(Game *game, EventType type, EventDesc desc)
   if (new_event == NULL)
   {
     new_event = arena_alloc(&game->frame_arena, sizeof (Event));
-    zero(*new_event);
+    zero(*new_event, Event);
   }
   else
   {
@@ -42,7 +42,7 @@ void pop_event(Game *game)
 
   EventQueue *queue = &game->event_queue;
   Event *next = queue->front->next;
-  zero(*queue->front);
+  zero(*queue->front, Event);
   
   if (queue->count == 2)
   {
@@ -67,9 +67,9 @@ void clear_event_queue(Game *game)
   while (curr != NULL)
   {
     Event *next = curr->next;
-    zero(*curr);
+    zero(*curr, Event);
     curr = next;
   }
 
-  zero(*queue);
+  zero(*queue, EventQueue);
 }

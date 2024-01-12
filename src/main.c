@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "sdl2/SDL.h"
 #include "base/base_common.h"
 #include "base/base_string.h"
@@ -9,19 +13,21 @@
 #include "game.h"
 #include "global.h"
 
-#define PERF
+// #define PERF
 
 #define TARGET_FPS 60
-#define VSYNC_AUTO -1
-#define VSYNC_OFF 0
-#define VSYNC_ON 1
+#define VSYNC 1
 
 Global *GLOBAL;
 
+#ifdef _WIN32
+i32 WinMain(HINSTANCE instance, HINSTANCE pinstance, LPSTR cmd_line, i32 cmd_show)
+#else
 i32 main(void)
+#endif
 {
   Game game = {0};
-  game.perm_arena = arena_create(MiB(8));
+  game.perm_arena = arena_create(KiB(16));
   game.frame_arena = arena_create(MiB(8));
   game.entity_arena = arena_create(MiB(64));
 
@@ -44,7 +50,7 @@ i32 main(void)
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   SDL_Window *window = SDL_CreateWindow(
-                                        "GAME",
+                                        "UNDEAD WEST",
                                         SDL_WINDOWPOS_CENTERED, 
                                         SDL_WINDOWPOS_CENTERED, 
                                         WIDTH, 
@@ -53,7 +59,7 @@ i32 main(void)
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC_ON);
+  SDL_GL_SetSwapInterval(VSYNC);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
 
@@ -62,9 +68,9 @@ i32 main(void)
   path_to_res = str("../res");
   #endif
 
-  GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
-  GLOBAL->resources = d_load_resources(&game.perm_arena, path_to_res);
-  GLOBAL->renderer = r_create_renderer(60000, &game.perm_arena);
+  GLOBAL = arena_alloc(&game.frame_arena, sizeof (Global));
+  GLOBAL->resources = d_load_resources(&game.frame_arena, path_to_res);
+  GLOBAL->renderer = r_create_renderer(40000, &game.frame_arena);
 
   init_game(&game);
 
@@ -80,18 +86,17 @@ i32 main(void)
   bool running = TRUE;
   while (running)
   {
+  #ifdef PERF
+    u64 perf_start = SDL_GetPerformanceCounter();
+  #endif
+
     f64 new_time = SDL_GetTicks64() * 0.001f;
     f64 frame_time = new_time - current_time;
     current_time = new_time;
-    
     accumulator += frame_time;
 
     while (accumulator >= time_step)
     {
-    #ifdef PERF
-      u64 perf_start = SDL_GetPerformanceCounter();
-    #endif
-
       clear_last_frame_input();
 
       SDL_Event event;
@@ -110,21 +115,22 @@ i32 main(void)
 
       update_game(&game);
       handle_game_events(&game);
-      arena_clear(&game.frame_arena);
-
-      draw_game(&game);
-      SDL_GL_SwapWindow(window);
 
       elapsed_time += time_step;
       accumulator -= time_step;
-
-    #ifdef PERF
-      u64 perf_end = SDL_GetPerformanceCounter();
-      f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
-      printf("%.0f ms\n", perf);
-      printf("%u fps\n", (u32) (1000 / perf));
-    #endif
     }
+
+    draw_game(&game);
+    SDL_GL_SwapWindow(window);
+
+    arena_clear(&game.frame_arena);
+
+  #ifdef PERF
+    u64 perf_end = SDL_GetPerformanceCounter();
+    f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
+    printf("%.0f ms\n", perf);
+    printf("%u fps\n", (u32) (1000 / perf));
+  #endif
   }
 
   SDL_DestroyWindow(window);

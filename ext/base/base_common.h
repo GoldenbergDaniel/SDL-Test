@@ -26,9 +26,11 @@ typedef double f64;
 #define RO_SECTION_NAME ".rodata"
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #define thread_local __thread
 #define read_only __attribute__((section(RO_SECTION_NAME)))
+#elif defined(_MSC_VER)
+#define thread_local __declspec(thread)
 #endif
 
 #define SCOPE(title)
@@ -40,5 +42,5 @@ typedef double f64;
 #define NULL ((void *) 0)
 #endif
 
-#define zero(x) x = ((typeof (x)) {0})
+#define zero(x, T) x = ((T) {0})
 #define arr_len(arr) (sizeof (arr) / sizeof (arr[0]))

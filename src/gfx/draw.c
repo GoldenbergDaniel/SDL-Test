@@ -47,12 +47,15 @@ void d_clear(Vec4F color)
 
 void d_draw_rectangle(Mat3x3F xform, Vec4F tint)
 {
+  R_Renderer *renderer = &GLOBAL->renderer;
+  D_Resources *resources = &GLOBAL->resources;
+  r_use_shader(renderer, &resources->shaders[D_SHADER_PRIMITIVE]);
+
   Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
   Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
   Vec3F p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), xform);
   Vec3F p3 = transform_3f(v3f(-5.0f, -5.0f, 1.0f), xform);
 
-  R_Renderer *renderer = &GLOBAL->renderer;
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
   r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO);
@@ -62,6 +65,12 @@ void d_draw_rectangle(Mat3x3F xform, Vec4F tint)
 
 void d_draw_sprite(Mat3x3F xform, Vec4F tint, D_TextureID tex_id)
 {
+  R_Renderer *renderer = &GLOBAL->renderer;
+  D_Resources *resources = &GLOBAL->resources;
+
+  r_use_texture(renderer, &resources->textures[D_TEXTURE_SPRITE]);
+  r_use_shader(renderer, &resources->shaders[D_SHADER_SPRITE]);
+
   Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
   Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
   Vec3F p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), xform);
@@ -93,7 +102,6 @@ void d_draw_sprite(Mat3x3F xform, Vec4F tint, D_TextureID tex_id)
     ((f32) tex_id.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  R_Renderer *renderer = &GLOBAL->renderer;
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
   r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
