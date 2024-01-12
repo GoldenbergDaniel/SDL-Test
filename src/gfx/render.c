@@ -3,11 +3,8 @@
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
 
-#include "base/base_common.h"
-#include "base/base_math.h"
+#include "base/base_inc.h"
 #include "render.h"
-#include "shaders.h"
-#include "../game.h"
 #include "../global.h"
 
 #ifdef DEBUG

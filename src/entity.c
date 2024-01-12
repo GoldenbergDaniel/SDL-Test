@@ -1,8 +1,6 @@
 #include <stdio.h>
 
-#include "base/base_common.h"
-#include "base/base_math.h"
-#include "base/base_random.h"
+#include "base/base_inc.h"
 
 #include "phys/physics.h"
 #include "input.h"

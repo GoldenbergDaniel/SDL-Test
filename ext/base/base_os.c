@@ -1,5 +1,5 @@
-// #define BACKEND_LIBC
-#define BACKEND_UNIX
+#define BACKEND_LIBC
+// #define BACKEND_UNIX
 
 #ifdef BACKEND_LIBC
 #include <stdio.h>

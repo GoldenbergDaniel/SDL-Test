@@ -1,11 +1,11 @@
+#include <time.h>
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 #include "sdl2/SDL.h"
-#include "base/base_common.h"
-#include "base/base_string.h"
-#include "base/base_math.h"
+#include "glad/glad.h"
+#include "base/base_inc.h"
 
 #include "gfx/render.h"
 #include "gfx/draw.h"
@@ -13,7 +13,7 @@
 #include "game.h"
 #include "global.h"
 
-// #define PERF
+#define PERF
 
 #define TARGET_FPS 60
 #define VSYNC 1
@@ -21,7 +21,7 @@
 Global *GLOBAL;
 
 #ifdef _WIN32
-i32 WinMain(HINSTANCE instance, HINSTANCE pinstance, LPSTR cmd_line, i32 cmd_show)
+i32 WINAPI WinMain(HINSTANCE inst, HINSTANCE p_inst, LPSTR cmd_line, i32 cmd_show)
 #else
 i32 main(void)
 #endif

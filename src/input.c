@@ -1,8 +1,6 @@
-#include "sdl2/SDL.h"
-#include "base/base_common.h"
+#include "sdl2/SDL.h" // IWYU pragma: keeps
+#include "base/base_inc.h"
 
-// #include "global.h"
-#include "game.h"
 #include "global.h"
 #include "input.h"
 

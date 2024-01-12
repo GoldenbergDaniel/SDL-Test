@@ -34,7 +34,7 @@
 
 /* Make sure that this isn't included by Visual C++ */
 #ifdef _MSC_VER
-#error You should run git checkout -f include/SDL_config.h
+// #error You should run git checkout -f include/SDL_config.h
 #endif
 
 /* C language features */

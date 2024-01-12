@@ -1,8 +1,6 @@
 #include "glad/glad.h"
-#include "base/base_common.h"
-#include "base/base_arena.h"
+#include "base/base_inc.h"
 
-#include "../game.h"
 #include "../global.h"
 #include "render.h"
 #include "shaders.h"
@@ -35,8 +33,6 @@ D_Resources d_load_resources(Arena *arena, String path)
 }
 
 // @Draw =======================================================================================
-
-#include <stdio.h>
 
 inline
 void d_clear(Vec4F color)

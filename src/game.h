@@ -1,9 +1,7 @@
 #pragma once
 
-#include "base/base_common.h"
-#include "base/base_arena.h"
-#include "gfx/draw.h"
-#include "input.h"
+#include "base/base_inc.h"
+
 #include "event.h"
 #include "entity.h"
 

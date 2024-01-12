@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/base_common.h"
-#include "base/base_arena.h"
+#include "base/base_inc.h"
 
 #include "gfx/render.h"
 #include "gfx/draw.h"

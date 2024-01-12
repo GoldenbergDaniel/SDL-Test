@@ -4,6 +4,8 @@
 #include "base/base_math.c"
 #include "base/base_random.c"
 
+#include "glad/glad.c"
+
 #include "gfx/render.c"
 #include "gfx/draw.c"
 #include "phys/physics.c"

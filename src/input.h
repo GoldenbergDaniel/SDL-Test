@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/base_common.h"
-#include "base/base_math.h"
+#include "base/base_inc.h"
 
 typedef union SDL_Event SDL_Event;
 
