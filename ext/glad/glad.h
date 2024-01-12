@@ -19,10 +19,11 @@
         https://glad.dav1d.de/#profile=core&language=c&specification=gl&loader=on&api=gl%3D4.1
 */
 
-
 #ifndef __glad_h_
 #define __glad_h_
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 // #ifdef __gl_h_
 // #error OpenGL header already included, remove this include, glad already provides it

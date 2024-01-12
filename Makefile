@@ -5,11 +5,6 @@ CFLAGS_R = -std=gnu17 \
 					 -O0 \
 					 -Iext/ \
 					 -Iext/sdl2/inc \
-					 -Wall \
-					 -Wpedantic \
-					 -Wno-language-extension-token \
-					 -Wno-missing-braces \
-					 -Wno-unused-function \
 					 -Wno-initializer-overrides \
 
 CFLAGS_D = -std=gnu17 \
@@ -19,18 +14,15 @@ CFLAGS_D = -std=gnu17 \
 					 -I../ext/sdl2/inc \
 					 -Wall \
 					 -Wpedantic \
-					 -Wno-language-extension-token \
 					 -Wno-missing-braces \
 					 -Wno-unused-function \
 					 -Wno-initializer-overrides \
 
 LDFLAGS_R = -Lext/sdl2/lib \
 						-lsdl2 \
-						ext/glad/glad.c \
 
 LDFLAGS_D = -L../ext/sdl2/lib \
 					  -lsdl2 \
-						../ext/glad/glad.c \
 
 .PHONY: all compile_r compile_d
 
