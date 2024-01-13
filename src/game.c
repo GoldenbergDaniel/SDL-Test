@@ -136,7 +136,7 @@ void update_game(Game *game)
 
         if (en->has_target)
         {
-          update_targetting_entity_combat(game, en);
+          update_targeting_entity_combat(game, en);
         }
       }
     }
