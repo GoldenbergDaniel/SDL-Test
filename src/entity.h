@@ -137,7 +137,7 @@ struct Entity
   u8 col_layer;
   b8 col_mask;
 
-  // Targetting
+  // Targeting
   bool has_target;
   Vec2F target_pos;
   f32 target_angle;
@@ -174,7 +174,7 @@ void update_controlled_entity_movement(Game *game, Entity *entity);
 void update_autonomous_entity_movement(Game *game, Entity *entity);
 void update_entity_projectile_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
-void update_targetting_entity_combat(Game *game, Entity *entity);
+void update_targeting_entity_combat(Game *game, Entity *entity);
 void update_equipped_entity(Game *game, Entity *entity);
 
 // @SpawnEntity ================================================================================

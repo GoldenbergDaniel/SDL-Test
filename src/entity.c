@@ -471,7 +471,7 @@ void update_controlled_entity_combat(Game *game, Entity *en)
   }
 }
 
-void update_targetting_entity_combat(Game *game, Entity *en)
+void update_targeting_entity_combat(Game *game, Entity *en)
 {
   switch (en->combat_type)
   {
