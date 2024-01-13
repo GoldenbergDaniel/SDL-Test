@@ -2,6 +2,7 @@
 
 #include "base/base_inc.h"
 
+#include "gfx/draw.h"
 #include "phys/physics.h"
 #include "input.h"
 #include "event.h"
@@ -21,6 +22,7 @@ static bool tick_timer(Timer *timer, f64 dt);
 void init_entity(Entity *en, EntityType type)
 {
   en->type = type;
+  en->child_capacity = 256;
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
   en->size = v2f(10.0f, 10.0f);
@@ -136,7 +138,9 @@ void clear_entity(Entity *en)
 {
   Entity *next = en->next;
   Entity *next_free = en->next_free;
+  EntityRef *children = en->children;
   zero(*en, Entity);
+  en->children = children;
   en->next_free = next_free;
   en->next = next;
 }
@@ -671,7 +675,7 @@ Entity *entity_from_ref(EntityRef ref)
 {
   Entity *result = NULL;
 
-  if (ref.ptr != NULL && ref.ptr->id == ref.id)
+  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id)
   {
     result = ref.ptr;
   }
@@ -684,25 +688,33 @@ Entity *entity_from_ref(EntityRef ref)
 Entity *alloc_entity(Game *game)
 {
   EntityList *list = &game->entities;
-  Entity *new_entity = list->first_free;
+  Entity *new_en = list->first_free;
 
-  if (new_entity == NULL)
+  if (new_en == NULL)
   {
-    new_entity = arena_alloc(&game->entity_arena, sizeof (Entity));
-    clear_entity(new_entity);
+    new_en = arena_alloc(&game->entity_arena, sizeof (Entity));
+    clear_entity(new_en);
+
+    new_en->child_capacity = 256;
+    u64 children_size = sizeof (EntityRef) * new_en->child_capacity;
+    new_en->children = arena_alloc(&game->entity_arena, children_size);
+    for (u16 i = 0; i < new_en->child_capacity; i++)
+    {
+      zero(new_en->children[i], EntityRef);
+    }
 
     if (list->head == NULL)
     {
-      list->head = new_entity;
+      list->head = new_en;
     }
 
     if (list->tail != NULL)
     {
-      list->tail->next = new_entity;
+      list->tail->next = new_en;
     }
 
-    new_entity->next = NULL;
-    list->tail = new_entity;
+    new_en->next = NULL;
+    list->tail = new_en;
     list->count++;
   }
   else
@@ -710,9 +722,9 @@ Entity *alloc_entity(Game *game)
     list->first_free = list->first_free->next_free;
   }
 
-  new_entity->id = random_u64(1, UINT64_MAX);
+  new_en->id = random_u64(1, UINT64_MAX);
 
-  return new_entity;
+  return new_en;
 }
 
 void free_entity(Game *game, Entity *en)
@@ -759,70 +771,67 @@ Entity *get_first_entity_of_type(Game *game, EntityType type)
 
 void set_entity_parent(Entity *en, Entity *parent)
 {
+  assert(parent->child_count < parent->child_capacity);
+
+  for (u16 i = 0; i < parent->child_capacity; i++)
+  {
+    Entity *slot = entity_from_ref(parent->children[i]);
+    if (!is_entity_valid(slot))
+    {
+      parent->children[i] = ref_from_entity(en);
+      parent->child_count++;
+      break;
+    }
+  }
+
   en->parent = ref_from_entity(parent);
-
-  if (parent->first_child == NULL)
-  {
-    parent->first_child = en;
-  }
-  else
-  {
-    parent->last_child->next_child = en;
-  }
-
-  parent->last_child = en;
 }
 
-void add_entity_child(Entity *en, Entity *child)
+void assign_entity_child(Entity *en, Entity *child)
 {
-  en->last_child->next_child = child;
-  en->last_child = child;
+  assert(en->child_count < en->child_capacity);
+
+  for (u16 i = 0; i < en->child_capacity; i++)
+  {
+    Entity *slot = entity_from_ref(en->children[i]);
+    if (!is_entity_valid(slot))
+    {
+      en->children[i] = ref_from_entity(en);
+      en->child_count++;
+      break;
+    }
+  }
+
   child->parent = ref_from_entity(en);
 }
 
-// NOTE: NEED TO TEST!
 void remove_entity_child(Entity *en, u64 id)
 {
-  Entity *prev = NULL;
-
-  for (Entity *curr = en->first_child; curr; curr = curr->next_child)
+  for (u16 i = 0; i < en->child_capacity; i++)
   {
-    if (curr->id == id)
+    EntityRef *child = &en->children[i];
+    if (child->id == id)
     {
-      zero(curr->parent, EntityRef);
-      prev->next_child = curr->next_child;
+      zero(*child, EntityRef);
+      en->child_count--;
       break;
     }
-
-    prev = curr;
   }
 }
 
-Entity *get_entity_child_at_index(Entity *en, u8 index)
+inline
+Entity *get_entity_child_at_index(Entity *en, u16 index)
 {
-  Entity *result = NULL;
-
-  u8 i = 0;
-  for (Entity *curr = en->first_child; curr; curr = curr->next_child)
-  {
-    if (i == index)
-    {
-      result = curr;
-      break;
-    }
-
-    i++;
-  }
-
-  return result;
+  return entity_from_ref(en->children[index]);
 }
 
 Entity *get_entity_child_of_id(Entity *en, u64 id)
 {
-  Entity *result = {0};
+  Entity *result = NULL;
 
-  for (Entity *curr = en->first_child; curr; curr = curr->next_child)
+  for (u16 i = 0; i < en->child_capacity; i++)
   {
+    Entity *curr = entity_from_ref(en->children[i]);
     if (curr->id == id)
     {
       result = curr;
@@ -835,10 +844,11 @@ Entity *get_entity_child_of_id(Entity *en, u64 id)
 
 Entity *get_entity_child_of_type(Entity *en, EntityType type)
 {
-  Entity *result = {0};
+  Entity *result = NULL;
 
-  for (Entity *curr = en->first_child; curr; curr = curr->next_child)
+  for (u16 i = 0; i < en->child_capacity; i++)
   {
+    Entity *curr = entity_from_ref(en->children[i]);
     if (curr->type == type)
     {
       result = curr;

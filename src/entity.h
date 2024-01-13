@@ -94,9 +94,8 @@ struct Entity
   Entity *next_free;
 
   EntityRef parent;
-  Entity *first_child;
-  Entity *last_child;
-  Entity *next_child;
+  EntityRef *children;
+  u16 child_capacity;
   u16 child_count;
 
   // General
@@ -161,7 +160,7 @@ struct EntityList
 
 // @InitEntity =================================================================================
 
-void init_entity(Entity *entity, EntityType type);
+void init_entity(Entity *en, EntityType type);
 void clear_entity(Entity *entity);
 
 // @UpdateEntity ===============================================================================
@@ -235,8 +234,8 @@ Entity *get_first_entity_of_type(Game *game, EntityType type);
 // @EntityTree =================================================================================
 
 void set_entity_parent(Entity *entity, Entity *parent);
-void add_entity_child(Entity *entity, Entity *child);
+void assign_entity_child(Entity *entity, Entity *child);
 void remove_entity_child(Entity *entity, u64 id);
-Entity *get_entity_child_at_index(Entity *entity, u8 index);
+Entity *get_entity_child_at_index(Entity *en, u16 index);
 Entity *get_entity_child_of_id(Entity *entity, u64 id);
 Entity *get_entity_child_of_type(Entity *entity, EntityType type);

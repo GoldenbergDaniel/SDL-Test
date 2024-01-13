@@ -50,6 +50,34 @@ void init_game(Game *game)
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
     zombie->scale = v2f(8.0f, 8.0f);
   }
+
+#if 0
+  SCOPE("Test children")
+  {
+    Entity *e1 = alloc_entity(game);
+    init_entity(e1, EntityType_Debug);
+    e1->id = 1;
+
+    Entity *e2 = alloc_entity(game);
+    init_entity(e2, EntityType_Debug);
+    e2->id = 2;
+    set_entity_parent(e2, e1);
+
+    Entity *e3 = alloc_entity(game);
+    init_entity(e3, EntityType_Debug);
+    e3->id = 3;
+    set_entity_parent(e3, e1);
+
+    remove_entity_child(e1, e2->id);
+
+    Entity *e4 = alloc_entity(game);
+    init_entity(e4, EntityType_Debug);
+    e4->id = 4;
+    set_entity_parent(e4, e1);
+
+    int k = 0;
+  }
+#endif
 }
 
 // @Update =====================================================================================
