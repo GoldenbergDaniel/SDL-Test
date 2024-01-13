@@ -6,6 +6,7 @@ CFLAGS_R = -std=gnu17 \
 					 -Iext/ \
 					 -Iext/sdl2/inc \
 					 -Wno-initializer-overrides \
+					 -Wno-static-in-inline \
 
 CFLAGS_D = -std=gnu17 \
            -g \
@@ -17,6 +18,7 @@ CFLAGS_D = -std=gnu17 \
 					 -Wno-missing-braces \
 					 -Wno-unused-function \
 					 -Wno-initializer-overrides \
+					 -Wno-static-in-inline \
 
 LDFLAGS_R = -Lext/sdl2/lib \
 						-lsdl2 \

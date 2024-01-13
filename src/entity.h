@@ -84,7 +84,6 @@ struct EntityRef
 {
   Entity *ptr;
   u64 id;
-  u64 gen;
 };
 
 typedef struct Entity Entity;
@@ -158,10 +157,13 @@ struct EntityList
   u16 count;
 };
 
+static Entity *NIL_ENTITY = &(Entity) {0}; 
+
 // @InitEntity =================================================================================
 
 void init_entity(Entity *en, EntityType type);
 void clear_entity(Entity *entity);
+void clear_entity_children(Entity *en);
 
 // @UpdateEntity ===============================================================================
 

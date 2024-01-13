@@ -139,10 +139,23 @@ void clear_entity(Entity *en)
   Entity *next = en->next;
   Entity *next_free = en->next_free;
   EntityRef *children = en->children;
+
   zero(*en, Entity);
+  
   en->children = children;
+  clear_entity_children(en);
   en->next_free = next_free;
   en->next = next;
+}
+
+inline
+void clear_entity_children(Entity *en)
+{
+  for (u16 i = 0; i < en->child_capacity; i++)
+  {
+    en->children[i].ptr = NIL_ENTITY;
+    en->children[i].id = 0;
+  }
 }
 
 // @UpdateEntity ===============================================================================
@@ -349,12 +362,9 @@ void update_autonomous_entity_movement(Game *game, Entity *en)
   f64 dt = game->dt;
 
   Entity *player = get_first_entity_of_type(game, EntityType_Player);
-  if (is_entity_valid(player))
-  {
-    Vec2F entity_pos = pos_from_entity(en);
-    Vec2F player_pos = pos_from_entity(player);
-    en->flip_x = player_pos.x < entity_pos.x ? TRUE : FALSE;
-  }
+  Vec2F entity_pos = pos_from_entity(en);
+  Vec2F player_pos = pos_from_entity(player);
+  en->flip_x = player_pos.x < entity_pos.x ? TRUE : FALSE;
 
   switch (en->move_type)
   {
@@ -451,12 +461,7 @@ void update_controlled_entity_combat(Game *game, Entity *en)
     Entity *gun = get_entity_child_at_index(en, 0);
     Entity *shot_point = get_entity_child_at_index(gun, 0);
     Vec2F shot_point_pos = pos_from_entity(shot_point);
-
-    f32 spawn_rot = 0.0f;
-    if (is_entity_valid(gun))
-    {
-      spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
-    }
+    f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
     Entity *laser = spawn_entity(game, EntityType_Laser, .pos=shot_point_pos, .color=D_YELLOW);
     laser->rot = spawn_rot;
@@ -607,7 +612,7 @@ void set_entity_target(Entity *en, EntityRef target)
 {
   Entity *target_entity = entity_from_ref(target);
   
-  if (!is_entity_valid(target_entity)) return;
+  // if (!is_entity_valid(target_entity)) return;
 
   Vec2F target_pos = pos_from_entity(target_entity);
 
@@ -667,13 +672,17 @@ void wrap_entity_at_edges(Entity *en)
 inline
 EntityRef ref_from_entity(Entity *en)
 {
-  return (EntityRef) {en, en->id};
+  return (EntityRef)
+  {
+    .ptr = en,
+    .id = en->id
+  };
 }
 
 inline
 Entity *entity_from_ref(EntityRef ref)
 {
-  Entity *result = NULL;
+  Entity *result = NIL_ENTITY;
 
   if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id)
   {
@@ -698,10 +707,7 @@ Entity *alloc_entity(Game *game)
     new_en->child_capacity = 256;
     u64 children_size = sizeof (EntityRef) * new_en->child_capacity;
     new_en->children = arena_alloc(&game->entity_arena, children_size);
-    for (u16 i = 0; i < new_en->child_capacity; i++)
-    {
-      zero(new_en->children[i], EntityRef);
-    }
+    clear_entity_children(new_en);
 
     if (list->head == NULL)
     {
@@ -737,7 +743,7 @@ void free_entity(Game *game, Entity *en)
 
 Entity *get_entity_of_id(Game *game, u64 id)
 {
-  Entity *result = NULL;
+  Entity *result = NIL_ENTITY;
   
   for (Entity *en = game->entities.head; en != NULL; en = en->next)
   {
@@ -753,9 +759,9 @@ Entity *get_entity_of_id(Game *game, u64 id)
 
 Entity *get_first_entity_of_type(Game *game, EntityType type)
 {
-  Entity *result = NULL;
+  Entity *result = NIL_ENTITY;
 
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (Entity *en = game->entities.head; en != NULL; en = en->next)
   {
     if (en->type == type)
     {
@@ -827,7 +833,7 @@ Entity *get_entity_child_at_index(Entity *en, u16 index)
 
 Entity *get_entity_child_of_id(Entity *en, u64 id)
 {
-  Entity *result = NULL;
+  Entity *result = NIL_ENTITY;
 
   for (u16 i = 0; i < en->child_capacity; i++)
   {
@@ -844,7 +850,7 @@ Entity *get_entity_child_of_id(Entity *en, u64 id)
 
 Entity *get_entity_child_of_type(Entity *en, EntityType type)
 {
-  Entity *result = NULL;
+  Entity *result = NIL_ENTITY;
 
   for (u16 i = 0; i < en->child_capacity; i++)
   {
