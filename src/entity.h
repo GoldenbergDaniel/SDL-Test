@@ -12,6 +12,8 @@
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
+#define MAX_ENTITY_CHILDREN 128
+
 #define TIMER_COMBAT 0
 #define TIMER_HEALTH 1
 #define TIMER_KILL 2
@@ -94,8 +96,9 @@ struct Entity
 
   EntityRef parent;
   EntityRef *children;
-  u16 child_capacity;
   u16 child_count;
+  i16 *free_child_list;
+  u16 free_child_count;
 
   // General
   u64 id;
@@ -162,8 +165,8 @@ static Entity *NIL_ENTITY = &(Entity) {0};
 // @InitEntity =================================================================================
 
 void init_entity(Entity *en, EntityType type);
-void clear_entity(Entity *entity);
-void clear_entity_children(Entity *en);
+void reset_entity(Entity *entity);
+void reset_entity_children(Entity *en);
 
 // @UpdateEntity ===============================================================================
 
@@ -235,9 +238,8 @@ Entity *get_first_entity_of_type(Game *game, EntityType type);
 
 // @EntityTree =================================================================================
 
-void set_entity_parent(Entity *entity, Entity *parent);
-void assign_entity_child(Entity *entity, Entity *child);
-void remove_entity_child(Entity *entity, u64 id);
+void attach_entity_child(Entity *entity, Entity *child);
+void detach_entity_child(Entity *entity, Entity *child);
 Entity *get_entity_child_at_index(Entity *en, u16 index);
 Entity *get_entity_child_of_id(Entity *entity, u64 id);
 Entity *get_entity_child_of_type(Entity *entity, EntityType type);

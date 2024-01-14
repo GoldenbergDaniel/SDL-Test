@@ -11,7 +11,7 @@
 
 extern Global *GLOBAL;
 
-// @Init =======================================================================================
+// @Init /////////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
 {
@@ -34,16 +34,16 @@ void init_game(Game *game)
 
     Entity *gun = alloc_entity(game);
     init_entity(gun, EntityType_Equipped);
-    set_entity_parent(gun, player);
+    attach_entity_child(player, gun);
     gun->pos = v2f(30.0f, 0.0f);
     gun->scale = v2f(1.0f, 1.0f);
 
     Entity *shot_point = alloc_entity(game);
     init_entity(shot_point, EntityType_Debug);
-    set_entity_parent(shot_point, gun);
+    attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(24.0f, 2.0f);
     shot_point->scale = v2f(0.05f, 0.05f);
-    shot_point->visible = FALSE;
+    shot_point->visible = TRUE;
 
     Entity *zombie = alloc_entity(game);
     init_entity(zombie, EntityType_ZombieWalker);
@@ -51,7 +51,7 @@ void init_game(Game *game)
     zombie->scale = v2f(8.0f, 8.0f);
   }
 
-#if 0
+  #if 0
   SCOPE("Test children")
   {
     Entity *e1 = alloc_entity(game);
@@ -61,26 +61,26 @@ void init_game(Game *game)
     Entity *e2 = alloc_entity(game);
     init_entity(e2, EntityType_Debug);
     e2->id = 2;
-    set_entity_parent(e2, e1);
+    attach_entity_child(e1, e2);
 
     Entity *e3 = alloc_entity(game);
     init_entity(e3, EntityType_Debug);
     e3->id = 3;
-    set_entity_parent(e3, e1);
+    attach_entity_child(e1, e3);
 
-    remove_entity_child(e1, e2->id);
+    detach_entity_child(e1, e3);
 
     Entity *e4 = alloc_entity(game);
     init_entity(e4, EntityType_Debug);
     e4->id = 4;
-    set_entity_parent(e4, e1);
+    attach_entity_child(e1, e4);
 
     int k = 0;
   }
-#endif
+  #endif
 }
 
-// @Update =====================================================================================
+// @Update ///////////////////////////////////////////////////////////////////////////////
 
 void update_game(Game *game)
 {
@@ -168,7 +168,7 @@ void update_game(Game *game)
   }
 }
 
-// @HandleEvents ===============================================================================
+// @HandleEvents /////////////////////////////////////////////////////////////////////////
 
 void handle_game_events(Game *game)
 {
@@ -199,7 +199,7 @@ void handle_game_events(Game *game)
   }
 }
 
-// @Draw =======================================================================================
+// @Draw /////////////////////////////////////////////////////////////////////////////////
 
 void draw_game(Game *game)
 {  

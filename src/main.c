@@ -13,7 +13,7 @@
 #include "game.h"
 #include "global.h"
 
-#define PERF
+// #define PERF
 
 #define TARGET_FPS 60
 #define VSYNC 1

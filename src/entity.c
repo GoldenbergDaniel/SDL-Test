@@ -17,12 +17,11 @@ static void init_timers(Entity *en);
 static Timer *get_timer(Entity *en, u8 index);
 static bool tick_timer(Timer *timer, f64 dt);
 
-// @InitEntity =================================================================================
+// @InitEntity ///////////////////////////////////////////////////////////////////////////
 
 void init_entity(Entity *en, EntityType type)
 {
   en->type = type;
-  en->child_capacity = 256;
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
   en->size = v2f(10.0f, 10.0f);
@@ -134,7 +133,7 @@ void init_entity(Entity *en, EntityType type)
   }
 }
 
-void clear_entity(Entity *en)
+void reset_entity(Entity *en)
 {
   Entity *next = en->next;
   Entity *next_free = en->next_free;
@@ -143,22 +142,23 @@ void clear_entity(Entity *en)
   zero(*en, Entity);
   
   en->children = children;
-  clear_entity_children(en);
+  reset_entity_children(en);
   en->next_free = next_free;
   en->next = next;
 }
 
 inline
-void clear_entity_children(Entity *en)
+void reset_entity_children(Entity *en)
 {
-  for (u16 i = 0; i < en->child_capacity; i++)
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
   {
     en->children[i].ptr = NIL_ENTITY;
     en->children[i].id = 0;
+    en->free_child_list[i] = -1;
   }
 }
 
-// @UpdateEntity ===============================================================================
+// @UpdateEntity /////////////////////////////////////////////////////////////////////////
 
 // NOTE: probably a mess
 void update_entity_collider(Entity *en)
@@ -352,9 +352,6 @@ void update_controlled_entity_movement(Game *game, Entity *en)
   }
 
   en->pos = add_2f(en->pos, en->vel);
-
-  // printf("VelX: %.02f p/f\n", en->vel.x);
-  // printf("VelY: %.02f p/f\n", en->vel.y);
 }
 
 void update_autonomous_entity_movement(Game *game, Entity *en)
@@ -523,7 +520,7 @@ void update_equipped_entity(Game *game, Entity *en)
   en->rot = angle;
 }
 
-// @SpawnEntity ================================================================================
+// @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
 {
@@ -536,7 +533,7 @@ Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params)
   return en;
 }
 
-// @KillEntity =================================================================================
+// @KillEntity ///////////////////////////////////////////////////////////////////////////
 
 void _kill_entity(Game *game, KillEntityParams params)
 {
@@ -549,7 +546,7 @@ void _kill_entity(Game *game, KillEntityParams params)
   free_entity(game, en);
 }
 
-// @OtherEntity ================================================================================
+// @OtherEntity //////////////////////////////////////////////////////////////////////////
 
 Vec2F pos_from_entity(Entity *en)
 {
@@ -667,7 +664,7 @@ void wrap_entity_at_edges(Entity *en)
   }
 }
 
-// @EntityRef ==================================================================================
+// @EntityRef ////////////////////////////////////////////////////////////////////////////
 
 inline
 EntityRef ref_from_entity(Entity *en)
@@ -692,7 +689,7 @@ Entity *entity_from_ref(EntityRef ref)
   return result;
 }
 
-// @EntityList =================================================================================
+// @EntityList ///////////////////////////////////////////////////////////////////////////
 
 Entity *alloc_entity(Game *game)
 {
@@ -702,12 +699,15 @@ Entity *alloc_entity(Game *game)
   if (new_en == NULL)
   {
     new_en = arena_alloc(&game->entity_arena, sizeof (Entity));
-    clear_entity(new_en);
+    zero(*new_en, Entity);
 
-    new_en->child_capacity = 256;
-    u64 children_size = sizeof (EntityRef) * new_en->child_capacity;
+    u64 children_size = sizeof (EntityRef) * MAX_ENTITY_CHILDREN;
     new_en->children = arena_alloc(&game->entity_arena, children_size);
-    clear_entity_children(new_en);
+
+    u64 free_list_size = sizeof (i16) * MAX_ENTITY_CHILDREN;
+    new_en->free_child_list = arena_alloc(&game->entity_arena, free_list_size);
+
+    reset_entity_children(new_en);
 
     if (list->head == NULL)
     {
@@ -736,7 +736,7 @@ Entity *alloc_entity(Game *game)
 void free_entity(Game *game, Entity *en)
 {
   EntityList *list = &game->entities;
-  clear_entity(en);
+  reset_entity(en);
   en->next_free = list->first_free;
   list->first_free = en;
 }
@@ -773,55 +773,72 @@ Entity *get_first_entity_of_type(Game *game, EntityType type)
   return result;
 }
 
-// @EntityTree =================================================================================
+// @EntityTree ///////////////////////////////////////////////////////////////////////////
 
-void set_entity_parent(Entity *en, Entity *parent)
+void attach_entity_child(Entity *en, Entity *child)
 {
-  assert(parent->child_count < parent->child_capacity);
+  assert(en->child_count <= MAX_ENTITY_CHILDREN);
 
-  for (u16 i = 0; i < parent->child_capacity; i++)
+  en->child_count++;
+
+  if (en->free_child_count == 0)
   {
-    Entity *slot = entity_from_ref(parent->children[i]);
-    if (!is_entity_valid(slot))
+    for (u16 i = 0; i < en->child_count; i++)
     {
-      parent->children[i] = ref_from_entity(en);
-      parent->child_count++;
-      break;
+      Entity *slot = entity_from_ref(en->children[i]);
+      if (!is_entity_valid(slot))
+      {
+        en->children[i] = ref_from_entity(child);
+        break;
+      }
     }
   }
-
-  en->parent = ref_from_entity(parent);
-}
-
-void assign_entity_child(Entity *en, Entity *child)
-{
-  assert(en->child_count < en->child_capacity);
-
-  for (u16 i = 0; i < en->child_capacity; i++)
+  else
   {
-    Entity *slot = entity_from_ref(en->children[i]);
-    if (!is_entity_valid(slot))
+    for (u16 i = 0; i < en->free_child_count; i++)
     {
-      en->children[i] = ref_from_entity(en);
-      en->child_count++;
-      break;
+      i16 slot = en->free_child_list[i];
+      if (slot != -1)
+      {
+        en->children[slot] = ref_from_entity(child);
+        en->free_child_list[i] = -1;
+        en->free_child_count--;
+        break;
+      }
     }
   }
 
   child->parent = ref_from_entity(en);
 }
 
-void remove_entity_child(Entity *en, u64 id)
+void detach_entity_child(Entity *en, Entity *child)
 {
-  for (u16 i = 0; i < en->child_capacity; i++)
+  bool success = FALSE;
+
+  for (u16 i = 0; i < en->child_count; i++)
   {
-    EntityRef *child = &en->children[i];
-    if (child->id == id)
+    EntityRef *slot = &en->children[i];
+    if (slot->id == child->id)
     {
-      zero(*child, EntityRef);
+      zero(*slot, EntityRef);
+
+      if (i < en->child_count)
+      {
+        en->free_child_list[en->free_child_count] = i;
+        en->free_child_count++;
+      }
+
       en->child_count--;
+      zero(child->parent, EntityRef);
+      success = TRUE;
       break;
     }
+  }
+
+  if (!success)
+  {
+    fprintf(stderr, "ERROR Failed to detach entity. Child not found!\n");
+    assert(FALSE);
   }
 }
 
@@ -835,7 +852,7 @@ Entity *get_entity_child_of_id(Entity *en, u64 id)
 {
   Entity *result = NIL_ENTITY;
 
-  for (u16 i = 0; i < en->child_capacity; i++)
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
   {
     Entity *curr = entity_from_ref(en->children[i]);
     if (curr->id == id)
@@ -852,7 +869,7 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
 {
   Entity *result = NIL_ENTITY;
 
-  for (u16 i = 0; i < en->child_capacity; i++)
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
   {
     Entity *curr = entity_from_ref(en->children[i]);
     if (curr->type == type)
@@ -865,7 +882,7 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
   return result;
 }
 
-// @Timer ======================================================================================
+// @Timer ////////////////////////////////////////////////////////////////////////////////
 
 static
 void init_timers(Entity *en)
