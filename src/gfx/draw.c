@@ -8,7 +8,7 @@
 
 extern Global *GLOBAL;
 
-// @Assets =====================================================================================
+// @Assets ///////////////////////////////////////////////////////////////////////////////
 
 D_Resources d_load_resources(Arena *arena, String path)
 {
@@ -16,10 +16,10 @@ D_Resources d_load_resources(Arena *arena, String path)
   res.textures = arena_alloc(arena, sizeof (R_Texture) * D_TEXTURE_COUNT);
   res.shaders = arena_alloc(arena, sizeof (R_Shader) * D_SHADER_COUNT);
 
-  R_Shader primitive_shader = r_create_shader(primitive_vert_src, primitive_frag_src);
+  R_Shader primitive_shader = r_create_shader(primitive_VERT_SRC, primitive_FRAG_SRC);
   res.shaders[0] = primitive_shader;
 
-  R_Shader sprite_shader = r_create_shader(sprite_vert_src, sprite_frag_src);
+  R_Shader sprite_shader = r_create_shader(sprite_VERT_SRC, sprite_FRAG_SRC);
   res.shaders[1] = sprite_shader;
 
   Arena scratch = arena_get_scratch(arena);
@@ -32,7 +32,7 @@ D_Resources d_load_resources(Arena *arena, String path)
   return res;
 }
 
-// @Draw =======================================================================================
+// @Draw /////////////////////////////////////////////////////////////////////////////////
 
 inline
 void d_clear(Vec4F color)

@@ -60,19 +60,19 @@ static R_Texture *R_NIL_TEXTURE = &(R_Texture) {0};
 #define R_BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
 #define R_WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
 
-// @Buffer =====================================================================================
+// @Buffer ///////////////////////////////////////////////////////////////////////////////
 
 u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic);
 void r_update_vertex_buffer(void *data, u32 size, u32 offset);
 u32 r_create_index_buffer(void *data, u32 size, bool dynamic);
 void r_update_index_buffer(void *data, u32 size, u32 offset);
 
-// @VAO ========================================================================================
+// @VAO //////////////////////////////////////////////////////////////////////////////////
 
 R_VAO r_create_vertex_array(u8 attrib_count);
 void r_push_vertex_attribute(R_VAO *vao, u32 count);
 
-// @Shader =====================================================================================
+// @Shader ///////////////////////////////////////////////////////////////////////////////
 
 R_Shader r_create_shader(const char *vert_src, const char *frag_src);
 void r_set_uniform_1u(R_Shader *shader, i32 loc, u32 val);
@@ -83,11 +83,11 @@ void r_set_uniform_3f(R_Shader *shader, i32 loc, Vec3F val);
 void r_set_uniform_4f(R_Shader *shader, i32 loc, Vec4F val);
 void r_set_uniform_3x3f(R_Shader *shader, i32 loc, Mat3x3F val);
 
-// @Texture ====================================================================================
+// @Texture //////////////////////////////////////////////////////////////////////////////
 
 R_Texture r_create_texture(String path);
 
-// @Rendering ==================================================================================
+// @Rendering ////////////////////////////////////////////////////////////////////////////
 
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
 void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F color, Vec4F uv);

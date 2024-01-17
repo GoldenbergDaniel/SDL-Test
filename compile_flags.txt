@@ -1,5 +1,0 @@
--Iext
--Iext/sdl2/inc
--std=gnu17
-
--Wno-initializer-overrides

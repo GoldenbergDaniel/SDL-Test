@@ -43,41 +43,13 @@ void init_game(Game *game)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(24.0f, 2.0f);
     shot_point->scale = v2f(0.05f, 0.05f);
-    shot_point->visible = TRUE;
+    shot_point->visible = FALSE;
 
     Entity *zombie = alloc_entity(game);
     init_entity(zombie, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
     zombie->scale = v2f(8.0f, 8.0f);
   }
-
-  #if 0
-  SCOPE("Test children")
-  {
-    Entity *e1 = alloc_entity(game);
-    init_entity(e1, EntityType_Debug);
-    e1->id = 1;
-
-    Entity *e2 = alloc_entity(game);
-    init_entity(e2, EntityType_Debug);
-    e2->id = 2;
-    attach_entity_child(e1, e2);
-
-    Entity *e3 = alloc_entity(game);
-    init_entity(e3, EntityType_Debug);
-    e3->id = 3;
-    attach_entity_child(e1, e3);
-
-    detach_entity_child(e1, e3);
-
-    Entity *e4 = alloc_entity(game);
-    init_entity(e4, EntityType_Debug);
-    e4->id = 4;
-    attach_entity_child(e1, e4);
-
-    int k = 0;
-  }
-  #endif
 }
 
 // @Update ///////////////////////////////////////////////////////////////////////////////
@@ -203,18 +175,7 @@ void handle_game_events(Game *game)
 
 void draw_game(Game *game)
 {  
-  d_clear(v4f(0.5f, 0.32f, 0.32f, 1.0f));
-
-  SCOPE("Primitive Batch")
-  {
-    for (Entity *en = game->entities.head; en; en = en->next)
-    {
-      if (en->draw_type == DrawType_Rectangle && en->visible)
-      {
-        d_draw_rectangle(en->xform, en->color);
-      }
-    }
-  }
+  d_clear(v4f(0.34f, 0.44f, 0.47f, 1.0f));
 
   SCOPE("Sprite Batch")
   {
@@ -223,6 +184,17 @@ void draw_game(Game *game)
       if (en->draw_type == DrawType_Sprite && en->visible)
       {
         d_draw_sprite(en->xform, en->color, en->texture);
+      }
+    }
+  }
+
+  SCOPE("Primitive Batch")
+  {
+    for (Entity *en = game->entities.head; en; en = en->next)
+    {
+      if (en->draw_type == DrawType_Rectangle && en->visible)
+      {
+        d_draw_rectangle(en->xform, en->color);
       }
     }
   }

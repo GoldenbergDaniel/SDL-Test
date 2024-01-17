@@ -2,8 +2,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
-
 #include "base/base_inc.h"
+
 #include "render.h"
 #include "../global.h"
 
@@ -13,7 +13,7 @@ static void verify_shader(u32 id, u32 type);
 
 extern Global *GLOBAL;
 
-// @Buffer =====================================================================================
+// @Buffer ///////////////////////////////////////////////////////////////////////////////
 
 u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic)
 {
@@ -49,7 +49,7 @@ void r_update_index_buffer(void *data, u32 size, u32 offset)
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
 }
 
-// @RAO ========================================================================================
+// @RAO //////////////////////////////////////////////////////////////////////////////////
 
 R_VAO r_create_vertex_array(u8 attrib_count)
 {
@@ -67,20 +67,19 @@ R_VAO r_create_vertex_array(u8 attrib_count)
 
 void r_push_vertex_attribute(R_VAO *vao, u32 count)
 {
-  glVertexAttribPointer(
-                        vao->attrib_index,
+  glVertexAttribPointer(vao->attrib_index,
                         count,
                         GL_FLOAT,
                         FALSE,
-                        count * sizeof (f32) * vao->attrib_count,
-                        (void *) (u64) (vao->attrib_index * count * sizeof (f32)));
+                        sizeof (f32) * vao->attrib_count * count,
+                        (void *) (u64) (sizeof (f32) * vao->attrib_index * count));
 
   glEnableVertexAttribArray(vao->attrib_index);
 
   vao->attrib_index++;
 }
 
-// @Shader =====================================================================================
+// @Shader ///////////////////////////////////////////////////////////////////////////////
 
 R_Shader r_create_shader(const char *vert_src, const char *frag_src)
 {
@@ -97,10 +96,10 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   verify_shader(frag, GL_COMPILE_STATUS);
   #endif
 
-  u32 id = glCreateProgram();
-  glAttachShader(id, frag);
-  glAttachShader(id, vert);
-  glLinkProgram(id);
+  u32 program = glCreateProgram();
+  glAttachShader(program, frag);
+  glAttachShader(program, vert);
+  glLinkProgram(program);
 
   #ifdef DEBUG
   verify_shader(id, GL_LINK_STATUS);
@@ -109,13 +108,13 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   glDeleteShader(vert);
   glDeleteShader(frag);
 
-  i16 u_xform = glGetUniformLocation(id, "u_xform");
-  i16 u_color = glGetUniformLocation(id, "u_color");
-  i16 u_tex = glGetUniformLocation(id, "u_tex");
+  i16 u_xform = glGetUniformLocation(program, "u_xform");
+  i16 u_color = glGetUniformLocation(program, "u_color");
+  i16 u_tex = glGetUniformLocation(program, "u_tex");
 
   return (R_Shader)
   {
-    .id = id,
+    .id = program,
     .u_xform = u_xform,
     .u_color = u_color,
     .u_tex = u_tex,
@@ -164,7 +163,7 @@ void r_set_uniform_3x3f(R_Shader *shader, i32 loc, Mat3x3F val)
   glUniformMatrix3fv(loc, 1, FALSE, &val.e[0][0]);
 }
 
-// @Texture ====================================================================================
+// @Texture //////////////////////////////////////////////////////////////////////////////
 
 R_Texture r_create_texture(String path)
 {
@@ -183,8 +182,7 @@ R_Texture r_create_texture(String path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glTexImage2D(
-               GL_TEXTURE_2D, 
+  glTexImage2D(GL_TEXTURE_2D, 
                0, 
                GL_RGBA8, 
                tex.width, 
@@ -200,13 +198,12 @@ R_Texture r_create_texture(String path)
   return tex;
 }
 
-// @Rendering ==================================================================================
+// @Rendering ////////////////////////////////////////////////////////////////////////////
 
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
 {
   u64 vbo_size = sizeof (R_Vertex) * vertex_capacity;
   R_Vertex *vertices = arena_alloc(arena, vbo_size);
-
   u64 ibo_size = (u64) (sizeof (u32) * vertex_capacity * 1.5f) + 1;
   u32 *indices = arena_alloc(arena, ibo_size);
 
@@ -313,7 +310,7 @@ void r_flush(R_Renderer *renderer)
   renderer->index_count = 0;
 }
 
-// @Debug ======================================================================================
+// @Debug ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef DEBUG
 static

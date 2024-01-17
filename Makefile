@@ -3,16 +3,16 @@ CC = cc
 
 CFLAGS_R = -std=gnu17 \
 					 -O0 \
-					 -Iext/ \
-					 -Iext/sdl2/inc \
+					 -Iextern/ \
+					 -Iextern/sdl2/inc \
 					 -Wno-initializer-overrides \
 					 -Wno-static-in-inline \
 
 CFLAGS_D = -std=gnu17 \
            -g \
 					 -DDEBUG \
-					 -I../ext/ \
-					 -I../ext/sdl2/inc \
+					 -I../extern/ \
+					 -I../extern/sdl2/inc \
 					 -Wall \
 					 -Wpedantic \
 					 -Wno-missing-braces \
@@ -20,10 +20,10 @@ CFLAGS_D = -std=gnu17 \
 					 -Wno-initializer-overrides \
 					 -Wno-static-in-inline \
 
-LDFLAGS_R = -Lext/sdl2/lib \
+LDFLAGS_R = -Lextern/sdl2/lib \
 						-lsdl2 \
 
-LDFLAGS_D = -L../ext/sdl2/lib \
+LDFLAGS_D = -L../extern/sdl2/lib \
 					  -lsdl2 \
 
 .PHONY: all compile_r compile_d
@@ -33,13 +33,13 @@ all: compile_r
 
 compile_r:
 	@echo "Compiling project..."
-	@./ParseShaders
+	@./ShaderToC
 	@$(CC) $(CFLAGS_R) $(LDFLAGS_R) src/_target.c -o $(NAME)
 	@echo "Compilation complete!"
 
 compile_d:
 	@echo "Compiling debug..."
-	@./ParseShaders
-	@cd dbg; \
+	@./ShaderToC
+	@cd debug; \
 		$(CC) $(CFLAGS_D) $(LDFLAGS_D) ../src/_target.c -o $(NAME)_D
 	@echo "Compilation complete!"

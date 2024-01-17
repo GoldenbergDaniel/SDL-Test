@@ -146,8 +146,6 @@ struct Entity
   f32 target_angle;
   u16 view_dist;
 
-  char curr_health;
-
   Timer timers[3];
 };
 
@@ -160,15 +158,72 @@ struct EntityList
   u16 count;
 };
 
+typedef struct EntityParams EntityParams;
+struct EntityParams
+{
+  Entity *entity;
+  u64 id;
+  b64 props;
+  Vec2F pos;
+  Vec4F color;
+};
+
 static Entity *NIL_ENTITY = &(Entity) {0}; 
 
-// @InitEntity =================================================================================
+// @InitEntity ///////////////////////////////////////////////////////////////////////////
 
 void init_entity(Entity *en, EntityType type);
 void reset_entity(Entity *entity);
 void reset_entity_children(Entity *en);
 
-// @UpdateEntity ===============================================================================
+// @SpawnEntity //////////////////////////////////////////////////////////////////////////
+
+#define spawn_entity(game, type, ...) \
+  _spawn_entity(game, type, (EntityParams) \
+                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
+
+Entity *_spawn_entity(Game *game, EntityType type, EntityParams params);
+
+#define kill_entity(game, ...) \
+  _kill_entity(game, (EntityParams) \
+                {.entity=NULL, .id=0, __VA_ARGS__ })
+
+void _kill_entity(Game *game, EntityParams params);
+
+// @EntityRef ////////////////////////////////////////////////////////////////////////////
+
+EntityRef ref_from_entity(Entity *entity);
+Entity *entity_from_ref(EntityRef ref);
+
+// @EntityList ///////////////////////////////////////////////////////////////////////////
+
+Entity *alloc_entity(Game *game);
+void free_entity(Game *game, Entity *entity);
+Entity *get_entity_of_id(Game *game, u64 id);
+Entity *get_first_entity_of_type(Game *game, EntityType type);
+
+// @EntityTree ///////////////////////////////////////////////////////////////////////////
+
+void attach_entity_child(Entity *entity, Entity *child);
+void attach_entity_child_at(Entity *en, Entity *child, u16 index);
+void detach_entity_child(Entity *entity, Entity *child);
+Entity *get_entity_child_at(Entity *en, u16 index);
+Entity *get_entity_child_of_id(Entity *entity, u64 id);
+Entity *get_entity_child_of_type(Entity *entity, EntityType type);
+
+// @MiscEntity ///////////////////////////////////////////////////////////////////////////
+
+Vec2F pos_from_entity(Entity *entity);
+f32 rot_from_entity(Entity *entity);
+Vec2F scale_from_entity(Entity *entity);
+Vec2F size_from_entity(Entity *entity);
+
+void set_entity_target(Entity *entity, EntityRef target);
+bool is_entity_valid(Entity *entity);
+void resolve_entity_collision(Entity *a, Entity *b);
+void wrap_entity_at_edges(Entity *entity);
+
+// @UpdateEntity /////////////////////////////////////////////////////////////////////////
 
 void update_entity_collider(Entity *entity);
 void update_entity_xform(Game *game, Entity *entity);
@@ -179,67 +234,3 @@ void update_entity_projectile_movement(Game *game, Entity *entity);
 void update_controlled_entity_combat(Game *game, Entity *entity);
 void update_targeting_entity_combat(Game *game, Entity *entity);
 void update_equipped_entity(Game *game, Entity *entity);
-
-// @SpawnEntity ================================================================================
-
-typedef struct SpawnEntityParams SpawnEntityParams;
-struct SpawnEntityParams
-{
-  b64 props;
-  Vec2F pos;
-  Vec4F color;
-};
-
-#define spawn_entity(game, type, ...) \
-  _spawn_entity(game, type, (SpawnEntityParams) \
-                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
-
-Entity *_spawn_entity(Game *game, EntityType type, SpawnEntityParams params);
-
-// @KillEntity =================================================================================
-
-typedef struct KillEntityParams KillEntityParams;
-struct KillEntityParams
-{
-  Entity *entity;
-  u64 id;
-};
-
-#define kill_entity(game, ...) \
-  _kill_entity(game, (KillEntityParams) \
-                {.entity=NULL, .id=0, __VA_ARGS__ })
-
-void _kill_entity(Game *game, KillEntityParams params);
-
-// @OtherEntity ================================================================================
-
-Vec2F pos_from_entity(Entity *entity);
-f32 rot_from_entity(Entity *entity);
-Vec2F scale_from_entity(Entity *entity);
-Vec2F size_from_entity(Entity *entity);
-
-void set_entity_target(Entity *entity, EntityRef target);
-
-bool is_entity_valid(Entity *entity);
-void resolve_entity_collision(Entity *a, Entity *b);
-void wrap_entity_at_edges(Entity *entity);
-
-// @EntityRef ==================================================================================
-
-EntityRef ref_from_entity(Entity *entity);
-Entity *entity_from_ref(EntityRef ref);
-
-// @EntityList =================================================================================
-
-Entity *alloc_entity(Game *game);
-void free_entity(Game *game, Entity *entity);
-Entity *get_entity_of_id(Game *game, u64 id);
-Entity *get_first_entity_of_type(Game *game, EntityType type);
-
-// @EntityTree =================================================================================
-
-void attach_entity_child(Entity *entity, Entity *child);
-void detach_entity_child(Entity *entity, Entity *child);
-Entity *get_entity_child_at_index(Entity *en, u16 index);
-Entity *get_entity_child_of_id(Entity *entity, u64 id);
-Entity *get_entity_child_of_type(Entity *entity, EntityType type);

@@ -3,16 +3,16 @@
 #include "base/base_common.h"
 #include "base/base_math.h"
 
-typedef struct P_Collider P_Collider;
 typedef enum P_ColliderType
 {
-  ColliderType_Polygon,
-  ColliderType_Circle,
-} ColliderType;
+  P_ColliderType_Polygon,
+  P_ColliderType_Circle,
+} P_ColliderType;
 
+typedef struct P_Collider P_Collider;
 struct P_Collider
 {
-  ColliderType type;
+  P_ColliderType type;
   Vec2F pos;
   f32 rot;
 
