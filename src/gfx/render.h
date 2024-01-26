@@ -52,6 +52,8 @@ struct R_Renderer
 
   R_Shader *shader;
   R_Texture *texture;
+
+  Mat3x3F projection;
 };
 
 static R_Shader *R_NIL_SHADER = &(R_Shader) {0};
@@ -59,6 +61,10 @@ static R_Texture *R_NIL_TEXTURE = &(R_Texture) {0};
 
 #define R_BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
 #define R_WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
+
+#define R_PROJECTION_ORTHO_TL 0 
+#define R_PROJECTION_ORTHO_BL 1
+#define R_PROJECTION_ORTHO_C 2
 
 // @Buffer ///////////////////////////////////////////////////////////////////////////////
 

@@ -5,8 +5,6 @@
 
 #include "sdl2/SDL.h"
 #include "glad/glad.h"
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb/stb_sprintf.h"
 #include "base/base_inc.h"
 
 #include "gfx/render.h"
@@ -136,7 +134,7 @@ i32 main(void)
   }
 
   SDL_DestroyWindow(window);
-  // SDL_Quit();
+  SDL_Quit();
 
   return 0;
 }

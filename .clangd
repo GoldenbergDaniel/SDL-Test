@@ -1,5 +1,0 @@
-CompileFlags:
-  Add: [-std=c17, -I../extern, -I../extern/sdl2/inc]
-
-Diagnostics:
-  UnusedIncludes: Strict

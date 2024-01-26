@@ -14,7 +14,6 @@ struct Game
   EventQueue event_queue;
   EntityList entities;
   Mat3x3F camera;
-  Mat3x3F projection;
   f64 t;
   f64 dt;
   bool should_quit;

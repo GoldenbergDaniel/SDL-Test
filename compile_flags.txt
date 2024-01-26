@@ -1,0 +1,3 @@
+-Iextern
+-Iextern/sdl2/inc
+-Wno-initializer-overrides

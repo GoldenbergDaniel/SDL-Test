@@ -46,5 +46,6 @@ D_Resources d_load_resources(Arena *arena, String path);
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
 void d_clear(Vec4F color);
-void d_draw_rectangle(Mat3x3F xform, Vec4F color);
-void d_draw_sprite(Mat3x3F xform, Vec4F color, D_TextureID tex_id);
+void d_draw_primitive(Mat3x3F xform, Vec4F tint);
+void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
+void d_draw_sprite(Mat3x3F xform, Vec4F tint, D_TextureID tex_id);

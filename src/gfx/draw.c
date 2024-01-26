@@ -41,11 +41,10 @@ void d_clear(Vec4F color)
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void d_draw_rectangle(Mat3x3F xform, Vec4F tint)
+void d_draw_primitive(Mat3x3F xform, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  D_Resources *resources = &GLOBAL->resources;
-  r_use_shader(renderer, &resources->shaders[D_SHADER_PRIMITIVE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
 
   Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
   Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
@@ -59,13 +58,33 @@ void d_draw_rectangle(Mat3x3F xform, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
+void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
+{
+  R_Renderer *renderer = &GLOBAL->renderer;
+  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
+
+  Mat3x3F xform = m3x3f(1.0f);
+  xform = mul_3x3f(rotate_3x3f(rot), xform);
+  xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
+  xform = mul_3x3f(renderer->projection, xform);
+  
+  Vec3F p0 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform);
+  Vec3F p1 = transform_3f(v3f(dim.width, 0.0f, 1.0f), xform);
+  Vec3F p2 = transform_3f(v3f(dim.width, dim.height, 1.0f), xform);
+  Vec3F p3 = transform_3f(v3f(0.0f, dim.height, 1.0f), xform);
+
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO);
+  r_push_quad_indices(renderer);
+}
+
 void d_draw_sprite(Mat3x3F xform, Vec4F tint, D_TextureID tex_id)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  D_Resources *resources = &GLOBAL->resources;
-
-  r_use_texture(renderer, &resources->textures[D_TEXTURE_SPRITE]);
-  r_use_shader(renderer, &resources->shaders[D_SHADER_SPRITE]);
+  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
 
   Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
   Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
