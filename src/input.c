@@ -33,7 +33,7 @@ Vec2F get_mouse_pos(void)
 inline
 void clear_last_frame_input(void)
 {
-  for (u8 i = 0; i < sizeof (GLOBAL->input.key_just_down); i++)
+  for (u8 i = 0; i < _KEY_COUNT; i++)
   {
     GLOBAL->input.key_just_down[i] = FALSE;
     GLOBAL->input.key_just_up[i] = FALSE;

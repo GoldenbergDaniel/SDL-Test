@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <math.h>
 
 #include "base_common.h"

@@ -4,18 +4,12 @@
 
 #include "gfx/draw.h"
 #include "phys/physics.h"
-#include "input.h"
 #include "event.h"
 #include "game.h"
 #include "global.h"
 #include "entity.h"
 
 extern Global *GLOBAL;
-
-static void print_lists(Game *game);
-static void init_timers(Entity *en);
-static Timer *get_timer(Entity *en, u8 index);
-static bool tick_timer(Timer *timer, f64 dt);
 
 // @InitEntity ///////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +34,7 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Player:
     {
-      en->props = EntityProp_Rendered | EntityProp_Controlled | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
+      en->props = EntityProp_Rendered | EntityProp_Collides | EntityProp_Controlled | EntityProp_Moves | EntityProp_Combatant | EntityProp_WrapAtEdge;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
@@ -57,8 +51,7 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_ZombieWalker:
     {
-      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
-      // en->props = EntityProp_Rendered;
+      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Melee;
@@ -76,7 +69,7 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_ZombieBird:
     {
-      en->props = EntityProp_Rendered | EntityProp_Autonomous | EntityProp_Moves | EntityProp_Combatant;
+      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant;
       en->draw_type = DrawType_Triangle;
       en->move_type = MoveType_Flying;
       en->combat_type = CombatType_Ranged;
@@ -99,7 +92,7 @@ void init_entity(Entity *en, EntityType type)
   break;
     case EntityType_Laser:
     {
-      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Autonomous;
+      en->props = EntityProp_Rendered | EntityProp_Moves;
       en->draw_type = DrawType_Rectangle;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
@@ -471,6 +464,12 @@ Vec2F size_from_entity(Entity *en)
   return result;
 }
 
+void entity_look_at(Entity *en, Vec2F target_pos)
+{
+  Vec2F entity_pos = pos_from_entity(en);
+  en->flip_x = entity_pos.x > target_pos.x ? TRUE : FALSE;
+}
+
 void set_entity_target(Entity *en, EntityRef target)
 {
   Entity *target_entity = entity_from_ref(target);
@@ -529,7 +528,6 @@ void wrap_entity_at_edges(Entity *en)
 
 // @UpdateEntity /////////////////////////////////////////////////////////////////////////
 
-// NOTE: probably a mess
 void update_entity_collider(Entity *en)
 {
   P_Collider *col = &en->col;
@@ -537,77 +535,39 @@ void update_entity_collider(Entity *en)
 
   switch (col->type)
   {
-    case P_ColliderType_Polygon:
+    case P_ColliderType_Polygon: // 4 vertices
     {
-      switch (col->vertex_count)
-      {
-        case 3:
-        {
-          col->vertices[0].x = en->pos.x;
-          col->vertices[0].y = en->pos.y + size.height/2.0f;
-          col->vertices[1].x = en->pos.x + size.width/2.0f;
-          col->vertices[1].y = en->pos.y + size.height/2.0f;
-          col->vertices[2].x = en->pos.x + size.width/2.0f;
-          col->vertices[2].y = en->pos.y - size.height/2.0f;
+      // col->vertices[0].x = en->pos.x - size.width/2.0f;
+      // col->vertices[0].y = en->pos.y + size.height/2.0f;
+      // col->vertices[1].x = en->pos.x + size.width/2.0f;
+      // col->vertices[1].y = en->pos.y + size.height/2.0f;
+      // col->vertices[2].x = en->pos.x + size.width/2.0f;
+      // col->vertices[2].y = en->pos.y - size.height/2.0f;
+      // col->vertices[3].x = en->pos.x - size.width/2.0f;
+      // col->vertices[3].y = en->pos.y - size.height/2.0f;
 
-          col->edges[0][0] = 0;
-          col->edges[0][1] = 1;
-          col->edges[1][0] = 1;
-          col->edges[1][1] = 2;
-          col->edges[2][0] = 2;
-          col->edges[2][1] = 0;
+      col->edges[0][0] = 0;
+      col->edges[0][1] = 1;
+      col->edges[1][0] = 1;
+      col->edges[1][1] = 2;
+      col->edges[2][0] = 2;
+      col->edges[2][1] = 3;
+      col->edges[3][0] = 3;
+      col->edges[3][1] = 4;
 
-          col->normals[0] = normal_2f(col->vertices[col->edges[0][0]], 
-                                      col->vertices[col->edges[0][1]]);
-          col->normals[1] = normal_2f(col->vertices[col->edges[1][0]], 
-                                      col->vertices[col->edges[1][1]]);
-          col->normals[2] = normal_2f(col->vertices[col->edges[2][0]], 
-                                      col->vertices[col->edges[2][1]]);
-        }
-        case 4:
-        {
-          col->vertices[0].x = en->pos.x - size.width/2.0f;
-          col->vertices[0].y = en->pos.y + size.height/2.0f;
-          col->vertices[1].x = en->pos.x + size.width/2.0f;
-          col->vertices[1].y = en->pos.y + size.height/2.0f;
-          col->vertices[2].x = en->pos.x + size.width/2.0f;
-          col->vertices[2].y = en->pos.y - size.height/2.0f;
-          col->vertices[3].x = en->pos.x - size.width/2.0f;
-          col->vertices[3].y = en->pos.y - size.height/2.0f;
-
-          col->edges[0][0] = 0;
-          col->edges[0][1] = 1;
-          col->edges[1][0] = 1;
-          col->edges[1][1] = 2;
-          col->edges[2][0] = 2;
-          col->edges[2][1] = 3;
-          col->edges[3][0] = 3;
-          col->edges[3][1] = 4;
-
-          col->normals[0] = normal_2f(col->vertices[col->edges[0][0]], 
-                                      col->vertices[col->edges[0][1]]);
-          col->normals[1] = normal_2f(col->vertices[col->edges[1][0]], 
-                                      col->vertices[col->edges[1][1]]);
-          col->normals[2] = normal_2f(col->vertices[col->edges[2][0]], 
-                                      col->vertices[col->edges[2][1]]);
-          col->normals[3] = normal_2f(col->vertices[col->edges[3][0]], 
-                                      col->vertices[col->edges[3][1]]);
-        }
-        break;
-        default:
-        {
-          fprintf(stderr, "ERROR: Invalid number of vertices in collider!\n");
-          fprintf(stderr, "Entity ID: %llu\n", en->id);
-          fprintf(stderr, "Entity Type: %i\n", en->type);
-          fprintf(stderr, "Vertex Count: %i\n", en->col.vertex_count);
-          assert(FALSE);
-        }
-      }
+      col->normals[0] = normal_2f(col->vertices[col->edges[0][0]], 
+                                  col->vertices[col->edges[0][1]]);
+      col->normals[1] = normal_2f(col->vertices[col->edges[1][0]], 
+                                  col->vertices[col->edges[1][1]]);
+      col->normals[2] = normal_2f(col->vertices[col->edges[2][0]], 
+                                  col->vertices[col->edges[2][1]]);
+      col->normals[3] = normal_2f(col->vertices[col->edges[3][0]], 
+                                  col->vertices[col->edges[3][1]]);
     }
     break;
     default: 
     {
-      printf("ERROR: Failed to update collider. Invalid type!");
+      fprintf(stderr, "ERROR: Failed to update collider. Invalid type!");
       assert(FALSE);
     }
   }
@@ -643,7 +603,7 @@ void update_entity_xform(Game *game, Entity *en)
       scale = mul_2f(scale, p->scale);
     }
 
-  xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
+    xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
   }
 
   en->model_mat = xform;
@@ -655,244 +615,18 @@ void update_entity_xform(Game *game, Entity *en)
     {
       model = mul_3x3f(p->model_mat, model);
     }
-
+    
     xform = mul_3x3f(model, xform);
   }
 
   xform = mul_3x3f(game->camera, xform);
-  xform = mul_3x3f(game->projection, xform);
+  xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
   en->xform = xform;
 }
 
-void update_controlled_entity_movement(Game *game, Entity *en)
-{
-  f32 dt = game->dt;
-
-  Vec2F entity_pos = pos_from_entity(en);
-  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
-  en->flip_x = mouse_pos.x < entity_pos.x ? TRUE : FALSE;
-
-  switch (en->move_type)
-  {
-    case MoveType_Walking:
-    {
-      if (is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
-      {
-        en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
-        en->input_dir.x = -1.0f;
-      }
-
-      if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
-      {
-        en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
-        en->input_dir.x = 1.0f;
-      }
-
-      if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
-      {
-        en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
-        en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-      }
-      
-      if (!is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
-      {
-        en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
-        en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-      }
-
-      // GRAVITY
-      if (!en->grounded)
-      {
-        en->new_vel.y -= GRAVITY * dt;
-      }
-
-      // JUMPING
-      if (is_key_pressed(KEY_W) && en->grounded)
-      {
-        en->new_vel.y += PLAYER_JUMP_VEL;
-        en->grounded = FALSE;
-      }
-
-      en->vel = en->new_vel;
-    }
-    break;
-    default: break;
-  }
-
-  en->pos = add_2f(en->pos, en->vel);
-}
-
-void update_autonomous_entity_movement(Game *game, Entity *en)
-{
-  f64 dt = game->dt;
-
-  Entity *player = get_first_entity_of_type(game, EntityType_Player);
-  Vec2F entity_pos = pos_from_entity(en);
-  Vec2F player_pos = pos_from_entity(player);
-  en->flip_x = player_pos.x < entity_pos.x ? TRUE : FALSE;
-
-  switch (en->move_type)
-  {
-    case MoveType_Walking:
-    {
-      // GRAVITY
-      if (!en->grounded)
-      {
-        en->vel.y -= GRAVITY * dt;
-      }
-    }
-    break;
-    case MoveType_Flying:
-    {
-      if (en->has_target)
-      {
-        en->input_dir.x = cos_1f(en->target_angle);
-        en->input_dir.y = sin_1f(en->target_angle);
-
-        en->rot = en->target_angle * DEGREES;
-      }
-      else
-      {
-        en->input_dir = V2F_ZERO;
-      }
-
-      if (en->input_dir.x != 0.0f || en->input_dir.y != 0.0f)
-      {
-        en->input_dir = normalize_2f(en->input_dir);
-      }
-
-      // X Acceleration
-      if (en->input_dir.x != 0.0f)
-      {
-        en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
-        en->vel.x = clamp(
-                          en->vel.x, 
-                          -en->speed * abs(en->input_dir.x) * dt,
-                          en->speed * abs(en->input_dir.x) * dt);
-      }
-      else
-      {
-        en->vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
-        en->vel.x = to_zero(en->vel.x, 0.1f);
-      }
-
-      // Y Acceleration
-      if (en->input_dir.y != 0.0f)
-      {
-        en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
-        en->vel.y = clamp(
-                          en->vel.y, 
-                          -en->speed * abs(en->input_dir.y) * dt, 
-                          en->speed * abs(en->input_dir.y) * dt);
-      }
-      else
-      {
-        en->vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
-        en->vel.y = to_zero(en->vel.y, 0.1f);
-      }
-    }
-    case MoveType_Projectile:
-    {
-      Timer *timer = get_timer(en, TIMER_KILL);
-      tick_timer(timer, dt);
-
-      if (timer->timeout)
-      {
-        kill_entity(game, .entity = en);
-      }
-
-      en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
-      en->vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
-    }
-    break;
-    default: break;
-  }
-
-  en->pos = add_2f(en->pos, en->vel);
-}
-
-void update_controlled_entity_combat(Game *game, Entity *en)
-{
-  Timer *timer = get_timer(en, TIMER_COMBAT);
-
-  if (timer->should_tick)
-  {
-    tick_timer(timer, game->dt);
-  }
-
-  bool can_shoot = is_key_pressed(KEY_MOUSE_1) && (timer->timeout || !timer->should_tick);
-  if (can_shoot)
-  {
-    Entity *gun = get_entity_child_at(en, 0);
-    Entity *shot_point = get_entity_child_at(gun, 0);
-    Vec2F spawn_pos = pos_from_entity(shot_point);
-    f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
-
-    Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_YELLOW);
-    laser->rot = spawn_rot;
-    laser->speed = 800.0f;
-
-    timer->should_tick = TRUE;
-  }
-}
-
-void update_targeting_entity_combat(Game *game, Entity *en)
-{
-  switch (en->combat_type)
-  {
-    case CombatType_Melee:
-    {
-
-    }
-    break;
-    case CombatType_Ranged:
-    {
-      Timer *timer = get_timer(en, TIMER_COMBAT);
-      tick_timer(timer, game->dt);
-
-      bool can_shoot = timer->timeout;
-      if (can_shoot)
-      {
-        Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-        Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos, .color=D_GREEN);
-        laser->rot = en->rot;
-        laser->speed = 700.0f;
-      }
-    }
-    break;
-    default: break;
-  }
-}
-
-void update_equipped_entity(Game *game, Entity *en)
-{
-  Vec2F entity_pos = pos_from_entity(en);
-  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
-  Vec2F diff = v2f(mouse_pos.x - entity_pos.x, mouse_pos.y - entity_pos.y);
-
-  f32 angle = atan_2f(diff) * DEGREES;
-  if (!en->parent.ptr->flip_x)
-  {
-    angle = clamp(angle, -90, 90);
-  }
-  else
-  {
-    if (angle < 0)
-    {
-      angle = angle + 360;
-    }
-
-    angle = -clamp(angle, 90, 270) + 180;
-  }
-
-  en->rot = angle;
-}
-
-
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
-static
 void init_timers(Entity *en)
 {
   en->timers[TIMER_COMBAT] = (Timer)
@@ -926,13 +660,12 @@ void init_timers(Entity *en)
   };
 }
 
-static inline
+inline
 Timer *get_timer(Entity *en, u8 index)
 {
   return &en->timers[index];
 }
 
-static
 bool tick_timer(Timer *timer, f64 dt)
 {
   if (timer->ticking)

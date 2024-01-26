@@ -33,11 +33,10 @@ struct EventQueue
   Event *front;
   Event *back;
   Event *first_free;
-
   u64 count;
 };
 
 void push_event(Game *game, EventType type, EventDesc desc);
+Event *peek_event(Game *game);
 void pop_event(Game *game);
-Event get_next_event(Game *game);
 void clear_event_queue(Game *game);

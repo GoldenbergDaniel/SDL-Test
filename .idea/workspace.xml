@@ -18,12 +18,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="062a5b40-4422-48f6-ae19-f8cdb3e7378f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.clangd" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UndeadWest" beforeDir="false" afterPath="$PROJECT_DIR$/UndeadWest" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dbg/UndeadWest_D" beforeDir="false" afterPath="$PROJECT_DIR$/dbg/UndeadWest_D" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dbg/UndeadWest_D.dSYM/Contents/Resources/DWARF/UndeadWest_D" beforeDir="false" afterPath="$PROJECT_DIR$/dbg/UndeadWest_D.dSYM/Contents/Resources/DWARF/UndeadWest_D" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dbg/UndeadWest_D.dSYM/Contents/Resources/Relocations/x86_64/UndeadWest_D.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dbg/UndeadWest_D.dSYM/Contents/Resources/Relocations/x86_64/UndeadWest_D.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/debug/UndeadWest_D" beforeDir="false" afterPath="$PROJECT_DIR$/debug/UndeadWest_D" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/debug/UndeadWest_D.dSYM/Contents/Resources/DWARF/UndeadWest_D" beforeDir="false" afterPath="$PROJECT_DIR$/debug/UndeadWest_D.dSYM/Contents/Resources/DWARF/UndeadWest_D" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/debug/UndeadWest_D.dSYM/Contents/Resources/Relocations/x86_64/UndeadWest_D.yml" beforeDir="false" afterPath="$PROJECT_DIR$/debug/UndeadWest_D.dSYM/Contents/Resources/Relocations/x86_64/UndeadWest_D.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/entity.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/game.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/game.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gfx/draw.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/gfx/draw.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gfx/draw.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/gfx/draw.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gfx/render.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/gfx/render.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/input.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/input.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,6 +156,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -172,6 +199,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UndeadWest" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/Game">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
     </configuration>
     <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UndeadWest" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/Game">
       <method v="2">
@@ -223,12 +271,22 @@
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
+    <configuration name="compile_d" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UndeadWest" TARGET_NAME="compile_d" CONFIG_NAME="compile_d" version="1" RUN_PATH="$PROJECT_DIR$/debug/UndeadWest_D">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="compile_d" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UndeadWest" TARGET_NAME="compile_d" CONFIG_NAME="compile_d" version="1" RUN_PATH="$PROJECT_DIR$/dbg/UndeadWest_D">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="compile_d" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="SpaceGame" TARGET_NAME="compile_d" CONFIG_NAME="compile_d" version="1" RUN_PATH="$PROJECT_DIR$/dbg/a.out">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="compile_r" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="UndeadWest" TARGET_NAME="compile_r" CONFIG_NAME="compile_r" version="1">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
@@ -357,11 +415,6 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Native Application.compile" />
-      <item itemvalue="Native Application.compile_t" />
-      <item itemvalue="Native Application.debug" />
-      <item itemvalue="Native Application.run" />
-      <item itemvalue="Native Application.test" />
       <item itemvalue="Native Application.all" />
       <item itemvalue="Native Application.compile_d" />
       <item itemvalue="Native Application.compile_r" />
@@ -400,6 +453,7 @@
       <workItem from="1705105724589" duration="3359000" />
       <workItem from="1705190086923" duration="1348000" />
       <workItem from="1705201113971" duration="309000" />
+      <workItem from="1705550369778" duration="837000" />
     </task>
     <servers />
   </component>
@@ -410,14 +464,19 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/entity.c</url>
-          <line>144</line>
-          <option name="timeStamp" value="19" />
+          <url>file://$PROJECT_DIR$/src/game.c</url>
+          <line>196</line>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/entity.c</url>
-          <line>140</line>
-          <option name="timeStamp" value="20" />
+          <url>file://$PROJECT_DIR$/src/gfx/draw.c</url>
+          <line>43</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/gfx/draw.c</url>
+          <line>60</line>
+          <option name="timeStamp" value="24" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

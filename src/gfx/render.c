@@ -102,7 +102,7 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   glLinkProgram(program);
 
   #ifdef DEBUG
-  verify_shader(id, GL_LINK_STATUS);
+  verify_shader(program, GL_LINK_STATUS);
   #endif
 
   glDeleteShader(vert);
@@ -217,6 +217,8 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   r_push_vertex_attribute(&vao, 4); // color
   r_push_vertex_attribute(&vao, 4); // uv
 
+  Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
+
   return (R_Renderer)
   {
     .vertices = vertices,
@@ -229,6 +231,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
     .ibo = ibo,
     .shader = R_NIL_SHADER,
     .texture = R_NIL_TEXTURE,
+    .projection = projection,
   };
 }
 
@@ -286,6 +289,11 @@ void r_use_texture(R_Renderer *renderer, R_Texture *texture)
     glActiveTexture(GL_TEXTURE0 + texture->slot);
     glBindTexture(GL_TEXTURE_2D, texture->id);
   }
+}
+
+void r_use_projection(R_Renderer *renderer, u8 projection_type)
+{
+
 }
 
 void r_flush(R_Renderer *renderer)

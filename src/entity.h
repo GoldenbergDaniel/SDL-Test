@@ -36,14 +36,14 @@ typedef enum EntityType
 
 typedef enum EntityProp
 {
-  EntityProp_Controlled = 1 << 0,
-  EntityProp_Autonomous = 1 << 1,
-  EntityProp_Moves = 1 << 2,
-  EntityProp_Combatant = 1 << 3,
-  EntityProp_Killable = 1 << 4,
-  EntityProp_Collides = 1 << 5,
-  EntityProp_Rendered = 1 << 6,
-  EntityProp_Equipped = 1 << 7,
+  EntityProp_Rendered = 1 << 0,
+  EntityProp_Collides = 1 << 1,
+  EntityProp_Controlled = 1 << 2,
+  EntityProp_Moves = 1 << 3,
+  EntityProp_Combatant = 1 << 4,
+  EntityProp_Killable = 1 << 5,
+  EntityProp_Equipped = 1 << 6,
+  EntityProp_WrapAtEdge = 1 << 7,
 } EntityProp;
 
 typedef enum MoveType
@@ -218,6 +218,7 @@ f32 rot_from_entity(Entity *entity);
 Vec2F scale_from_entity(Entity *entity);
 Vec2F size_from_entity(Entity *entity);
 
+void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *entity, EntityRef target);
 bool is_entity_valid(Entity *entity);
 void resolve_entity_collision(Entity *a, Entity *b);
@@ -228,9 +229,8 @@ void wrap_entity_at_edges(Entity *entity);
 void update_entity_collider(Entity *entity);
 void update_entity_xform(Game *game, Entity *entity);
 
-void update_controlled_entity_movement(Game *game, Entity *entity);
-void update_autonomous_entity_movement(Game *game, Entity *entity);
-void update_entity_projectile_movement(Game *game, Entity *entity);
-void update_controlled_entity_combat(Game *game, Entity *entity);
-void update_targeting_entity_combat(Game *game, Entity *entity);
-void update_equipped_entity(Game *game, Entity *entity);
+// @Timer ////////////////////////////////////////////////////////////////////////////////
+
+void init_timers(Entity *en);
+Timer *get_timer(Entity *en, u8 index);
+bool tick_timer(Timer *timer, f64 dt);

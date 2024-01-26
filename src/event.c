@@ -54,9 +54,9 @@ void pop_event(Game *game)
 }
 
 inline
-Event get_next_event(Game *game)
+Event *peek_event(Game *game)
 {
-  return *game->event_queue.front;
+  return game->event_queue.front;
 }
 
 void clear_event_queue(Game *game)

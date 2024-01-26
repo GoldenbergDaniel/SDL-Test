@@ -5,8 +5,6 @@
 
 #include "sdl2/SDL.h"
 #include "glad/glad.h"
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb/stb_sprintf.h"
 #include "base/base_inc.h"
 
 #include "gfx/render.h"
@@ -32,15 +30,6 @@ i32 main(void)
   game.perm_arena = arena_create(KiB(16));
   game.frame_arena = arena_create(MiB(8));
   game.entity_arena = arena_create(MiB(64));
-
-  char org[128] = {0};
-  char app[128] = {0};
-  SDL_GetPrefPath(org, app);
-  char path[128] = {0};
-  stbsp_sprintf(path, "%s/%s\n", org, app);
-  printf("Path: %s\n", path);
-  FILE *f = fopen(path, "w");
-  fprintf(f, "%s\n", path);
 
   srand(time(NULL));
   arena_get_scratch(NULL);
@@ -145,7 +134,7 @@ i32 main(void)
   }
 
   SDL_DestroyWindow(window);
-  // SDL_Quit();
+  SDL_Quit();
 
   return 0;
 }
