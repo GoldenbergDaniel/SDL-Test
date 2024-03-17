@@ -28,6 +28,7 @@ void init_game(Game *game)
 
     Entity *player = alloc_entity(game);
     init_entity(player, EntityType_Player);
+    player->id = 1;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f + 50.0f);
     player->scale = v2f(8.0f, 8.0f);
 
@@ -55,7 +56,7 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
-  Entity *player = get_first_entity_of_type(game, EntityType_Player);
+  Entity *player = get_entity_of_id(game, 1);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
   f64 dt = game->dt;
 
@@ -151,9 +152,8 @@ void update_game(Game *game)
             if (en->input_dir.x != 0.0f)
             {
               en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
-              en->vel.x = clamp(en->vel.x, 
-                                -en->speed * abs(en->input_dir.x) * dt,
-                                en->speed * abs(en->input_dir.x) * dt);
+              f32 bound = en->speed * abs(en->input_dir.x) * dt;
+              en->vel.x = clamp(en->vel.x, -bound, bound);
             }
             else
             {
@@ -165,9 +165,8 @@ void update_game(Game *game)
             if (en->input_dir.y != 0.0f)
             {
               en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
-              en->vel.y = clamp(en->vel.y, 
-                                -en->speed * abs(en->input_dir.y) * dt, 
-                                en->speed * abs(en->input_dir.y) * dt);
+              f32 bound = en->speed * abs(en->input_dir.y) * dt;
+              en->vel.y = clamp(en->vel.y, -bound, bound);
             }
             else
             {
@@ -198,21 +197,29 @@ void update_game(Game *game)
       // Handle entity collision ----------------
       if (en->props & EntityProp_Collides)
       {
-        Entity *ground = get_first_entity_of_type(game, EntityType_Wall);
+        Entity *ground = NIL_ENTITY;
+        for (Entity *other = game->entities.head; other; other = other->next)
+        {
+          if (other->type == EntityType_Wall)
+          {
+            ground = other;
+          }
+        }
+
         resolve_entity_collision(en, ground); 
       }
 
       // Handle entity wrapping ----------------
       if (en->props & EntityProp_WrapAtEdge)
       {
-        Vec2F size = size_from_entity(en);
-        if (en->pos.x + size.width <= 0.0f)
+        Vec2F dim = dim_from_entity(en);
+        if (en->pos.x + dim.width <= 0.0f)
         {
           en->pos.x = WIDTH;
         }
         else if (en->pos.x >= WIDTH)
         {
-          en->pos.x = -(size.width);
+          en->pos.x = -(dim.width);
         }
       }
     }
@@ -242,9 +249,8 @@ void update_game(Game *game)
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
-          Entity *laser = spawn_entity(game, EntityType_Laser, 
-                                       .pos=spawn_pos, 
-                                       .color=D_YELLOW);
+          Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
+          laser->color = D_WHITE;
           laser->rot = spawn_rot;
           laser->speed = 800.0f;
 
@@ -277,9 +283,9 @@ void update_game(Game *game)
               if (timer->timeout)
               {
                 Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-                Entity *laser = spawn_entity(game, EntityType_Laser, 
-                                             .pos=spawn_pos, 
-                                             .color=D_GREEN);
+
+                Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
+                laser->color = D_GREEN;
                 laser->rot = en->rot;
                 laser->speed = 700.0f;
               }
@@ -358,9 +364,9 @@ void handle_game_events(Game *game)
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
-void draw_game(Game *game)
-{  
-  d_clear(v4f(0.34f, 0.44f, 0.47f, 1.0f));
+void draw_game(Game *game, Game *prev)
+{
+  d_clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
 
   SCOPE("Sprite Batch")
   {
@@ -368,7 +374,7 @@ void draw_game(Game *game)
     {
       if (en->draw_type == DrawType_Sprite && en->visible)
       {
-        d_draw_sprite(en->xform, en->color, en->texture);
+        d_draw_sprite_x(en->xform, en->color, en->texture);
       }
     }
   }
@@ -379,7 +385,7 @@ void draw_game(Game *game)
     {
       if (en->draw_type == DrawType_Rectangle && en->visible)
       {
-        d_draw_primitive(en->xform, en->color);
+        d_draw_rectangle_x(en->xform, en->color);
       }
     }
   }
@@ -398,4 +404,21 @@ bool game_should_quit(Game *game)
   }
 
   return result;
+}
+
+void copy_game_state(Game *game, Game *prev)
+{
+  EntityList *old_list = &game->entities;
+  EntityList *new_list = &prev->entities;
+
+  new_list->head = NULL;
+  new_list->count = old_list->count;
+
+  Entity *old_en = old_list->head;
+  for (i32 i = 0; i < old_list->count; i++)
+  {
+    Entity *new_en = alloc_entity(prev);
+    *new_en = *old_en;
+    old_en = old_en->next;
+  }
 }
