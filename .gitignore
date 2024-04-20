@@ -1,8 +1,8 @@
 debug/
 
 .DS_STORE
-
 ShaderToC
 UndeadWest
 UndeadWest.exe
 libSDL3.dylib
+SDL3.dll

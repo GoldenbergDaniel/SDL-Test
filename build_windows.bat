@@ -1,17 +1,30 @@
-@REM call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-
 @echo off
 setlocal
 
 set NAME= UndeadWest
+set CC= cl
+set MODE= %1%
 
-set CFLAGS_R= /std:c17 /O2 /I extern\ /I extern\sdl2\inc
-set CFLAGS_D= /std:c17 /Od /Zi /W4 /I ..extern\ /I ..\extern\sdl2\inc
-set LDFLAGS_R= /link /LIBPATH:extern\sdl2\lib SDL2.lib
-set LDFLAGS_D= /link /LIBPATH:..extern\sdl2\lib SDL2.lib
+set CFLAGS_R= /std:c17 /Od /I extern\ /I extern\sdl3\inc
+set LDFLAGS_R= /link /LIBPATH:extern\sdl3\lib SDL3.lib
 
-echo Compiling project...
-@REM cl %CFLAGS_R% src\_target.c /FeUndeadWest.exe /link /LIBPATH:extern\sdl2\lib SDL2.lib
-cl /std:c17 /Od /I extern\ /I extern\sdl2\inc src\_target.c /Zi /FeUndeadWest.exe /link /LIBPATH:extern\sdl2\lib SDL2.lib
-del _target.obj
-echo Compilation complete.
+set CFLAGS_D= /std:c17 /Od /Zi /W4 /I ..\extern\ /I ..\extern\sdl3\inc
+set LDFLAGS_D= /link /LIBPATH:..\extern\sdl3\lib SDL3.lib
+
+if "%MODE%"==" d" (
+  echo Building debug...
+  mkdir debug
+  copy SDL3.dll debug\ /b
+  pushd debug
+  %CC% %CFLAGS_D% ..\src\_target.c /FeUndeadWest.exe %LDFLAGS_D%
+  del _target.obj
+  del UndeadWest.ilk
+  del vc140.pdb
+  popd
+) else (
+  echo Building...
+  %CC% %CFLAGS_R% src\_target.c /FeUndeadWest.exe %LDFLAGS_R%
+  del _target.obj
+)
+
+echo Done!
