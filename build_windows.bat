@@ -11,6 +11,7 @@ set LDFLAGS_R= /link /LIBPATH:extern\sdl2\lib SDL2.lib
 set LDFLAGS_D= /link /LIBPATH:..extern\sdl2\lib SDL2.lib
 
 echo Compiling project...
-cl %CFLAGS_R% src\_target.c /FeUndeadWest.exe /link /LIBPATH:extern\sdl2\lib SDL2.lib
+@REM cl %CFLAGS_R% src\_target.c /FeUndeadWest.exe /link /LIBPATH:extern\sdl2\lib SDL2.lib
+cl /std:c17 /Od /I extern\ /I extern\sdl2\inc src\_target.c /Zi /FeUndeadWest.exe /link /LIBPATH:extern\sdl2\lib SDL2.lib
 del _target.obj
 echo Compilation complete.
