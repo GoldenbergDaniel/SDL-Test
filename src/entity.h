@@ -2,7 +2,7 @@
 
 #include "base/base_inc.h"
 
-#include "gfx/draw.h"
+#include "draw/draw.h"
 #include "phys/physics.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2

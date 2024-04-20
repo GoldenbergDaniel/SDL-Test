@@ -6,8 +6,8 @@
 
 #include "glad/glad.c"
 
-#include "gfx/render.c"
-#include "gfx/draw.c"
+#include "render/render.c"
+#include "draw/draw.c"
 #include "phys/physics.c"
 #include "input.c"
 #include "event.c"

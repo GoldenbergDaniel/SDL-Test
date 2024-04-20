@@ -2,8 +2,8 @@
 
 #include "base/base_inc.h"
 
-#include "gfx/render.h"
-#include "gfx/draw.h"
+#include "render/render.h"
+#include "draw/draw.h"
 #include "input.h"
 
 #define WIDTH 1024

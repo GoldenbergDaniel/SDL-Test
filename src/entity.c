@@ -2,7 +2,7 @@
 
 #include "base/base_inc.h"
 
-#include "gfx/draw.h"
+#include "draw/draw.h"
 #include "phys/physics.h"
 #include "event.h"
 #include "game.h"

@@ -2,7 +2,7 @@
 
 #include "base/base_inc.h"
 
-#include "gfx/draw.h"
+#include "draw/draw.h"
 #include "input.h"
 #include "event.h"
 #include "entity.h"
@@ -250,7 +250,7 @@ void update_game(Game *game)
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
           Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
-          laser->color = D_WHITE;
+          laser->color = D_YELLOW;
           laser->rot = spawn_rot;
           laser->speed = 800.0f;
 

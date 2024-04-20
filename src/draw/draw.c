@@ -2,8 +2,8 @@
 #include "../base/base_inc.h"
 
 #include "../global.h"
-#include "render.h"
-#include "shaders.h"
+#include "../render/render.h"
+#include "../render/shaders.h"
 #include "draw.h"
 
 extern Global *GLOBAL;

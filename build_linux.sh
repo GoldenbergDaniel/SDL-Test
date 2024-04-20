@@ -1,4 +1,4 @@
-NAME="UndeadWest"
+NAME="undeadwest"
 CC="cc"
 MODE=$1
 

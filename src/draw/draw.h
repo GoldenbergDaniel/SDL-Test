@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../base/base_inc.h"
-#include "render.h"
+#include "../render/render.h"
 
 #define D_SPRITE_SHEET_SIZE 16
 #define D_SPRITE_SHEET_WIDTH 256

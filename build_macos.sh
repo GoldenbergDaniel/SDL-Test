@@ -1,4 +1,4 @@
-NAME="UndeadWest"
+NAME="undeadwest"
 CC="cc"
 MODE=$1
 
@@ -6,12 +6,11 @@ CFLAGS_R="-std=c17
           -Iextern/ -Iextern/sdl3/inc 
           -Wno-initializer-overrides -Wno-static-in-inline"
 
-CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
-         -I../extern/ -I../extern/sdl3/inc
-         -Wall -Wpedantic -Wno-missing-braces
-         -Wno-initializer-overrides -Wno-static-in-inline"
-
 LDFLAGS_R="-L./ -lsdl3"
+
+CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
+          -I../extern/ -I../extern/sdl3/inc -Wall -Wpedantic
+          -Wno-initializer-overrides -Wno-static-in-inline -Wno-missing-braces"
 
 LDFLAGS_D="-L../ -lsdl3"
 
