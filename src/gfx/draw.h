@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/base_inc.h"
-
+#include "../base/base_inc.h"
 #include "render.h"
 
 #define D_SPRITE_SHEET_SIZE 16
@@ -45,7 +44,21 @@ D_Resources d_load_resources(Arena *arena, String path);
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
-void d_clear(Vec4F color);
-void d_draw_primitive(Mat3x3F xform, Vec4F tint);
+typedef struct RenderData RenderData;
+struct RenderData
+{
+  Vec2F pos;
+  Vec2F dim;
+  f32 rot;
+  Vec4F tint;
+};
+
+void d_clear_frame(Vec4F color);
+
 void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
-void d_draw_sprite(Mat3x3F xform, Vec4F tint, D_TextureID tex_id);
+void d_draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
+void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint);
+
+void d_draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, D_TextureID tex);
+void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_TextureID tex);
+void d_draw_sprite_x(Mat3x3F xform, Vec4F tint, D_TextureID tex_id);

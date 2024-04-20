@@ -1,22 +1,11 @@
-#include "base/base_common.h"
-#include "base/base_math.h"
+#include "../base/base_common.h"
+#include "../base/base_math.h"
 
 #include "physics.h"
 
 typedef P_Collider Collider;
 
-// https://www.youtube.com/watch?v=7Ik2vowGcU0
-bool p_polygon_polygon_intersect(Collider *a, Collider *b)
-{
-  return FALSE;
-}
-
-Vec2F p_polygon_polygon_resolve(Collider *a, Collider *b)
-{
-  return V2F_ZERO;
-}
-
-bool p_polygon_y_range_intersect(Collider *a, Vec2F v1, Vec2F v2)
+bool p_rect_y_range_intersect(Collider *a, Vec2F v1, Vec2F v2)
 {
   bool result = FALSE;
 
@@ -37,27 +26,11 @@ bool p_polygon_y_range_intersect(Collider *a, Vec2F v1, Vec2F v2)
   return result;
 }
 
-Vec2F p_polygon_range_resolve(Collider *a, Vec2F v1, Vec2F v2)
+bool p_rect_rect_intersect(P_Collider *a, P_Collider *b)
 {
-  return V2F_ZERO;
-}
+  bool result = FALSE;
 
-bool p_polygon_circle_intersect(Collider *a, Collider *b)
-{
-  return FALSE;
-}
 
-Vec2F p_polygon_circle_resolve(Collider *a, Collider *b)
-{
-  return V2F_ZERO;
-}
-
-bool p_circle_circle_intersect(Collider *a, Collider *b)
-{
-  return FALSE;
-}
-
-Vec2F p_circle_circle_resolve(Collider *a, Collider *b)
-{
-  return V2F_ZERO;
+  
+  return result;
 }

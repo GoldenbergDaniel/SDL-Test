@@ -120,7 +120,6 @@ struct Entity
   Vec2F input_dir;
 
   // Physics
-  // Vec2F dir;
   Vec2F vel;
   Vec2F new_vel;
   f32 speed;
@@ -130,10 +129,16 @@ struct Entity
   DrawType draw_type;
   Vec4F color;
   D_TextureID texture;
-  Vec2F size;
+  Vec2F dim;
   bool flip_x;
   bool flip_y;
   u16 z_index;
+
+  // Draw state
+  Vec3F p0;
+  Vec3F p1;
+  Vec3F p2;
+  Vec3F p3;
 
   // Collision
   P_Collider col;
@@ -144,7 +149,7 @@ struct Entity
   bool has_target;
   Vec2F target_pos;
   f32 target_angle;
-  u16 view_dist;
+  f32 view_dist;
 
   Timer timers[3];
 };
@@ -162,18 +167,19 @@ typedef struct EntityParams EntityParams;
 struct EntityParams
 {
   Entity *entity;
+  EntityType type;
   u64 id;
   b64 props;
   Vec2F pos;
   Vec4F color;
 };
 
-static Entity *NIL_ENTITY = &(Entity) {0}; 
+static Entity *NIL_ENTITY = &(Entity) {0};
 
 // @InitEntity ///////////////////////////////////////////////////////////////////////////
 
 void init_entity(Entity *en, EntityType type);
-void reset_entity(Entity *entity);
+void reset_entity(Entity *en);
 void reset_entity_children(Entity *en);
 
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
@@ -192,42 +198,41 @@ void _kill_entity(Game *game, EntityParams params);
 
 // @EntityRef ////////////////////////////////////////////////////////////////////////////
 
-EntityRef ref_from_entity(Entity *entity);
+EntityRef ref_from_entity(Entity *en);
 Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList ///////////////////////////////////////////////////////////////////////////
 
 Entity *alloc_entity(Game *game);
-void free_entity(Game *game, Entity *entity);
+void free_entity(Game *game, Entity *en);
 Entity *get_entity_of_id(Game *game, u64 id);
-Entity *get_first_entity_of_type(Game *game, EntityType type);
 
 // @EntityTree ///////////////////////////////////////////////////////////////////////////
 
-void attach_entity_child(Entity *entity, Entity *child);
+void attach_entity_child(Entity *en, Entity *child);
 void attach_entity_child_at(Entity *en, Entity *child, u16 index);
-void detach_entity_child(Entity *entity, Entity *child);
+void detach_entity_child(Entity *en, Entity *child);
 Entity *get_entity_child_at(Entity *en, u16 index);
-Entity *get_entity_child_of_id(Entity *entity, u64 id);
-Entity *get_entity_child_of_type(Entity *entity, EntityType type);
+Entity *get_entity_child_of_id(Entity *en, u64 id);
+Entity *get_entity_child_of_type(Entity *en, EntityType type);
 
 // @MiscEntity ///////////////////////////////////////////////////////////////////////////
 
-Vec2F pos_from_entity(Entity *entity);
-f32 rot_from_entity(Entity *entity);
-Vec2F scale_from_entity(Entity *entity);
-Vec2F size_from_entity(Entity *entity);
+Vec2F pos_from_entity(Entity *en);
+Vec2F dim_from_entity(Entity *en);
+Vec2F scale_from_entity(Entity *en);
+Vec2F offset_from_entity(Entity *en);
+f32 rot_from_entity(Entity *en);
 
 void entity_look_at(Entity *en, Vec2F target_pos);
-void set_entity_target(Entity *entity, EntityRef target);
-bool is_entity_valid(Entity *entity);
+void set_entity_target(Entity *en, EntityRef target);
+bool is_entity_valid(Entity *en);
 void resolve_entity_collision(Entity *a, Entity *b);
-void wrap_entity_at_edges(Entity *entity);
 
 // @UpdateEntity /////////////////////////////////////////////////////////////////////////
 
-void update_entity_collider(Entity *entity);
-void update_entity_xform(Game *game, Entity *entity);
+void update_entity_collider(Entity *en);
+void update_entity_xform(Game *game, Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 

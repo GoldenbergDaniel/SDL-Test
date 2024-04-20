@@ -13,9 +13,9 @@
 #include "game.h"
 #include "global.h"
 
-// #define PERF
+#define PERF
 
-#define TARGET_FPS 60
+#define SIM_RATE 60
 #define VSYNC 1
 
 Global *GLOBAL;
@@ -27,8 +27,9 @@ i32 main(void)
 #endif
 {
   Game game = {0};
-  game.perm_arena = arena_create(KiB(16));
-  game.frame_arena = arena_create(MiB(8));
+  game.perm_arena = arena_create(MiB(16));
+  game.frame_arena = arena_create(MiB(16));
+  game.batch_arena = arena_create(MiB(16));
   game.entity_arena = arena_create(MiB(64));
 
   srand(time(NULL));
@@ -45,17 +46,15 @@ i32 main(void)
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-  SDL_Window *window = SDL_CreateWindow(
-                                        "UNDEAD WEST",
+  SDL_Window *window = SDL_CreateWindow("UNDEAD WEST",
                                         SDL_WINDOWPOS_CENTERED, 
                                         SDL_WINDOWPOS_CENTERED, 
                                         WIDTH, 
                                         HEIGHT, 
-                                        SDL_WINDOW_OPENGL);
+                                        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
@@ -68,22 +67,29 @@ i32 main(void)
   path_to_res = str("../res");
   #endif
 
-  GLOBAL = arena_alloc(&game.frame_arena, sizeof (Global));
-  GLOBAL->resources = d_load_resources(&game.frame_arena, path_to_res);
-  GLOBAL->renderer = r_create_renderer(40000, &game.frame_arena);
+  GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
+  GLOBAL->resources = d_load_resources(&game.perm_arena, path_to_res);
+  GLOBAL->renderer = r_create_renderer(40000, &game.batch_arena);
+
+  Game prev_game = {0};
+  prev_game.perm_arena = arena_create(KiB(16));
+  prev_game.frame_arena = arena_create(MiB(8));
+  prev_game.batch_arena = arena_create(MiB(8));
+  prev_game.entity_arena = arena_create(MiB(64));
 
   init_game(&game);
 
+  SDL_PumpEvents();
+
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks64() * 0.001f;
-  f64 time_step = 1.0f / TARGET_FPS;
+  f64 time_step = 1.0f / SIM_RATE;
   f64 accumulator = 0.0f;
 
   game.dt = time_step;
 
-  SDL_PumpEvents();
-
   bool running = TRUE;
+  i32 counter = 0;
   while (running)
   {
     #ifdef PERF
@@ -97,6 +103,8 @@ i32 main(void)
 
     while (accumulator >= time_step)
     {
+      counter++;
+      printf("Frame: %i\n", counter);
       clear_last_frame_input();
 
       SDL_Event event;
@@ -113,17 +121,23 @@ i32 main(void)
 
       game.t = elapsed_time;
 
+      copy_game_state(&game, &prev_game);
       update_game(&game);
       handle_game_events(&game);
+      arena_clear(&game.frame_arena);
 
       elapsed_time += time_step;
       accumulator -= time_step;
     }
 
-    draw_game(&game);
+    draw_game(&game, &prev_game);
     SDL_GL_SwapWindow(window);
+    arena_clear(&game.batch_arena);
 
-    arena_clear(&game.frame_arena);
+    // clear prev game arenas
+    arena_clear(&prev_game.frame_arena);
+    arena_clear(&prev_game.batch_arena);
+    arena_clear(&prev_game.entity_arena);
 
     #ifdef PERF
     u64 perf_end = SDL_GetPerformanceCounter();

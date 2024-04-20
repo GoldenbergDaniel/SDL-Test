@@ -18,7 +18,7 @@ void init_entity(Entity *en, EntityType type)
   en->type = type;
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
-  en->size = v2f(10.0f, 10.0f);
+  en->dim = v2f(10.0f, 10.0f);
   en->active = TRUE;
   en->visible = TRUE;
   en->color = v4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -57,7 +57,7 @@ void init_entity(Entity *en, EntityType type)
       en->combat_type = CombatType_Melee;
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
-      en->view_dist = 350;
+      en->view_dist = 350.0f;
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
@@ -77,7 +77,7 @@ void init_entity(Entity *en, EntityType type)
       en->scale = v2f(1.5f, 1.5f);
       en->speed = 100.0f;
       en->color = D_RED;
-      en->view_dist = 350;
+      en->view_dist = 350.0f;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
       timer->should_loop = TRUE;
@@ -89,7 +89,7 @@ void init_entity(Entity *en, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
     }
-  break;
+    break;
     case EntityType_Laser:
     {
       en->props = EntityProp_Rendered | EntityProp_Moves;
@@ -225,14 +225,11 @@ Entity *alloc_entity(Game *game)
     if (list->head == NULL)
     {
       list->head = new_en;
-    }
-
-    if (list->tail != NULL)
-    {
-      list->tail->next = new_en;
+      list->tail = new_en;
     }
 
     new_en->next = NULL;
+    list->tail->next = new_en;
     list->tail = new_en;
     list->count++;
   }
@@ -257,26 +254,10 @@ void free_entity(Game *game, Entity *en)
 Entity *get_entity_of_id(Game *game, u64 id)
 {
   Entity *result = NIL_ENTITY;
-  
+
   for (Entity *en = game->entities.head; en != NULL; en = en->next)
   {
     if (en->id == id)
-    {
-      result = en;
-      break;
-    }
-  }
-
-  return result;
-}
-
-Entity *get_first_entity_of_type(Game *game, EntityType type)
-{
-  Entity *result = NIL_ENTITY;
-
-  for (Entity *en = game->entities.head; en != NULL; en = en->next)
-  {
-    if (en->type == type)
     {
       result = en;
       break;
@@ -336,8 +317,6 @@ void attach_entity_child_at(Entity *en, Entity *child, u16 index)
 
 void detach_entity_child(Entity *en, Entity *child)
 {
-  bool success = FALSE;
-
   for (u16 i = 0; i < en->child_count; i++)
   {
     EntityRef *slot = &en->children[i];
@@ -353,15 +332,8 @@ void detach_entity_child(Entity *en, Entity *child)
 
       en->child_count--;
       zero(child->parent, EntityRef);
-      success = TRUE;
       break;
     }
-  }
-
-  if (!success)
-  {
-    fprintf(stderr, "ERROR Failed to detach entity. Child not found!\n");
-    assert(FALSE);
   }
 }
 
@@ -421,14 +393,15 @@ Vec2F pos_from_entity(Entity *en)
   return v2f(result.e[0][2], result.e[1][2]);
 }
 
-f32 rot_from_entity(Entity *en)
+Vec2F dim_from_entity(Entity *en)
 {
-  f32 result = en->rot;
+  Vec2F result = en->dim;
+  result = mul_2f(result, en->scale);
 
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result += parent->rot;
+    result = mul_2f(result, parent->scale);
     parent = entity_from_ref(parent->parent);
   }
 
@@ -449,15 +422,22 @@ Vec2F scale_from_entity(Entity *en)
   return result;
 }
 
-Vec2F size_from_entity(Entity *en)
+Vec2F offset_from_entity(Entity *en)
 {
-  Vec2F result = en->size;
-  result = mul_2f(result, en->scale);
+  Vec2F dim = dim_from_entity(en);
+  Vec2F result = v2f(dim.width/2.0f * -en->origin.x, dim.height/2.0f * -en->origin.y);
+  
+  return result;
+}
+
+f32 rot_from_entity(Entity *en)
+{
+  f32 result = en->rot;
 
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result = mul_2f(result, parent->scale);
+    result += parent->rot;
     parent = entity_from_ref(parent->parent);
   }
 
@@ -497,7 +477,7 @@ bool is_entity_valid(Entity *en)
 inline
 void resolve_entity_collision(Entity *a, Entity *b)
 {
-  Vec2F size = size_from_entity(a);
+  Vec2F size = dim_from_entity(a);
 
   if (a->pos.y + a->vel.y - size.height/2.0f <= b->pos.y)
   {
@@ -514,7 +494,7 @@ void resolve_entity_collision(Entity *a, Entity *b)
 
 void wrap_entity_at_edges(Entity *en)
 {
-  Vec2F size = size_from_entity(en);
+  Vec2F size = dim_from_entity(en);
   
   if (en->pos.x + size.width <= 0.0f)
   {
@@ -531,7 +511,7 @@ void wrap_entity_at_edges(Entity *en)
 void update_entity_collider(Entity *en)
 {
   P_Collider *col = &en->col;
-  Vec2F size = size_from_entity(en);
+  Vec2F size = dim_from_entity(en);
 
   switch (col->type)
   {
@@ -568,7 +548,7 @@ void update_entity_collider(Entity *en)
     default: 
     {
       fprintf(stderr, "ERROR: Failed to update collider. Invalid type!");
-      assert(FALSE);
+      assert(0);
     }
   }
 }
@@ -583,14 +563,14 @@ void update_entity_xform(Game *game, Entity *en)
 
   // Offset position based on origin
   {
-    Vec2F size = mul_2f(en->size, en->scale);
+    Vec2F size = dim_from_entity(en);
     Vec2F offset = v2f(size.width/2.0f * -en->origin.x, size.height/2.0f * -en->origin.y);
     xform = mul_3x3f(translate_3x3f(offset.x, offset.y), xform);
   }
 
   // Flip
-  if (en->flip_x) { xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform); }
-  if (en->flip_y) { xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform); }
+  if (en->flip_x) xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
+  if (en->flip_y) xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform);
 
   // Rotate
   xform = mul_3x3f(rotate_3x3f(en->rot * RADIANS), xform);
@@ -623,6 +603,11 @@ void update_entity_xform(Game *game, Entity *en)
   xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
   en->xform = xform;
+  
+  en->p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), en->xform);
+  en->p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), en->xform);
+  en->p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), en->xform);
+  en->p3 = transform_3f(v3f(-5.0f, -5.0f, 1.0f), en->xform);
 }
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////

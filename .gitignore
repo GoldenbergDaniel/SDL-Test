@@ -1,5 +1,6 @@
 .DS_STORE
 
+ShaderToC
 UndeadWest
 UndeadWest.exe
-ShaderToC
+libSDL3.dylib
