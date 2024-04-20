@@ -44,7 +44,7 @@ void init_entity(Entity *en, EntityType type)
       en->col.vertex_count = 4;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
-      timer->max_duration = 0.5f;
+      timer->max_duration = 0.1f;
       timer->curr_duration = 0.0f;
       timer->should_tick = FALSE;
     }

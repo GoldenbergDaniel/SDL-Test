@@ -3,7 +3,12 @@
 #include <windows.h>
 #endif
 
-#include "sdl2/SDL.h"
+#include <stdlib.h>
+
+#include "sdl3/SDL_video.h"
+#include "sdl3/SDL_events.h"
+#include "sdl3/SDL_init.h"
+#include "sdl3/SDL_timer.h"
 #include "glad/glad.h"
 #include "base/base_inc.h"
 
@@ -13,10 +18,10 @@
 #include "game.h"
 #include "global.h"
 
-#define PERF
+// #define PERF
 
 #define SIM_RATE 60
-#define VSYNC 1
+#define VSYNC 0
 
 Global *GLOBAL;
 
@@ -35,32 +40,30 @@ i32 main(void)
   srand(time(NULL));
   arena_get_scratch(NULL);
 
-  SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+
+  // SDL_AudioStream *stream = SDL_;
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-  SDL_Window *window = SDL_CreateWindow("UNDEAD WEST",
-                                        SDL_WINDOWPOS_CENTERED, 
-                                        SDL_WINDOWPOS_CENTERED, 
-                                        WIDTH, 
-                                        HEIGHT, 
-                                        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+  SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+  SDL_Window *window = SDL_CreateWindow("UNDEAD WEST", WIDTH, HEIGHT, flags);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(VSYNC);
 
+  // SDL_SetWindowBordered(window, FALSE);
+
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
+
+  // SDL_SetWindowAlwaysOnTop(window, TRUE);
+  // d_clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
+  // SDL_GL_SwapWindow(window);
 
   String path_to_res = str("res");
   #ifdef DEBUG
@@ -79,14 +82,15 @@ i32 main(void)
 
   init_game(&game);
 
-  SDL_PumpEvents();
-
   f64 elapsed_time = 0.0f;
-  f64 current_time = SDL_GetTicks64() * 0.001f;
+  f64 current_time = SDL_GetTicks() * 0.001f;
   f64 time_step = 1.0f / SIM_RATE;
   f64 accumulator = 0.0f;
 
   game.dt = time_step;
+
+  // SDL_PumpEvents();
+  // SDL_SetWindowAlwaysOnTop(window, FALSE);
 
   bool running = TRUE;
   i32 counter = 0;
@@ -96,7 +100,7 @@ i32 main(void)
     u64 perf_start = SDL_GetPerformanceCounter();
     #endif
 
-    f64 new_time = SDL_GetTicks64() * 0.001f;
+    f64 new_time = SDL_GetTicks() * 0.001f;
     f64 frame_time = new_time - current_time;
     current_time = new_time;
     accumulator += frame_time;
@@ -104,7 +108,7 @@ i32 main(void)
     while (accumulator >= time_step)
     {
       counter++;
-      printf("Frame: %i\n", counter);
+      // printf("Frame: %i\n", counter);
       clear_last_frame_input();
 
       SDL_Event event;

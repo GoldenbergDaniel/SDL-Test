@@ -26,7 +26,6 @@ void arena_destroy(Arena *arena)
 
 void *arena_alloc(Arena *arena, u64 size)
 {
-  // printf("%llu\n", arena->used + size);
   assert(arena->size >= arena->used + size);
 
   i8 *allocated = arena->memory + arena->used;
@@ -61,8 +60,14 @@ Arena arena_get_scratch(Arena *conflict)
   }
 
   Arena scratch = scratch_1;
-  if (conflict == &scratch_1) scratch = scratch_2;
-  else if (conflict == &scratch_2) scratch = scratch_1;
+  if (conflict == &scratch_1)
+  {
+    scratch = scratch_2;
+  }
+  else if (conflict == &scratch_2)
+  {
+    scratch = scratch_1;
+  }
 
   return scratch;
 }

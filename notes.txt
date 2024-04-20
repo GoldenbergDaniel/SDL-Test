@@ -1,0 +1,16 @@
+When linking SDL3 statically:
+	-framework Cocoa 
+	-framework QuartzCore 
+	-framework Metal 
+	-framework IOKit 
+	-framework CoreAudio 
+	-framework CoreMedia 
+	-framework CoreHaptics 
+	-framework AudioToolbox 
+	-framework ForceFeedback 
+	-framework GameController 
+	-framework AVFoundation 
+	-framework Carbon 
+	-framework UniformTypeIdentifiers 
+	-liconv 
+	-lSDL3 

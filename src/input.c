@@ -1,4 +1,4 @@
-#include "sdl2/SDL.h" // IWYU pragma: keeps
+#include "sdl3/SDL_events.h"
 #include "base/base_inc.h"
 
 #include "global.h"
@@ -47,9 +47,9 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
 
   switch (event->type)
   {
-    case SDL_QUIT: *should_quit = TRUE;
+    case SDL_EVENT_QUIT: *should_quit = TRUE;
     break;
-    case SDL_KEYDOWN: 
+    case SDL_EVENT_KEY_DOWN: 
     {
       switch (event->key.keysym.scancode)
       {
@@ -152,7 +152,7 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
       }
       break;
     }
-    case SDL_MOUSEBUTTONDOWN:
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
     {
       switch (event->button.button)
       {
@@ -176,7 +176,7 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
       }
     }
     break;
-    case SDL_KEYUP: 
+    case SDL_EVENT_KEY_UP: 
     {
       switch (event->key.keysym.scancode)
       {
@@ -280,7 +280,7 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
       break;
     }
     break;
-    case SDL_MOUSEBUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
     {
       switch (event->button.button)
       {

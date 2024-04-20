@@ -29,7 +29,7 @@ struct Input
   u8 key_down[_KEY_COUNT];
   u8 key_just_down[_KEY_COUNT];
   u8 key_just_up[_KEY_COUNT];
-  Vec2I mouse_pos;
+  Vec2F mouse_pos;
 };
 
 bool is_key_pressed(Key key);
