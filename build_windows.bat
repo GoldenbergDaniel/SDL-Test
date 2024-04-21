@@ -5,10 +5,10 @@ set NAME= undeadwest
 set CC= cl
 set MODE= %1%
 
-set CFLAGS_R= /std:c17 /I extern\ /I extern\sdl3\inc
+set CFLAGS_R= /std:c17 /I extern\ /I extern\sdl3\include
 set LDFLAGS_R= /link /LIBPATH:extern\sdl3\lib SDL3.lib
 
-set CFLAGS_D= /std:c17 /Od /Zi /W4 /I ..\extern\ /I ..\extern\sdl3\inc
+set CFLAGS_D= /std:c17 /Od /Zi /W4 /I ..\extern\ /I ..\extern\sdl3\include
 set LDFLAGS_D= /link /LIBPATH:..\extern\sdl3\lib SDL3.lib
 
 if "%MODE%"==" d" (

@@ -1,6 +1,7 @@
 debug/
 
 .DS_STORE
+compile_flags.txt
 ShaderToC
 undeadwest
 undeadwest.exe

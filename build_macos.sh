@@ -3,13 +3,13 @@ CC="cc"
 MODE=$1
 
 CFLAGS_R="-std=c17 
-          -Iextern/ -Iextern/sdl3/inc 
+          -Iextern/ -Iextern/sdl3/include 
           -Wno-initializer-overrides -Wno-static-in-inline"
 
 LDFLAGS_R="-L./ -lsdl3"
 
 CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
-          -I../extern/ -I../extern/sdl3/inc -Wall -Wpedantic
+          -I../extern/ -I../extern/sdl3/include -Wall -Wpedantic
           -Wno-initializer-overrides -Wno-static-in-inline -Wno-missing-braces"
 
 LDFLAGS_D="-L../ -lsdl3"

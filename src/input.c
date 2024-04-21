@@ -1,4 +1,4 @@
-#include "sdl3/SDL_events.h"
+#include "SDL3/SDL_events.h"
 #include "base/base_inc.h"
 
 #include "global.h"

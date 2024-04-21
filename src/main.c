@@ -4,10 +4,10 @@
 #include <windows.h>
 #endif
 
-#include "sdl3/SDL_init.h"
-#include "sdl3/SDL_video.h"
-#include "sdl3/SDL_events.h"
-#include "sdl3/SDL_timer.h"
+#include "SDL3/SDL_init.h"
+#include "SDL3/SDL_video.h"
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_timer.h"
 #include "glad/glad.h"
 
 #include "base/base_inc.h"
@@ -35,7 +35,7 @@ i32 main(void)
   srand(time(NULL));
   arena_get_scratch(NULL);
 
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+  SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
   i32 gl_major_version = 4;
   #ifdef _WIN32
