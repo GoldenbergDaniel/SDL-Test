@@ -62,7 +62,6 @@ void pop_event(Game *game)
   queue->count--;
 }
 
-inline
 Event *peek_event(Game *game)
 {
   return game->event_queue.front;

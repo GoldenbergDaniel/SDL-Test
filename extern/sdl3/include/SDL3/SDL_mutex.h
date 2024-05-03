@@ -28,8 +28,8 @@
  *  Functions to provide thread synchronization primitives.
  */
 
-#include <sdl3/SDL_stdinc.h>
-#include <sdl3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 
 /******************************************************************************/
 /* Enable thread safety attributes only with clang.
@@ -109,7 +109,7 @@
 /******************************************************************************/
 
 
-#include <sdl3/SDL_begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -744,6 +744,6 @@ extern DECLSPEC int SDLCALL SDL_WaitConditionTimeout(SDL_Condition *cond,
 #ifdef __cplusplus
 }
 #endif
-#include <sdl3/SDL_close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_mutex_h_ */

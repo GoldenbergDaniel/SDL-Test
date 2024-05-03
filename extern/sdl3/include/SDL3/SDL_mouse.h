@@ -28,11 +28,11 @@
 #ifndef SDL_mouse_h_
 #define SDL_mouse_h_
 
-#include <sdl3/SDL_stdinc.h>
-#include <sdl3/SDL_error.h>
-#include <sdl3/SDL_video.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_video.h>
 
-#include <sdl3/SDL_begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -529,6 +529,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
 #ifdef __cplusplus
 }
 #endif
-#include <sdl3/SDL_close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_mouse_h_ */

@@ -14,7 +14,7 @@ CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
 
 LDFLAGS_D="-L../ -lsdl3"
 
-./ShaderToC
+# ./ShaderToC
 
 if [[ $MODE == "r" || $MODE == "-r" ]]
 then

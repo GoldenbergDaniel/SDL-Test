@@ -28,18 +28,18 @@
  *  Header for the SDL thread management routines.
  */
 
-#include <sdl3/SDL_stdinc.h>
-#include <sdl3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 
 /* Thread synchronization primitives */
-#include <sdl3/SDL_atomic.h>
-#include <sdl3/SDL_mutex.h>
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_mutex.h>
 
 #if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
-#include <sdl3/SDL_begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -434,6 +434,6 @@ extern DECLSPEC void SDLCALL SDL_CleanupTLS(void);
 #ifdef __cplusplus
 }
 #endif
-#include <sdl3/SDL_close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_thread_h_ */

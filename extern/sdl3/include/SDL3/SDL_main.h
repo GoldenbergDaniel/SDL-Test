@@ -22,9 +22,9 @@
 #ifndef SDL_main_h_
 #define SDL_main_h_
 
-#include <sdl3/SDL_platform_defines.h>
-#include <sdl3/SDL_stdinc.h>
-#include <sdl3/SDL_events.h>
+#include <SDL3/SDL_platform_defines.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_events.h>
 
 /*
  * For details on how SDL_main works, and how to use it, please refer to:
@@ -56,7 +56,7 @@
            Ideally, #include'ing SDL_main.h is enough to get a main() function working.
            However, that requires the source file your main() is in to be compiled
            as C++ *and* with the /ZW compiler flag. If that's not feasible, add an
-           otherwise empty .cpp file that only contains `#include <sdl3/SDL_main.h>`
+           otherwise empty .cpp file that only contains `#include <SDL3/SDL_main.h>`
            and build that with /ZW (still include SDL_main.h in your other file with main()!).
            In XAML apps, instead the function SDL_RunApp() must be called with a pointer
            to the Direct3D-hosted XAML control passed in as the "reserved" argument.
@@ -153,7 +153,7 @@
 #define main SDL_main
 #endif
 
-#include <sdl3/SDL_begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -503,7 +503,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 }
 #endif
 
-#include <sdl3/SDL_close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
     /* include header-only SDL_main implementations */
@@ -512,19 +512,19 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
         || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
 
         /* platforms which main (-equivalent) can be implemented in plain C */
-        #include <sdl3/SDL_main_impl.h>
+        #include <SDL3/SDL_main_impl.h>
 
     #elif defined(SDL_PLATFORM_WINRT) /* C++ platforms */
         #ifdef __cplusplus
-        #include <sdl3/SDL_main_impl.h>
+        #include <SDL3/SDL_main_impl.h>
         #else
             /* Note: to get rid of the following warning, you can #define SDL_MAIN_NOIMPL before including SDL_main.h
              *  in your C sourcefile that contains the standard main. Do *not* use SDL_MAIN_HANDLED for that, then SDL_main won't find your main()!
              */
             #ifdef _MSC_VER
-                #pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <sdl3/SDL_main.h>")
+                #pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>")
             #elif defined(__GNUC__) /* gcc, clang, mingw and compatible are matched by this and have #warning */
-                #warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <sdl3/SDL_main.h>"
+                #warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
             #endif /* __GNUC__ */
         #endif /* __cplusplus */
 

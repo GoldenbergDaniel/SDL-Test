@@ -28,9 +28,9 @@
  *  Header for the SDL power management routines.
  */
 
-#include <sdl3/SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 
-#include <sdl3/SDL_begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -83,6 +83,6 @@ extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *perce
 #ifdef __cplusplus
 }
 #endif
-#include <sdl3/SDL_close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_power_h_ */
