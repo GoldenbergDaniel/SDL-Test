@@ -2,8 +2,43 @@
 
 #include "base/base_inc.h"
 
-#include "event.h"
 #include "entity.h"
+
+// @Event ///////////////////////////////////////////////////////////////////////////
+
+typedef enum EventType
+{
+  EventType_EntityKilled,
+} EventType;
+
+typedef struct EventDesc EventDesc;
+struct EventDesc
+{
+  u64 id;
+  u64 type;
+  b64 props;
+};
+
+typedef struct Event Event;
+struct Event
+{
+  Event *next;
+  Event *next_free;
+  
+  EventType type;
+  EventDesc desc;
+};
+
+typedef struct EventQueue EventQueue;
+struct EventQueue
+{
+  Event *front;
+  Event *back;
+  Event *first_free;
+  u64 count;
+};
+
+// @Game ////////////////////////////////////////////////////////////////////////////
 
 typedef struct Game Game;
 struct Game
@@ -22,6 +57,7 @@ struct Game
   f64 t;
   f64 dt;
   
+  bool is_sim_started;
   bool should_quit;
 };
 

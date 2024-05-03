@@ -33,5 +33,3 @@ if "%MODE%"==" d" (
     %NAME%
   )
 )
-
-echo Done!

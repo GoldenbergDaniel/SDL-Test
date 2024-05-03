@@ -1,8 +1,5 @@
 #include <stdlib.h>
 #include <time.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
@@ -13,11 +10,11 @@
 #include "base/base_inc.h"
 #include "render/render.h"
 #include "draw/draw.h"
-#include "input.h"
+#include "input/input.h"
 #include "game.h"
 #include "global.h"
 
-// #define PERF
+// #define LOG_PERF
 
 #define SIM_RATE 60
 #define VSYNC 1
@@ -63,6 +60,7 @@ i32 main(void)
   SDL_GL_SetSwapInterval(VSYNC);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
+  d_clear_frame(V4F_ZERO);
 
   String path_to_res = str("res");
   #ifdef DEBUG
@@ -91,7 +89,7 @@ i32 main(void)
   bool running = TRUE;
   while (running)
   {
-    #ifdef PERF
+    #ifdef LOG_PERF
     u64 perf_start = SDL_GetPerformanceCounter();
     #endif
 
@@ -136,7 +134,7 @@ i32 main(void)
     arena_clear(&prev_game.batch_arena);
     arena_clear(&prev_game.entity_arena);
 
-    #ifdef PERF
+    #ifdef LOG_PERF
     u64 perf_end = SDL_GetPerformanceCounter();
     f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
     printf("%.0f ms\n", perf);

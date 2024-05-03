@@ -232,7 +232,7 @@ void resolve_entity_collision(Entity *a, Entity *b);
 // @UpdateEntity /////////////////////////////////////////////////////////////////////////
 
 void update_entity_collider(Entity *en);
-void update_entity_xform(Game *game, Entity *en);
+void update_entity_xform(Entity *en, Mat3x3F cam);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 

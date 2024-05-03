@@ -4,7 +4,6 @@
 
 #include "draw/draw.h"
 #include "phys/physics.h"
-#include "event.h"
 #include "game.h"
 #include "global.h"
 #include "entity.h"
@@ -34,11 +33,14 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_Player:
     {
-      en->props = EntityProp_Rendered | EntityProp_Collides | EntityProp_Controlled | EntityProp_Moves | EntityProp_Combatant | EntityProp_WrapAtEdge;
+      en->props = EntityProp_Rendered | EntityProp_Collides | EntityProp_Controlled | 
+        EntityProp_Moves | EntityProp_Combatant | EntityProp_WrapAtEdge;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
-      en->scale = v2f(1.0f, 1.0f);
+      en->origin = v2f(0.0f, 0.0f);
+      en->dim = v2f(16, 16);
+      en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
       en->col.vertex_count = 4;
@@ -51,7 +53,8 @@ void init_entity(Entity *en, EntityType type)
     break;
     case EntityType_ZombieWalker:
     {
-      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant | EntityProp_Collides;
+      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant | 
+        EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Melee;
@@ -59,6 +62,9 @@ void init_entity(Entity *en, EntityType type)
       en->speed = 100.0f;
       en->view_dist = 350.0f;
       en->col.vertex_count = 4;
+      en->dim = v2f(16, 16);
+      en->origin = v2f(0.0f, 0.0f);
+      en->scale = SPRITE_SCALE;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
       timer->max_duration = 1.0f;
@@ -74,9 +80,6 @@ void init_entity(Entity *en, EntityType type)
       en->move_type = MoveType_Flying;
       en->combat_type = CombatType_Ranged;
       en->pos = v2f(random_u32(0, WIDTH), random_u32(0, HEIGHT));
-      en->scale = v2f(1.5f, 1.5f);
-      en->speed = 100.0f;
-      en->color = D_RED;
       en->view_dist = 350.0f;
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
@@ -88,15 +91,20 @@ void init_entity(Entity *en, EntityType type)
       en->props = EntityProp_Rendered | EntityProp_Equipped;
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
+      en->origin = v2f(0.0f, 0.0f);
+      en->dim = v2f(16.0f, 16.0f);
     }
     break;
     case EntityType_Laser:
     {
       en->props = EntityProp_Rendered | EntityProp_Moves;
-      en->draw_type = DrawType_Rectangle;
+      en->draw_type = DrawType_Sprite;
+      en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
-      en->scale = v2f(5.0f, 0.3f);
+      // en->origin = v2f(0.5f, 0.5f);
+      en->dim = v2f(16.0f, 16.0f);
+      en->scale = SPRITE_SCALE; 
     }
     break;
     case EntityType_Wall:
@@ -104,14 +112,14 @@ void init_entity(Entity *en, EntityType type)
       en->props = EntityProp_Rendered | EntityProp_Collides;
       en->draw_type = DrawType_Rectangle;
       en->col.vertex_count = 4;
-      
-      update_entity_collider(en);
+      en->dim = dim_from_entity(en);
     }
     break;
     case EntityType_Debug:
     {
       en->props = EntityProp_Rendered;
       en->draw_type = DrawType_Rectangle;
+      en->scale = v2f(0.1f, 0.1f);
 
       en->color = D_YELLOW;
     }
@@ -390,7 +398,9 @@ Vec2F pos_from_entity(Entity *en)
     parent = entity_from_ref(parent->parent);
   }
 
-  return v2f(result.e[0][2], result.e[1][2]);
+  Vec2F pos = v2f(result.e[0][2], result.e[1][2]);
+
+  return pos;
 }
 
 Vec2F dim_from_entity(Entity *en)
@@ -425,7 +435,7 @@ Vec2F scale_from_entity(Entity *en)
 Vec2F offset_from_entity(Entity *en)
 {
   Vec2F dim = dim_from_entity(en);
-  Vec2F result = v2f(dim.width/2.0f * -en->origin.x, dim.height/2.0f * -en->origin.y);
+  Vec2F result = v2f(dim.width * en->origin.x, dim.height * en->origin.y);
   
   return result;
 }
@@ -474,14 +484,18 @@ bool is_entity_valid(Entity *en)
   return (en != NULL && en->type != EntityType_Nil);
 }
 
+// `a` is player and `b` is ground
 inline
 void resolve_entity_collision(Entity *a, Entity *b)
 {
-  Vec2F size = dim_from_entity(a);
+  Vec2F a_dim = dim_from_entity(a);
+  Vec2F b_dim = dim_from_entity(b);
+  f32 a_offset = a_dim.height * 0.5f;
+  f32 b_offset = b_dim.height * (1.0f - b->origin.y);
 
-  if (a->pos.y + a->vel.y - size.height/2.0f <= b->pos.y)
+  if (a->pos.y + a->vel.y - a_offset <= b->pos.y + b_offset)
   {
-    a->pos.y = b->pos.y + size.height/2.0f;
+    a->pos.y = b->pos.y + a_offset + b->pos.y + b_offset;
     a->vel.y = 0.0f;
     a->new_vel.y = 0.0f;
     a->grounded = TRUE;
@@ -553,7 +567,7 @@ void update_entity_collider(Entity *en)
   }
 }
 
-void update_entity_xform(Game *game, Entity *en)
+Mat3x3F xform_from_entity(Entity *en, Mat3x3F cam)
 {
   Mat3x3F xform = m3x3f(1.0f);
   Entity *parent = entity_from_ref(en->parent);
@@ -599,15 +613,10 @@ void update_entity_xform(Game *game, Entity *en)
     xform = mul_3x3f(model, xform);
   }
 
-  xform = mul_3x3f(game->camera, xform);
+  xform = mul_3x3f(cam, xform);
   xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
-  en->xform = xform;
-  
-  en->p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), en->xform);
-  en->p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), en->xform);
-  en->p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), en->xform);
-  en->p3 = transform_3f(v3f(-5.0f, -5.0f, 1.0f), en->xform);
+  return xform;
 }
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////

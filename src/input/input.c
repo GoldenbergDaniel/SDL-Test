@@ -1,7 +1,7 @@
 #include "SDL3/SDL_events.h"
-#include "base/base_inc.h"
+#include "../base/base_inc.h"
 
-#include "global.h"
+#include "../global.h"
 #include "input.h"
 
 extern Global *GLOBAL;

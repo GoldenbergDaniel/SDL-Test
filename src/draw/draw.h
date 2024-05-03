@@ -17,6 +17,7 @@
 #define D_SPRITE_COWBOY v2i(0,0)
 #define D_SPRITE_ZOMBIE v2i(1,0)
 #define D_SPRITE_GUN v2i(2,0)
+#define D_SPRITE_BULLET v2i(3, 0)
 
 #define D_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
 #define D_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})

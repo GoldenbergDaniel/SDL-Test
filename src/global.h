@@ -4,10 +4,12 @@
 
 #include "render/render.h"
 #include "draw/draw.h"
-#include "input.h"
+#include "input/input.h"
 
-#define WIDTH 1024
-#define HEIGHT 640
+#define WIDTH 1270
+#define HEIGHT 740
+
+#define SPRITE_SCALE (Vec2F) {7, 7}
 
 typedef struct Global Global;
 struct Global

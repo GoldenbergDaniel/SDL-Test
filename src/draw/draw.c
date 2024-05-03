@@ -80,10 +80,10 @@ void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
 
-  Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
-  Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
-  Vec3F p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), xform);
-  Vec3F p3 = transform_3f(v3f(-5.0f, -5.0f, 1.0f), xform);
+  Vec3F p0 = transform_3f(v3f(-0.0f,  10.0f, 1.0f), xform);
+  Vec3F p1 = transform_3f(v3f( 10.0f,  10.0f, 1.0f), xform);
+  Vec3F p2 = transform_3f(v3f( 10.0f, -0.0f, 1.0f), xform);
+  Vec3F p3 = transform_3f(v3f(-0.0f, -0.0f, 1.0f), xform);
 
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
@@ -94,52 +94,49 @@ void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 
 void d_draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, D_TextureID tex)
 {
-//   R_Renderer *renderer = &GLOBAL->renderer;
-//   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
-//   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+  R_Renderer *renderer = &GLOBAL->renderer;
+  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
 
-//   Mat3x3F xform = m3x3f(1.0f);
-//   xform = mul_3x3f(translate_3x3f(off.x, off.y), xform);
-//   xform = mul_3x3f(rotate_3x3f(rot), xform);
-//   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
-//   xform = mul_3x3f(renderer->projection, xform);
+  Mat3x3F xform = m3x3f(1.0f);
+  // xform = mul_3x3f(translate_3x3f(off.x, off.y), xform);
+  xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
+  xform = mul_3x3f(rotate_3x3f(rot * RADIANS), xform);
+  xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
+  xform = mul_3x3f(renderer->projection, xform);
   
-//   Vec3F p0 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform);
-//   Vec3F p1 = transform_3f(v3f(dim.width, 0.0f, 1.0f), xform);
-//   Vec3F p2 = transform_3f(v3f(dim.width, dim.height, 1.0f), xform);
-//   Vec3F p3 = transform_3f(v3f(0.0f, dim.height, 1.0f), xform);
+  Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
+  Vec3F p1 = transform_3f(v3f(1.0f, 1.0f, 1.0f), xform); // tr
+  Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
+  Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
 
-//   tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
+  tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
-//   const Vec4F top_left =
-//   {
-//     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-//     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
-//   };
+  const Vec4F top_left = {
+    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+  };
 
-//   const Vec4F top_right =
-//   {
-//     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-//     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
-//   };
+  const Vec4F top_right = {
+    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+  };
 
-//  const Vec4F bot_right =
-//   {
-//     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-//     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
-//   };
+  const Vec4F bot_right = {
+    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+  };
 
-//   const Vec4F bot_left =
-//   {
-//     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-//     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
-//   };
+  const Vec4F bot_left = {
+    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+  };
 
-//   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
-//   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
-//   r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
-//   r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
-//   r_push_quad_indices(renderer);
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
+  r_push_quad_indices(renderer);
 }
 
 void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_TextureID tex)
@@ -150,26 +147,22 @@ void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_Textu
 
   tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
-  const Vec4F top_left =
-  {
+  const Vec4F top_left = {
     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  const Vec4F top_right =
-  {
+  const Vec4F top_right = {
     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
- const Vec4F bot_right =
-  {
+  const Vec4F bot_right = {
     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  const Vec4F bot_left =
-  {
+  const Vec4F bot_left = {
     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
@@ -187,33 +180,29 @@ void d_draw_sprite_x(Mat3x3F xform, Vec4F tint, D_TextureID tex)
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
 
-  Vec3F p0 = transform_3f(v3f(-5.0f,  5.0f, 1.0f), xform);
-  Vec3F p1 = transform_3f(v3f( 5.0f,  5.0f, 1.0f), xform);
-  Vec3F p2 = transform_3f(v3f( 5.0f, -5.0f, 1.0f), xform);
-  Vec3F p3 = transform_3f(v3f(-5.0f, -5.0f, 1.0f), xform);
+  Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
+  Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
+  Vec3F p2 = transform_3f(v3f( 8.0f, -8.0f, 1.0f), xform); // br
+  Vec3F p3 = transform_3f(v3f(-8.0f, -8.0f, 1.0f), xform); // bl
 
   tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
-  const Vec4F top_left =
-  {
+  const Vec4F top_left = {
     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  const Vec4F top_right =
-  {
+  const Vec4F top_right = {
     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
- const Vec4F bot_right =
-  {
+  const Vec4F bot_right = {
     ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  const Vec4F bot_left =
-  {
+  const Vec4F bot_left = {
     ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
