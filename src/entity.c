@@ -3,7 +3,6 @@
 #include "base/base_inc.h"
 
 #include "draw/draw.h"
-#include "phys/physics.h"
 #include "game.h"
 #include "global.h"
 #include "entity.h"
@@ -12,8 +11,9 @@ extern Global *GLOBAL;
 
 // @InitEntity ///////////////////////////////////////////////////////////////////////////
 
-void init_entity(Entity *en, EntityType type)
+Entity *create_entity(Game *game, EntityType type)
 {
+  Entity *en = alloc_entity(game);
   en->type = type;
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
@@ -22,7 +22,35 @@ void init_entity(Entity *en, EntityType type)
   en->visible = TRUE;
   en->color = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-  init_timers(en);
+  // Init timers ----------------
+  {
+    en->timers[TIMER_COMBAT] = (Timer) {
+      .max_duration = 1.0f,
+      .curr_duration = 1.0f,
+      .should_tick = TRUE,
+      .ticking = FALSE,
+      .timeout = FALSE,
+      .should_loop = FALSE
+    };
+
+    en->timers[TIMER_HEALTH] = (Timer) {
+      .max_duration = 1.0f,
+      .curr_duration = 1.0f,
+      .should_tick = TRUE,
+      .ticking = FALSE,
+      .timeout = FALSE,
+      .should_loop = FALSE
+    };
+
+    en->timers[TIMER_KILL] = (Timer) {
+      .max_duration = 5.0f,
+      .curr_duration = 5.0f,
+      .should_tick = TRUE,
+      .ticking = FALSE,
+      .timeout = FALSE,
+      .should_loop = FALSE
+    };
+  }
 
   switch (type)
   {
@@ -43,8 +71,9 @@ void init_entity(Entity *en, EntityType type)
       en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
-      en->col.vertex_count = 4;
 
+      en->body_col.dim = dim_from_entity(en);
+      
       Timer *timer = get_timer(en, TIMER_COMBAT);
       timer->max_duration = 0.1f;
       timer->curr_duration = 0.0f;
@@ -61,29 +90,17 @@ void init_entity(Entity *en, EntityType type)
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
-      en->col.vertex_count = 4;
       en->dim = v2f(16, 16);
       en->origin = v2f(0.0f, 0.0f);
       en->scale = SPRITE_SCALE;
+
+      en->body_col.dim = dim_from_entity(en);
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
       timer->max_duration = 1.0f;
       timer->curr_duration = 0.0f;
       timer->should_loop = TRUE;
       timer->should_tick = FALSE;
-    }
-    break;
-    case EntityType_ZombieBird:
-    {
-      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant;
-      en->draw_type = DrawType_Triangle;
-      en->move_type = MoveType_Flying;
-      en->combat_type = CombatType_Ranged;
-      en->pos = v2f(random_u32(0, WIDTH), random_u32(0, HEIGHT));
-      en->view_dist = 350.0f;
-
-      Timer *timer = get_timer(en, TIMER_COMBAT);
-      timer->should_loop = TRUE;
     }
     break;
     case EntityType_Equipped:
@@ -102,7 +119,6 @@ void init_entity(Entity *en, EntityType type)
       en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
-      // en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(16.0f, 16.0f);
       en->scale = SPRITE_SCALE; 
     }
@@ -111,7 +127,6 @@ void init_entity(Entity *en, EntityType type)
     {
       en->props = EntityProp_Rendered | EntityProp_Collides;
       en->draw_type = DrawType_Rectangle;
-      en->col.vertex_count = 4;
       en->dim = dim_from_entity(en);
     }
     break;
@@ -127,11 +142,11 @@ void init_entity(Entity *en, EntityType type)
     default:
     {
       fprintf(stderr, "ERROR: Failed to initialize entity. Invalid type!");
-      fprintf(stderr, "Entity ID: %llu\n", en->id);
-      fprintf(stderr, "Entity Type: %i\n", en->type);
-      assert(FALSE);
+      assert(0);
     }
   }
+
+  return en;
 }
 
 void reset_entity(Entity *en)
@@ -165,8 +180,7 @@ void reset_entity_children(Entity *en)
 
 Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
 {
-  Entity *en = alloc_entity(game);
-  init_entity(en, type);
+  Entity *en = create_entity(game, type);
   en->props |= params.props;
   en->pos = params.pos;
   en->color = params.color;
@@ -190,8 +204,7 @@ void _kill_entity(Game *game, EntityParams params)
 inline
 EntityRef ref_from_entity(Entity *en)
 {
-  return (EntityRef)
-  {
+  return (EntityRef) {
     .ptr = en,
     .id = en->id
   };
@@ -389,18 +402,16 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
 
 Vec2F pos_from_entity(Entity *en)
 {
-  Mat3x3F result = en->model_mat;
+  Mat3x3F mat = en->model_mat;
 
   Entity *parent = entity_from_ref(en->parent);
   while (is_entity_valid(parent))
   {
-    result = mul_3x3f(parent->model_mat, result);
+    mat = mul_3x3f(parent->model_mat, mat);
     parent = entity_from_ref(parent->parent);
   }
 
-  Vec2F pos = v2f(result.e[0][2], result.e[1][2]);
-
-  return pos;
+  return v2f(mat.e[0][2], mat.e[1][2]);
 }
 
 Vec2F dim_from_entity(Entity *en)
@@ -484,175 +495,7 @@ bool is_entity_valid(Entity *en)
   return (en != NULL && en->type != EntityType_Nil);
 }
 
-// `a` is player and `b` is ground
-inline
-void resolve_entity_collision(Entity *a, Entity *b)
-{
-  Vec2F a_dim = dim_from_entity(a);
-  Vec2F b_dim = dim_from_entity(b);
-  f32 a_offset = a_dim.height * 0.5f;
-  f32 b_offset = b_dim.height * (1.0f - b->origin.y);
-
-  if (a->pos.y + a->vel.y - a_offset <= b->pos.y + b_offset)
-  {
-    a->pos.y = b->pos.y + a_offset + b->pos.y + b_offset;
-    a->vel.y = 0.0f;
-    a->new_vel.y = 0.0f;
-    a->grounded = TRUE;
-  }
-  else
-  {
-    a->grounded = FALSE;
-  }
-}
-
-void wrap_entity_at_edges(Entity *en)
-{
-  Vec2F size = dim_from_entity(en);
-  
-  if (en->pos.x + size.width <= 0.0f)
-  {
-    en->pos.x = WIDTH;
-  }
-  else if (en->pos.x >= WIDTH)
-  {
-    en->pos.x = -(size.width);
-  }
-}
-
-// @UpdateEntity /////////////////////////////////////////////////////////////////////////
-
-void update_entity_collider(Entity *en)
-{
-  P_Collider *col = &en->col;
-  Vec2F size = dim_from_entity(en);
-
-  switch (col->type)
-  {
-    case P_ColliderType_Polygon: // 4 vertices
-    {
-      // col->vertices[0].x = en->pos.x - size.width/2.0f;
-      // col->vertices[0].y = en->pos.y + size.height/2.0f;
-      // col->vertices[1].x = en->pos.x + size.width/2.0f;
-      // col->vertices[1].y = en->pos.y + size.height/2.0f;
-      // col->vertices[2].x = en->pos.x + size.width/2.0f;
-      // col->vertices[2].y = en->pos.y - size.height/2.0f;
-      // col->vertices[3].x = en->pos.x - size.width/2.0f;
-      // col->vertices[3].y = en->pos.y - size.height/2.0f;
-
-      col->edges[0][0] = 0;
-      col->edges[0][1] = 1;
-      col->edges[1][0] = 1;
-      col->edges[1][1] = 2;
-      col->edges[2][0] = 2;
-      col->edges[2][1] = 3;
-      col->edges[3][0] = 3;
-      col->edges[3][1] = 4;
-
-      col->normals[0] = normal_2f(col->vertices[col->edges[0][0]], 
-                                  col->vertices[col->edges[0][1]]);
-      col->normals[1] = normal_2f(col->vertices[col->edges[1][0]], 
-                                  col->vertices[col->edges[1][1]]);
-      col->normals[2] = normal_2f(col->vertices[col->edges[2][0]], 
-                                  col->vertices[col->edges[2][1]]);
-      col->normals[3] = normal_2f(col->vertices[col->edges[3][0]], 
-                                  col->vertices[col->edges[3][1]]);
-    }
-    break;
-    default: 
-    {
-      fprintf(stderr, "ERROR: Failed to update collider. Invalid type!");
-      assert(0);
-    }
-  }
-}
-
-Mat3x3F xform_from_entity(Entity *en, Mat3x3F cam)
-{
-  Mat3x3F xform = m3x3f(1.0f);
-  Entity *parent = entity_from_ref(en->parent);
-
-  // Scale
-  xform = mul_3x3f(scale_3x3f(en->scale.x, en->scale.y), xform);
-
-  // Offset position based on origin
-  {
-    Vec2F size = dim_from_entity(en);
-    Vec2F offset = v2f(size.width/2.0f * -en->origin.x, size.height/2.0f * -en->origin.y);
-    xform = mul_3x3f(translate_3x3f(offset.x, offset.y), xform);
-  }
-
-  // Flip
-  if (en->flip_x) xform = mul_3x3f(scale_3x3f(-1.0f, 1.0f), xform);
-  if (en->flip_y) xform = mul_3x3f(scale_3x3f(1.0f, -1.0f), xform);
-
-  // Rotate
-  xform = mul_3x3f(rotate_3x3f(en->rot * RADIANS), xform);
-
-  // Translate
-  {
-    Vec2F scale = v2f(1.0f, 1.0f);
-    for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
-    {
-      scale = mul_2f(scale, p->scale);
-    }
-
-    xform = mul_3x3f(translate_3x3f(en->pos.x/scale.x, en->pos.y/scale.y), xform);
-  }
-
-  en->model_mat = xform;
-
-  // Move to world space
-  {
-    Mat3x3F model = m3x3f(1.0f);
-    for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
-    {
-      model = mul_3x3f(p->model_mat, model);
-    }
-    
-    xform = mul_3x3f(model, xform);
-  }
-
-  xform = mul_3x3f(cam, xform);
-  xform = mul_3x3f(GLOBAL->renderer.projection, xform);
-
-  return xform;
-}
-
 // @Timer ////////////////////////////////////////////////////////////////////////////////
-
-void init_timers(Entity *en)
-{
-  en->timers[TIMER_COMBAT] = (Timer)
-  {
-    .max_duration = 1.0f,
-    .curr_duration = 1.0f,
-    .should_tick = TRUE,
-    .ticking = FALSE,
-    .timeout = FALSE,
-    .should_loop = FALSE
-  };
-
-  en->timers[TIMER_HEALTH] = (Timer)
-  {
-    .max_duration = 1.0f,
-    .curr_duration = 1.0f,
-    .should_tick = TRUE,
-    .ticking = FALSE,
-    .timeout = FALSE,
-    .should_loop = FALSE
-  };
-
-  en->timers[TIMER_KILL] = (Timer)
-  {
-    .max_duration = 5.0f,
-    .curr_duration = 5.0f,
-    .should_tick = TRUE,
-    .ticking = FALSE,
-    .timeout = FALSE,
-    .should_loop = FALSE
-  };
-}
 
 inline
 Timer *get_timer(Entity *en, u8 index)

@@ -141,9 +141,7 @@ struct Entity
   Vec3F p3;
 
   // Collision
-  P_Collider col;
-  u8 col_layer;
-  b8 col_mask;
+  P_Collider body_col;
 
   // Targeting
   bool has_target;
@@ -178,7 +176,7 @@ static Entity *NIL_ENTITY = &(Entity) {0};
 
 // @InitEntity ///////////////////////////////////////////////////////////////////////////
 
-void init_entity(Entity *en, EntityType type);
+Entity *create_entity(Game *game, EntityType type);
 void reset_entity(Entity *en);
 void reset_entity_children(Entity *en);
 
@@ -227,15 +225,8 @@ f32 rot_from_entity(Entity *en);
 void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
-void resolve_entity_collision(Entity *a, Entity *b);
-
-// @UpdateEntity /////////////////////////////////////////////////////////////////////////
-
-void update_entity_collider(Entity *en);
-void update_entity_xform(Entity *en, Mat3x3F cam);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
-void init_timers(Entity *en);
 Timer *get_timer(Entity *en, u8 index);
 bool tick_timer(Timer *timer, f64 dt);

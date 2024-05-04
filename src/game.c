@@ -4,6 +4,7 @@
 
 #include "draw/draw.h"
 #include "input/input.h"
+#include "phys/physics.h"
 #include "entity.h"
 #include "global.h"
 #include "game.h"
@@ -90,32 +91,27 @@ void init_game(Game *game)
 
   SCOPE("Starting entities")
   {
-    Entity *ground = alloc_entity(game);
-    init_entity(ground, EntityType_Wall);
+    Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
     ground->scale = v2f(512.0f, 24.0f);
     ground->color = v4f(0.7f, 0.6f, 0.4f, 1.0f);
     ground->visible = TRUE;
 
-    Entity *player = alloc_entity(game);
-    init_entity(player, EntityType_Player);
+    Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f + 50.0f);
 
-    Entity *gun = alloc_entity(game);
-    init_entity(gun, EntityType_Equipped);
+    Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
     gun->pos = v2f(48.0f, 0.0f);
 
-    Entity *shot_point = alloc_entity(game);
-    init_entity(shot_point, EntityType_Debug);
+    Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(32.0f, 0.0f);
     shot_point->scale = v2f(.1, .1);
     shot_point->visible = FALSE;
 
-    Entity *zombie = alloc_entity(game);
-    init_entity(zombie, EntityType_ZombieWalker);
+    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
   }
 }
@@ -136,54 +132,8 @@ void update_game(Game *game)
   {
     if (!en->active) continue;
 
-    // Update entity colliders ----------------
-    if (en->props & EntityProp_Collides)
-    {
-      P_Collider *col = &en->col;
-      Vec2F size = dim_from_entity(en);
-
-      switch (col->type)
-      {
-        case P_ColliderType_Polygon: // 4 vertices
-        {
-          // col->vertices[0].x = en->pos.x - size.width/2.0f;
-          // col->vertices[0].y = en->pos.y + size.height/2.0f;
-          // col->vertices[1].x = en->pos.x + size.width/2.0f;
-          // col->vertices[1].y = en->pos.y + size.height/2.0f;
-          // col->vertices[2].x = en->pos.x + size.width/2.0f;
-          // col->vertices[2].y = en->pos.y - size.height/2.0f;
-          // col->vertices[3].x = en->pos.x - size.width/2.0f;
-          // col->vertices[3].y = en->pos.y - size.height/2.0f;
-
-          col->edges[0][0] = 0;
-          col->edges[0][1] = 1;
-          col->edges[1][0] = 1;
-          col->edges[1][1] = 2;
-          col->edges[2][0] = 2;
-          col->edges[2][1] = 3;
-          col->edges[3][0] = 3;
-          col->edges[3][1] = 4;
-
-          col->normals[0] = normal_2f(col->vertices[col->edges[0][0]], 
-                                      col->vertices[col->edges[0][1]]);
-          col->normals[1] = normal_2f(col->vertices[col->edges[1][0]], 
-                                      col->vertices[col->edges[1][1]]);
-          col->normals[2] = normal_2f(col->vertices[col->edges[2][0]], 
-                                      col->vertices[col->edges[2][1]]);
-          col->normals[3] = normal_2f(col->vertices[col->edges[3][0]], 
-                                      col->vertices[col->edges[3][1]]);
-        }
-        break;
-        default: 
-        {
-          fprintf(stderr, "ERROR: Failed to update collider. Invalid type!");
-          assert(0);
-        }
-      }
-    }
-
     // Handle entitiy movement ----------------
-    if (en->props & EntityProp_Moves && game->t > 0.35f)
+    if (en->props & EntityProp_Moves)
     {
       if (en->props & EntityProp_Controlled)
       {
@@ -307,20 +257,6 @@ void update_game(Game *game)
         en->pos = add_2f(en->pos, en->vel);
       }
 
-      // Handle entity collision ----------------
-      if (en->props & EntityProp_Collides)
-      {
-        Entity *ground = NIL_ENTITY;
-        for (Entity *other = game->entities.head; other; other = other->next)
-        {
-          if (other->type == EntityType_Wall)
-          {
-            ground = other;
-          }
-        }
-
-        resolve_entity_collision(en, ground); 
-      }
 
       // Handle entity wrapping ----------------
       if (en->props & EntityProp_WrapAtEdge)
@@ -396,6 +332,43 @@ void update_game(Game *game)
       xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
       en->xform = xform;
+    } 
+
+    // Handle entity collision ----------------
+    if (en->props & EntityProp_Collides)
+    {
+      Vec2F dim = dim_from_entity(en);
+
+      // Update entity colliders ----------------
+      {
+        Vec2F pos = pos_from_entity(en);
+        en->body_col.pos = v2f(pos.x - dim.width * 0.5f, pos.y + dim.height * 0.5f);
+      }
+
+      if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
+      {
+        f32 ground_y = 0.0f;
+        for (Entity *other = game->entities.head; other; other = other->next)
+        {
+          if (other->type == EntityType_Wall)
+          {
+            ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
+          }
+        }
+
+        P_CollisionParams params = {.collider=en->body_col, .vel=en->vel};
+        if (p_rect_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
+        {
+          en->pos.y = ground_y + dim.height * 0.5f;
+          en->vel.y = 0.0f;
+          en->new_vel.y = 0.0f;
+          en->grounded = TRUE;
+        }
+        else
+        {
+          en->grounded = FALSE;
+        }
+      }
     }
 
     // Handle entity combat ----------------
@@ -409,7 +382,6 @@ void update_game(Game *game)
         {
           tick_timer(timer, game->dt);
         }
-
 
         // Shoot weapon if can shoot
         if (is_key_pressed(KEY_MOUSE_1) && (timer->timeout || !timer->should_tick))
@@ -489,6 +461,11 @@ void update_game(Game *game)
 
       en->rot = angle;
     }
+
+    cleanup:
+    {
+
+    }
   }
 
   SCOPE("Developer")
@@ -549,12 +526,6 @@ void draw_game(Game *game, Game *prev)
     if (en->draw_type == DrawType_Sprite && en->visible)
     {
       d_draw_sprite_x(en->xform, en->color, en->texture);
-
-      // Vec2F pos = pos_from_entity(en);
-      // Vec2F size = dim_from_entity(en);
-      // Vec2F offset = v2f(size.width/2.0f * -en->origin.x, size.height/2.0f * -en->origin.y);
-      // d_draw_sprite(pos, dim_from_entity(en), rot_from_entity(en), 
-      //               offset, en->color, en->texture);
     }
   }
   

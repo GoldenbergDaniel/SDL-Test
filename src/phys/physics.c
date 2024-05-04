@@ -1,36 +1,37 @@
 #include "../base/base_common.h"
-#include "../base/base_math.h"
 
 #include "physics.h"
 
 typedef P_Collider Collider;
+typedef P_CollisionParams CollisionParams;
 
-bool p_rect_y_range_intersect(Collider *a, Vec2F v1, Vec2F v2)
+bool p_rect_x_range_intersect(CollisionParams a, Vec2F range, f32 x)
 {
+  assert(a.collider.type == P_ColliderType_Rect);
+
+  return FALSE;
+}
+
+bool p_rect_y_range_intersect(CollisionParams a, Vec2F range, f32 y)
+{
+  assert(a.collider.type == P_ColliderType_Rect);
+
   bool result = FALSE;
 
-  for (u8 i = 0; i < a->vertex_count; i++)
+  if (a.collider.pos.x >= range.x && a.collider.pos.x + a.collider.dim.width * 0.5f <= range.y)
   {
-    if (a->vertices[a->edges[i][0]].x >= v1.x && 
-        a->vertices[a->edges[i][1]].x <= v2.x)
-    {
-      if (a->vertices[a->edges[i][0]].y <= v1.y && 
-          a->vertices[a->edges[i][1]].y <= v2.y)
-      {
-        result = TRUE;
-        break;
-      }
-    }
+    // bool top = (a.collider.pos.y + a.vel.y + a.collider.dim.height * 0.5f) == y;
+    bool top = 0;
+    bool bot = (a.collider.pos.y + a.vel.y - a.collider.dim.height) <= y;
+    result = top || bot;
   }
 
   return result;
 }
 
-bool p_rect_rect_intersect(P_Collider *a, P_Collider *b)
+bool p_rect_rect_intersect(CollisionParams a, CollisionParams b)
 {
   bool result = FALSE;
 
-
-  
   return result;
 }

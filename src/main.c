@@ -53,7 +53,7 @@ i32 main(void)
   SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
   #endif
 
-  SDL_Window *window = SDL_CreateWindow("UNDEAD WEST", WIDTH, HEIGHT, flags);
+  SDL_Window *window = SDL_CreateWindow("Undead West", WIDTH, HEIGHT, flags);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
@@ -116,7 +116,7 @@ i32 main(void)
 
       game.t = elapsed_time;
 
-      copy_game_state(&game, &prev_game);
+      // copy_game_state(&game, &prev_game);
       update_game(&game);
       handle_game_events(&game);
       arena_clear(&game.frame_arena);
