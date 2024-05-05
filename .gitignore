@@ -7,3 +7,5 @@ undeadwest
 undeadwest.exe
 libSDL3.dylib
 SDL3.dll
+build.bat
+build.sh
