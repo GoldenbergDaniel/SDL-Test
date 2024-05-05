@@ -217,9 +217,13 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type);
 // @MiscEntity ///////////////////////////////////////////////////////////////////////////
 
 Vec2F pos_from_entity(Entity *en);
+Vec2F pos_tl_from_entity(Entity *en);
+Vec2F pos_tr_from_entity(Entity *en);
+Vec2F pos_bl_from_entity(Entity *en);
+Vec2F pos_br_from_entity(Entity *en);
+
 Vec2F dim_from_entity(Entity *en);
 Vec2F scale_from_entity(Entity *en);
-Vec2F offset_from_entity(Entity *en);
 f32 rot_from_entity(Entity *en);
 
 void entity_look_at(Entity *en, Vec2F target_pos);

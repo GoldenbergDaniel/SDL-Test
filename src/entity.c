@@ -66,7 +66,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
-      en->origin = v2f(0.0f, 0.0f);
+      en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(16, 16);
       en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
@@ -90,8 +90,8 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
-      en->dim = v2f(16, 16);
-      en->origin = v2f(0.0f, 0.0f);
+      en->dim = v2f(5, 16);
+      en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
 
       en->body_col.dim = dim_from_entity(en);
@@ -108,19 +108,22 @@ Entity *create_entity(Game *game, EntityType type)
       en->props = EntityProp_Rendered | EntityProp_Equipped;
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
-      en->origin = v2f(0.0f, 0.0f);
+      en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(16.0f, 16.0f);
     }
     break;
     case EntityType_Laser:
     {
-      en->props = EntityProp_Rendered | EntityProp_Moves;
+      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
       en->dim = v2f(16.0f, 16.0f);
       en->scale = SPRITE_SCALE; 
+
+      en->body_col.type = P_ColliderType_Circle;
+      en->body_col.radius = 8;
     }
     break;
     case EntityType_Wall:
@@ -414,6 +417,50 @@ Vec2F pos_from_entity(Entity *en)
   return v2f(mat.e[0][2], mat.e[1][2]);
 }
 
+Vec2F pos_tl_from_entity(Entity *en)
+{
+  Vec2F result = pos_from_entity(en);
+  Vec2F dim = dim_from_entity(en);
+  Vec2F offset = mul_2f(dim, en->origin);
+  result.x -= offset.x;
+  result.y += offset.y;
+
+  return result;
+}
+
+Vec2F pos_tr_from_entity(Entity *en)
+{
+  Vec2F result = pos_from_entity(en);
+  Vec2F dim = dim_from_entity(en);
+  Vec2F offset = mul_2f(dim, en->origin);
+  result.x += offset.x;
+  result.y += offset.y;
+
+  return result;
+}
+
+Vec2F pos_bl_from_entity(Entity *en)
+{
+  Vec2F result = pos_from_entity(en);
+  Vec2F dim = dim_from_entity(en);
+  Vec2F offset = mul_2f(dim, en->origin);
+  result.x -= offset.x;
+  result.y -= offset.y;
+
+  return result;
+}
+
+Vec2F pos_br_from_entity(Entity *en)
+{
+  Vec2F result = pos_from_entity(en);
+  Vec2F dim = dim_from_entity(en);
+  Vec2F offset = mul_2f(dim, en->origin);
+  result.x += offset.x;
+  result.y -= offset.y;
+
+  return result;
+}
+
 Vec2F dim_from_entity(Entity *en)
 {
   Vec2F result = en->dim;
@@ -440,14 +487,6 @@ Vec2F scale_from_entity(Entity *en)
     parent = entity_from_ref(parent->parent);
   }
 
-  return result;
-}
-
-Vec2F offset_from_entity(Entity *en)
-{
-  Vec2F dim = dim_from_entity(en);
-  Vec2F result = v2f(dim.width * en->origin.x, dim.height * en->origin.y);
-  
   return result;
 }
 

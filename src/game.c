@@ -278,17 +278,16 @@ void update_game(Game *game)
     {
       Mat3x3F xform = m3x3f(1.0f);
       Entity *parent = entity_from_ref(en->parent);
-
-      Vec2F offset;
+      // Vec2F offset;
 
       // Offset position based on origin
-      {
-        // (@dg): please rewrite this
-        Vec2F mult = div_2f(dim_from_entity(en), en->scale);
-        // Vec2F mult = en->dim;
-        offset = v2f(mult.x * en->origin.x, mult.y * en->origin.y);
-        xform = mul_3x3f(translate_3x3f(-offset.x, -offset.y), xform);
-      }
+      // {
+      //   // (@dg): please rewrite this
+      //   Vec2F mult = div_2f(dim_from_entity(en), en->scale);
+      //   // Vec2F mult = en->dim;
+      //   offset = v2f(mult.x * en->origin.x, mult.y * en->origin.y);
+      //   xform = mul_3x3f(translate_3x3f(-offset.x, -offset.y), xform);
+      // }
 
       // Scale
       xform = mul_3x3f(scale_3x3f(en->scale.x, en->scale.y), xform);
@@ -299,10 +298,10 @@ void update_game(Game *game)
       xform = mul_3x3f(rotate_3x3f(en->rot * RADIANS), xform);
 
       // Move offset position back
-      {
-        Vec2F mult = mul_2f(offset, en->scale);
-        xform = mul_3x3f(translate_3x3f(mult.x, mult.y), xform);
-      }
+      // {
+      //   Vec2F mult = mul_2f(offset, en->scale);
+      //   xform = mul_3x3f(translate_3x3f(mult.x, mult.y), xform);
+      // }
 
       // Translate
       {
@@ -342,7 +341,15 @@ void update_game(Game *game)
       // Update entity colliders ----------------
       {
         Vec2F pos = pos_from_entity(en);
-        en->body_col.pos = v2f(pos.x - dim.width * 0.5f, pos.y + dim.height * 0.5f);
+
+        if (en->body_col.type == P_ColliderType_Rect)
+        {
+          en->body_col.pos = v2f(pos.x - dim.width * 0.5f, pos.y + dim.height * 0.5f);
+        }
+        else
+        {
+          en->body_col.pos = pos;
+        }
       }
 
       if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
@@ -353,6 +360,7 @@ void update_game(Game *game)
           if (other->type == EntityType_Wall)
           {
             ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
+            break;
           }
         }
 
@@ -367,6 +375,23 @@ void update_game(Game *game)
         else
         {
           en->grounded = FALSE;
+        }
+      }
+
+      if (en->type == EntityType_Laser)
+      {
+        for (Entity *other = game->entities.head; other; other = other->next)
+        {
+          if (other->type == EntityType_ZombieWalker)
+          {
+            P_CollisionParams rect_params = {.collider=other->body_col, .vel=other->vel};
+            P_CollisionParams circle_params = {.collider=en->body_col, .vel=en->vel};
+            if (p_rect_circle_intersect(rect_params, circle_params))
+            {
+              kill_entity(game, .entity=en);
+              printf("Collision!\n");
+            }
+          }
         }
       }
     }
