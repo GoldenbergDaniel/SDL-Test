@@ -9,14 +9,16 @@
 #define WIDTH 1270
 #define HEIGHT 740
 
-#define SPRITE_SCALE (Vec2F) {7, 7}
+#define SPRITE_SCALE ((Vec2F) {6, 6})
 
 typedef struct Global Global;
 struct Global
 {
-  Input input;
+  InputState input;
   D_Resources resources;
   R_Renderer renderer;
+
+  bool debug;
 };
 
 Vec2F screen_to_world(Vec2F pos);

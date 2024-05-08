@@ -2,10 +2,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
-#include "../base/base_inc.h"
 
-#include "render.h"
+#include "../base/base_inc.h"
 #include "../global.h"
+#include "render.h"
 
 #ifdef DEBUG
 static void verify_shader(u32 id, u32 type);
@@ -112,8 +112,7 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   i16 u_color = glGetUniformLocation(program, "u_color");
   i16 u_tex = glGetUniformLocation(program, "u_tex");
 
-  return (R_Shader)
-  {
+  return (R_Shader) {
     .id = program,
     .u_xform = u_xform,
     .u_color = u_color,
@@ -304,7 +303,7 @@ void r_flush(R_Renderer *renderer)
   r_set_uniform_3x3f(shader, shader->u_xform, m3x3f(1.0f));
   r_set_uniform_4f(shader, shader->u_color, R_BLACK);
   r_set_uniform_1i(shader, shader->u_tex, renderer->texture->slot);
-
+  
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
   r_update_vertex_buffer(renderer->vertices, sizeof (R_Vertex) * renderer->vertex_count, 0);
 

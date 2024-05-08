@@ -18,8 +18,8 @@ Entity *create_entity(Game *game, EntityType type)
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
   en->dim = v2f(10.0f, 10.0f);
-  en->active = TRUE;
-  en->visible = TRUE;
+  en->is_active = TRUE;
+  en->is_visible = TRUE;
   en->color = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   // Init timers ----------------
@@ -67,7 +67,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Walking;
       en->combat_type = CombatType_Ranged;
       en->origin = v2f(0.5f, 0.5f);
-      en->dim = v2f(16, 16);
+      en->dim = v2f(8, 16);
       en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
@@ -90,11 +90,12 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
-      en->dim = v2f(5, 16);
+      en->dim = v2f(8, 16);
       en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
 
       en->body_col.dim = dim_from_entity(en);
+      en->body_col.offset = v2f(0, 0);
 
       Timer *timer = get_timer(en, TIMER_COMBAT);
       timer->max_duration = 1.0f;
@@ -120,10 +121,12 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
       en->dim = v2f(16.0f, 16.0f);
-      en->scale = SPRITE_SCALE; 
+      en->scale = SPRITE_SCALE;
 
       en->body_col.type = P_ColliderType_Circle;
       en->body_col.radius = 8;
+      en->body_col.dim.height = 8;
+      en->body_col.dim.width = 8;
     }
     break;
     case EntityType_Wall:
@@ -135,6 +138,7 @@ Entity *create_entity(Game *game, EntityType type)
     break;
     case EntityType_Debug:
     {
+      en->is_visible = FALSE;
       en->props = EntityProp_Rendered;
       en->draw_type = DrawType_Rectangle;
       en->scale = v2f(0.1f, 0.1f);
@@ -188,6 +192,10 @@ Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
   en->pos = params.pos;
   en->color = params.color;
 
+  en->is_active = FALSE;
+  en->is_visible = FALSE;
+  en->marked_for_spawn = TRUE;
+
   return en;
 }
 
@@ -199,7 +207,7 @@ void _kill_entity(Game *game, EntityParams params)
     en = get_entity_of_id(game, params.id);
   }
 
-  free_entity(game, en);
+  en->marked_for_death = TRUE;
 }
 
 // @EntityRef ////////////////////////////////////////////////////////////////////////////
@@ -218,7 +226,7 @@ Entity *entity_from_ref(EntityRef ref)
 {
   Entity *result = NIL_ENTITY;
 
-  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id)
+  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id && !ref.ptr->marked_for_death)
   {
     result = ref.ptr;
   }

@@ -4,7 +4,7 @@
 
 typedef union SDL_Event SDL_Event;
 
-typedef enum Key
+typedef enum InputKey
 {
   KEY_A,
   KEY_D,
@@ -18,13 +18,15 @@ typedef enum Key
   KEY_ESCAPE,
   KEY_ENTER,
   KEY_BACKSPACE,
+  KEY_TAB,
   KEY_MOUSE_1,
   KEY_MOUSE_2,
+  
   _KEY_COUNT,
-} Key;
+} InputKey;
 
-typedef struct Input Input;
-struct Input
+typedef struct InputState InputState;
+struct InputState
 {
   u8 key_down[_KEY_COUNT];
   u8 key_just_down[_KEY_COUNT];
@@ -32,9 +34,9 @@ struct Input
   Vec2F mouse_pos;
 };
 
-bool is_key_pressed(Key key);
-bool is_key_just_pressed(Key key);
-bool is_key_just_released(Key key);
+bool is_key_pressed(InputKey key);
+bool is_key_just_pressed(InputKey key);
+bool is_key_just_released(InputKey key);
 Vec2F get_mouse_pos(void);
 void clear_last_frame_input(void);
 void handle_input_event(SDL_Event *event, bool *should_close);

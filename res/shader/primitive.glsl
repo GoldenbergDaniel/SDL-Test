@@ -24,6 +24,6 @@ uniform vec4 u_color = vec4(0);
 
 void main()
 {
-  vec4 final_color = u_color + color;
+  vec4 final_color = color;
   frag_color = final_color;
 }

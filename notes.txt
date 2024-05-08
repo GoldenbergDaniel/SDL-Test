@@ -1,3 +1,5 @@
+Should bring back a spawn queue for entities. Also a kill queue.
+
 When linking SDL3 statically:
 	-framework Cocoa 
 	-framework QuartzCore 

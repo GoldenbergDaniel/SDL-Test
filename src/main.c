@@ -19,7 +19,7 @@
 #define SIM_RATE 60
 #define VSYNC 1
 
-Global *GLOBAL;
+static Global *GLOBAL;
 
 i32 main(void)
 {

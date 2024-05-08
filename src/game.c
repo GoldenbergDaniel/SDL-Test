@@ -9,6 +9,8 @@
 #include "global.h"
 #include "game.h"
 
+#define PROJ_SPEED 500.0f
+
 extern Global *GLOBAL;
 
 // @Events //////////////////////////////////////////////////////////////////////////
@@ -68,34 +70,19 @@ Event *peek_event(Game *game)
   return game->event_queue.front;
 }
 
-void clear_event_queue(Game *game)
-{
-  EventQueue *queue = &game->event_queue;
-  Event *curr = queue->front;
-
-  while (curr != NULL)
-  {
-    Event *next = curr->next;
-    zero(*curr, Event);
-    curr = next;
-  }
-
-  zero(*queue, EventQueue);
-}
-
-// @Init ////////////////////////////////////////////////////////////////////////////
+// @Main ////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
 {
-  game->camera = translate_3x3f(0.0f, 0.0f);
+  game->camera = m3x3f(1.0f);
 
-  SCOPE("Starting entities")
+  // Starting entities ----------------
   {
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
     ground->scale = v2f(512.0f, 24.0f);
     ground->color = v4f(0.7f, 0.6f, 0.4f, 1.0f);
-    ground->visible = TRUE;
+    ground->is_visible = TRUE;
 
     Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
@@ -109,14 +96,11 @@ void init_game(Game *game)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(32.0f, 0.0f);
     shot_point->scale = v2f(.1, .1);
-    shot_point->visible = FALSE;
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
   }
 }
-
-// @Update //////////////////////////////////////////////////////////////////////////
 
 void update_game(Game *game)
 {
@@ -126,13 +110,27 @@ void update_game(Game *game)
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
   f64 dt = game->dt;
 
-  // printf("%f, %f\n", mouse_pos.x, mouse_pos.y);
-  
+  // Update entity spawning and dying ----------------
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (!en->active) continue;
+    if (en->marked_for_spawn)
+    {
+      en->is_active = TRUE;
+      en->is_visible = TRUE;
+    }
 
-    // Handle entitiy movement ----------------
+    if (en->marked_for_death)
+    {
+      free_entity(game, en);
+    }
+  }
+
+  // Update entity position ----------------
+  for (Entity *en = game->entities.head; en; en = en->next)
+  {
+    if (!en->is_active) continue;
+
+    // Update entitiy movement ----------------
     if (en->props & EntityProp_Moves)
     {
       if (en->props & EntityProp_Controlled)
@@ -239,7 +237,7 @@ void update_game(Game *game)
           }
           case MoveType_Projectile:
           {
-            Timer *timer = get_timer(en, TIMER_KILL);
+            Timer *timer = get_timer(en, Timer_Kill);
             tick_timer(timer, dt);
 
             if (timer->timeout)
@@ -278,16 +276,6 @@ void update_game(Game *game)
     {
       Mat3x3F xform = m3x3f(1.0f);
       Entity *parent = entity_from_ref(en->parent);
-      // Vec2F offset;
-
-      // Offset position based on origin
-      // {
-      //   // (@dg): please rewrite this
-      //   Vec2F mult = div_2f(dim_from_entity(en), en->scale);
-      //   // Vec2F mult = en->dim;
-      //   offset = v2f(mult.x * en->origin.x, mult.y * en->origin.y);
-      //   xform = mul_3x3f(translate_3x3f(-offset.x, -offset.y), xform);
-      // }
 
       // Scale
       xform = mul_3x3f(scale_3x3f(en->scale.x, en->scale.y), xform);
@@ -296,12 +284,6 @@ void update_game(Game *game)
 
       // Rotate
       xform = mul_3x3f(rotate_3x3f(en->rot * RADIANS), xform);
-
-      // Move offset position back
-      // {
-      //   Vec2F mult = mul_2f(offset, en->scale);
-      //   xform = mul_3x3f(translate_3x3f(mult.x, mult.y), xform);
-      // }
 
       // Translate
       {
@@ -331,9 +313,14 @@ void update_game(Game *game)
       xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
       en->xform = xform;
-    } 
+    }
+  }
+  
+  // Update entity collision ----------------
+  for (Entity *en = game->entities.head; en; en = en->next)
+  {
+    if (!en->is_active) continue;
 
-    // Handle entity collision ----------------
     if (en->props & EntityProp_Collides)
     {
       Vec2F dim = dim_from_entity(en);
@@ -344,11 +331,11 @@ void update_game(Game *game)
 
         if (en->body_col.type == P_ColliderType_Rect)
         {
-          en->body_col.pos = v2f(pos.x - dim.width * 0.5f, pos.y + dim.height * 0.5f);
+          en->body_col.pos = add_2f(pos_bl_from_entity(en), en->body_col.offset);
         }
         else
         {
-          en->body_col.pos = pos;
+          en->body_col.pos = add_2f(pos, en->body_col.offset);
         }
       }
 
@@ -367,7 +354,7 @@ void update_game(Game *game)
         P_CollisionParams params = {.collider=en->body_col, .vel=en->vel};
         if (p_rect_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
         {
-          en->pos.y = ground_y + dim.height * 0.5f;
+          en->pos.y = ground_y + dim.height / 2.0f - en->body_col.offset.y;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
           en->grounded = TRUE;
@@ -389,17 +376,21 @@ void update_game(Game *game)
             if (p_rect_circle_intersect(rect_params, circle_params))
             {
               kill_entity(game, .entity=en);
-              printf("Collision!\n");
             }
           }
         }
       }
     }
+  }
 
-    // Handle entity combat ----------------
+  // Update entity combat ----------------
+  for (Entity *en = game->entities.head; en; en = en->next)
+  {
+    if (!en->is_active) continue;
+
     if (en->props & EntityProp_Combatant)
     {
-      Timer *timer = get_timer(en, TIMER_COMBAT);
+      Timer *timer = get_timer(en, Timer_Combat);
 
       if (en->props & EntityProp_Controlled)
       {
@@ -416,16 +407,18 @@ void update_game(Game *game)
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
+          // (@dg): Should wait till next frame to spawn
           Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
           laser->rot = spawn_rot;
-          laser->speed = 100.0f;
+          laser->speed = PROJ_SPEED;
+          laser->is_visible = FALSE;
 
           timer->should_tick = TRUE;
         }
       }
       else
       {
-        if (is_entity_valid(player) && player->active)
+        if (is_entity_valid(player) && player->is_active)
         {
           set_entity_target(en, ref_from_entity(player));
         }
@@ -462,13 +455,17 @@ void update_game(Game *game)
         }
       }
     }
+  }
 
-    // Handle equipped entity ----------------
+  // Update equipped entities ----------------
+  for (Entity *en = game->entities.head; en; en = en->next)
+  {
+    if (!en->is_active) continue;
+
     if (en->props & EntityProp_Equipped)
     {
       Vec2F entity_pos = pos_from_entity(en);
-      Vec2F diff = sub_2f(mouse_pos, entity_pos);
-      f32 angle = atan_2f(diff) * DEGREES;
+      f32 angle = atan_2f(sub_2f(mouse_pos, entity_pos)) * DEGREES;
 
       if (!en->parent.ptr->flip_x)
       {
@@ -486,15 +483,26 @@ void update_game(Game *game)
 
       en->rot = angle;
     }
-
-    cleanup:
-    {
-
-    }
   }
 
-  SCOPE("Developer")
+  // Developer tools ----------------
   {
+    for (Entity *en = game->entities.head; en; en = en->next)
+    {
+      if (!en->is_active) continue;
+      
+      if (en->type == EntityType_Debug)
+      {
+        en->is_visible = GLOBAL->debug; 
+      }
+    }
+
+    // Toggle debug
+    if (is_key_just_pressed(KEY_TAB))
+    {
+      GLOBAL->debug = !GLOBAL->debug; 
+    }
+
     // Kill player on backspace
     if (is_key_just_pressed(KEY_BACKSPACE))
     { 
@@ -502,8 +510,6 @@ void update_game(Game *game)
     }
   }
 }
-
-// @HandleEvents ////////////////////////////////////////////////////////////////////
 
 void handle_game_events(Game *game)
 {
@@ -533,8 +539,6 @@ void handle_game_events(Game *game)
   }
 }
 
-// @Draw ////////////////////////////////////////////////////////////////////////////
-
 void draw_game(Game *game, Game *prev)
 {
   if (!game->is_sim_started)
@@ -548,7 +552,7 @@ void draw_game(Game *game, Game *prev)
   // Batch sprites ----------------
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (en->draw_type == DrawType_Sprite && en->visible)
+    if (en->draw_type == DrawType_Sprite && en->is_visible)
     {
       d_draw_sprite_x(en->xform, en->color, en->texture);
     }
@@ -557,9 +561,20 @@ void draw_game(Game *game, Game *prev)
   // Batch primitives ----------------
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (en->draw_type == DrawType_Rectangle && en->visible)
+    if (en->draw_type == DrawType_Primitive && en->is_visible)
     {
       d_draw_rectangle_x(en->xform, en->color);
+    }
+
+    // Render colliders ----------------
+    if (GLOBAL->debug)
+    {
+      if (en->props & EntityProp_Collides)
+      {
+        Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
+        Vec2F dim = en->body_col.dim;
+        d_draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
+      }
     }
   }
 
@@ -569,16 +584,10 @@ void draw_game(Game *game, Game *prev)
 inline
 bool game_should_quit(Game *game)
 {
-  bool result = FALSE;
-  
-  if (game->should_quit || is_key_pressed(KEY_ESCAPE))
-  {
-    result = TRUE;
-  }
-
-  return result;
+  return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
+inline
 void copy_game_state(Game *game, Game *prev)
 {
   EntityList *old_list = &game->entities;

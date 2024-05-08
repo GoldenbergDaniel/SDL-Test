@@ -14,6 +14,7 @@ struct P_Collider
   P_ColliderType type;
   Vec2F pos;
   Vec2F dim;
+  Vec2F offset;
   f32 radius;
 };
 

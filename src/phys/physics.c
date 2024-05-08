@@ -23,7 +23,7 @@ bool p_rect_y_range_intersect(CollisionParams a, Vec2F range, f32 y)
   {
     // bool top = (a.collider.pos.y + a.vel.y + a.collider.dim.height * 0.5f) >= y;
     bool top = 0;
-    bool bot = (a.collider.pos.y + a.vel.y - a.collider.dim.height) <= y;
+    bool bot = (a.collider.pos.y + a.vel.y) <= y;
     result = top || bot;
   }
 
@@ -37,9 +37,10 @@ bool p_rect_circle_intersect(CollisionParams rect, CollisionParams circle)
 
   bool result = FALSE;
 
-  Vec2F circle_pos = add_2f(circle.collider.pos, circle.vel);
+  // (@dg): why don't we need velocity?
+  Vec2F circle_pos = circle.collider.pos;
   Vec2F range_x = {rect.collider.pos.x, rect.collider.pos.x + rect.collider.dim.width};
-  Vec2F range_y = {rect.collider.pos.y - rect.collider.dim.height, rect.collider.pos.y};
+  Vec2F range_y = {rect.collider.pos.y, rect.collider.pos.y + rect.collider.dim.height};
   Vec2F rect_point = {
     clamp(circle_pos.x, range_x.x, range_x.y), 
     clamp(circle_pos.y, range_y.x, range_y.y), 

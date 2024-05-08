@@ -7,19 +7,19 @@
 extern Global *GLOBAL;
 
 inline
-bool is_key_pressed(Key key)
+bool is_key_pressed(InputKey key)
 {
   return GLOBAL->input.key_down[key];
 }
 
 inline
-bool is_key_just_pressed(Key key)
+bool is_key_just_pressed(InputKey key)
 {
   return GLOBAL->input.key_just_down[key];
 }
 
 inline
-bool is_key_just_released(Key key)
+bool is_key_just_released(InputKey key)
 {
   return GLOBAL->input.key_just_up[key];
 }
@@ -42,7 +42,7 @@ void clear_last_frame_input(void)
 
 void handle_input_event(SDL_Event *event, bool *should_quit)
 {
-  Input *input = &GLOBAL->input;
+  InputState *input = &GLOBAL->input;
   SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
 
   switch (event->type)
@@ -58,7 +58,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_A])
             input->key_just_down[KEY_A] = TRUE;
-
           input->key_down[KEY_A] = TRUE;
         }
         break;
@@ -66,7 +65,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_D])
             input->key_just_down[KEY_D] = TRUE;
-
           input->key_down[KEY_D] = TRUE;
         }
         break;
@@ -74,7 +72,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_S])
             input->key_just_down[KEY_S] = TRUE;
-
           input->key_down[KEY_S] = TRUE;
         }
         break;
@@ -82,7 +79,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_W])
             input->key_just_down[KEY_W] = TRUE;
-
           input->key_down[KEY_W] = TRUE;
         }
         break;
@@ -90,7 +86,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_0])
             input->key_just_down[KEY_0] = TRUE;
-
           input->key_down[KEY_0] = TRUE;
         }
         break;
@@ -98,7 +93,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_1])
             input->key_just_down[KEY_1] = TRUE;
-
           input->key_down[KEY_1] = TRUE;
         }
         break;
@@ -106,7 +100,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_2])
             input->key_just_down[KEY_2] = TRUE;
-
           input->key_down[KEY_2] = TRUE;
         }
         break;
@@ -114,7 +107,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_3])
             input->key_just_down[KEY_3] = TRUE;
-
           input->key_down[KEY_3] = TRUE;
         }
         break;
@@ -122,7 +114,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_ESCAPE])
             input->key_just_down[KEY_ESCAPE] = TRUE;
-
           input->key_down[KEY_ESCAPE] = TRUE;
         }
         break;
@@ -130,7 +121,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_SPACE])
             input->key_just_down[KEY_SPACE] = TRUE;
-
           input->key_down[KEY_SPACE] = TRUE;
         }
         break;
@@ -138,7 +128,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_ENTER])
             input->key_just_down[KEY_ENTER] = TRUE;
-
           input->key_down[KEY_ENTER] = TRUE;
         }
         break;
@@ -146,8 +135,13 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_BACKSPACE])
             input->key_just_down[KEY_BACKSPACE] = TRUE;
-
           input->key_down[KEY_BACKSPACE] = TRUE;
+        }
+        case SDL_SCANCODE_TAB:
+        {
+          if (!input->key_down[KEY_TAB])
+            input->key_just_down[KEY_TAB] = TRUE;
+          input->key_down[KEY_TAB] = TRUE;
         }
       }
       break;
@@ -161,7 +155,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_MOUSE_1])
             input->key_just_down[KEY_MOUSE_1] = TRUE;
-
           input->key_down[KEY_MOUSE_1] = TRUE;
         }
         break;
@@ -169,7 +162,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_MOUSE_2])
             input->key_just_down[KEY_MOUSE_2] = TRUE;
-
           input->key_down[KEY_MOUSE_2] = TRUE;
         }
         break;
@@ -185,7 +177,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_A])
             input->key_just_up[KEY_A] = TRUE;
-
           input->key_down[KEY_A] = FALSE;
         }
         break;
@@ -193,7 +184,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_D])
             input->key_just_up[KEY_D] = TRUE;
-
           input->key_down[KEY_D] = FALSE;
         }
         break;
@@ -201,7 +191,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_S])
             input->key_just_up[KEY_S] = TRUE;
-
           input->key_down[KEY_S] = FALSE;
         }
         break;
@@ -209,7 +198,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_W])
             input->key_just_up[KEY_W] = TRUE;
-
           input->key_down[KEY_W] = FALSE;
         }
         break;
@@ -217,7 +205,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_0])
             input->key_just_up[KEY_0] = TRUE;
-
           input->key_down[KEY_0] = FALSE;
         }
         break;
@@ -225,7 +212,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_1])
             input->key_just_up[KEY_1] = TRUE;
-
           input->key_down[KEY_1] = FALSE;
         }
         break;
@@ -233,7 +219,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_2])
             input->key_just_up[KEY_2] = TRUE;
-
           input->key_down[KEY_2] = FALSE;
         }
         break;
@@ -241,7 +226,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (!input->key_down[KEY_3])
             input->key_just_up[KEY_3] = TRUE;
-
           input->key_down[KEY_3] = FALSE;
         }
         break;
@@ -249,7 +233,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_ESCAPE])
             input->key_just_up[KEY_ESCAPE] = TRUE;
-
           input->key_down[KEY_ESCAPE] = FALSE;
         }
         break;
@@ -257,7 +240,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_SPACE])
             input->key_just_up[KEY_SPACE] = TRUE;
-
           input->key_down[KEY_SPACE] = FALSE;
         }
         break;
@@ -265,7 +247,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_ENTER])
             input->key_just_up[KEY_ENTER] = TRUE;
-
           input->key_down[KEY_ENTER] = FALSE;
         }
         break;
@@ -273,8 +254,14 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_ENTER])
             input->key_just_up[KEY_ENTER] = TRUE;
-
           input->key_down[KEY_ENTER] = FALSE;
+        }
+        break;
+        case SDL_SCANCODE_TAB:
+        {
+          if (input->key_down[KEY_TAB])
+            input->key_just_up[KEY_TAB] = TRUE;
+          input->key_down[KEY_TAB] = FALSE;
         }
       }
       break;
@@ -289,7 +276,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_MOUSE_1])
             input->key_just_up[KEY_MOUSE_1] = TRUE;
-
           input->key_down[KEY_MOUSE_1] = FALSE;
         }
         break;
@@ -297,7 +283,6 @@ void handle_input_event(SDL_Event *event, bool *should_quit)
         {
           if (input->key_down[KEY_MOUSE_2])
             input->key_just_up[KEY_MOUSE_2] = TRUE;
-
           input->key_down[KEY_MOUSE_2] = FALSE;
         }
         break;

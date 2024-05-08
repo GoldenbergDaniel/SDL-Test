@@ -42,6 +42,7 @@ struct D_Resources
 #define D_SHADER_COUNT 2
 
 D_Resources d_load_resources(Arena *arena, String path);
+R_Shader *d_get__shader(u8 type);
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 

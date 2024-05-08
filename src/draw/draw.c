@@ -32,6 +32,11 @@ D_Resources d_load_resources(Arena *arena, String path)
   return res;
 }
 
+R_Shader *d_get_shader(u8 type)
+{
+  return &GLOBAL->resources.shaders[type];
+}
+
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
 inline
@@ -51,10 +56,10 @@ void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
   xform = mul_3x3f(renderer->projection, xform);
   
-  Vec3F p0 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform);
-  Vec3F p1 = transform_3f(v3f(dim.width, 0.0f, 1.0f), xform);
-  Vec3F p2 = transform_3f(v3f(dim.width, dim.height, 1.0f), xform);
-  Vec3F p3 = transform_3f(v3f(0.0f, dim.height, 1.0f), xform);
+  Vec3F p0 = transform_3f(v3f(0.0f, dim.height, 1.0f), xform);
+  Vec3F p1 = transform_3f(v3f(dim.width, dim.height, 1.0f), xform);
+  Vec3F p2 = transform_3f(v3f(dim.width, 0.0f, 1.0f), xform);
+  Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform);
 
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
@@ -80,10 +85,10 @@ void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
 
-  Vec3F p0 = transform_3f(v3f(-0.0f,  10.0f, 1.0f), xform);
-  Vec3F p1 = transform_3f(v3f( 10.0f,  10.0f, 1.0f), xform);
-  Vec3F p2 = transform_3f(v3f( 10.0f, -0.0f, 1.0f), xform);
-  Vec3F p3 = transform_3f(v3f(-0.0f, -0.0f, 1.0f), xform);
+  Vec3F p0 = transform_3f(v3f( 0.0f, 10.0f, 1.0f), xform);
+  Vec3F p1 = transform_3f(v3f(10.0f, 10.0f, 1.0f), xform);
+  Vec3F p2 = transform_3f(v3f(10.0f, 0.0f, 1.0f), xform);
+  Vec3F p3 = transform_3f(v3f( 0.0f, 0.0f, 1.0f), xform);
 
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);

@@ -4,6 +4,7 @@
 
 #include "draw/draw.h"
 #include "phys/physics.h"
+#include "particle.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2
 
@@ -12,11 +13,7 @@
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
-#define MAX_ENTITY_CHILDREN 128
-
-#define TIMER_COMBAT 0
-#define TIMER_HEALTH 1
-#define TIMER_KILL 2
+#define MAX_ENTITY_CHILDREN 64
 
 typedef struct Game Game;
 typedef struct Entity Entity;
@@ -31,6 +28,7 @@ typedef enum EntityType
   EntityType_Equipped,
   EntityType_Laser,
   EntityType_Wall,
+  EntityType_ParticleGroup,
   EntityType_Debug,
 } EntityType;
 
@@ -64,10 +62,19 @@ typedef enum CombatType
 typedef enum DrawType
 {
   DrawType_None,
-  DrawType_Triangle,
-  DrawType_Rectangle,
+  DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
+
+typedef enum TimerIndex
+{
+  Timer_Combat,
+  Timer_Health,
+  Timer_Kill,
+  Timer_Particles,
+
+  _Timer_Count,
+} TimerType;
 
 typedef struct Timer Timer;
 struct Timer
@@ -107,8 +114,10 @@ struct Entity
   MoveType move_type;
   CombatType combat_type;
   b64 props;
-  bool active;
-  bool visible;
+  bool is_active;
+  bool is_visible;
+  bool marked_for_death;
+  bool marked_for_spawn;
 
   // Transform
   Vec2F origin;
@@ -149,7 +158,10 @@ struct Entity
   f32 target_angle;
   f32 view_dist;
 
-  Timer timers[3];
+  Timer timers[_Timer_Count];
+
+  // ParticleGroup
+  Particle *particles;
 };
 
 typedef struct EntityList EntityList;
@@ -183,14 +195,12 @@ void reset_entity_children(Entity *en);
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 #define spawn_entity(game, type, ...) \
-  _spawn_entity(game, type, (EntityParams) \
-                {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
+  _spawn_entity(game, type, (EntityParams) {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
 
 Entity *_spawn_entity(Game *game, EntityType type, EntityParams params);
 
 #define kill_entity(game, ...) \
-  _kill_entity(game, (EntityParams) \
-                {.entity=NULL, .id=0, __VA_ARGS__ })
+  _kill_entity(game, (EntityParams) {.entity=NULL, .id=0, __VA_ARGS__ })
 
 void _kill_entity(Game *game, EntityParams params);
 
@@ -229,6 +239,11 @@ f32 rot_from_entity(Entity *en);
 void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
+
+// @Particles ////////////////////////////////////////////////////////////////////////////
+
+void create_particles(Entity *en);
+void emit_particles(Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
