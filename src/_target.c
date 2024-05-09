@@ -1,11 +1,10 @@
+#include "glad/glad.c"
+
 #include "base/base_os.c"
 #include "base/base_arena.c"
 #include "base/base_string.c"
 #include "base/base_math.c"
 #include "base/base_random.c"
-
-#include "glad/glad.c"
-
 #include "render/render.c"
 #include "draw/draw.c"
 #include "phys/physics.c"

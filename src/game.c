@@ -9,13 +9,12 @@
 #include "global.h"
 #include "game.h"
 
-#define PROJ_SPEED 500.0f
 
 extern Global *GLOBAL;
 
 // @Events //////////////////////////////////////////////////////////////////////////
 
-void push_event(Game *game, EventType type, EventDesc desc)      
+void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
   Event *new_event = queue->first_free;
@@ -81,8 +80,7 @@ void init_game(Game *game)
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
     ground->scale = v2f(512.0f, 24.0f);
-    ground->color = v4f(0.7f, 0.6f, 0.4f, 1.0f);
-    ground->is_visible = TRUE;
+    ground->tint = v4f(0.7f, 0.6f, 0.4f, 1.0f);
 
     Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
@@ -115,12 +113,14 @@ void update_game(Game *game)
   {
     if (en->marked_for_spawn)
     {
+      en->marked_for_spawn = FALSE;
       en->is_active = TRUE;
-      en->is_visible = TRUE;
+      entity_add_prop(en, EntityProp_Renders);
     }
 
     if (en->marked_for_death)
     {
+      en->marked_for_death = FALSE;
       free_entity(game, en);
     }
   }
@@ -131,7 +131,7 @@ void update_game(Game *game)
     if (!en->is_active) continue;
 
     // Update entitiy movement ----------------
-    if (en->props & EntityProp_Moves)
+    if (entity_has_prop(en, EntityProp_Moves))
     {
       if (en->props & EntityProp_Controlled)
       {
@@ -181,7 +181,7 @@ void update_game(Game *game)
 
         switch (en->move_type)
         {
-          case MoveType_Walking:
+          case MoveType_Grounded:
           {
             // Apply gravity
             if (!en->grounded)
@@ -237,7 +237,7 @@ void update_game(Game *game)
           }
           case MoveType_Projectile:
           {
-            Timer *timer = get_timer(en, Timer_Kill);
+            Timer *timer = get_timer(en, TIMER_KILL);
             tick_timer(timer, dt);
 
             if (timer->timeout)
@@ -255,7 +255,6 @@ void update_game(Game *game)
         en->pos = add_2f(en->pos, en->vel);
       }
 
-
       // Handle entity wrapping ----------------
       if (en->props & EntityProp_WrapAtEdge)
       {
@@ -272,7 +271,6 @@ void update_game(Game *game)
     }
 
     // Update entity xform ----------------
-    if (en->props & EntityProp_Rendered)
     {
       Mat3x3F xform = m3x3f(1.0f);
       Entity *parent = entity_from_ref(en->parent);
@@ -321,7 +319,7 @@ void update_game(Game *game)
   {
     if (!en->is_active) continue;
 
-    if (en->props & EntityProp_Collides)
+    if (entity_has_prop(en, EntityProp_Collides))
     {
       Vec2F dim = dim_from_entity(en);
 
@@ -365,7 +363,7 @@ void update_game(Game *game)
         }
       }
 
-      if (en->type == EntityType_Laser)
+      if (en->type == EntityType_Bullet)
       {
         for (Entity *other = game->entities.head; other; other = other->next)
         {
@@ -388,11 +386,11 @@ void update_game(Game *game)
   {
     if (!en->is_active) continue;
 
-    if (en->props & EntityProp_Combatant)
+    if (entity_has_prop(en, EntityProp_Fights))
     {
-      Timer *timer = get_timer(en, Timer_Combat);
+      Timer *timer = get_timer(en, TIMER_Combat);
 
-      if (en->props & EntityProp_Controlled)
+      if (entity_has_prop(en, EntityProp_Controlled))
       {
         if (timer->should_tick)
         {
@@ -407,11 +405,10 @@ void update_game(Game *game)
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
-          // (@dg): Should wait till next frame to spawn
-          Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
-          laser->rot = spawn_rot;
-          laser->speed = PROJ_SPEED;
-          laser->is_visible = FALSE;
+          Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+          bullet->rot = spawn_rot;
+          bullet->speed = PROJ_SPEED;
+          entity_rem_prop(bullet, EntityProp_Renders);
 
           timer->should_tick = TRUE;
         }
@@ -443,8 +440,8 @@ void update_game(Game *game)
               {
                 Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
 
-                Entity *laser = spawn_entity(game, EntityType_Laser, .pos=spawn_pos);
-                laser->color = D_GREEN;
+                Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+                laser->tint = D_GREEN;
                 laser->rot = en->rot;
                 laser->speed = 700.0f;
               }
@@ -493,7 +490,14 @@ void update_game(Game *game)
       
       if (en->type == EntityType_Debug)
       {
-        en->is_visible = GLOBAL->debug; 
+        if (GLOBAL->debug)
+        {
+          entity_add_prop(en, EntityProp_Renders);
+        }
+        else
+        {
+          entity_rem_prop(en, EntityProp_Renders);
+        }
       }
     }
 
@@ -552,24 +556,24 @@ void draw_game(Game *game, Game *prev)
   // Batch sprites ----------------
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (en->draw_type == DrawType_Sprite && en->is_visible)
+    if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
-      d_draw_sprite_x(en->xform, en->color, en->texture);
+      d_draw_sprite_x(en->xform, en->tint, en->texture);
     }
   }
   
   // Batch primitives ----------------
   for (Entity *en = game->entities.head; en; en = en->next)
   {
-    if (en->draw_type == DrawType_Primitive && en->is_visible)
+    if (en->draw_type == DrawType_Primitive && entity_has_prop(en, EntityProp_Renders))
     {
-      d_draw_rectangle_x(en->xform, en->color);
+      d_draw_rectangle_x(en->xform, en->tint);
     }
 
     // Render colliders ----------------
     if (GLOBAL->debug)
     {
-      if (en->props & EntityProp_Collides)
+      if (entity_has_prop(en, EntityProp_Collides | EntityProp_Renders))
       {
         Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
         Vec2F dim = en->body_col.dim;
@@ -590,6 +594,7 @@ bool game_should_quit(Game *game)
 inline
 void copy_game_state(Game *game, Game *prev)
 {
+  // Note(dg): is this a bug?
   EntityList *old_list = &game->entities;
   EntityList *new_list = &prev->entities;
 

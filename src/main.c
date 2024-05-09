@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "glad/glad.h"
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_timer.h"
-#include "glad/glad.h"
 
 #include "base/base_inc.h"
 #include "render/render.h"
@@ -16,7 +16,7 @@
 
 // #define LOG_PERF
 
-#define SIM_RATE 60
+#define SIMULATION_RATE 60
 #define VSYNC 1
 
 static Global *GLOBAL;
@@ -62,6 +62,7 @@ i32 main(void)
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
   d_clear_frame(V4F_ZERO);
 
+  
   String path_to_res = str("res");
   #ifdef DEBUG
   path_to_res = str("../res");
@@ -81,7 +82,7 @@ i32 main(void)
 
   f64 elapsed_time = 0.0f;
   f64 current_time = SDL_GetTicks() * 0.001f;
-  f64 time_step = 1.0f / SIM_RATE;
+  f64 time_step = 1.0f / SIMULATION_RATE;
   f64 accumulator = 0.0f;
 
   game.dt = time_step;
@@ -121,6 +122,7 @@ i32 main(void)
       handle_game_events(&game);
       arena_clear(&game.frame_arena);
 
+
       elapsed_time += time_step;
       accumulator -= time_step;
     }
@@ -129,10 +131,9 @@ i32 main(void)
     SDL_GL_SwapWindow(window);
     arena_clear(&game.batch_arena);
 
-    // clear prev game arenas
-    arena_clear(&prev_game.frame_arena);
-    arena_clear(&prev_game.batch_arena);
-    arena_clear(&prev_game.entity_arena);
+    // arena_clear(&prev_game.frame_arena);
+    // arena_clear(&prev_game.batch_arena);
+    // arena_clear(&prev_game.entity_arena);
 
     #ifdef LOG_PERF
     u64 perf_end = SDL_GetPerformanceCounter();

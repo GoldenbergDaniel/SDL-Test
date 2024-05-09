@@ -13,7 +13,14 @@
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
+#define PROJ_SPEED 500.0f
+
 #define MAX_ENTITY_CHILDREN 64
+
+#define TIMER_Combat 0
+#define TIMER_HEALTH 1
+#define TIMER_KILL 2
+#define NUM_TIMERS 3
 
 typedef struct Game Game;
 typedef struct Entity Entity;
@@ -21,24 +28,23 @@ typedef struct Entity Entity;
 typedef enum EntityType
 {
   EntityType_Nil,
-  EntityType_General,
+  EntityType_Debug,
   EntityType_Player,
   EntityType_ZombieWalker,
   EntityType_ZombieBird,
   EntityType_Equipped,
-  EntityType_Laser,
+  EntityType_Bullet,
   EntityType_Wall,
   EntityType_ParticleGroup,
-  EntityType_Debug,
 } EntityType;
 
 typedef enum EntityProp
 {
-  EntityProp_Rendered = 1 << 0,
+  EntityProp_Renders = 1 << 0,
   EntityProp_Collides = 1 << 1,
   EntityProp_Controlled = 1 << 2,
   EntityProp_Moves = 1 << 3,
-  EntityProp_Combatant = 1 << 4,
+  EntityProp_Fights = 1 << 4,
   EntityProp_Killable = 1 << 5,
   EntityProp_Equipped = 1 << 6,
   EntityProp_WrapAtEdge = 1 << 7,
@@ -47,7 +53,7 @@ typedef enum EntityProp
 typedef enum MoveType
 {
   MoveType_None,
-  MoveType_Walking,
+  MoveType_Grounded,
   MoveType_Projectile,
   MoveType_Flying,
 } MoveType;
@@ -65,16 +71,6 @@ typedef enum DrawType
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
-
-typedef enum TimerIndex
-{
-  Timer_Combat,
-  Timer_Health,
-  Timer_Kill,
-  Timer_Particles,
-
-  _Timer_Count,
-} TimerType;
 
 typedef struct Timer Timer;
 struct Timer
@@ -115,7 +111,6 @@ struct Entity
   CombatType combat_type;
   b64 props;
   bool is_active;
-  bool is_visible;
   bool marked_for_death;
   bool marked_for_spawn;
 
@@ -136,7 +131,7 @@ struct Entity
   
   // Drawing
   DrawType draw_type;
-  Vec4F color;
+  Vec4F tint;
   D_TextureID texture;
   Vec2F dim;
   bool flip_x;
@@ -158,7 +153,7 @@ struct Entity
   f32 target_angle;
   f32 view_dist;
 
-  Timer timers[_Timer_Count];
+  Timer timers[NUM_TIMERS];
 
   // ParticleGroup
   Particle *particles;
@@ -191,6 +186,12 @@ static Entity *NIL_ENTITY = &(Entity) {0};
 Entity *create_entity(Game *game, EntityType type);
 void reset_entity(Entity *en);
 void reset_entity_children(Entity *en);
+
+// @EntityProp ///////////////////////////////////////////////////////////////////////////
+
+bool entity_has_prop(Entity *en, EntityProp prop);
+void entity_add_prop(Entity *en, EntityProp prop);
+void entity_rem_prop(Entity *en, EntityProp prop);
 
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,4 @@
-#include <stdio.h>
-
 #include "base/base_inc.h"
-
 #include "draw/draw.h"
 #include "game.h"
 #include "global.h"
@@ -15,56 +12,33 @@ Entity *create_entity(Game *game, EntityType type)
 {
   Entity *en = alloc_entity(game);
   en->type = type;
+  en->is_active = TRUE;
   en->xform = m3x3f(1.0f);
   en->scale = v2f(1.0f, 1.0f);
   en->dim = v2f(10.0f, 10.0f);
-  en->is_active = TRUE;
-  en->is_visible = TRUE;
-  en->color = v4f(1.0f, 1.0f, 1.0f, 1.0f);
+  en->tint = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-  // Init timers ----------------
+  for (u32 i = 0; i < NUM_TIMERS; i++)
   {
-    en->timers[TIMER_COMBAT] = (Timer) {
-      .max_duration = 1.0f,
-      .curr_duration = 1.0f,
-      .should_tick = TRUE,
-      .ticking = FALSE,
-      .timeout = FALSE,
-      .should_loop = FALSE
-    };
-
-    en->timers[TIMER_HEALTH] = (Timer) {
-      .max_duration = 1.0f,
-      .curr_duration = 1.0f,
-      .should_tick = TRUE,
-      .ticking = FALSE,
-      .timeout = FALSE,
-      .should_loop = FALSE
-    };
-
-    en->timers[TIMER_KILL] = (Timer) {
-      .max_duration = 5.0f,
-      .curr_duration = 5.0f,
-      .should_tick = TRUE,
-      .ticking = FALSE,
-      .timeout = FALSE,
-      .should_loop = FALSE
-    };
+    en->timers[i] = (Timer) {0};
   }
-
+  
   switch (type)
   {
-    case EntityType_General:
+    case EntityType_Debug:
     {
-      en->draw_type = DrawType_Sprite;
+      en->draw_type = DrawType_Primitive;
+      en->scale = v2f(0.1f, 0.1f);
+
+      en->tint = D_YELLOW;
     }
     break;
     case EntityType_Player:
     {
-      en->props = EntityProp_Rendered | EntityProp_Collides | EntityProp_Controlled | 
-        EntityProp_Moves | EntityProp_Combatant | EntityProp_WrapAtEdge;
+      en->props = EntityProp_Renders | EntityProp_Collides | EntityProp_Controlled | 
+        EntityProp_Moves | EntityProp_Fights | EntityProp_WrapAtEdge;
       en->draw_type = DrawType_Sprite;
-      en->move_type = MoveType_Walking;
+      en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Ranged;
       en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(8, 16);
@@ -73,19 +47,24 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_COWBOY;
 
       en->body_col.dim = dim_from_entity(en);
+
+      en->timers[TIMER_Combat] = (Timer) {
+        .max_duration = 0.1f,
+        .should_tick = TRUE,
+        .ticking = FALSE,
+        .timeout = FALSE,
+        .should_loop = FALSE,
+      };
       
-      Timer *timer = get_timer(en, TIMER_COMBAT);
-      timer->max_duration = 0.1f;
-      timer->curr_duration = 0.0f;
-      timer->should_tick = FALSE;
+      Timer *timer = get_timer(en, TIMER_Combat);
     }
     break;
     case EntityType_ZombieWalker:
     {
-      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Combatant | 
+      en->props = EntityProp_Renders | EntityProp_Moves | EntityProp_Fights | 
         EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
-      en->move_type = MoveType_Walking;
+      en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Melee;
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
@@ -95,27 +74,25 @@ Entity *create_entity(Game *game, EntityType type)
       en->scale = SPRITE_SCALE;
 
       en->body_col.dim = dim_from_entity(en);
-      en->body_col.offset = v2f(0, 0);
 
-      Timer *timer = get_timer(en, TIMER_COMBAT);
+      Timer *timer = get_timer(en, TIMER_Combat);
       timer->max_duration = 1.0f;
-      timer->curr_duration = 0.0f;
       timer->should_loop = TRUE;
       timer->should_tick = FALSE;
     }
     break;
     case EntityType_Equipped:
     {
-      en->props = EntityProp_Rendered | EntityProp_Equipped;
+      en->props = EntityProp_Renders | EntityProp_Equipped;
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
       en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(16.0f, 16.0f);
     }
     break;
-    case EntityType_Laser:
+    case EntityType_Bullet:
     {
-      en->props = EntityProp_Rendered | EntityProp_Moves | EntityProp_Collides;
+      en->props = EntityProp_Renders | EntityProp_Moves | EntityProp_Collides;
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
@@ -125,32 +102,36 @@ Entity *create_entity(Game *game, EntityType type)
 
       en->body_col.type = P_ColliderType_Circle;
       en->body_col.radius = 8;
-      en->body_col.dim.height = 8;
-      en->body_col.dim.width = 8;
+      en->body_col.dim = v2f(8, 8);
+      
+      en->timers[TIMER_KILL] = (Timer) {
+        .max_duration = 5.0f,
+        .curr_duration = 5.0f,
+        .should_tick = TRUE,
+        .ticking = FALSE,
+        .timeout = FALSE,
+        .should_loop = FALSE,
+      };
     }
     break;
     case EntityType_Wall:
     {
-      en->props = EntityProp_Rendered | EntityProp_Collides;
-      en->draw_type = DrawType_Rectangle;
+      en->props = EntityProp_Renders | EntityProp_Collides;
+      en->draw_type = DrawType_Primitive;
       en->dim = dim_from_entity(en);
     }
     break;
-    case EntityType_Debug:
+    case EntityType_ParticleGroup:
     {
-      en->is_visible = FALSE;
-      en->props = EntityProp_Rendered;
-      en->draw_type = DrawType_Rectangle;
-      en->scale = v2f(0.1f, 0.1f);
-
-      en->color = D_YELLOW;
+      en->timers[TIMER_KILL] = (Timer) {
+        .should_tick = TRUE,
+        .ticking = FALSE,
+        .timeout = FALSE,
+        .should_loop = FALSE,
+      };
     }
     break;
-    default:
-    {
-      fprintf(stderr, "ERROR: Failed to initialize entity. Invalid type!");
-      assert(0);
-    }
+    default: break;
   }
 
   return en;
@@ -183,19 +164,37 @@ void reset_entity_children(Entity *en)
   }
 }
 
+// @EntityProp ///////////////////////////////////////////////////////////////////////////
+
+inline
+bool entity_has_prop(Entity *en, EntityProp prop)
+{
+  return (en->props & prop) != 0;
+}
+
+inline
+void entity_add_prop(Entity *en, EntityProp prop)
+{
+  en->props |= prop;
+}
+
+inline
+void entity_rem_prop(Entity *en, EntityProp prop)
+{
+  en->props &= ~prop;
+}
+
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
 {
   Entity *en = create_entity(game, type);
-  en->props |= params.props;
   en->pos = params.pos;
-  en->color = params.color;
-
+  en->tint = params.color;
   en->is_active = FALSE;
-  en->is_visible = FALSE;
   en->marked_for_spawn = TRUE;
-
+  entity_add_prop(en, params.props);
+  
   return en;
 }
 
@@ -531,7 +530,7 @@ void set_entity_target(Entity *en, EntityRef target)
   }
   else
   {
-    en->target_pos = V2F_ZERO;
+    // en->target_pos = V2F_ZERO;
     en->has_target = FALSE;
   }
 }
