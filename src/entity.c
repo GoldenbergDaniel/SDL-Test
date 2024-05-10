@@ -20,11 +20,6 @@ Entity *create_entity(Game *game, EntityType type)
   en->dim = v2f(10.0f, 10.0f);
   en->tint = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-  for (u32 i = 0; i < NUM_TIMERS; i++)
-  {
-    zero(en->timers[i], Timer);
-  }
-  
   switch (type)
   {
     case EntityType_Debug:
@@ -52,16 +47,9 @@ Entity *create_entity(Game *game, EntityType type)
       en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
+      en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
 
       en->body_col.dim = dim_from_entity(en);
-
-      en->timers[TIMER_Combat] = (Timer) {
-        .max_duration = 0.1f,
-        .should_tick = TRUE,
-        .ticking = FALSE,
-        .timeout = FALSE,
-        .should_loop = FALSE,
-      };
     }
     break;
     case EntityType_ZombieWalker:
@@ -81,6 +69,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->dim = v2f(8, 16);
       en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
+      en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
 
       en->body_col.dim = dim_from_entity(en);
     }
@@ -108,19 +97,11 @@ Entity *create_entity(Game *game, EntityType type)
       en->combat_type = CombatType_Melee;
       en->dim = v2f(16.0f, 16.0f);
       en->scale = SPRITE_SCALE;
+      en->kill_timer.duration = BULLET_KILL_TIME;
 
       en->body_col.type = P_ColliderType_Circle;
       en->body_col.radius = 8;
       en->body_col.dim = v2f(8, 8);
-      
-      en->timers[TIMER_KILL] = (Timer) {
-        .max_duration = 5.0f,
-        .curr_duration = 5.0f,
-        .should_tick = TRUE,
-        .ticking = FALSE,
-        .timeout = FALSE,
-        .should_loop = FALSE,
-      };
     }
     break;
     case EntityType_Wall:
@@ -575,35 +556,4 @@ void create_particles(Entity *en, ParticleDesc desc)
 
 void destroy_particles(Entity *en)
 {
-}
-
-// @Timer ////////////////////////////////////////////////////////////////////////////////
-
-inline
-Timer *get_timer(Entity *en, u8 index)
-{
-  return &en->timers[index];
-}
-
-bool tick_timer(Timer *timer, f64 dt)
-{
-  if (timer->ticking)
-  {
-    timer->curr_duration -= dt;
-
-    if (timer->curr_duration <= 0.0f)
-    {
-      timer->timeout = TRUE;
-      timer->ticking = FALSE;
-      timer->should_tick = timer->should_loop;
-    }
-  }
-  else
-  {
-    timer->curr_duration = timer->max_duration;
-    timer->timeout = FALSE;
-    timer->ticking = TRUE;
-  }
-
-  return timer->timeout;
 }

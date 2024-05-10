@@ -14,7 +14,7 @@
 
 #define PROJ_SPEED 500.0f
 
-#define MAX_ENTITY_CHILDREN 64
+#define MAX_ENTITY_CHILDREN 16
 
 #define TIMER_Combat 0
 #define TIMER_HEALTH 1
@@ -29,14 +29,15 @@ typedef struct Entity Entity;
 typedef struct Timer Timer;
 struct Timer
 {
-  f64 max_duration;
-  f64 curr_duration;
+  f32 duration;
+  f64 end_time;
+  bool is_ticking;
   bool should_tick;
-  bool ticking;
-  bool timeout;
-  bool should_loop;
-  bool start_at_zero;
 };
+
+#define BULLET_KILL_TIME 5.0f
+#define PLAYER_ATTACK_COOLDOWN 0.25f
+#define ENEMY_ATTACK_COOLDOWN 1.0f
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
 
@@ -190,7 +191,8 @@ struct Entity
   f32 target_angle;
   f32 view_dist;
 
-  Timer timers[NUM_TIMERS];
+  Timer attack_timer;
+  Timer kill_timer;
 
   // ParticleGroup
   Arena particle_arena;
@@ -289,5 +291,8 @@ void destroy_particles(Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
-Timer *get_timer(Entity *en, u8 index);
-bool tick_timer(Timer *timer, f64 dt);
+inline
+bool is_timer_over(Timer timer, f64 t)
+{
+  return t >= timer.end_time;
+}

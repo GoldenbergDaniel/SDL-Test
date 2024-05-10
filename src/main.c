@@ -116,7 +116,7 @@ i32 main(void)
       }
 
       game.t = elapsed_time;
-
+      
       // copy_game_state(&game, &prev_game);
       update_game(&game);
       handle_game_events(&game);

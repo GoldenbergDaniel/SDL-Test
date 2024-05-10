@@ -233,12 +233,16 @@ void update_game(Game *game)
           }
           case MoveType_Projectile:
           {
-            Timer *timer = get_timer(en, TIMER_KILL);
-            tick_timer(timer, dt);
-
-            if (timer->timeout)
+            if (!en->kill_timer.is_ticking)
             {
-              kill_entity(game, .entity = en);
+              en->kill_timer.end_time = t + BULLET_KILL_TIME;
+              en->kill_timer.is_ticking = TRUE;
+            }
+
+            if (is_timer_over(en->kill_timer, t))
+            {
+              kill_entity(game, .entity=en);
+              en->kill_timer.is_ticking = FALSE;
             }
 
             en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
@@ -385,17 +389,16 @@ void update_game(Game *game)
 
     if (entity_has_prop(en, EntityProp_Fights))
     {
-      Timer *timer = get_timer(en, TIMER_Combat);
-
       if (entity_has_prop(en, EntityProp_Controlled))
       {
-        if (timer->should_tick)
+        if (!en->attack_timer.is_ticking)
         {
-          tick_timer(timer, game->dt);
+          en->attack_timer.end_time = t + en->attack_timer.duration;
+          en->attack_timer.is_ticking = TRUE;
         }
 
         // Shoot weapon if can shoot
-        if (is_key_pressed(KEY_MOUSE_1) && (timer->timeout || !timer->should_tick))
+        if (is_key_pressed(KEY_MOUSE_1) && is_timer_over(en->attack_timer, t))
         {
           Entity *gun = get_entity_child_at(en, 0);
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -418,7 +421,7 @@ void update_game(Game *game)
           };
           spawn_entity(game, EntityType_ParticleGroup, .pos=spawn_pos, .particle_desc=desc);
 
-          timer->should_tick = TRUE;
+          en->attack_timer.is_ticking = FALSE;
         }
       }
       else
@@ -438,16 +441,16 @@ void update_game(Game *game)
           {
             case CombatType_Ranged:
             {
-              if (timer->should_tick)
+              if (!en->attack_timer.is_ticking)
               {
-                tick_timer(timer, game->dt);
+                en->attack_timer.end_time = t + en->attack_timer.duration;
+                en->attack_timer.is_ticking = TRUE;
               }
 
               // Shoot weapon if can shoot
-              if (timer->timeout)
+              if (is_timer_over(en->attack_timer, t))
               {
                 Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-
                 Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
                 laser->tint = D_GREEN;
                 laser->rot = en->rot;
@@ -510,15 +513,15 @@ void update_game(Game *game)
             particle->pos = add_2f(particle->pos, vel);
           }
 
-          if (!en->particle_timer.ticking)
+          if (!en->particle_timer.is_ticking)
           {
-            en->particle_timer.curr_duration = t + desc.duration;
-            en->particle_timer.ticking = TRUE;
+            en->particle_timer.end_time = t + desc.duration;
+            en->particle_timer.is_ticking = TRUE;
           }
 
-          if (t >= en->particle_timer.curr_duration)
+          if (t >= en->particle_timer.end_time)
           {
-            en->particle_timer.ticking = FALSE;
+            en->particle_timer.is_ticking = FALSE;
             kill_entity(game, .entity=en);
           }
         }
