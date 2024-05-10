@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../base/base_inc.h"
-#include "../render/render.h"
+#include "base/base_inc.h"
+#include "render/render.h"
 
 #define D_SPRITE_SHEET_SIZE 16
 #define D_SPRITE_SHEET_WIDTH 256
@@ -27,10 +27,12 @@
 #define D_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define D_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
-typedef Vec2I D_TextureID;
+typedef struct Entity Entity; 
 
-typedef struct D_Resources D_Resources;
-struct D_Resources
+typedef Vec2I TextureID;
+
+typedef struct Resources Resources;
+struct Resources
 {
   R_Texture *textures;
   R_Shader *shaders;
@@ -38,11 +40,11 @@ struct D_Resources
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
 
-#define D_TEXTURE_COUNT 1
-#define D_SHADER_COUNT 2
+#define TEXTURE_COUNT 1
+#define SHADER_COUNT 2
 
-D_Resources d_load_resources(Arena *arena, String path);
-R_Shader *d_get__shader(u8 type);
+Resources load_resources(Arena *arena, String path);
+R_Shader *get_shader(u8 type);
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
@@ -55,12 +57,14 @@ struct RenderData
   Vec4F tint;
 };
 
-void d_clear_frame(Vec4F color);
+void clear_frame(Vec4F color);
 
-void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
-void d_draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
-void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint);
+void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
+void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
+void draw_rectangle_x(Mat3x3F xform, Vec4F tint);
 
-void d_draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, D_TextureID tex);
-void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_TextureID tex);
-void d_draw_sprite_x(Mat3x3F xform, Vec4F tint, D_TextureID tex_id);
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, TextureID tex);
+void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex);
+void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex_id);
+
+void draw_particles(Entity *en);

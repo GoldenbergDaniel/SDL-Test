@@ -3,8 +3,9 @@
 #include "base/base_inc.h"
 
 #include "render/render.h"
-#include "draw/draw.h"
 #include "input/input.h"
+#include "draw.h"
+#include "entity.h"
 
 #define WIDTH 1270
 #define HEIGHT 740
@@ -14,11 +15,21 @@
 typedef struct Global Global;
 struct Global
 {
-  InputState input;
-  D_Resources resources;
+  Input input;
+  Resources resources;
   R_Renderer renderer;
 
   bool debug;
 };
 
+typedef struct PrefabStore PrefabStore;
+struct PrefabStore
+{
+  ParticleDesc smoke_particles;
+  ParticleDesc blood_particles;
+};
+
+typedef struct Game Game;
+
+void init_prefabs(PrefabStore *prefabs);
 Vec2F screen_to_world(Vec2F pos);

@@ -9,9 +9,8 @@
 #include "SDL3/SDL_timer.h"
 
 #include "base/base_common.h"
-#include "render/render.h"
-#include "draw/draw.h"
 #include "input/input.h"
+#include "draw.h"
 #include "game.h"
 #include "global.h"
 
@@ -21,6 +20,7 @@
 #define VSYNC 1
 
 Global *GLOBAL;
+PrefabStore *PREFABS;
 
 i32 main(void)
 {
@@ -61,16 +61,14 @@ i32 main(void)
   SDL_GL_SetSwapInterval(VSYNC);
 
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
-  d_clear_frame(V4F_ZERO);
-
-  String path_to_res = str("res");
-  #ifdef DEBUG
-  path_to_res = str("../res");
-  #endif
+  clear_frame(V4F_ZERO);
 
   GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
-  GLOBAL->resources = d_load_resources(&game.perm_arena, path_to_res);
+  GLOBAL->resources = load_resources(&game.perm_arena, str("res"));
   GLOBAL->renderer = r_create_renderer(40000, &game.batch_arena);
+
+  PREFABS = arena_alloc(&game.perm_arena, sizeof (PrefabStore));
+  init_prefabs(PREFABS);
 
   Game prev_game = {0};
   prev_game.perm_arena = arena_create(KiB(16));
@@ -121,7 +119,6 @@ i32 main(void)
       update_game(&game);
       handle_game_events(&game);
       arena_clear(&game.frame_arena);
-
 
       elapsed_time += time_step;
       accumulator -= time_step;

@@ -2,8 +2,8 @@
 
 #include "base/base_inc.h"
 
-#include "draw/draw.h"
-#include "phys/physics.h"
+#include "phys/phys.h"
+#include "draw.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2
 
@@ -56,6 +56,7 @@ typedef struct Particle Particle;
 struct Particle
 {
   Vec2F pos;
+  f32 dir;
   f32 rot;
 };
 
@@ -170,7 +171,7 @@ struct Entity
   // Drawing
   DrawType draw_type;
   Vec4F tint;
-  D_TextureID texture;
+  TextureID texture;
   Vec2F dim;
   bool flip_x;
   bool flip_y;

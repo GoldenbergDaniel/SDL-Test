@@ -42,7 +42,7 @@ void clear_last_frame_input(void)
 
 void handle_input_event(SDL_Event *event, bool *should_quit)
 {
-  InputState *input = &GLOBAL->input;
+  Input *input = &GLOBAL->input;
   SDL_GetMouseState(&input->mouse_pos.x, &input->mouse_pos.y);
 
   switch (event->type)

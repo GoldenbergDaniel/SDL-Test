@@ -1,20 +1,21 @@
 #include "glad/glad.h"
-#include "../base/base_inc.h"
 
-#include "../global.h"
-#include "../render/render.h"
-#include "../render/shaders.h"
+#include "base/base_inc.h"
+#include "render/render.h"
+#include "render/shaders.h"
+#include "global.h"
+#include "entity.h"
 #include "draw.h"
 
 extern Global *GLOBAL;
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
 
-D_Resources d_load_resources(Arena *arena, String path)
+Resources load_resources(Arena *arena, String path)
 {
-  D_Resources res = {0};
-  res.textures = arena_alloc(arena, sizeof (R_Texture) * D_TEXTURE_COUNT);
-  res.shaders = arena_alloc(arena, sizeof (R_Shader) * D_SHADER_COUNT);
+  Resources res = {0};
+  res.textures = arena_alloc(arena, sizeof (R_Texture) * TEXTURE_COUNT);
+  res.shaders = arena_alloc(arena, sizeof (R_Shader) * SHADER_COUNT);
 
   R_Shader primitive_shader = r_create_shader(primitive_VERT_SRC, primitive_FRAG_SRC);
   res.shaders[0] = primitive_shader;
@@ -32,7 +33,7 @@ D_Resources d_load_resources(Arena *arena, String path)
   return res;
 }
 
-R_Shader *d_get_shader(u8 type)
+R_Shader *get_shader(u8 type)
 {
   return &GLOBAL->resources.shaders[type];
 }
@@ -40,13 +41,13 @@ R_Shader *d_get_shader(u8 type)
 // @Draw /////////////////////////////////////////////////////////////////////////////////
 
 inline
-void d_clear_frame(Vec4F color)
+void clear_frame(Vec4F color)
 {
   glClearColor(color.r, color.g, color.b, color.a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
+void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
@@ -68,7 +69,7 @@ void d_draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void d_draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
+void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
@@ -80,7 +81,7 @@ void d_draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint)
+void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
@@ -97,7 +98,7 @@ void d_draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void d_draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, D_TextureID tex)
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, TextureID tex)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -144,7 +145,7 @@ void d_draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, D_Textu
   r_push_quad_indices(renderer);
 }
 
-void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_TextureID tex)
+void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -179,7 +180,7 @@ void d_draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, D_Textu
   r_push_quad_indices(renderer);
 }
 
-void d_draw_sprite_x(Mat3x3F xform, Vec4F tint, D_TextureID tex)
+void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -217,4 +218,15 @@ void d_draw_sprite_x(Mat3x3F xform, Vec4F tint, D_TextureID tex)
   r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
   r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
   r_push_quad_indices(renderer);
+}
+
+void draw_particles(Entity *en)
+{
+  for (i32 i = 0; i < en->particle_desc.count; i++)
+  {
+    Vec2F pos = en->particles[i].pos;
+    Vec2F dim = en->particle_desc.scale;
+    f32 rot = en->particles[i].rot * RADIANS;
+    draw_rectangle(pos, dim, rot, en->particle_desc.color);
+  }
 }

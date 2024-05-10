@@ -25,8 +25,8 @@ typedef enum InputKey
   _KEY_COUNT,
 } InputKey;
 
-typedef struct InputState InputState;
-struct InputState
+typedef struct Input Input;
+struct Input
 {
   u8 key_down[_KEY_COUNT];
   u8 key_just_down[_KEY_COUNT];

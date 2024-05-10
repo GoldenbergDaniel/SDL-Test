@@ -1,7 +1,7 @@
 #include "../base/base_common.h"
 #include "../base/base_math.h"
 
-#include "physics.h"
+#include "phys.h"
 
 typedef P_Collider Collider;
 typedef P_CollisionParams CollisionParams;

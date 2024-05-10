@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "base/base_inc.h"
-#include "draw/draw.h"
+#include "draw.h"
 #include "game.h"
 #include "global.h"
 #include "entity.h"
@@ -184,16 +184,7 @@ Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
 
   if (type == EntityType_ParticleGroup)
   {
-    en->particle_desc = params.particle_desc;
-    en->particle_arena = arena_create(MiB(1));
-    en->particles = arena_alloc(&en->particle_arena, params.particle_desc.count);
-    for (i32 i = 0; i < en->particle_desc.count; i++)
-    {
-      en->particles[i].pos = en->pos;
-      f32 spread = en->particle_desc.spread;
-      f32 rand_rot = (f32) random_i32(-spread, spread) * RADIANS;
-      en->particles[i].rot = rand_rot;
-    }
+    create_particles(en, params.particle_desc);
   }
   
   return en;
@@ -211,7 +202,7 @@ void _kill_entity(Game *game, EntityParams params)
 
   if (en->type == EntityType_ParticleGroup)
   {
-    arena_clear(&en->particle_arena);
+    destroy_particles(en);
   }
 }
 
@@ -551,9 +542,21 @@ bool is_entity_valid(Entity *en)
 
 void create_particles(Entity *en, ParticleDesc desc)
 {
+  en->particle_desc = desc;
+  en->particle_arena = arena_create(MiB(1));
+  en->particles = arena_alloc(&en->particle_arena, desc.count);
 
+  for (i32 i = 0; i < en->particle_desc.count; i++)
+  {
+    Particle *particle = &en->particles[i];
+
+    particle->pos = en->pos;
+    particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
+    particle->rot = (f32) random_i32(-45, 45);
+  }
 }
 
 void destroy_particles(Entity *en)
 {
+  arena_clear(&en->particle_arena);
 }

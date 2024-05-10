@@ -2,9 +2,9 @@
 
 #include "base/base_inc.h"
 
-#include "draw/draw.h"
 #include "input/input.h"
-#include "phys/physics.h"
+#include "phys/phys.h"
+#include "draw.h"
 #include "entity.h"
 #include "global.h"
 #include "game.h"
@@ -12,6 +12,7 @@
 #define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
 
 extern Global *GLOBAL;
+extern PrefabStore *PREFABS;
 
 // @Events //////////////////////////////////////////////////////////////////////////
 
@@ -372,8 +373,14 @@ void update_game(Game *game)
           {
             P_CollisionParams rect_params = {.collider=other->body_col, .vel=other->vel};
             P_CollisionParams circle_params = {.collider=en->body_col, .vel=en->vel};
+
             if (p_rect_circle_intersect(rect_params, circle_params))
             {
+              Vec2F spawn_pos = pos_from_entity(en);
+              spawn_entity(game, EntityType_ParticleGroup, 
+                            .pos=spawn_pos, 
+                            .particle_desc=PREFABS->blood_particles);
+
               kill_entity(game, .entity=en);
             }
           }
@@ -410,16 +417,9 @@ void update_game(Game *game)
           bullet->speed = PROJ_SPEED;
           entity_rem_prop(bullet, EntityProp_Renders);
 
-          ParticleDesc desc = {
-            .emmission_type = ParticleEmmissionType_Burst,
-            .color = v4f(0.2f, 0.2f, 0.17f, 1.0f),
-            .scale = v2f(5, 5),
-            .count = 3,
-            .duration = 1.0f,
-            .speed = 0.7f,
-            .spread = 180.0f,
-          };
-          spawn_entity(game, EntityType_ParticleGroup, .pos=spawn_pos, .particle_desc=desc);
+          spawn_entity(game, EntityType_ParticleGroup, 
+                        .pos=spawn_pos, 
+                        .particle_desc=PREFABS->smoke_particles);
 
           en->attack_timer.is_ticking = FALSE;
         }
@@ -507,8 +507,8 @@ void update_game(Game *game)
           {
             Particle *particle = &en->particles[i];
             Vec2F vel = {
-              sin_1f(particle->rot) * desc.speed,
-              cos_1f(particle->rot) * desc.speed,
+              sin_1f(particle->dir) * desc.speed,
+              cos_1f(particle->dir) * desc.speed,
             };
             particle->pos = add_2f(particle->pos, vel);
           }
@@ -615,18 +615,18 @@ void draw_game(Game *game, Game *prev)
 {
   if (!game->is_sim_started)
   {
-    d_clear_frame(V4F_ZERO);
+    clear_frame(V4F_ZERO);
     return;
   }
   
-  d_clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
+  clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
 
   // Batch sprites ----------------
   for (EN_IN_ENTITIES)
   {
     if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
-      d_draw_sprite_x(en->xform, en->tint, en->texture);
+      draw_sprite_x(en->xform, en->tint, en->texture);
     }
   }
   
@@ -637,18 +637,12 @@ void draw_game(Game *game, Game *prev)
     {
       if (en->draw_type == DrawType_Primitive)
       {
-        d_draw_rectangle_x(en->xform, en->tint);
+        draw_rectangle_x(en->xform, en->tint);
       }
 
       if (en->type == EntityType_ParticleGroup)
       {
-        for (i32 i = 0; i < en->particle_desc.count; i++)
-        {
-          Vec2F pos = en->particles[i].pos;
-          Vec2F dim = en->particle_desc.scale;
-          f32 rot = en->particles[i].rot;
-          d_draw_rectangle(pos, dim, rot, en->particle_desc.color);
-        }
+        draw_particles(en);
       }
 
       // Render colliders ----------------
@@ -658,7 +652,7 @@ void draw_game(Game *game, Game *prev)
         {
           Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
           Vec2F dim = en->body_col.dim;
-          d_draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
+          draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
         }
       }
     }
@@ -690,4 +684,10 @@ void copy_game_state(Game *game, Game *prev)
     *new_en = *old_en;
     old_en = old_en->next;
   }
+}
+
+inline
+Vec2F screen_to_world(Vec2F pos)
+{
+  return v2f(pos.x, HEIGHT - pos.y);
 }

@@ -3,9 +3,6 @@
 #include "base_common.h"
 #include "base_math.h"
 
-#undef near
-#undef far
-
 // @Scalar =====================================================================================
 
 inline
