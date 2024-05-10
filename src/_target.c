@@ -1,4 +1,5 @@
 #include "glad/glad.c"
+#undef bool
 
 #include "base/base_os.c"
 #include "base/base_arena.c"

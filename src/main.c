@@ -20,7 +20,7 @@
 #define SIMULATION_RATE 60
 #define VSYNC 1
 
-static Global *GLOBAL;
+Global *GLOBAL;
 
 i32 main(void)
 {

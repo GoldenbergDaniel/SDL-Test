@@ -22,7 +22,7 @@ Entity *create_entity(Game *game, EntityType type)
 
   for (u32 i = 0; i < NUM_TIMERS; i++)
   {
-    en->timers[i] = (Timer) {0};
+    zero(en->timers[i], Timer);
   }
   
   switch (type)

@@ -65,7 +65,6 @@ void pop_event(Game *game)
   queue->count--;
 }
 
-inline
 Event *peek_event(Game *game)
 {
   return game->event_queue.front;
@@ -174,9 +173,6 @@ void update_game(Game *game)
           en->new_vel.y += PLAYER_JUMP_VEL;
           en->grounded = FALSE;
         }
-
-        en->vel = en->new_vel;
-        en->pos = add_2f(en->pos, en->vel);
       }
       else
       {
@@ -212,27 +208,27 @@ void update_game(Game *game)
             // X Acceleration
             if (en->input_dir.x != 0.0f)
             {
-              en->vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
+              en->new_vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
               f32 bound = en->speed * abs(en->input_dir.x) * dt;
-              en->vel.x = clamp(en->vel.x, -bound, bound);
+              en->new_vel.x = clamp(en->vel.x, -bound, bound);
             }
             else
             {
-              en->vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
-              en->vel.x = to_zero(en->vel.x, 0.1f);
+              en->new_vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
+              en->new_vel.x = to_zero(en->vel.x, 0.1f);
             }
 
             // Y Acceleration
             if (en->input_dir.y != 0.0f)
             {
-              en->vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
+              en->new_vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
               f32 bound = en->speed * abs(en->input_dir.y) * dt;
-              en->vel.y = clamp(en->vel.y, -bound, bound);
+              en->new_vel.y = clamp(en->vel.y, -bound, bound);
             }
             else
             {
-              en->vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
-              en->vel.y = to_zero(en->vel.y, 0.1f);
+              en->new_vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
+              en->new_vel.y = to_zero(en->vel.y, 0.1f);
             }
           }
           case MoveType_Projectile:
@@ -245,15 +241,16 @@ void update_game(Game *game)
               kill_entity(game, .entity = en);
             }
 
-            en->vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
-            en->vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
+            en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
+            en->new_vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
           }
           break;
           default: break;
         }
-
-        en->pos = add_2f(en->pos, en->vel);
       }
+
+      en->vel = en->new_vel;
+      en->pos = add_2f(en->pos, en->vel);
 
       // Handle entity wrapping ----------------
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
