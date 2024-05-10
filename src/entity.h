@@ -4,12 +4,11 @@
 
 #include "draw/draw.h"
 #include "phys/physics.h"
-#include "particle.h"
 
 #define GRAVITY 48.0f // 0.8 p/f^2
 
 #define PLAYER_SPEED 600.0f // 10 p/f
-#define PLAYER_JUMP_VEL 12.0f // 12.0 p/f
+#define PLAYER_JUMP_VEL 13.0f // 13.0 p/f
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
@@ -24,6 +23,55 @@
 
 typedef struct Game Game;
 typedef struct Entity Entity;
+
+// @Timer ////////////////////////////////////////////////////////////////////////////////
+
+typedef struct Timer Timer;
+struct Timer
+{
+  f64 max_duration;
+  f64 curr_duration;
+  bool should_tick;
+  bool ticking;
+  bool timeout;
+  bool should_loop;
+  bool start_at_zero;
+};
+
+// @Particle /////////////////////////////////////////////////////////////////////////////
+
+typedef enum ParticleEmmissionType
+{
+  ParticleEmmissionType_Burst,
+  ParticleEmmissionType_Linear,
+} ParticleEmmissionType;
+
+typedef enum ParticleProp
+{
+  ParticleProp_AffectedByGravity,
+} ParticleProp;
+
+typedef struct Particle Particle;
+struct Particle
+{
+  Vec2F pos;
+  f32 rot;
+};
+
+typedef struct ParticleDesc ParticleDesc;
+struct ParticleDesc
+{
+  ParticleEmmissionType emmission_type;
+  b8 props;
+  Vec4F color;
+  Vec2F scale;
+  i32 count;
+  f32 speed;
+  f32 duration;
+  f32 spread;
+};
+
+// @Entity ///////////////////////////////////////////////////////////////////////////////
 
 typedef enum EntityType
 {
@@ -47,7 +95,8 @@ typedef enum EntityProp
   EntityProp_Fights = 1 << 4,
   EntityProp_Killable = 1 << 5,
   EntityProp_Equipped = 1 << 6,
-  EntityProp_WrapAtEdge = 1 << 7,
+  EntityProp_WrapsAtEdges = 1 << 7,
+  EntityProp_AffectedByGravity = 1 << 8,
 } EntityProp;
 
 typedef enum MoveType
@@ -71,18 +120,6 @@ typedef enum DrawType
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
-
-typedef struct Timer Timer;
-struct Timer
-{
-  f64 max_duration;
-  f64 curr_duration;
-  bool should_tick;
-  bool ticking;
-  bool timeout;
-  bool should_loop;
-  bool start_at_zero;
-};
 
 typedef struct EntityRef EntityRef;
 struct EntityRef
@@ -156,7 +193,10 @@ struct Entity
   Timer timers[NUM_TIMERS];
 
   // ParticleGroup
+  Arena particle_arena;
   Particle *particles;
+  ParticleDesc particle_desc;
+  Timer particle_timer;
 };
 
 typedef struct EntityList EntityList;
@@ -177,6 +217,7 @@ struct EntityParams
   b64 props;
   Vec2F pos;
   Vec4F color;
+  ParticleDesc particle_desc;
 };
 
 static Entity *NIL_ENTITY = &(Entity) {0};
@@ -241,10 +282,10 @@ void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
 
-// @Particles ////////////////////////////////////////////////////////////////////////////
+// @Particle /////////////////////////////////////////////////////////////////////////////
 
-void create_particles(Entity *en);
-void emit_particles(Entity *en);
+void create_particles(Entity *en, ParticleDesc desc);
+void destroy_particles(Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 

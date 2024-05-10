@@ -9,6 +9,7 @@
 #include "global.h"
 #include "game.h"
 
+#define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
 
 extern Global *GLOBAL;
 
@@ -64,6 +65,7 @@ void pop_event(Game *game)
   queue->count--;
 }
 
+inline
 Event *peek_event(Game *game)
 {
   return game->event_queue.front;
@@ -92,7 +94,7 @@ void init_game(Game *game)
 
     Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
-    shot_point->pos = v2f(32.0f, 0.0f);
+    shot_point->pos = v2f(24.0f, 0.0f);
     shot_point->scale = v2f(.1, .1);
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
@@ -106,10 +108,12 @@ void update_game(Game *game)
 
   Entity *player = get_entity_of_id(game, 1);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+
+  f64 t = game->t;
   f64 dt = game->dt;
 
   // Update entity spawning and dying ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (en->marked_for_spawn)
     {
@@ -126,14 +130,20 @@ void update_game(Game *game)
   }
 
   // Update entity position ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
+    
+    // Apply gravity ----------------
+    if (entity_has_prop(en, EntityProp_AffectedByGravity))
+    {
+      en->new_vel.y -= GRAVITY * dt;
+    }
 
     // Update entitiy movement ----------------
     if (entity_has_prop(en, EntityProp_Moves))
     {
-      if (en->props & EntityProp_Controlled)
+      if (entity_has_prop(en, EntityProp_Controlled))
       {
         entity_look_at(en, mouse_pos);
 
@@ -159,12 +169,6 @@ void update_game(Game *game)
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
         }
 
-        // Apply gravity
-        if (!en->grounded)
-        {
-          en->new_vel.y -= GRAVITY * dt;
-        }
-
         if (is_key_pressed(KEY_W) && en->grounded)
         {
           en->new_vel.y += PLAYER_JUMP_VEL;
@@ -183,11 +187,7 @@ void update_game(Game *game)
         {
           case MoveType_Grounded:
           {
-            // Apply gravity
-            if (!en->grounded)
-            {
-              en->vel.y -= GRAVITY * dt;
-            }
+            // Enemy grounded movement goes here
           }
           break;
           case MoveType_Flying:
@@ -256,7 +256,7 @@ void update_game(Game *game)
       }
 
       // Handle entity wrapping ----------------
-      if (en->props & EntityProp_WrapAtEdge)
+      if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
         if (en->pos.x + dim.width <= 0.0f)
@@ -315,7 +315,7 @@ void update_game(Game *game)
   }
   
   // Update entity collision ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
 
@@ -382,7 +382,7 @@ void update_game(Game *game)
   }
 
   // Update entity combat ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
 
@@ -409,6 +409,17 @@ void update_game(Game *game)
           bullet->rot = spawn_rot;
           bullet->speed = PROJ_SPEED;
           entity_rem_prop(bullet, EntityProp_Renders);
+
+          ParticleDesc desc = {
+            .emmission_type = ParticleEmmissionType_Burst,
+            .color = v4f(0.2f, 0.2f, 0.17f, 1.0f),
+            .scale = v2f(5, 5),
+            .count = 3,
+            .duration = 1.0f,
+            .speed = 0.7f,
+            .spread = 180.0f,
+          };
+          spawn_entity(game, EntityType_ParticleGroup, .pos=spawn_pos, .particle_desc=desc);
 
           timer->should_tick = TRUE;
         }
@@ -455,7 +466,7 @@ void update_game(Game *game)
   }
 
   // Update equipped entities ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
 
@@ -482,9 +493,56 @@ void update_game(Game *game)
     }
   }
 
+  // Update particle groups ----------------
+  for (EN_IN_ENTITIES)
+  {
+    if (en->type == EntityType_ParticleGroup)
+    {
+      ParticleDesc desc = en->particle_desc;
+      switch (desc.emmission_type)
+      {
+        case ParticleEmmissionType_Burst:
+        {
+          for (i32 i = 0; i < desc.count; i++)
+          {
+            Particle *particle = &en->particles[i];
+            Vec2F vel = {
+              sin_1f(particle->rot) * desc.speed,
+              cos_1f(particle->rot) * desc.speed,
+            };
+            particle->pos = add_2f(particle->pos, vel);
+          }
+
+          if (!en->particle_timer.ticking)
+          {
+            en->particle_timer.curr_duration = t + desc.duration;
+            en->particle_timer.ticking = TRUE;
+          }
+
+          if (t >= en->particle_timer.curr_duration)
+          {
+            en->particle_timer.ticking = FALSE;
+            kill_entity(game, .entity=en);
+          }
+        }
+        case ParticleEmmissionType_Linear:
+        {
+          // ...
+        }
+        break;
+      }
+    }
+  }
+
   // Developer tools ----------------
   {
-    for (Entity *en = game->entities.head; en; en = en->next)
+    // Toggle debug
+    if (is_key_just_pressed(KEY_TAB))
+    {
+      GLOBAL->debug = !GLOBAL->debug; 
+    }
+
+    for (EN_IN_ENTITIES)
     {
       if (!en->is_active) continue;
       
@@ -501,16 +559,26 @@ void update_game(Game *game)
       }
     }
 
-    // Toggle debug
-    if (is_key_just_pressed(KEY_TAB))
-    {
-      GLOBAL->debug = !GLOBAL->debug; 
-    }
-
-    // Kill player on backspace
+    // Kill player
     if (is_key_just_pressed(KEY_BACKSPACE))
     { 
       kill_entity(game, .entity=player);
+    }
+
+    // Spawn particles
+    if (is_key_just_pressed(KEY_0))
+    {
+      ParticleDesc desc = {
+        .emmission_type = ParticleEmmissionType_Burst,
+        .color = D_RED,
+        .scale = v2f(10, 10),
+        .count = 12,
+        .duration = 1.0f,
+        .speed = 5.0f,
+        .spread = 180.0f,
+      };
+
+      spawn_entity(game, EntityType_ParticleGroup, .pos=player->pos, .particle_desc=desc);
     }
   }
 }
@@ -554,7 +622,7 @@ void draw_game(Game *game, Game *prev)
   d_clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
 
   // Batch sprites ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
     if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
@@ -563,21 +631,35 @@ void draw_game(Game *game, Game *prev)
   }
   
   // Batch primitives ----------------
-  for (Entity *en = game->entities.head; en; en = en->next)
+  for (EN_IN_ENTITIES)
   {
-    if (en->draw_type == DrawType_Primitive && entity_has_prop(en, EntityProp_Renders))
+    if (entity_has_prop(en, EntityProp_Renders))
     {
-      d_draw_rectangle_x(en->xform, en->tint);
-    }
-
-    // Render colliders ----------------
-    if (GLOBAL->debug)
-    {
-      if (entity_has_prop(en, EntityProp_Collides | EntityProp_Renders))
+      if (en->draw_type == DrawType_Primitive)
       {
-        Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
-        Vec2F dim = en->body_col.dim;
-        d_draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
+        d_draw_rectangle_x(en->xform, en->tint);
+      }
+
+      if (en->type == EntityType_ParticleGroup)
+      {
+        for (i32 i = 0; i < en->particle_desc.count; i++)
+        {
+          Vec2F pos = en->particles[i].pos;
+          Vec2F dim = en->particle_desc.scale;
+          f32 rot = en->particles[i].rot;
+          d_draw_rectangle(pos, dim, rot, en->particle_desc.color);
+        }
+      }
+
+      // Render colliders ----------------
+      if (GLOBAL->debug)
+      {
+        if (entity_has_prop(en, EntityProp_Collides))
+        {
+          Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
+          Vec2F dim = en->body_col.dim;
+          d_draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
+        }
       }
     }
   }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -7,7 +8,7 @@
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_timer.h"
 
-#include "base/base_inc.h"
+#include "base/base_common.h"
 #include "render/render.h"
 #include "draw/draw.h"
 #include "input/input.h"
@@ -62,7 +63,6 @@ i32 main(void)
   gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
   d_clear_frame(V4F_ZERO);
 
-  
   String path_to_res = str("res");
   #ifdef DEBUG
   path_to_res = str("../res");

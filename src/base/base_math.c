@@ -3,6 +3,9 @@
 #include "base_common.h"
 #include "base_math.h"
 
+#undef near
+#undef far
+
 // @Scalar =====================================================================================
 
 inline
@@ -563,13 +566,14 @@ Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
   return result;
 }
 
+// Angle is in radians
 Mat3x3F rotate_3x3f(f32 angle)
 {
   Mat3x3F result = m3x3f(1.0f);
-  result.e[0][0] = cos(angle);
-  result.e[0][1] = -sin(angle);
-  result.e[1][0] = sin(angle);
-  result.e[1][1] = cos(angle);
+  result.e[0][0] = cos_1f(angle);
+  result.e[0][1] = -sin_1f(angle);
+  result.e[1][0] = sin_1f(angle);
+  result.e[1][1] = cos_1f(angle);
 
   return result;
 }
@@ -623,6 +627,7 @@ Mat4x4F m4x4f(f32 k)
 inline
 Mat4x4F rows_4x4f(Vec4F v1, Vec4F v2, Vec4F v3, Vec4F v4)
 {
+
   return (Mat4x4F)
   {
     {
@@ -707,8 +712,8 @@ Mat4x4F scale_4x4f(f32 x_scale, f32 y_scale, f32 z_scale)
 
 Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
 {
-  const f32 near = -1.0f;
-  const f32 far = 1.0f;
+  static f32 near = -1.0f;
+  static f32 far = 1.0f;
 
   Mat4x4F result = {0};
   result.e[0][0] = 2.0f / (right - left);
@@ -719,7 +724,7 @@ Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
   result.e[2][3] = -(far + near) / (far - near);
   result.e[3][3] = 1.0f;
 
-  return result;
+  return m4x4f(1);
 }
 
 // @Collision ==================================================================================
@@ -745,7 +750,6 @@ bool rect_ranges_intersect(Vec2F p1, Vec2F p2, f32 w1, f32 h1, f32 w2, f32 h2)
   return range_intersect(p1.x, p1.x+w1, p2.x, p2.x+w2) &&
          range_intersect(p1.y, p1.y+h1, p2.y, p2.y+h2);
 }
-
 
 #ifdef __cplusplus
 
