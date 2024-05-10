@@ -17,7 +17,7 @@ void init_prefabs(PrefabStore *prefabs)
     },
     .blood_particles = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
-      .color = D_RED,
+      .color = v4f(0.47f, 0.13f, 0.13f, 1.0f),
       .scale = v2f(5, 5),
       .count = 6,
       .duration = 0.3f,

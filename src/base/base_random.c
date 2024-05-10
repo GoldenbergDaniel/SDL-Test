@@ -5,5 +5,5 @@
 
 i32 random_i32(i32 min, i32 max)
 {
-  return (rand() % max * 2) + min;
+  return (rand() % (max * 2 + 1)) + min;
 }

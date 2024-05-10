@@ -560,3 +560,9 @@ void destroy_particles(Entity *en)
 {
   arena_clear(&en->particle_arena);
 }
+
+inline
+bool is_timer_over(Timer timer, f64 t)
+{
+  return t >= timer.end_time;
+}

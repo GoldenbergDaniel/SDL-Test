@@ -292,8 +292,4 @@ void destroy_particles(Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
-inline
-bool is_timer_over(Timer timer, f64 t)
-{
-  return t >= timer.end_time;
-}
+bool is_timer_over(Timer timer, f64 t);
