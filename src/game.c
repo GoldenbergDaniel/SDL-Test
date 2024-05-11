@@ -525,6 +525,11 @@ void update_game(Game *game)
               clamp_bot(particle->speed, 0.0f);
             }
 
+            if (desc.props & ParticleProp_RotateOverTime)
+            {
+              particle->rot += desc.rot_delta;
+            }
+
             Vec2F vel = {
               sin_1f(particle->dir) * particle->speed, 
               cos_1f(particle->dir) * particle->speed
@@ -589,12 +594,20 @@ void update_game(Game *game)
     {
       ParticleDesc desc = {
         .emmission_type = ParticleEmmissionType_Burst,
-        .color_primary = D_RED,
-        .scale = v2f(10, 10),
+        .props = ParticleProp_ScaleOverTime |
+                ParticleProp_SpeedOverTime |
+                ParticleProp_VariateColor |
+                ParticleProp_RotateOverTime,
+        .scale = v2f(20, 20),
         .count = 12,
-        .duration = 1.0f,
+        .duration = 2.0f,
         .speed = 5.0f,
         .spread = 180.0f,
+        .color_primary = D_RED,
+        .color_secondary = D_BLUE,
+        .scale_delta = v2f(-0.05f, -0.05f),
+        .speed_delta = 0.01f,
+        .rot_delta = 10.0f,
       };
 
       spawn_entity(game, EntityType_ParticleGroup, .pos=player->pos, .particle_desc=desc);

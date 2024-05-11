@@ -9,7 +9,8 @@ void init_prefabs(PrefabStore *prefabs)
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |
-               ParticleProp_VariateColor,
+               ParticleProp_VariateColor |
+               ParticleProp_RotateOverTime,
       .count = 3,
       .duration = 1.5f,
       .spread = 180.0f,
@@ -19,6 +20,7 @@ void init_prefabs(PrefabStore *prefabs)
       .scale_delta = v2f(-0.05f, -0.05f),
       .speed = 0.7f,
       .speed_delta = -0.007f,
+      .rot_delta = 3.0f,
     },
     .blood_particles = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,

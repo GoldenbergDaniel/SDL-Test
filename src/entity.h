@@ -53,6 +53,7 @@ typedef enum ParticleProp
   ParticleProp_VariateColor,
   ParticleProp_ScaleOverTime,
   ParticleProp_SpeedOverTime,
+  ParticleProp_RotateOverTime,
 } ParticleProp;
 
 typedef struct Particle Particle;
@@ -73,13 +74,14 @@ struct ParticleDesc
   b8 props;
   u32 count;
   f32 duration;
+  f32 spread;
   Vec4F color_primary;
   Vec4F color_secondary;
   Vec2F scale;
   Vec2F scale_delta;
   f32 speed;
   f32 speed_delta;
-  f32 spread;
+  f32 rot_delta;
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
