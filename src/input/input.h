@@ -14,6 +14,7 @@ typedef enum InputKey
   KEY_1,
   KEY_2,
   KEY_3,
+  KEY_9,
   KEY_SPACE,
   KEY_ESCAPE,
   KEY_ENTER,

@@ -543,7 +543,7 @@ bool is_entity_valid(Entity *en)
 void create_particles(Entity *en, ParticleDesc desc)
 {
   en->particle_desc = desc;
-  en->particle_arena = arena_create(MiB(1));
+  en->particle_arena = arena_create(MiB(4));
   en->particles = arena_alloc(&en->particle_arena, desc.count);
 
   for (i32 i = 0; i < en->particle_desc.count; i++)

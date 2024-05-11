@@ -14,10 +14,10 @@
 #include "game.h"
 #include "global.h"
 
-// #define LOG_PERF
+#define LOG_PERF
 
 #define SIMULATION_RATE 60
-#define VSYNC 1
+#define VSYNC 0 
 
 Global *GLOBAL;
 PrefabStore *PREFABS;

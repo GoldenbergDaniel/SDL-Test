@@ -590,27 +590,18 @@ void update_game(Game *game)
     }
 
     // Spawn particles
-    if (is_key_just_pressed(KEY_0))
+    if (is_key_just_pressed(KEY_9))
     {
-      ParticleDesc desc = {
-        .emmission_type = ParticleEmmissionType_Burst,
-        .props = ParticleProp_ScaleOverTime |
-                ParticleProp_SpeedOverTime |
-                ParticleProp_VariateColor |
-                ParticleProp_RotateOverTime,
-        .scale = v2f(20, 20),
-        .count = 12,
-        .duration = 2.0f,
-        .speed = 5.0f,
-        .spread = 180.0f,
-        .color_primary = D_RED,
-        .color_secondary = D_BLUE,
-        .scale_delta = v2f(-0.05f, -0.05f),
-        .speed_delta = 0.01f,
-        .rot_delta = 10.0f,
-      };
-
-      spawn_entity(game, EntityType_ParticleGroup, .pos=player->pos, .particle_desc=desc);
+      spawn_entity(game, EntityType_ParticleGroup, 
+                    .pos=player->pos, 
+                    .particle_desc=PREFABS->debug_particles);
+    }
+    
+    if (is_key_pressed(KEY_0))
+    {
+      spawn_entity(game, EntityType_ParticleGroup, 
+                    .pos=player->pos, 
+                    .particle_desc=PREFABS->debug_particles);
     }
   }
 }

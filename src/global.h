@@ -27,6 +27,7 @@ struct PrefabStore
 {
   ParticleDesc smoke_particles;
   ParticleDesc blood_particles;
+  ParticleDesc debug_particles;
 };
 
 typedef struct Game Game;

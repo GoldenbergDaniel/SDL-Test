@@ -22,6 +22,7 @@ void init_prefabs(PrefabStore *prefabs)
       .speed_delta = -0.007f,
       .rot_delta = 3.0f,
     },
+
     .blood_particles = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .color_primary = v4f(0.47f, 0.13f, 0.13f, 1.0f),
@@ -30,6 +31,24 @@ void init_prefabs(PrefabStore *prefabs)
       .duration = 0.3f,
       .speed = 2.0f,
       .spread = 180.0f,
-    }
+    },
+
+    .debug_particles = (ParticleDesc) {
+      .emmission_type = ParticleEmmissionType_Burst,
+      .props = ParticleProp_ScaleOverTime |
+              ParticleProp_SpeedOverTime |
+              ParticleProp_VariateColor |
+              ParticleProp_RotateOverTime,
+      .scale = v2f(20, 20),
+      .count = 100,
+      .duration = 2.0f,
+      .speed = 1.0f,
+      .spread = 180.0f,
+      .color_primary = v4f(0.5, 0.5, 0.0, 1),
+      .color_secondary = D_BLACK,
+      .scale_delta = v2f(-0.05f, -0.05f),
+      .speed_delta = 0.05f,
+      .rot_delta = 10.0f,
+    },
   };
 }
