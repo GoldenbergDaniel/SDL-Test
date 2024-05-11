@@ -224,9 +224,8 @@ void draw_particles(Entity *en)
 {
   for (i32 i = 0; i < en->particle_desc.count; i++)
   {
-    Vec2F pos = en->particles[i].pos;
-    Vec2F dim = en->particle_desc.scale;
-    f32 rot = en->particles[i].rot * RADIANS;
-    draw_rectangle(pos, dim, rot, en->particle_desc.color);
+    Particle *particle = &en->particles[i];
+    f32 rot = particle->rot * RADIANS;
+    draw_rectangle(particle->pos, particle->scale, rot, particle->color);
   }
 }

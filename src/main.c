@@ -28,7 +28,7 @@ i32 main(void)
   game.perm_arena = arena_create(MiB(16));
   game.frame_arena = arena_create(MiB(16));
   game.batch_arena = arena_create(MiB(16));
-  game.entity_arena = arena_create(MiB(64));
+  game.entity_arena = arena_create(MiB(32));
 
   srand(time(NULL));
   arena_get_scratch(NULL);
@@ -36,10 +36,10 @@ i32 main(void)
   SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
   i32 gl_major_version = 4;
-  #ifdef _WIN32
-  i32 gl_minor_version = 6;
-  #else
+  #ifdef __APPLE__
   i32 gl_minor_version = 1;
+  #else
+  i32 gl_minor_version = 6;
   #endif
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_version);
@@ -48,12 +48,7 @@ i32 main(void)
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-  #ifdef _WIN32
   SDL_WindowFlags flags = SDL_WINDOW_OPENGL;
-  #else
-  SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-  #endif
-
   SDL_Window *window = SDL_CreateWindow("Undead West", WIDTH, HEIGHT, flags);
 
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
@@ -139,9 +134,6 @@ i32 main(void)
     // printf("%u fps\n", (u32) (1000 / perf));
     #endif
   }
-
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-
+  
   return 0;
 }

@@ -20,6 +20,8 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
+#define auto __auto_type
+
 #if defined(__APPLE__)
 #define RO_SECTION_NAME "__DATA, __const"
 #elif defined(__linux__)

@@ -147,7 +147,7 @@ Vec2F project_2f(Vec2F a, Vec2F b)
 inline
 Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate)
 {
-  return scale_2f(sub_2f(target, curr), rate);
+  return add_2f(curr, scale_2f(sub_2f(target, curr), rate));
 }
 
 inline
@@ -284,7 +284,7 @@ Vec3F normalize_3f(Vec3F v)
 inline
 Vec3F lerp_3f(Vec3F curr, Vec3F target, f32 rate)
 {
-  return scale_3f(sub_3f(target, curr), rate);
+  return add_3f(curr, scale_3f(sub_3f(target, curr), rate));
 }
 
 // @Vec4F ======================================================================================
@@ -384,6 +384,12 @@ inline
 Vec4F normalize_4f(Vec4F v)
 {
   return scale_4f(v, 1.0f / magnitude_4f(v));
+}
+
+inline
+Vec4F lerp_4f(Vec4F curr, Vec4F target, f32 rate)
+{
+  return add_4f(curr, scale_4f(sub_4f(target, curr), rate));
 }
 
 // @Mat2x2F =================================================================================

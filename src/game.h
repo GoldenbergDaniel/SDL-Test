@@ -24,7 +24,6 @@ struct Event
 {
   Event *next;
   Event *next_free;
-  
   EventType type;
   EventDesc desc;
 };
@@ -52,11 +51,9 @@ struct Game
   EntityList entities;
   Entity *entity_draw_list;
 
-  Mat3x3F camera;
-
   f64 t;
   f64 dt;
-  
+  Mat3x3F camera;
   bool is_sim_started;
   bool should_quit;
 };

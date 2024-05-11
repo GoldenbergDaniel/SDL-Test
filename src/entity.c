@@ -549,10 +549,12 @@ void create_particles(Entity *en, ParticleDesc desc)
   for (i32 i = 0; i < en->particle_desc.count; i++)
   {
     Particle *particle = &en->particles[i];
-
+    particle->color = desc.color_primary;
     particle->pos = en->pos;
+    particle->scale = desc.scale;
     particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
     particle->rot = (f32) random_i32(-45, 45);
+    particle->speed = desc.speed;
   }
 }
 

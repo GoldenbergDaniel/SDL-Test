@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "base/base_inc.h"
 
@@ -23,7 +24,7 @@ void push_event(Game *game, EventType type, EventDesc desc)
 
   if (new_event == NULL)
   {
-    new_event = arena_alloc(&game->frame_arena, sizeof (Event));
+    new_event = malloc(sizeof (Event));
     zero(*new_event, Event);
   }
   else
@@ -56,6 +57,7 @@ void pop_event(Game *game)
   EventQueue *queue = &game->event_queue;
   Event *next = queue->front->next;
   zero(*queue->front, Event);
+  free(queue->front);
   
   if (queue->count == 2)
   {
@@ -506,9 +508,26 @@ void update_game(Game *game)
           for (i32 i = 0; i < desc.count; i++)
           {
             Particle *particle = &en->particles[i];
+
+            if (desc.props & ParticleProp_VariateColor)
+            {
+              particle->color = lerp_4f(particle->color, desc.color_secondary, dt);
+            }
+
+            if (desc.props & ParticleProp_ScaleOverTime)
+            {
+              particle->scale = add_2f(particle->scale, desc.scale_delta);
+            }
+
+            if (desc.props & ParticleProp_SpeedOverTime)
+            {
+              particle->speed += desc.speed_delta;
+              clamp_bot(particle->speed, 0.0f);
+            }
+
             Vec2F vel = {
-              sin_1f(particle->dir) * desc.speed,
-              cos_1f(particle->dir) * desc.speed,
+              sin_1f(particle->dir) * particle->speed, 
+              cos_1f(particle->dir) * particle->speed
             };
             particle->pos = add_2f(particle->pos, vel);
           }
@@ -570,7 +589,7 @@ void update_game(Game *game)
     {
       ParticleDesc desc = {
         .emmission_type = ParticleEmmissionType_Burst,
-        .color = D_RED,
+        .color_primary = D_RED,
         .scale = v2f(10, 10),
         .count = 12,
         .duration = 1.0f,

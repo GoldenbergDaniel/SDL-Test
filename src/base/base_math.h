@@ -190,6 +190,8 @@ f32 distance_4f(Vec4F a, Vec4F b);
 f32 distance_squared_4f(Vec4F a, Vec4F b);
 Vec4F normalize_4f(Vec4F v);
 
+Vec4F lerp_4f(Vec4F curr, Vec4F target, f32 rate);
+
 // @Mat2x2F =================================================================================
 
 Mat2x2F m2x2f(f32 k);

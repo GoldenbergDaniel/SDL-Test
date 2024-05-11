@@ -50,14 +50,20 @@ typedef enum ParticleEmmissionType
 typedef enum ParticleProp
 {
   ParticleProp_AffectedByGravity,
+  ParticleProp_VariateColor,
+  ParticleProp_ScaleOverTime,
+  ParticleProp_SpeedOverTime,
 } ParticleProp;
 
 typedef struct Particle Particle;
 struct Particle
 {
+  Vec4F color;
   Vec2F pos;
+  Vec2F scale;
   f32 dir;
   f32 rot;
+  f32 speed;
 };
 
 typedef struct ParticleDesc ParticleDesc;
@@ -65,11 +71,14 @@ struct ParticleDesc
 {
   ParticleEmmissionType emmission_type;
   b8 props;
-  Vec4F color;
-  Vec2F scale;
-  i32 count;
-  f32 speed;
+  u32 count;
   f32 duration;
+  Vec4F color_primary;
+  Vec4F color_secondary;
+  Vec2F scale;
+  Vec2F scale_delta;
+  f32 speed;
+  f32 speed_delta;
   f32 spread;
 };
 
