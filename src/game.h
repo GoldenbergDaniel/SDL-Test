@@ -23,7 +23,6 @@ typedef struct Event Event;
 struct Event
 {
   Event *next;
-  Event *next_free;
   EventType type;
   EventDesc desc;
 };
@@ -33,9 +32,12 @@ struct EventQueue
 {
   Event *front;
   Event *back;
-  Event *first_free;
   u64 count;
 };
+
+void push_event(Game *game, EventType type, EventDesc desc);
+void pop_event(Game *game);
+Event *peek_event(Game *game);
 
 // @Game ////////////////////////////////////////////////////////////////////////////
 

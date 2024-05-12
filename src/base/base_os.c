@@ -2,7 +2,6 @@
 // #define BACKEND_UNIX
 
 #ifdef BACKEND_LIBC
-#include <stdio.h>
 #include <stdlib.h>
 #endif
 

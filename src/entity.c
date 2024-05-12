@@ -5,10 +5,12 @@
 #include "game.h"
 #include "global.h"
 #include "entity.h"
+#include "game.h"
 
 extern Global *GLOBAL;
+extern PrefabStore *PREFABS;
 
-// @InitEntity ///////////////////////////////////////////////////////////////////////////
+// @SpawnKillEntity //////////////////////////////////////////////////////////////////////
 
 Entity *create_entity(Game *game, EntityType type)
 {
@@ -70,6 +72,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
+      en->health = 2;
 
       en->body_col.dim = dim_from_entity(en);
     }
@@ -98,6 +101,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->dim = v2f(16.0f, 16.0f);
       en->scale = SPRITE_SCALE;
       en->kill_timer.duration = BULLET_KILL_TIME;
+      en->damage = 1;
 
       en->body_col.type = P_ColliderType_Circle;
       en->body_col.radius = 8;
@@ -124,34 +128,24 @@ Entity *create_entity(Game *game, EntityType type)
   return en;
 }
 
-void reset_entity(Entity *en)
+Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
 {
-  Entity *next = en->next;
-  Entity *next_free = en->next_free;
-  EntityRef *children = en->children;
-  i16 *free_child_list = en->free_child_list;
+  Entity *en = create_entity(game, type);
+  en->pos = params.pos;
+  en->tint = params.color;
+  en->is_active = FALSE;
+  en->marked_for_spawn = TRUE;
+  entity_add_prop(en, params.props);
 
-  zero(*en, Entity);
-  
-  en->free_child_list = free_child_list;
-  en->children = children;
-  reset_entity_children(en);
-  en->next_free = next_free;
-  en->next = next;
-}
-
-inline
-void reset_entity_children(Entity *en)
-{
-  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+  if (type == EntityType_ParticleGroup)
   {
-    en->children[i].ptr = NIL_ENTITY;
-    en->children[i].id = 0;
-    en->free_child_list[i] = -1;
+    create_particles(en, params.particle_desc);
   }
+  
+  return en;
 }
 
-// @EntityProp ///////////////////////////////////////////////////////////////////////////
+// @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
 inline
 bool entity_has_prop(Entity *en, EntityProp prop)
@@ -170,242 +164,6 @@ void entity_rem_prop(Entity *en, EntityProp prop)
 {
   en->props &= ~prop;
 }
-
-// @SpawnEntity //////////////////////////////////////////////////////////////////////////
-
-Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
-{
-  Entity *en = create_entity(game, type);
-  en->pos = params.pos;
-  en->tint = params.color;
-  en->is_active = FALSE;
-  en->marked_for_spawn = TRUE;
-  entity_add_prop(en, params.props);
-
-  if (type == EntityType_ParticleGroup)
-  {
-    create_particles(en, params.particle_desc);
-  }
-  
-  return en;
-}
-
-void _kill_entity(Game *game, EntityParams params)
-{
-  Entity *en = params.entity;
-  if (en == NULL)
-  {
-    en = get_entity_of_id(game, params.id);
-  }
-
-  en->marked_for_death = TRUE;
-
-  if (en->type == EntityType_ParticleGroup)
-  {
-    destroy_particles(en);
-  }
-}
-
-// @EntityRef ////////////////////////////////////////////////////////////////////////////
-
-inline
-EntityRef ref_from_entity(Entity *en)
-{
-  return (EntityRef) {
-    .ptr = en,
-    .id = en->id
-  };
-}
-
-inline
-Entity *entity_from_ref(EntityRef ref)
-{
-  Entity *result = NIL_ENTITY;
-
-  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id && !ref.ptr->marked_for_death)
-  {
-    result = ref.ptr;
-  }
-
-  return result;
-}
-
-// @EntityList ///////////////////////////////////////////////////////////////////////////
-
-Entity *alloc_entity(Game *game)
-{
-  EntityList *list = &game->entities;
-  Entity *new_en = list->first_free;
-
-  if (new_en == NULL)
-  {
-    new_en = arena_alloc(&game->entity_arena, sizeof (Entity));
-    zero(*new_en, Entity);
-
-    u64 children_size = sizeof (EntityRef) * MAX_ENTITY_CHILDREN;
-    new_en->children = arena_alloc(&game->entity_arena, children_size);
-
-    u64 free_list_size = sizeof (i16) * MAX_ENTITY_CHILDREN;
-    new_en->free_child_list = arena_alloc(&game->entity_arena, free_list_size);
-
-    reset_entity_children(new_en);
-
-    if (list->head == NULL)
-    {
-      list->head = new_en;
-      list->tail = new_en;
-    }
-
-    new_en->next = NULL;
-    list->tail->next = new_en;
-    list->tail = new_en;
-    list->count++;
-  }
-  else
-  {
-    list->first_free = list->first_free->next_free;
-  }
-
-  new_en->id = random_i32(2, INT32_MAX);
-
-  return new_en;
-}
-
-void free_entity(Game *game, Entity *en)
-{
-  EntityList *list = &game->entities;
-  reset_entity(en);
-  en->next_free = list->first_free;
-  list->first_free = en;
-}
-
-Entity *get_entity_of_id(Game *game, u64 id)
-{
-  Entity *result = NIL_ENTITY;
-
-  for (Entity *en = game->entities.head; en != NULL; en = en->next)
-  {
-    if (en->id == id)
-    {
-      result = en;
-      break;
-    }
-  }
-
-  return result;
-}
-
-// @EntityTree ///////////////////////////////////////////////////////////////////////////
-
-void attach_entity_child(Entity *en, Entity *child)
-{
-  assert(en->child_count <= MAX_ENTITY_CHILDREN);
-
-  en->child_count++;
-
-  if (en->free_child_count == 0)
-  {
-    for (u16 i = 0; i < en->child_count; i++)
-    {
-      Entity *slot = entity_from_ref(en->children[i]);
-      if (!is_entity_valid(slot))
-      {
-        en->children[i] = ref_from_entity(child);
-        break;
-      }
-    }
-  }
-  else
-  {
-    for (u16 i = 0; i < en->free_child_count; i++)
-    {
-      i16 slot = en->free_child_list[i];
-      if (slot != -1)
-      {
-        en->children[slot] = ref_from_entity(child);
-        en->free_child_list[i] = -1;
-        en->free_child_count--;
-        break;
-      }
-    }
-  }
-
-  child->parent = ref_from_entity(en);
-}
-
-void attach_entity_child_at(Entity *en, Entity *child, u16 index)
-{ 
-  EntityRef slot = en->children[index];
-  if (!is_entity_valid(entity_from_ref(slot)))
-  {
-    slot = ref_from_entity(child);
-    child->parent = ref_from_entity(en);
-  }
-}
-
-void detach_entity_child(Entity *en, Entity *child)
-{
-  for (u16 i = 0; i < en->child_count; i++)
-  {
-    EntityRef *slot = &en->children[i];
-    if (slot->id == child->id)
-    {
-      zero(*slot, EntityRef);
-
-      if (i < en->child_count)
-      {
-        en->free_child_list[en->free_child_count] = i;
-        en->free_child_count++;
-      }
-
-      en->child_count--;
-      zero(child->parent, EntityRef);
-      break;
-    }
-  }
-}
-
-inline
-Entity *get_entity_child_at(Entity *en, u16 index)
-{
-  return entity_from_ref(en->children[index]);
-}
-
-Entity *get_entity_child_of_id(Entity *en, u64 id)
-{
-  Entity *result = NIL_ENTITY;
-
-  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
-  {
-    Entity *curr = entity_from_ref(en->children[i]);
-    if (curr->id == id)
-    {
-      result = curr;
-      break;
-    }
-  }
-
-  return result;
-}
-
-Entity *get_entity_child_of_type(Entity *en, EntityType type)
-{
-  Entity *result = NIL_ENTITY;
-
-  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
-  {
-    Entity *curr = entity_from_ref(en->children[i]);
-    if (curr->type == type)
-    {
-      result = curr;
-      break;
-    }
-  }
-
-  return result;
-}
-
-// @MiscEntity ///////////////////////////////////////////////////////////////////////////
 
 Vec2F pos_from_entity(Entity *en)
 {
@@ -538,33 +296,278 @@ bool is_entity_valid(Entity *en)
   return (en != NULL && en->type != EntityType_Nil);
 }
 
+void damage_entity(Game *game, Entity *reciever, Entity *sender)
+{
+  reciever->health -= sender->damage;
+  if (reciever->health <= 0)
+  {
+    switch (reciever->type)
+    {
+      case EntityType_ZombieWalker:
+      {
+        printf("Killed zombie walker!\n");
+        spawn_entity(game, EntityType_ParticleGroup,
+                      .pos=pos_from_entity(reciever),
+                      .particle_desc=PREFABS->death_particles);
+        
+        kill_entity(reciever);
+      }
+      default: break;
+    }
+  }
+}
+
+// @EntityRef ////////////////////////////////////////////////////////////////////////////
+
+inline
+EntityRef ref_from_entity(Entity *en)
+{
+  return (EntityRef) {
+    .ptr = en,
+    .id = en->id
+  };
+}
+
+inline
+Entity *entity_from_ref(EntityRef ref)
+{
+  Entity *result = NIL_ENTITY;
+
+  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id && !ref.ptr->marked_for_death)
+  {
+    result = ref.ptr;
+  }
+
+  return result;
+}
+
+// @EntityList ///////////////////////////////////////////////////////////////////////////
+
+Entity *alloc_entity(Game *game)
+{
+  EntityList *list = &game->entities;
+  Entity *new_en = list->first_free;
+
+  if (new_en == NULL)
+  {
+    new_en = arena_alloc(&game->entity_arena, sizeof (Entity));
+    zero(*new_en, Entity);
+
+    u64 children_size = sizeof (EntityRef) * MAX_ENTITY_CHILDREN;
+    new_en->children = arena_alloc(&game->entity_arena, children_size);
+
+    u64 free_list_size = sizeof (i16) * MAX_ENTITY_CHILDREN;
+    new_en->free_child_list = arena_alloc(&game->entity_arena, free_list_size);
+
+    // Reset entity children
+    for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+    {
+      new_en->children[i].ptr = NIL_ENTITY;
+      new_en->children[i].id = 0;
+      new_en->free_child_list[i] = -1;
+    }
+
+    if (list->head == NULL)
+    {
+      list->head = new_en;
+      list->tail = new_en;
+    }
+
+    new_en->next = NULL;
+    list->tail->next = new_en;
+    list->tail = new_en;
+    list->count++;
+  }
+  else
+  {
+    list->first_free = list->first_free->next_free;
+  }
+
+  new_en->id = random_i32(2, INT32_MAX);
+
+  return new_en;
+}
+
+void free_entity(Game *game, Entity *en)
+{
+  EntityList *list = &game->entities;
+
+  if (en->type == EntityType_ParticleGroup)
+  {
+    arena_destroy(&en->particle_arena);
+  }
+
+  // Reset entity
+  // NOTE(dg): This is a load of crap.
+  Entity *next = en->next;
+  Entity *next_free = en->next_free;
+  EntityRef *children = en->children;
+  i16 *free_child_list = en->free_child_list;
+  zero(*en, Entity);
+  en->free_child_list = free_child_list;
+  en->children = children;
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+  {
+    en->children[i].ptr = NIL_ENTITY;
+    en->children[i].id = 0;
+    en->free_child_list[i] = -1;
+  }
+  en->next_free = next_free;
+  en->next = next;
+
+  en->next_free = list->first_free;
+  list->first_free = en;
+}
+
+Entity *get_entity_of_id(Game *game, u64 id)
+{
+  Entity *result = NIL_ENTITY;
+
+  for (Entity *en = game->entities.head; en != NULL; en = en->next)
+  {
+    if (en->id == id)
+    {
+      result = en;
+      break;
+    }
+  }
+
+  return result;
+}
+
+void attach_entity_child(Entity *en, Entity *child)
+{
+  assert(en->child_count <= MAX_ENTITY_CHILDREN);
+
+  en->child_count++;
+
+  if (en->free_child_count == 0)
+  {
+    for (u16 i = 0; i < en->child_count; i++)
+    {
+      Entity *slot = entity_from_ref(en->children[i]);
+      if (!is_entity_valid(slot))
+      {
+        en->children[i] = ref_from_entity(child);
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (u16 i = 0; i < en->free_child_count; i++)
+    {
+      i16 slot = en->free_child_list[i];
+      if (slot != -1)
+      {
+        en->children[slot] = ref_from_entity(child);
+        en->free_child_list[i] = -1;
+        en->free_child_count--;
+        break;
+      }
+    }
+  }
+
+  child->parent = ref_from_entity(en);
+}
+
+void attach_entity_child_at(Entity *en, Entity *child, u16 index)
+{ 
+  EntityRef slot = en->children[index];
+  if (!is_entity_valid(entity_from_ref(slot)))
+  {
+    slot = ref_from_entity(child);
+    child->parent = ref_from_entity(en);
+  }
+}
+
+void detach_entity_child(Entity *en, Entity *child)
+{
+  for (u16 i = 0; i < en->child_count; i++)
+  {
+    EntityRef *slot = &en->children[i];
+    if (slot->id == child->id)
+    {
+      zero(*slot, EntityRef);
+
+      if (i < en->child_count)
+      {
+        en->free_child_list[en->free_child_count] = i;
+        en->free_child_count++;
+      }
+
+      en->child_count--;
+      zero(child->parent, EntityRef);
+      break;
+    }
+  }
+}
+
+inline
+Entity *get_entity_child_at(Entity *en, u16 index)
+{
+  return entity_from_ref(en->children[index]);
+}
+
+Entity *get_entity_child_of_id(Entity *en, u64 id)
+{
+  Entity *result = NIL_ENTITY;
+
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+  {
+    Entity *curr = entity_from_ref(en->children[i]);
+    if (curr->id == id)
+    {
+      result = curr;
+      break;
+    }
+  }
+
+  return result;
+}
+
+Entity *get_entity_child_of_type(Entity *en, EntityType type)
+{
+  Entity *result = NIL_ENTITY;
+
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+  {
+    Entity *curr = entity_from_ref(en->children[i]);
+    if (curr->type == type)
+    {
+      result = curr;
+      break;
+    }
+  }
+
+  return result;
+}
+
 // @Particles ////////////////////////////////////////////////////////////////////////////
 
 void create_particles(Entity *en, ParticleDesc desc)
 {
   en->particle_desc = desc;
-  en->particle_arena = arena_create(MiB(4));
-  en->particles = arena_alloc(&en->particle_arena, desc.count);
+  en->particle_arena = arena_create(MiB(1)); // temporary solution?
+  en->particles = arena_alloc(&en->particle_arena, sizeof (Particle) * desc.count);
 
   for (i32 i = 0; i < en->particle_desc.count; i++)
   {
     Particle *particle = &en->particles[i];
-    particle->color = desc.color_primary;
     particle->pos = en->pos;
+    particle->vel = desc.velocity_initial;
     particle->scale = desc.scale;
     particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
     particle->rot = (f32) random_i32(-45, 45);
     particle->speed = desc.speed;
+    particle->color = desc.color_primary;
   }
 }
 
-void destroy_particles(Entity *en)
-{
-  arena_clear(&en->particle_arena);
-}
+// @Timer ////////////////////////////////////////////////////////////////////////////////
 
 inline
-bool is_timer_over(Timer timer, f64 t)
+bool is_timer_done(Timer timer, f64 t)
 {
   return t >= timer.end_time;
 }

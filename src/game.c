@@ -20,17 +20,7 @@ extern PrefabStore *PREFABS;
 void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
-  Event *new_event = queue->first_free;
-
-  if (new_event == NULL)
-  {
-    new_event = malloc(sizeof (Event));
-    zero(*new_event, Event);
-  }
-  else
-  {
-    queue->first_free = queue->first_free->next_free;
-  }
+  Event *new_event = malloc(sizeof (Event));
 
   if (queue->front == NULL)
   {
@@ -47,7 +37,7 @@ void push_event(Game *game, EventType type, EventDesc desc)
   new_event->next = NULL;
 
   queue->back = new_event;
-  queue->count++;
+  queue->count += 1;
 }
 
 void pop_event(Game *game)
@@ -65,7 +55,7 @@ void pop_event(Game *game)
   }
 
   queue->front = next;
-  queue->count--;
+  queue->count -= 1;
 }
 
 Event *peek_event(Game *game)
@@ -101,6 +91,9 @@ void init_game(Game *game)
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
+
+    Entity *zombie1 = create_entity(game, EntityType_ZombieWalker);
+    zombie1->pos = v2f(WIDTH - 400.0f, HEIGHT/2.0f + 50.0f);
   }
 }
 
@@ -171,10 +164,10 @@ void update_game(Game *game)
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
         }
 
-        if (is_key_pressed(KEY_W) && en->grounded)
+        if (is_key_pressed(KEY_W) && en->is_grounded)
         {
           en->new_vel.y += PLAYER_JUMP_VEL;
-          en->grounded = FALSE;
+          en->is_grounded = FALSE;
         }
       }
       else
@@ -242,9 +235,9 @@ void update_game(Game *game)
               en->kill_timer.is_ticking = TRUE;
             }
 
-            if (is_timer_over(en->kill_timer, t))
+            if (is_timer_done(en->kill_timer, t))
             {
-              kill_entity(game, .entity=en);
+              kill_entity(en);
               en->kill_timer.is_ticking = FALSE;
             }
 
@@ -359,11 +352,11 @@ void update_game(Game *game)
           en->pos.y = ground_y + dim.height / 2.0f - en->body_col.offset.y;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
-          en->grounded = TRUE;
+          en->is_grounded = TRUE;
         }
         else
         {
-          en->grounded = FALSE;
+          en->is_grounded = FALSE;
         }
       }
 
@@ -375,7 +368,6 @@ void update_game(Game *game)
           {
             P_CollisionParams rect_params = {.collider=other->body_col, .vel=other->vel};
             P_CollisionParams circle_params = {.collider=en->body_col, .vel=en->vel};
-
             if (p_rect_circle_intersect(rect_params, circle_params))
             {
               Vec2F spawn_pos = pos_from_entity(en);
@@ -383,7 +375,8 @@ void update_game(Game *game)
                             .pos=spawn_pos, 
                             .particle_desc=PREFABS->blood_particles);
 
-              kill_entity(game, .entity=en);
+              damage_entity(game, other, en);
+              kill_entity(en);
             }
           }
         }
@@ -407,7 +400,7 @@ void update_game(Game *game)
         }
 
         // Shoot weapon if can shoot
-        if (is_key_pressed(KEY_MOUSE_1) && is_timer_over(en->attack_timer, t))
+        if (is_key_pressed(KEY_MOUSE_1) && is_timer_done(en->attack_timer, t))
         {
           Entity *gun = get_entity_child_at(en, 0);
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -450,7 +443,7 @@ void update_game(Game *game)
               }
 
               // Shoot weapon if can shoot
-              if (is_timer_over(en->attack_timer, t))
+              if (is_timer_done(en->attack_timer, t))
               {
                 Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
                 Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
@@ -530,11 +523,44 @@ void update_game(Game *game)
               particle->rot += desc.rot_delta;
             }
 
-            Vec2F vel = {
-              sin_1f(particle->dir) * particle->speed, 
-              cos_1f(particle->dir) * particle->speed
-            };
-            particle->pos = add_2f(particle->pos, vel);
+            if (desc.props & ParticleProp_AffectedByGravity)
+            {
+              if (!particle->is_grounded)
+              {
+                particle->vel.x = sin_1f(particle->dir) * particle->speed;
+                particle->vel.y -= GRAVITY * 0.01;
+              }
+            }
+            else
+            {
+              particle->vel = v2f(
+                sin_1f(particle->dir) * particle->speed,
+                cos_1f(particle->dir) * particle->speed 
+              );
+            }
+
+            particle->pos = add_2f(particle->pos, particle->vel);
+
+            if (desc.props & ParticleProp_CollidesWithGround)
+            {
+              f32 ground_y = 0.0f;
+              for (Entity *other = game->entities.head; other; other = other->next)
+              {
+                if (other->type == EntityType_Wall)
+                {
+                  ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
+                  break;
+                }
+              }
+
+              P_CollisionParams params = {.pos=particle->pos, .vel=particle->vel};
+              if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
+              {
+                particle->pos.y = ground_y;
+                particle->vel = V2F_ZERO;
+                particle->is_grounded = TRUE;
+              }
+            }
           }
 
           if (!en->particle_timer.is_ticking)
@@ -546,7 +572,7 @@ void update_game(Game *game)
           if (t >= en->particle_timer.end_time)
           {
             en->particle_timer.is_ticking = FALSE;
-            kill_entity(game, .entity=en);
+            kill_entity(en);
           }
         }
         case ParticleEmmissionType_Linear:
@@ -586,7 +612,7 @@ void update_game(Game *game)
     // Kill player
     if (is_key_just_pressed(KEY_BACKSPACE))
     { 
-      kill_entity(game, .entity=player);
+      kill_entity(player);
     }
 
     // Spawn particles
@@ -693,7 +719,7 @@ bool game_should_quit(Game *game)
 inline
 void copy_game_state(Game *game, Game *prev)
 {
-  // Note(dg): is this a bug?
+  // NOTE(dg): is this a bug?
   EntityList *old_list = &game->entities;
   EntityList *new_list = &prev->entities;
 

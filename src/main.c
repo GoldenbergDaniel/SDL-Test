@@ -14,10 +14,10 @@
 #include "game.h"
 #include "global.h"
 
-#define LOG_PERF
+// #define LOG_PERF
 
 #define SIMULATION_RATE 60
-#define VSYNC 0 
+#define VSYNC 1
 
 Global *GLOBAL;
 PrefabStore *PREFABS;
@@ -63,7 +63,7 @@ i32 main(void)
   GLOBAL->renderer = r_create_renderer(40000, &game.batch_arena);
 
   PREFABS = arena_alloc(&game.perm_arena, sizeof (PrefabStore));
-  init_prefabs(PREFABS);
+  init_particle_prefabs(PREFABS);
 
   Game prev_game = {0};
   prev_game.perm_arena = arena_create(KiB(16));

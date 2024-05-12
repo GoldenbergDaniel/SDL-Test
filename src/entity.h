@@ -12,7 +12,7 @@
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 
-#define PROJ_SPEED 500.0f
+#define PROJ_SPEED 1000.0f
 
 #define MAX_ENTITY_CHILDREN 16
 
@@ -20,6 +20,10 @@
 #define TIMER_HEALTH 1
 #define TIMER_KILL 2
 #define NUM_TIMERS 3
+
+#define BULLET_KILL_TIME 5.0f
+#define PLAYER_ATTACK_COOLDOWN 0.5f
+#define ENEMY_ATTACK_COOLDOWN 1.0f
 
 typedef struct Game Game;
 typedef struct Entity Entity;
@@ -35,10 +39,6 @@ struct Timer
   bool should_tick;
 };
 
-#define BULLET_KILL_TIME 5.0f
-#define PLAYER_ATTACK_COOLDOWN 0.25f
-#define ENEMY_ATTACK_COOLDOWN 1.0f
-
 // @Particle /////////////////////////////////////////////////////////////////////////////
 
 typedef enum ParticleEmmissionType
@@ -49,11 +49,12 @@ typedef enum ParticleEmmissionType
 
 typedef enum ParticleProp
 {
-  ParticleProp_AffectedByGravity,
-  ParticleProp_VariateColor,
-  ParticleProp_ScaleOverTime,
-  ParticleProp_SpeedOverTime,
-  ParticleProp_RotateOverTime,
+  ParticleProp_AffectedByGravity = 1 << 0,
+  ParticleProp_CollidesWithGround = 1 << 1,
+  ParticleProp_VariateColor = 1 << 2,
+  ParticleProp_ScaleOverTime = 1 << 3,
+  ParticleProp_SpeedOverTime = 1 << 4,
+  ParticleProp_RotateOverTime = 1 << 5,
 } ParticleProp;
 
 typedef struct Particle Particle;
@@ -64,7 +65,9 @@ struct Particle
   Vec2F scale;
   f32 dir;
   f32 rot;
+  Vec2F vel;
   f32 speed;
+  bool is_grounded;
 };
 
 typedef struct ParticleDesc ParticleDesc;
@@ -82,6 +85,7 @@ struct ParticleDesc
   f32 speed;
   f32 speed_delta;
   f32 rot_delta;
+  Vec2F velocity_initial;
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +181,7 @@ struct Entity
   Vec2F vel;
   Vec2F new_vel;
   f32 speed;
-  bool grounded;
+  bool is_grounded;
   
   // Drawing
   DrawType draw_type;
@@ -202,6 +206,9 @@ struct Entity
   Vec2F target_pos;
   f32 target_angle;
   f32 view_dist;
+
+  i16 health;
+  i16 damage;
 
   Timer attack_timer;
   Timer kill_timer;
@@ -236,51 +243,22 @@ struct EntityParams
 
 static Entity *NIL_ENTITY = &(Entity) {0};
 
-// @InitEntity ///////////////////////////////////////////////////////////////////////////
+// @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 Entity *create_entity(Game *game, EntityType type);
-void reset_entity(Entity *en);
-void reset_entity_children(Entity *en);
-
-// @EntityProp ///////////////////////////////////////////////////////////////////////////
-
-bool entity_has_prop(Entity *en, EntityProp prop);
-void entity_add_prop(Entity *en, EntityProp prop);
-void entity_rem_prop(Entity *en, EntityProp prop);
-
-// @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 #define spawn_entity(game, type, ...) \
   _spawn_entity(game, type, (EntityParams) {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
 
 Entity *_spawn_entity(Game *game, EntityType type, EntityParams params);
 
-#define kill_entity(game, ...) \
-  _kill_entity(game, (EntityParams) {.entity=NULL, .id=0, __VA_ARGS__ })
+#define kill_entity(en) en->marked_for_death = TRUE
 
-void _kill_entity(Game *game, EntityParams params);
+// @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
-// @EntityRef ////////////////////////////////////////////////////////////////////////////
-
-EntityRef ref_from_entity(Entity *en);
-Entity *entity_from_ref(EntityRef ref);
-
-// @EntityList ///////////////////////////////////////////////////////////////////////////
-
-Entity *alloc_entity(Game *game);
-void free_entity(Game *game, Entity *en);
-Entity *get_entity_of_id(Game *game, u64 id);
-
-// @EntityTree ///////////////////////////////////////////////////////////////////////////
-
-void attach_entity_child(Entity *en, Entity *child);
-void attach_entity_child_at(Entity *en, Entity *child, u16 index);
-void detach_entity_child(Entity *en, Entity *child);
-Entity *get_entity_child_at(Entity *en, u16 index);
-Entity *get_entity_child_of_id(Entity *en, u64 id);
-Entity *get_entity_child_of_type(Entity *en, EntityType type);
-
-// @MiscEntity ///////////////////////////////////////////////////////////////////////////
+bool entity_has_prop(Entity *en, EntityProp prop);
+void entity_add_prop(Entity *en, EntityProp prop);
+void entity_rem_prop(Entity *en, EntityProp prop);
 
 Vec2F pos_from_entity(Entity *en);
 Vec2F pos_tl_from_entity(Entity *en);
@@ -296,11 +274,30 @@ void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
 
+void damage_entity(Game *game, Entity *reciever, Entity *sender);
+
+// @EntityRef ////////////////////////////////////////////////////////////////////////////
+
+EntityRef ref_from_entity(Entity *en);
+Entity *entity_from_ref(EntityRef ref);
+
+// @EntityList ///////////////////////////////////////////////////////////////////////////
+
+Entity *alloc_entity(Game *game);
+void free_entity(Game *game, Entity *en);
+Entity *get_entity_of_id(Game *game, u64 id);
+
+void attach_entity_child(Entity *en, Entity *child);
+void attach_entity_child_at(Entity *en, Entity *child, u16 index);
+void detach_entity_child(Entity *en, Entity *child);
+Entity *get_entity_child_at(Entity *en, u16 index);
+Entity *get_entity_child_of_id(Entity *en, u64 id);
+Entity *get_entity_child_of_type(Entity *en, EntityType type);
+
 // @Particle /////////////////////////////////////////////////////////////////////////////
 
 void create_particles(Entity *en, ParticleDesc desc);
-void destroy_particles(Entity *en);
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
-bool is_timer_over(Timer timer, f64 t);
+bool is_timer_done(Timer timer, f64 t);

@@ -25,12 +25,21 @@ struct Global
 typedef struct PrefabStore PrefabStore;
 struct PrefabStore
 {
-  ParticleDesc smoke_particles;
-  ParticleDesc blood_particles;
-  ParticleDesc debug_particles;
+  // struct
+  // {
+    
+  // };
+
+  struct
+  {
+    ParticleDesc smoke_particles;
+    ParticleDesc blood_particles;
+    ParticleDesc death_particles;
+    ParticleDesc debug_particles;
+  };
 };
 
 typedef struct Game Game;
 
-void init_prefabs(PrefabStore *prefabs);
-Vec2F screen_to_world(Vec2F pos);
+void init_entity_prefabs(PrefabStore *prefabs);
+void init_particle_prefabs(PrefabStore *prefabs);

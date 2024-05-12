@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "base_common.h"
 #include "base_os.h"
 #include "base_arena.h"
@@ -21,7 +19,7 @@ Arena arena_create(u64 size)
 void arena_destroy(Arena *arena)
 {
   os_free(arena->memory, arena->size);
-  zero(*arena, Arena);
+  // zero(*arena, Arena);
 }
 
 void *arena_alloc(Arena *arena, u64 size)

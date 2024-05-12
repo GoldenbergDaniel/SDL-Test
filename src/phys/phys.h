@@ -22,9 +22,11 @@ typedef struct P_CollisionParams P_CollisionParams;
 struct P_CollisionParams
 {
   P_Collider collider;
+  Vec2F pos;
   Vec2F vel;
 };
 
+bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y);
 bool p_rect_x_range_intersect(P_CollisionParams a, Vec2F range, f32 x);
 bool p_rect_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y);
 bool p_rect_rect_intersect(P_CollisionParams a, P_CollisionParams b);

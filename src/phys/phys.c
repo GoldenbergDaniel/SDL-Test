@@ -6,6 +6,18 @@
 typedef P_Collider Collider;
 typedef P_CollisionParams CollisionParams;
 
+bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y)
+{
+  bool result = FALSE;
+
+  if (a.pos.x >= range.x && a.pos.x <= range.y)
+  {
+    result = a.pos.y + a.vel.y <= y;
+  }
+
+  return result;
+}
+
 bool p_rect_x_range_intersect(CollisionParams a, Vec2F range, f32 x)
 {
   assert(a.collider.type == P_ColliderType_Rect);
