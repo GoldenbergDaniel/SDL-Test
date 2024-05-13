@@ -4,12 +4,12 @@
 #include "base_arena.h"
 #include "base_string.h"
 
-// @String =====================================================================================
+// @String ===============================================================================
 
 String alloc_str(u32 len, Arena *arena)
 {
   String result;
-  result.str = arena_alloc(arena, len+1);
+  result.str = arena_alloc(arena, len);
   result.len = len;
 
   return result;
@@ -161,7 +161,7 @@ String str_insert_at(String s, String substr, u32 loc, Arena *arena)
 
 String str_concat(String s1, String s2, Arena *arena)
 {
-  String result = alloc_str(s1.len + s2.len + 1, arena);
+  String result = alloc_str(s1.len + s2.len, arena);
 
   for (u32 i = 0; i < s1.len; i++)
   {
@@ -173,64 +173,50 @@ String str_concat(String s1, String s2, Arena *arena)
     result.str[i+s1.len] = s2.str[i];
   }
 
-  result.str[result.len] = '\0';
-
   return result;
 }
 
-String str_substr(String s, u32 start, u32 end, Arena *arena)
+String str_substr(String s, u32 start, u32 end)
 {
   assert(start >= 0 && start < s.len && end > 0 && end <= s.len && start < end);
 
-  String result = alloc_str(end-start, arena);
-
-  u32 result_idx = 0;
-  for (u32 i = start; i < end; i++)
-  {
-    result.str[result_idx] = s.str[i];
-    result_idx++;
-  }
+  String result = {0};
+  result.str = s.str + start;
+  result.len = end - start;
 
   return result;
 }
 
-
-String str_strip_front(String s, String substr, Arena *arena)
+String str_strip_front(String s, String substr)
 {
   assert(substr.len <= s.len);
 
-  String result = s;
-  Arena scratch = arena_get_scratch(arena);
+  String result = {0};
 
   u32 front_len = substr.len;
-  String front = str_substr(s, 0, front_len, &scratch);
+  String front = str_substr(s, 0, front_len);
   if (str_equals(front, substr))
   {
-    result = str_substr(s, front_len, s.len, arena);
+    result = str_substr(s, front_len, s.len);
     result.len = s.len-front_len;
   }
-
-  arena_clear(&scratch);
   
   return result;
 }
 
-String str_strip_back(String s, String substr, Arena *arena)
+String str_strip_back(String s, String substr)
 {
   assert(substr.len <= s.len);
 
-  String result = s;
-  Arena scratch = arena_get_scratch(arena);
+  String result = {0};
 
   u32 back_len = s.len - substr.len;
-  String back = str_substr(s, back_len, s.len, &scratch);
+  String back = str_substr(s, back_len, s.len);
   if (str_equals(back, substr))
   {
-    result = str_substr(s, 0, back_len, arena);
+    result = str_substr(s, 0, back_len);
     result.len = back_len;
   }
-
-  arena_clear(&scratch);
   
   return result;
 }
@@ -253,7 +239,7 @@ String str_to_lower(String s, Arena *arena)
 {
   String result = alloc_str(s.len, arena);
 
-  for (size_t i = 0; i < s.len; i++)
+  for (u32 i = 0; i < s.len; i++)
   {
     if (s.str[i] >= 'A' && s.str[i] <= 'Z')
     {
@@ -272,7 +258,7 @@ String str_to_upper(String s, Arena *arena)
 {
   String result = alloc_str(s.len, arena);
 
-  for (size_t i = 0; i < s.len; i++)
+  for (u32 i = 0; i < s.len; i++)
   {
     if (s.str[i] >= 'a' && s.str[i] <= 'z')
     {
@@ -292,8 +278,8 @@ String str_join(StringArray arr, String delimiter, Arena *arena)
   String result = {0};
   String temp = {0};
 
-  size_t total_len = (arr.count-1) * delimiter.len;
-  for (size_t i = 0; i < arr.count; i++)
+  u32 total_len = (arr.count-1) * delimiter.len;
+  for (u32 i = 0; i < arr.count; i++)
   {
     total_len += arr.e[i].len;
   }
@@ -302,8 +288,8 @@ String str_join(StringArray arr, String delimiter, Arena *arena)
 
   Arena scratch = arena_get_scratch(arena);
 
-  size_t start_offset = 0;
-  for (size_t i = 0; i < arr.count; i++)
+  u32 start_offset = 0;
+  for (u32 i = 0; i < arr.count; i++)
   {
     temp = str_insert_at(temp, arr.e[i], start_offset, &scratch);
     start_offset += arr.e[i].len;
@@ -339,7 +325,7 @@ void print_str(String s)
   printf("\n");
 }
 
-// @StringArray ================================================================================
+// @StringArray ==========================================================================
 
 StringArray create_str_array(u64 count, Arena *arena)
 {
@@ -360,7 +346,7 @@ void clear_str_array(StringArray *arr, Arena *arena)
   arr->count = 0;
 }
 
-// @CString ====================================================================================
+// @CString ==============================================================================
 
 inline
 u32 cstr_len(char *s)

@@ -1,4 +1,5 @@
-#include "glad/glad.h"
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl3.h>
 
 #include "base/base_inc.h"
 #include "render/render.h"

@@ -2,6 +2,7 @@
 
 #include "base/base_inc.h"
 
+#include "input/input.h"
 #include "entity.h"
 
 // @Event ///////////////////////////////////////////////////////////////////////////
@@ -48,6 +49,8 @@ struct Game
   Arena frame_arena;
   Arena batch_arena;
   Arena entity_arena;
+
+  Input *input;
 
   EventQueue event_queue;
   EntityList entities;

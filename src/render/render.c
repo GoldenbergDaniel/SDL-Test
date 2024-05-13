@@ -1,4 +1,5 @@
-#include "glad/glad.h"
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"

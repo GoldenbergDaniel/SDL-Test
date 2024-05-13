@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "glad/glad.h"
-#include "SDL3/SDL_init.h"
-#include "SDL3/SDL_video.h"
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_timer.h"
+#define SOKOL_DLL
+#define SOKOL_NO_ENTRY
+#include "sokol/sokol_app.h"
+#include "sokol/sokol_time.h"
 
 #include "base/base_common.h"
 #include "input/input.h"
@@ -14,55 +13,71 @@
 #include "game.h"
 #include "global.h"
 
-// #define LOG_PERF
+#include <sys/param.h>
+#include <mach-o/dyld.h>
 
 #define SIMULATION_RATE 60
-#define VSYNC 1
+
+sapp_desc sokol_entry(Game *game);
 
 Global *GLOBAL;
 PrefabStore *PREFABS;
 
 i32 main(void)
 {
-  Game game = {0};
-  game.perm_arena = arena_create(MiB(16));
-  game.frame_arena = arena_create(MiB(16));
-  game.batch_arena = arena_create(MiB(16));
-  game.entity_arena = arena_create(MiB(32));
+  Game *game = malloc(sizeof (Game));
+  game->perm_arena = arena_create(MiB(16));
+  game->frame_arena = arena_create(MiB(16));
+  game->batch_arena = arena_create(MiB(16));
+  game->entity_arena = arena_create(MiB(32));
 
+  sapp_desc desc = sokol_entry(game);
+  sapp_run(&desc);
+
+  return 0;
+}
+
+void init(void *data)
+{
+  Game *gm = (Game *) data;
   srand(time(NULL));
   arena_get_scratch(NULL);
 
-  SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+  stm_setup();
+  uint64_t start = stm_now();
+  gm->t = start;
 
-  i32 gl_major_version = 4;
-  #ifdef __APPLE__
-  i32 gl_minor_version = 1;
-  #else
-  i32 gl_minor_version = 6;
-  #endif
-
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_version);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_version);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-
-  SDL_WindowFlags flags = SDL_WINDOW_OPENGL;
-  SDL_Window *window = SDL_CreateWindow("Undead West", WIDTH, HEIGHT, flags);
-
-  SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(VSYNC);
-
-  gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress);
   clear_frame(V4F_ZERO);
 
-  GLOBAL = arena_alloc(&game.perm_arena, sizeof (Global));
-  GLOBAL->resources = load_resources(&game.perm_arena, str("res"));
-  GLOBAL->renderer = r_create_renderer(40000, &game.batch_arena);
+  #if defined(__APPLE__) && defined(RELEASE)
+  char buf[MAXPATHLEN];
+  u32 size = MAXPATHLEN;
+  _NSGetExecutablePath(buf, &size);
+  String res_path = (String) {buf, size};
+  i64 loc = str_find(res_path, str("undeadwest"), 0, size);
+  res_path = str_substr(res_path, 0, loc);
+  res_path = str_concat(res_path, str("../Resources/res"), &gm->frame_arena);
+  res_path = str_nullify(res_path, &gm->frame_arena);
+  #elif defined(__APPLE__) && !defined(RELEASE)
+  char buf[MAXPATHLEN];
+  u32 size = MAXPATHLEN;
+  _NSGetExecutablePath(buf, &size);
+  String res_path = (String) {buf, size};
+  i64 loc = str_find(res_path, str("undeadwest"), 0, size);
+  res_path = str_substr(res_path, 0, loc);
+  res_path = str_concat(res_path, str("res"), &gm->frame_arena);
+  res_path = str_nullify(res_path, &gm->frame_arena);
+  #else
+  String res_path = str("res");
+  #endif
 
-  PREFABS = arena_alloc(&game.perm_arena, sizeof (PrefabStore));
+  GLOBAL = arena_alloc(&gm->perm_arena, sizeof (Global));
+  GLOBAL->resources = load_resources(&gm->perm_arena, res_path);
+  GLOBAL->renderer = r_create_renderer(40000, &gm->batch_arena);
+  
+  gm->input = &GLOBAL->input;
+
+  PREFABS = arena_alloc(&gm->perm_arena, sizeof (PrefabStore));
   init_particle_prefabs(PREFABS);
 
   Game prev_game = {0};
@@ -71,69 +86,40 @@ i32 main(void)
   prev_game.batch_arena = arena_create(MiB(8));
   prev_game.entity_arena = arena_create(MiB(64));
 
-  init_game(&game);
+  init_game(gm);
+}
 
-  f64 elapsed_time = 0.0f;
-  f64 current_time = SDL_GetTicks() * 0.001f;
-  f64 time_step = 1.0f / SIMULATION_RATE;
-  f64 accumulator = 0.0f;
+void event(const sapp_event *event, void *data)
+{
+  Game *gm = (Game *) data;
+  handle_input_event(event, &gm->should_quit);
+}
 
-  game.dt = time_step;
+void frame(void *data)
+{
+  Game *gm = (Game *) data;
+  gm->t = (f64) stm_sec(stm_since(0));
+  gm->dt = sapp_frame_duration();
 
-  bool running = TRUE;
-  while (running)
+  update_game(gm);
+  draw_game(gm, NULL);
+
+  if (game_should_quit(gm))
   {
-    #ifdef LOG_PERF
-    u64 perf_start = SDL_GetPerformanceCounter();
-    #endif
-
-    f64 new_time = SDL_GetTicks() * 0.001f;
-    f64 frame_time = new_time - current_time;
-    current_time = new_time;
-    accumulator += frame_time;
-
-    while (accumulator >= time_step)
-    {
-      clear_last_frame_input();
-
-      SDL_Event event;
-      while (SDL_PollEvent(&event))
-      {
-        handle_input_event(&event, &game.should_quit);
-      }
-
-      if (game_should_quit(&game))
-      {
-        running = FALSE;
-        break;
-      }
-
-      game.t = elapsed_time;
-      
-      // copy_game_state(&game, &prev_game);
-      update_game(&game);
-      handle_game_events(&game);
-      arena_clear(&game.frame_arena);
-
-      elapsed_time += time_step;
-      accumulator -= time_step;
-    }
-
-    draw_game(&game, &prev_game);
-    SDL_GL_SwapWindow(window);
-    arena_clear(&game.batch_arena);
-
-    // arena_clear(&prev_game.frame_arena);
-    // arena_clear(&prev_game.batch_arena);
-    // arena_clear(&prev_game.entity_arena);
-
-    #ifdef LOG_PERF
-    u64 perf_end = SDL_GetPerformanceCounter();
-    f64 perf = ((f32) (perf_end - perf_start) / SDL_GetPerformanceFrequency()) * 1000.0f;
-    printf("%.0f ms\n", perf);
-    // printf("%u fps\n", (u32) (1000 / perf));
-    #endif
+    sapp_quit();
   }
-  
-  return 0;
+}
+
+sapp_desc sokol_entry(Game *game)
+{
+  return (sapp_desc) {
+    .width = WIDTH,
+    .height = HEIGHT,
+    .window_title = "Undead West",
+    .swap_interval = 1,
+    .init_userdata_cb = init,
+    .frame_userdata_cb = frame,
+    .event_userdata_cb = event,
+    .user_data = game,
+  };
 }

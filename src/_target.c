@@ -1,8 +1,3 @@
-#include "glad/glad.c"
-#undef bool
-#undef near
-#undef far
-
 #include "base/base_os.c"
 #include "base/base_arena.c"
 #include "base/base_string.c"

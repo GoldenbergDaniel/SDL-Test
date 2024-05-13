@@ -62,9 +62,9 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .duration = 2.0f,
       .speed = 1.0f,
       .spread = 180.0f,
-      .color_primary = v4f(0.5, 0.5, 0.5, 1),
-      .color_secondary = D_BLACK,
-      .scale_delta = v2f(-0.05f, -0.05f),
+      .color_primary = D_RED,
+      .color_secondary = D_BLUE,
+      .scale_delta = v2f(-0.5f, -0.5f),
       .speed_delta = 0.05f,
     },
   };

@@ -15,7 +15,7 @@ CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
 if [[ $MODE == "r" || $MODE == "-r" ]]
 then
   echo "Building macOS release..."
-  $CC $CFLAGS_R -L./ -lsdl3 -O2 src/_target.c -o $NAME
+  $CC $CFLAGS_R -DRELEASE -L./ -lsdl3 -O2 src/_target.c -o $NAME
 elif [[ $MODE == "d" || $MODE == "-d" ]]
 then
   echo "Building macOS debug..."
