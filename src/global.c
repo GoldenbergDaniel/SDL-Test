@@ -17,10 +17,10 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .color_primary = v4f(0.55f, 0.55f, 0.55f, 1.0f),
       .color_secondary = v4f(0.1f, 0.1f, 0.1f, 1.0f),
       .scale = v2f(9, 9),
-      .scale_delta = v2f(-0.08f, -0.08f),
-      .speed = 0.7f,
-      .speed_delta = -0.007f,
-      .rot_delta = 2.0f,
+      .scale_delta = v2f(-8.0f, -8.0f),
+      .speed = 60.0f,
+      .speed_delta = -4000.0f,
+      .rot_delta = 20.0f,
     },
 
     .blood_particles = (ParticleDesc) {
@@ -32,9 +32,9 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .spread = 180.0f,
       .color_primary = v4f(0.47f, 0.13f, 0.13f, 1.0f),
       .scale = v2f(5, 5),
-      .scale_delta = v2f(-0.1f, -0.1f),
-      .speed = 2.0f,
-      .rot_delta = 5.0f,
+      .scale_delta = v2f(-6.0f, -6.0f),
+      .speed = 60.0f,
+      .rot_delta = 50.0f,
     },
 
     .death_particles = (ParticleDesc) {
@@ -47,8 +47,8 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .spread = 180.0f,
       .color_primary = v4f(0.57f, 0.23f, 0.23f, 1.0f),
       .color_secondary = v4f(0.37, 0.0f, 0.0f, 1.0f),
-      .scale = v2f(8, 8),
-      .speed = 2.0f,
+      .scale = v2f(7, 7),
+      .speed = 200.0f,
       .velocity_initial = v2f(0, 5.0f),
     },
 
@@ -60,12 +60,12 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .scale = v2f(20, 20),
       .count = 100,
       .duration = 2.0f,
-      .speed = 1.0f,
+      .speed = 80.0f,
       .spread = 180.0f,
       .color_primary = D_RED,
       .color_secondary = D_BLUE,
       .scale_delta = v2f(-0.5f, -0.5f),
-      .speed_delta = 0.05f,
+      .speed_delta = 50.0f,
     },
   };
 }

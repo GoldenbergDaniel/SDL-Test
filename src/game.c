@@ -128,9 +128,9 @@ void update_game(Game *game)
     if (!en->is_active) continue;
     
     // Apply gravity ----------------
-    if (entity_has_prop(en, EntityProp_AffectedByGravity))
+    if (entity_has_prop(en, EntityProp_AffectedByGravity) && !en->is_grounded)
     {
-      en->new_vel.y -= GRAVITY * dt;
+      en->new_vel.y -= GRAVITY * dt * dt;
     }
 
     // Update entitiy movement ----------------
@@ -164,8 +164,9 @@ void update_game(Game *game)
 
         if (is_key_pressed(KEY_W) && en->is_grounded)
         {
-          en->new_vel.y += PLAYER_JUMP_VEL * dt;
+          en->new_vel.y = PLAYER_JUMP_VEL * dt;
           en->is_grounded = FALSE;
+          printf("%f\n", dt);
         }
       }
       else
@@ -507,33 +508,35 @@ void update_game(Game *game)
 
             if (desc.props & ParticleProp_ScaleOverTime)
             {
-              particle->scale = add_2f(particle->scale, desc.scale_delta);
+              particle->scale = add_2f(particle->scale, scale_2f(desc.scale_delta, dt));
+              particle->scale.x = clamp_bot(particle->scale.x, 0.0f);
+              particle->scale.y = clamp_bot(particle->scale.y, 0.0f);
             }
 
             if (desc.props & ParticleProp_SpeedOverTime)
             {
-              particle->speed += desc.speed_delta;
-              clamp_bot(particle->speed, 0.0f);
+              particle->speed += desc.speed_delta * dt * dt;
+              particle->speed = clamp_bot(particle->speed, 0.0f);
             }
 
             if (desc.props & ParticleProp_RotateOverTime)
             {
-              particle->rot += desc.rot_delta;
+              particle->rot += desc.rot_delta * dt * dt;
             }
 
             if (desc.props & ParticleProp_AffectedByGravity)
             {
               if (!particle->is_grounded)
               {
-                particle->vel.x = sin_1f(particle->dir) * particle->speed;
-                particle->vel.y -= GRAVITY * 0.01;
+                particle->vel.x = sin_1f(particle->dir) * particle->speed * dt;
+                particle->vel.y -= GRAVITY * dt * dt;
               }
             }
             else
             {
               particle->vel = v2f(
-                sin_1f(particle->dir) * particle->speed,
-                cos_1f(particle->dir) * particle->speed 
+                sin_1f(particle->dir) * particle->speed * dt,
+                cos_1f(particle->dir) * particle->speed * dt
               );
             }
 
@@ -551,10 +554,11 @@ void update_game(Game *game)
                 }
               }
 
-              P_CollisionParams params = {.pos=particle->pos, .vel=particle->vel};
+              Vec2F p_col_pos = v2f(particle->pos.x, particle->pos.y + 5);
+              P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
               if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
               {
-                particle->pos.y = ground_y;
+                particle->pos.y = ground_y - 5;
                 particle->vel = V2F_ZERO;
                 particle->is_grounded = TRUE;
               }

@@ -59,7 +59,6 @@ struct Game
   f64 t;
   f64 dt;
   Mat3x3F camera;
-  bool is_sim_started;
   bool should_quit;
 };
 

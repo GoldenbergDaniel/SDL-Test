@@ -33,10 +33,7 @@ bool p_rect_y_range_intersect(CollisionParams a, Vec2F range, f32 y)
 
   if (a.collider.pos.x >= range.x && a.collider.pos.x + a.collider.dim.width * 0.5f <= range.y)
   {
-    // bool top = (a.collider.pos.y + a.vel.y + a.collider.dim.height * 0.5f) >= y;
-    bool top = 0;
-    bool bot = (a.collider.pos.y + a.vel.y) <= y;
-    result = top || bot;
+    result = (a.collider.pos.y + a.vel.y) <= y;
   }
 
   return result;

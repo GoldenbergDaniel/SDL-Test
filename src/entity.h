@@ -5,12 +5,12 @@
 #include "phys/phys.h"
 #include "draw.h"
 
-#define GRAVITY 48.0f // 0.8 p/f^2
+#define GRAVITY 3600.0f
 
-#define PLAYER_SPEED 600.0f // 10 p/f
-#define PLAYER_JUMP_VEL 1200.0f
-#define PLAYER_ACC 3.0f // 0.05 p/f^2
-#define PLAYER_FRIC 8.0f // 0.13 p/f^2
+#define PLAYER_SPEED 600.0f
+#define PLAYER_JUMP_VEL 900.0f
+#define PLAYER_ACC 3.0f
+#define PLAYER_FRIC 8.0f
 
 #define PROJ_SPEED 1000.0f
 
