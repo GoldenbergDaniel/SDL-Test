@@ -12,10 +12,19 @@
 
 #define SPRITE_SCALE ((Vec2F) {6, 6})
 
+typedef struct Frame Frame;
+struct Frame
+{
+  f64 current_time;
+  f64 elapsed_time;
+  f64 accumulator;
+};
+
 typedef struct Global Global;
 struct Global
 {
   Input input;
+  Frame frame;
   Resources resources;
   R_Renderer renderer;
 

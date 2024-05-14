@@ -166,7 +166,6 @@ void update_game(Game *game)
         {
           en->new_vel.y = PLAYER_JUMP_VEL * dt;
           en->is_grounded = FALSE;
-          printf("%f\n", dt);
         }
       }
       else

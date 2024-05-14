@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #if defined(_WIN32)
@@ -13,6 +14,8 @@
 #include "draw.h"
 #include "game.h"
 #include "global.h"
+
+#define TIME_STEP (1.0f / 60)
 
 Game GAME;
 Global *GLOBAL;
@@ -70,6 +73,10 @@ void init(void)
 
   GAME.input = &GLOBAL->input;
   init_game(&GAME);
+
+  GLOBAL->frame.current_time = stm_sec(stm_since(0));
+  GLOBAL->frame.accumulator = TIME_STEP;
+  GAME.dt = TIME_STEP;
 }
 
 void event(const sapp_event *event)
@@ -79,11 +86,26 @@ void event(const sapp_event *event)
 
 void frame(void)
 {
-  GAME.t = (f64) stm_sec(stm_since(0));
-  GAME.dt = sapp_frame_duration();
+  f64 new_time = stm_sec(stm_since(0));
+  f64 frame_time = new_time - GLOBAL->frame.current_time;
+  GLOBAL->frame.current_time = new_time;
+  GLOBAL->frame.accumulator += frame_time;
 
-  update_game(&GAME);
+  while (GLOBAL->frame.accumulator >= TIME_STEP)
+  {
+    clear_last_frame_input();
+
+    GAME.t = (f64) stm_sec(stm_since(0));
+    
+    update_game(&GAME);
+    arena_clear(&GAME.frame_arena);
+
+    GLOBAL->frame.elapsed_time += TIME_STEP;
+    GLOBAL->frame.accumulator -= TIME_STEP;
+  }
+
   render_game(&GAME);
+  arena_clear(&GAME.batch_arena);
 
   if (game_should_quit(&GAME))
   {
