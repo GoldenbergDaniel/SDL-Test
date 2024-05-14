@@ -10,6 +10,12 @@
 #include <sys/dir.h>
 #endif
 
+#ifdef __APPLE__
+#include <sys/param.h>
+#include <mach-o/dyld.h>
+#undef bool
+#endif
+
 #include "base_common.h"
 #include "base_os.h"
 
@@ -64,3 +70,17 @@ void os_free(void *ptr, u64 size)
   munmap(ptr, size);
   #endif
 }
+
+#ifdef __APPLE__
+String os_path_to_executable(String name)
+{
+  char buf[MAXPATHLEN];
+  u32 size = MAXPATHLEN;
+  _NSGetExecutablePath(buf, &size);
+  String path = (String) {buf, size};
+  i64 loc = str_find(path, name, 0, size);
+  path = str_substr(path, 0, loc);
+
+  return path;
+}
+#endif

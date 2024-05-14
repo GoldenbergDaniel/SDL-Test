@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_common.h"
+#include "base_string.h"
 
 #define OS_PROT_NONE 0x00  // PROT_NONE
 #define OS_PROT_READ 0x01  // PROT_READ
@@ -13,3 +14,5 @@ void *os_alloc(u64 size);
 void *os_map_file(i32 file, u64 size, i32 offset);
 i32 os_set_prot(void *ptr, u64 size, i32 flags);
 void os_free(void *ptr, u64 size);
+
+String os_path_to_executable(String name);

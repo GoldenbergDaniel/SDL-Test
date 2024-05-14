@@ -6,7 +6,7 @@
 #include "render/render.c"
 #include "phys/phys.c"
 #include "draw.c"
-#include "input/input.c"
+#include "input.c"
 #include "entity.c"
 #include "game.c"
 #include "global.c"

@@ -3,7 +3,7 @@
 #include "base/base_inc.h"
 
 #include "render/render.h"
-#include "input/input.h"
+#include "input.h"
 #include "draw.h"
 #include "entity.h"
 

@@ -3,9 +3,9 @@
 
 #include "base/base_inc.h"
 
-#include "input/input.h"
 #include "phys/phys.h"
 #include "draw.h"
+#include "input.h"
 #include "entity.h"
 #include "global.h"
 #include "game.h"
@@ -660,7 +660,7 @@ void handle_game_events(Game *game)
   }
 }
 
-void draw_game(Game *game, Game *prev)
+void render_game(Game *game)
 {
   if (!game->is_sim_started)
   {
