@@ -1,20 +1,18 @@
-#include <stdio.h>
 #include <stdlib.h>
 
-#include "base/base_common.h"
+#if defined(_WIN32)
+#include "glad/glad.h"
+#endif
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
+#include "base/base_common.h"
 #include "input.h"
 #include "draw.h"
 #include "game.h"
 #include "global.h"
-
-#if defined(_WIN32)
-#include "glad/glad.h"
-#endif
 
 Game GAME;
 Global *GLOBAL;
