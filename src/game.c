@@ -15,54 +15,6 @@
 extern Global *GLOBAL;
 extern PrefabStore *PREFABS;
 
-// @Events //////////////////////////////////////////////////////////////////////////
-
-void push_event(Game *game, EventType type, EventDesc desc)
-{
-  EventQueue *queue = &game->event_queue;
-  Event *new_event = malloc(sizeof (Event));
-
-  if (queue->front == NULL)
-  {
-    queue->front = new_event;
-  }
-
-  if (queue->back != NULL)
-  {
-    queue->back->next = new_event;
-  }
-
-  new_event->type = type;
-  new_event->desc = desc;
-  new_event->next = NULL;
-
-  queue->back = new_event;
-  queue->count += 1;
-}
-
-void pop_event(Game *game)
-{
-  assert(game->event_queue.count > 0);
-
-  EventQueue *queue = &game->event_queue;
-  Event *next = queue->front->next;
-  zero(*queue->front, Event);
-  free(queue->front);
-  
-  if (queue->count == 2)
-  {
-    queue->back = next;
-  }
-
-  queue->front = next;
-  queue->count -= 1;
-}
-
-Event *peek_event(Game *game)
-{
-  return game->event_queue.front;
-}
-
 // @Main ////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
@@ -539,8 +491,6 @@ void update_game(Game *game)
               );
             }
 
-            particle->pos = add_2f(particle->pos, particle->vel);
-
             if (desc.props & ParticleProp_CollidesWithGround)
             {
               f32 ground_y = 0.0f;
@@ -553,15 +503,21 @@ void update_game(Game *game)
                 }
               }
 
-              Vec2F p_col_pos = v2f(particle->pos.x, particle->pos.y + 5);
+              Vec2F p_col_pos = {
+                particle->pos.x, 
+                particle->pos.y + particle->scale.y/2
+              };
+
               P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
               if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
               {
-                particle->pos.y = ground_y - 5;
+                particle->pos.y = ground_y - particle->scale.y/2;
                 particle->vel = V2F_ZERO;
                 particle->is_grounded = TRUE;
               }
             }
+            
+            particle->pos = add_2f(particle->pos, particle->vel);
           }
 
           if (!en->particle_timer.is_ticking)
@@ -716,3 +672,52 @@ Vec2F screen_to_world(Vec2F pos)
 {
   return v2f(pos.x, HEIGHT - pos.y);
 }
+
+// @Events //////////////////////////////////////////////////////////////////////////
+
+void push_event(Game *game, EventType type, EventDesc desc)
+{
+  EventQueue *queue = &game->event_queue;
+  Event *new_event = malloc(sizeof (Event));
+
+  if (queue->front == NULL)
+  {
+    queue->front = new_event;
+  }
+
+  if (queue->back != NULL)
+  {
+    queue->back->next = new_event;
+  }
+
+  new_event->type = type;
+  new_event->desc = desc;
+  new_event->next = NULL;
+
+  queue->back = new_event;
+  queue->count += 1;
+}
+
+void pop_event(Game *game)
+{
+  assert(game->event_queue.count > 0);
+
+  EventQueue *queue = &game->event_queue;
+  Event *next = queue->front->next;
+  zero(*queue->front, Event);
+  free(queue->front);
+  
+  if (queue->count == 2)
+  {
+    queue->back = next;
+  }
+
+  queue->front = next;
+  queue->count -= 1;
+}
+
+Event *peek_event(Game *game)
+{
+  return game->event_queue.front;
+}
+

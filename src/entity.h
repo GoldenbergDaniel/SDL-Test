@@ -85,7 +85,7 @@ struct ParticleDesc
   f32 speed;
   f32 speed_delta;
   f32 rot_delta;
-  Vec2F velocity_initial;
+  Vec2F vel;
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////

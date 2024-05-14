@@ -15,8 +15,6 @@
 #include "game.h"
 #include "global.h"
 
-#define TIME_STEP (1.0f / 60)
-
 Game GAME;
 Global *GLOBAL;
 PrefabStore *PREFABS;
@@ -34,8 +32,6 @@ i32 main(void)
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
-    .frame_cb = frame,
-    .event_cb = event,
   });
 
   return 0;
@@ -96,7 +92,7 @@ void frame(void)
     clear_last_frame_input();
 
     GAME.t = (f64) stm_sec(stm_since(0));
-    
+
     update_game(&GAME);
     arena_clear(&GAME.frame_arena);
 
