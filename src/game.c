@@ -99,8 +99,6 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
-  game->is_sim_started = TRUE;
-
   Entity *player = get_entity_of_id(game, 1);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
@@ -166,7 +164,7 @@ void update_game(Game *game)
 
         if (is_key_pressed(KEY_W) && en->is_grounded)
         {
-          en->new_vel.y += PLAYER_JUMP_VEL;
+          en->new_vel.y += PLAYER_JUMP_VEL * dt;
           en->is_grounded = FALSE;
         }
       }
@@ -662,12 +660,6 @@ void handle_game_events(Game *game)
 
 void render_game(Game *game)
 {
-  if (!game->is_sim_started)
-  {
-    clear_frame(V4F_ZERO);
-    return;
-  }
-  
   clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
 
   // Batch sprites ----------------
@@ -714,25 +706,6 @@ inline
 bool game_should_quit(Game *game)
 {
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
-}
-
-inline
-void copy_game_state(Game *game, Game *prev)
-{
-  // NOTE(dg): is this a bug?
-  EntityList *old_list = &game->entities;
-  EntityList *new_list = &prev->entities;
-
-  new_list->head = NULL;
-  new_list->count = old_list->count;
-
-  Entity *old_en = old_list->head;
-  for (i32 i = 0; i < old_list->count; i++)
-  {
-    Entity *new_en = alloc_entity(prev);
-    *new_en = *old_en;
-    old_en = old_en->next;
-  }
 }
 
 inline

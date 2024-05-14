@@ -80,7 +80,22 @@ void event(const sapp_event *event)
 void frame(void)
 {
   GAME.t = (f64) stm_sec(stm_since(0));
+  // GAME.dt = 0.0167f;
   GAME.dt = sapp_frame_duration();
+
+  // if (sapp_frame_duration() < 0.012f)
+  // {
+  //   if (GAME.is_sim_started)
+  //   {
+  //     update_game(&GAME);
+  //   }
+  // }
+  // else
+  // {
+  //   update_game(&GAME);
+  // }
+
+  // GAME.is_sim_started = !GAME.is_sim_started;
 
   update_game(&GAME);
   render_game(&GAME);

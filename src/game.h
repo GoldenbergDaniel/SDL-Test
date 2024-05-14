@@ -68,6 +68,5 @@ void update_game(Game *game);
 void handle_game_events(Game *game);
 void render_game(Game *game);
 bool game_should_quit(Game *game);
-void copy_game_state(Game *game, Game *prev);
 
 Vec2F screen_to_world(Vec2F pos);

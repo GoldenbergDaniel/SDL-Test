@@ -8,7 +8,7 @@
 #define GRAVITY 48.0f // 0.8 p/f^2
 
 #define PLAYER_SPEED 600.0f // 10 p/f
-#define PLAYER_JUMP_VEL 13.0f // 13.0 p/f
+#define PLAYER_JUMP_VEL 1200.0f
 #define PLAYER_ACC 3.0f // 0.05 p/f^2
 #define PLAYER_FRIC 8.0f // 0.13 p/f^2
 

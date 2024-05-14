@@ -7,8 +7,8 @@
 #include "draw.h"
 #include "entity.h"
 
-#define WIDTH 1270
-#define HEIGHT 740
+#define WIDTH 1100
+#define HEIGHT 650
 
 #define SPRITE_SCALE ((Vec2F) {6, 6})
 
@@ -25,11 +25,6 @@ struct Global
 typedef struct PrefabStore PrefabStore;
 struct PrefabStore
 {
-  // struct
-  // {
-    
-  // };
-
   struct
   {
     ParticleDesc smoke_particles;
