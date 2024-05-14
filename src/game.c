@@ -660,7 +660,7 @@ void handle_game_events(Game *game)
   }
 }
 
-void draw_game(Game *game, Game *prev)
+void render_game(Game *game)
 {
   if (!game->is_sim_started)
   {

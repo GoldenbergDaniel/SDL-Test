@@ -1,5 +1,9 @@
+#ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl3.h>
+#endif
+
+#include "glad/glad.h"
 
 #include "base/base_inc.h"
 #include "render/render.h"

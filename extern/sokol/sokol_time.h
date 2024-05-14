@@ -1,3 +1,4 @@
+// #define SOKOL_DLL
 // #define SOKOL_TIME_IMPL
 
 #if defined(SOKOL_IMPL) && !defined(SOKOL_TIME_IMPL)

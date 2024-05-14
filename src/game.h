@@ -66,7 +66,7 @@ struct Game
 void init_game(Game *game);
 void update_game(Game *game);
 void handle_game_events(Game *game);
-void draw_game(Game *game, Game *prev);
+void render_game(Game *game);
 bool game_should_quit(Game *game);
 void copy_game_state(Game *game, Game *prev);
 

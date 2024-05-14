@@ -1,5 +1,6 @@
 // #define SOKOL_APP_IMPL
 // #define SOKOL_GLCORE
+// #define SOKOL_DLL
 // #define SOKOL_NO_ENTRY
 
 #if defined(SOKOL_IMPL) && !defined(SOKOL_APP_IMPL)

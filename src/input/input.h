@@ -1,10 +1,7 @@
 #pragma once
 
 #include "../base/base_inc.h"
-
-typedef union SDL_Event SDL_Event;
-
-struct sapp_event;
+#include "sokol/sokol_app.h"
 
 typedef enum InputKey
 {
@@ -42,4 +39,4 @@ bool is_key_just_pressed(InputKey key);
 bool is_key_just_released(InputKey key);
 Vec2F get_mouse_pos(void);
 void clear_last_frame_input(void);
-void handle_input_event(const struct sapp_event *event, bool *should_close);
+void handle_input_event(const sapp_event *event);
