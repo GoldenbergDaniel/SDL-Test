@@ -1,5 +1,8 @@
+#ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl3.h>
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
@@ -10,6 +13,10 @@
 
 #ifdef DEBUG
 static void verify_shader(u32 id, u32 type);
+#endif
+
+#ifdef _WIN32
+#include "glad/glad.h"
 #endif
 
 extern Global *GLOBAL;

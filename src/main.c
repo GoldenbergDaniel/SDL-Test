@@ -33,6 +33,8 @@ i32 main(void)
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
+    .frame_cb = frame,
+    .event_cb = event,
   });
 
   return 0;
@@ -64,7 +66,7 @@ void init(void)
   GLOBAL = arena_alloc(&GAME.perm_arena, sizeof (Global));
   GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
   GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
-  
+
   PREFABS = arena_alloc(&GAME.perm_arena, sizeof (PrefabStore));
   init_particle_prefabs(PREFABS);
 
@@ -74,7 +76,7 @@ void init(void)
 
 void event(const sapp_event *event)
 {
-  handle_input_event(event, &GAME.should_quit);
+  handle_input_event(event);
 }
 
 void frame(void)

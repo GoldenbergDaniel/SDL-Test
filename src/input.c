@@ -3,10 +3,8 @@
 #include "global.h"
 #include "input.h"
 
-#define SOKOL_DLL
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
-
 #include "sokol/sokol_time.h"
 
 extern Global *GLOBAL;
@@ -45,15 +43,13 @@ void clear_last_frame_input(void)
   }
 }
 
-void handle_input_event(const struct sapp_event *event, bool *should_quit)
+void handle_input_event(const struct sapp_event *event)
 {
   Input *input = &GLOBAL->input;
   input->mouse_pos = v2f(event->mouse_x, event->mouse_y);
 
   switch (event->type)
   {
-    case SAPP_EVENTTYPE_QUIT_REQUESTED: *should_quit = TRUE;
-    break;
     case SAPP_EVENTTYPE_KEY_DOWN: 
     {
       switch (event->key_code)
