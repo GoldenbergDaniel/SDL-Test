@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/base_inc.h"
-
+#include "base/base_common.h"
 #include "render/render.h"
 #include "input.h"
 #include "draw.h"
@@ -27,7 +26,6 @@ struct Global
   Frame frame;
   Resources resources;
   R_Renderer renderer;
-
   bool debug;
 };
 
@@ -36,14 +34,12 @@ struct PrefabStore
 {
   struct
   {
-    ParticleDesc smoke_particles;
-    ParticleDesc blood_particles;
-    ParticleDesc death_particles;
-    ParticleDesc debug_particles;
-  };
+    ParticleDesc smoke;
+    ParticleDesc blood;
+    ParticleDesc death;
+    ParticleDesc debug;
+  } particle;
 };
-
-typedef struct Game Game;
 
 void init_entity_prefabs(PrefabStore *prefabs);
 void init_particle_prefabs(PrefabStore *prefabs);

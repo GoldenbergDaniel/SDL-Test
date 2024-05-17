@@ -1,5 +1,6 @@
-CC=cc
-# LD_FLAGS="-framework Cocoa -framework QuartzCore -framework OpenGL"
-SOURCES="extern/sokol/sokol_app.h extern/sokol/sokol_time.h"
+SOURCES="sokol_app.h sokol_audio.h sokol_time.h sokol_log.h"
+DEFINES="-DSOKOL_IMPL -DSOKOL_NO_ENTRY -DSOKOL_GLCORE"
 
-$CC $LD_FLAGS -x objective-c $SOURCES -O2 -c
+pushd extern/sokol
+cc $LD_FLAGS $DEFINES -x objective-c $SOURCES -O2 -c
+ar -crs libsokol.a sokol_app.o sokol_audio.o sokol_time.o sokol_log.o

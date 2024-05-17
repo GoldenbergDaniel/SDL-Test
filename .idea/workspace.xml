@@ -18,8 +18,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="062a5b40-4422-48f6-ae19-f8cdb3e7378f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extern/sokol/libSokol.a" beforeDir="false" afterPath="$PROJECT_DIR$/extern/sokol/libSokol.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extern/sokol/sokol_app.h" beforeDir="false" afterPath="$PROJECT_DIR$/extern/sokol/sokol_app.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extern/sokol/sokol_time.h" beforeDir="false" afterPath="$PROJECT_DIR$/extern/sokol/sokol_time.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/notes.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/res/data/entity.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/build_macos.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build_macos.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/build_sokol.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build_sokol.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sokol.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sokol.lib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/base/base_random.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/base/base_random.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/base/base_random.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/base/base_random.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/draw.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/draw.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entity.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/entity.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/game.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/game.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/global.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/global.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/global.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/global.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -377,6 +393,7 @@
       <workItem from="1707166294781" duration="746000" />
       <workItem from="1715097592758" duration="1126000" />
       <workItem from="1715101967876" duration="27000" />
+      <workItem from="1715876171872" duration="72000" />
     </task>
     <servers />
   </component>

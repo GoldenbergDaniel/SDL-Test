@@ -114,6 +114,7 @@ typedef enum EntityProp
   EntityProp_Equipped = 1 << 6,
   EntityProp_WrapsAtEdges = 1 << 7,
   EntityProp_AffectedByGravity = 1 << 8,
+  EntityProp_Grounded = 1 << 9,
 } EntityProp;
 
 typedef enum MoveType
@@ -159,7 +160,6 @@ struct Entity
 
   // General
   u64 id;
-  u64 gen;
   EntityType type;
   MoveType move_type;
   CombatType combat_type;
@@ -181,7 +181,6 @@ struct Entity
   Vec2F vel;
   Vec2F new_vel;
   f32 speed;
-  bool is_grounded;
   
   // Drawing
   DrawType draw_type;
@@ -191,12 +190,6 @@ struct Entity
   bool flip_x;
   bool flip_y;
   u16 z_index;
-
-  // Draw state
-  Vec3F p0;
-  Vec3F p1;
-  Vec3F p2;
-  Vec3F p3;
 
   // Collision
   P_Collider body_col;
@@ -241,7 +234,7 @@ struct EntityParams
   ParticleDesc particle_desc;
 };
 
-static Entity *NIL_ENTITY = &(Entity) {0};
+Entity *NIL_ENTITY = &(Entity) {0};
 
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 

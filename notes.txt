@@ -1,18 +1,4 @@
-Should bring back a spawn queue for entities. Also a kill queue.
-
-When linking SDL3 statically:
-	-framework Cocoa 
-	-framework QuartzCore 
-	-framework Metal 
-	-framework IOKit 
-	-framework CoreAudio 
-	-framework CoreMedia 
-	-framework CoreHaptics 
-	-framework AudioToolbox 
-	-framework ForceFeedback 
-	-framework GameController 
-	-framework AVFoundation 
-	-framework Carbon 
-	-framework UniformTypeIdentifiers 
-	-liconv 
-	-lSDL3 
+Creating a static library using MSVC:
+ 1. cl /c /EHsc sokol.lib /FeSokol
+ 2. lib sokol.obj
+ 

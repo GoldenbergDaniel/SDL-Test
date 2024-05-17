@@ -1,31 +1,30 @@
 NAME="undeadwest"
-CC="cc"
 MODE=$1
+CC="cc"
 
-CFLAGS_R="-std=c17 
-          -Iextern/ -Iextern/sdl3/include 
-          -Wno-initializer-overrides -Wno-static-in-inline"
+CFLAGS="-std=c17 -Iextern/ -Wno-initializer-overrides"
+CFLAGS_D="-std=c17 -g -fsanitize=address -fsanitize=undefined
+          -I../extern/ -Wall -Wpedantic
+          -Wno-initializer-overrides -Wno-missing-braces"
 
-CFLAGS_D="-std=c17 -g -DDEBUG -fsanitize=address -fsanitize=undefined
-          -I../extern/ -I../extern/sdl3/include -Wall -Wpedantic
-          -Wno-initializer-overrides -Wno-static-in-inline -Wno-missing-braces"
+LDFLAGS="-L./extern/sokol -lSokol -framework OpenGL -framework Cocoa"
+LDFLAGS_D="-L../extern/sokol -lSokol -framework OpenGL -framework Cocoa"
 
-# ./ShaderToC
+set -e
 
 if [[ $MODE == "r" || $MODE == "-r" ]]
 then
   echo "Building macOS release..."
-  $CC $CFLAGS_R -DRELEASE -L./ -lsdl3 -O2 src/_target.c -o $NAME
+  $CC $CFLAGS $LDFLAGS -O2 -DRELEASE src/_target.c -o $NAME
 elif [[ $MODE == "d" || $MODE == "-d" ]]
 then
   echo "Building macOS debug..."
   mkdir debug
-  cp libSDL3.dylib debug/libSDL3.dylib
   pushd debug
-  $CC $CFLAGS_D -L./ -lsdl3 -O0 ../src/_target.c -o $NAME
+  $CC $CFLAGS_D $LDFLAGS_D -O0 -DDEBUG ../src/_target.c -o $NAME
   popd
 else
   echo "Building macOS..."
-  $CC $CFLAGS_R -L./ -lsdl3 -O0 src/_target.c -o $NAME
+  $CC $CFLAGS $LDFLAGS -O0 src/_target.c -o $NAME
   ./$NAME
 fi

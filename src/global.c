@@ -1,11 +1,10 @@
 #include "base/base_inc.h"
-
 #include "global.h"
 
 void init_particle_prefabs(PrefabStore *prefabs)
 {
   *prefabs = (PrefabStore) {
-    .smoke_particles = (ParticleDesc) {
+    .particle.smoke = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |
@@ -23,7 +22,7 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .rot_delta = 20.0f,
     },
 
-    .blood_particles = (ParticleDesc) {
+    .particle.blood = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_RotateOverTime,
@@ -37,7 +36,7 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .rot_delta = 50.0f,
     },
 
-    .death_particles = (ParticleDesc) {
+    .particle.death = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_VariateColor |
               //  ParticleProp_AffectedByGravity |
@@ -52,7 +51,7 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .vel = v2f(0.0f, 0.0f),
     },
 
-    .debug_particles = (ParticleDesc) {
+    .particle.debug = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |

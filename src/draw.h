@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/base_inc.h"
+#include "base/base_common.h"
 #include "render/render.h"
 
 #define D_SPRITE_SHEET_SIZE 16
@@ -14,9 +14,9 @@
 
 #define D_TEXTURE_SPRITE 0
 
-#define D_SPRITE_COWBOY v2i(0,0)
-#define D_SPRITE_ZOMBIE v2i(1,0)
-#define D_SPRITE_GUN v2i(2,0)
+#define D_SPRITE_COWBOY v2i(0, 0)
+#define D_SPRITE_ZOMBIE v2i(1, 0)
+#define D_SPRITE_GUN v2i(2, 0)
 #define D_SPRITE_BULLET v2i(3, 0)
 
 #define D_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
@@ -29,6 +29,11 @@
 
 typedef struct Entity Entity; 
 
+// @Assets ///////////////////////////////////////////////////////////////////////////////
+
+#define TEXTURE_COUNT 1
+#define SHADER_COUNT 2
+
 typedef Vec2I TextureID;
 
 typedef struct Resources Resources;
@@ -38,24 +43,10 @@ struct Resources
   R_Shader *shaders;
 };
 
-// @Assets ///////////////////////////////////////////////////////////////////////////////
-
-#define TEXTURE_COUNT 1
-#define SHADER_COUNT 2
-
 Resources load_resources(Arena *arena, String path);
 R_Shader *get_shader(u8 type);
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
-
-typedef struct RenderData RenderData;
-struct RenderData
-{
-  Vec2F pos;
-  Vec2F dim;
-  f32 rot;
-  Vec4F tint;
-};
 
 void clear_frame(Vec4F color);
 

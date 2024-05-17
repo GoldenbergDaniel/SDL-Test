@@ -7,7 +7,9 @@
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
+#include "sokol/sokol_audio.h"
 #include "sokol/sokol_time.h"
+#include "sokol/sokol_log.h"
 
 #include "base/base_common.h"
 #include "input.h"
@@ -17,7 +19,7 @@
 
 Game GAME;
 Global *GLOBAL;
-PrefabStore *PREFABS;
+PrefabStore *PREFAB;
 
 void init(void);
 void event(const sapp_event *);
@@ -32,6 +34,9 @@ i32 main(void)
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
+    .logger = {
+      .func = slog_func
+    }
   });
 
   return 0;
@@ -64,8 +69,8 @@ void init(void)
   GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
   GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
 
-  PREFABS = arena_alloc(&GAME.perm_arena, sizeof (PrefabStore));
-  init_particle_prefabs(PREFABS);
+  PREFAB = arena_alloc(&GAME.perm_arena, sizeof (PrefabStore));
+  init_particle_prefabs(PREFAB);
 
   GAME.input = &GLOBAL->input;
   init_game(&GAME);
@@ -91,8 +96,7 @@ void frame(void)
   {
     clear_last_frame_input();
 
-    GAME.t = (f64) stm_sec(stm_since(0));
-
+    GAME.t = stm_sec(stm_since(0));
     update_game(&GAME);
     arena_clear(&GAME.frame_arena);
 

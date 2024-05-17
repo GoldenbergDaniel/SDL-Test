@@ -13,7 +13,7 @@
 #define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
 
 extern Global *GLOBAL;
-extern PrefabStore *PREFABS;
+extern PrefabStore *PREFAB;
 
 // @Main ////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +80,8 @@ void update_game(Game *game)
     if (!en->is_active) continue;
     
     // Apply gravity ----------------
-    if (entity_has_prop(en, EntityProp_AffectedByGravity) && !en->is_grounded)
+    if (entity_has_prop(en, EntityProp_AffectedByGravity) &&
+       !entity_has_prop(en, EntityProp_Grounded))
     {
       en->new_vel.y -= GRAVITY * dt * dt;
     }
@@ -114,10 +115,10 @@ void update_game(Game *game)
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
         }
 
-        if (is_key_pressed(KEY_W) && en->is_grounded)
+        if (is_key_pressed(KEY_W) && entity_has_prop(en, EntityProp_Grounded))
         {
           en->new_vel.y = PLAYER_JUMP_VEL * dt;
-          en->is_grounded = FALSE;
+          entity_rem_prop(en, EntityProp_Grounded);
         }
       }
       else
@@ -302,11 +303,11 @@ void update_game(Game *game)
           en->pos.y = ground_y + dim.height / 2.0f - en->body_col.offset.y;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
-          en->is_grounded = TRUE;
+          entity_add_prop(en, EntityProp_Grounded);
         }
         else
         {
-          en->is_grounded = FALSE;
+          entity_rem_prop(en, EntityProp_Grounded);
         }
       }
 
@@ -323,7 +324,7 @@ void update_game(Game *game)
               Vec2F spawn_pos = pos_from_entity(en);
               spawn_entity(game, EntityType_ParticleGroup, 
                             .pos=spawn_pos, 
-                            .particle_desc=PREFABS->blood_particles);
+                            .particle_desc=PREFAB->particle.blood);
 
               damage_entity(game, other, en);
               kill_entity(en);
@@ -364,7 +365,7 @@ void update_game(Game *game)
 
           spawn_entity(game, EntityType_ParticleGroup, 
                         .pos=spawn_pos, 
-                        .particle_desc=PREFABS->smoke_particles);
+                        .particle_desc=PREFAB->particle.smoke);
 
           en->attack_timer.is_ticking = FALSE;
         }
@@ -505,15 +506,16 @@ void update_game(Game *game)
 
               Vec2F p_col_pos = {
                 particle->pos.x, 
-                particle->pos.y + particle->scale.y/2
+                particle->pos.y + particle->scale.y
               };
 
               P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
               if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
               {
-                particle->pos.y = ground_y - particle->scale.y/2;
+                particle->pos.y = ground_y - particle->scale.y;
                 particle->vel = V2F_ZERO;
                 particle->is_grounded = TRUE;
+                // particle->rot = 0;
               }
             }
             
@@ -577,14 +579,14 @@ void update_game(Game *game)
     {
       spawn_entity(game, EntityType_ParticleGroup, 
                     .pos=player->pos, 
-                    .particle_desc=PREFABS->debug_particles);
+                    .particle_desc=PREFAB->particle.debug);
     }
     
     if (is_key_pressed(KEY_0))
     {
       spawn_entity(game, EntityType_ParticleGroup, 
                     .pos=player->pos, 
-                    .particle_desc=PREFABS->debug_particles);
+                    .particle_desc=PREFAB->particle.debug);
     }
   }
 }
@@ -720,4 +722,3 @@ Event *peek_event(Game *game)
 {
   return game->event_queue.front;
 }
-

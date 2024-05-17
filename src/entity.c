@@ -8,7 +8,7 @@
 #include "game.h"
 
 extern Global *GLOBAL;
-extern PrefabStore *PREFABS;
+extern PrefabStore *PREFAB;
 
 // @SpawnKillEntity //////////////////////////////////////////////////////////////////////
 
@@ -305,10 +305,9 @@ void damage_entity(Game *game, Entity *reciever, Entity *sender)
     {
       case EntityType_ZombieWalker:
       {
-        printf("Killed zombie walker!\n");
         spawn_entity(game, EntityType_ParticleGroup,
                       .pos=pos_from_entity(reciever),
-                      .particle_desc=PREFABS->death_particles);
+                      .particle_desc=PREFAB->particle.death);
         
         kill_entity(reciever);
       }
@@ -383,7 +382,7 @@ Entity *alloc_entity(Game *game)
     list->first_free = list->first_free->next_free;
   }
 
-  new_en->id = random_i32(2, INT32_MAX);
+  new_en->id = random_u64(2, UINT64_MAX);
 
   return new_en;
 }
@@ -548,7 +547,7 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
 void create_particles(Entity *en, ParticleDesc desc)
 {
   en->particle_desc = desc;
-  en->particle_arena = arena_create(MiB(1)); // temporary solution?
+  en->particle_arena = arena_create(MiB(1));
   en->particles = arena_alloc(&en->particle_arena, sizeof (Particle) * desc.count);
 
   for (i32 i = 0; i < en->particle_desc.count; i++)
