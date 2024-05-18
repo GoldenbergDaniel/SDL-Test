@@ -193,6 +193,7 @@ struct Entity
 
   // Collision
   P_Collider body_col;
+  P_Collider hit_col;
 
   // Targeting
   bool has_target;

@@ -12,34 +12,33 @@ extern Global *GLOBAL;
 inline
 bool is_key_pressed(InputKey key)
 {
-  return GLOBAL->input.key_down[key];
+  return GLOBAL->input.keys[key];
 }
 
 inline
 bool is_key_just_pressed(InputKey key)
 {
-  return GLOBAL->input.key_just_down[key];
+  return GLOBAL->input.keys[key] && !GLOBAL->input.keys_last[key];
 }
 
 inline
 bool is_key_just_released(InputKey key)
 {
-  return GLOBAL->input.key_just_up[key];
+  return !GLOBAL->input.keys[key] && GLOBAL->input.keys_last[key];
 }
 
 inline
 Vec2F get_mouse_pos(void)
 {
-  return v2f(GLOBAL->input.mouse_pos.x, GLOBAL->input.mouse_pos.y);
+  return GLOBAL->input.mouse_pos;
 }
 
 inline
-void clear_last_frame_input(void)
+void remember_last_keys(void)
 {
-  for (u8 i = 0; i < _KEY_COUNT; i++)
+  for (i32 i = 0; i < _KEY_COUNT; i++)
   {
-    GLOBAL->input.key_just_down[i] = FALSE;
-    GLOBAL->input.key_just_up[i] = FALSE;
+    GLOBAL->input.keys_last[i] = GLOBAL->input.keys[i];
   }
 }
 
@@ -57,85 +56,71 @@ void handle_input_event(const struct sapp_event *event)
         default: break;
         case SAPP_KEYCODE_A:
         {
-          if (!input->key_down[KEY_A]) input->key_just_down[KEY_A] = TRUE;
-          input->key_down[KEY_A] = TRUE;
+          input->keys[KEY_A] = TRUE;
         }
         break;
         case SAPP_KEYCODE_D:
         {
-          if (!input->key_down[KEY_D]) input->key_just_down[KEY_D] = TRUE;
-          input->key_down[KEY_D] = TRUE;
+          input->keys[KEY_D] = TRUE;
         }
         break;
         case SAPP_KEYCODE_S:
         {
-          if (!input->key_down[KEY_S]) input->key_just_down[KEY_S] = TRUE;
-          input->key_down[KEY_S] = TRUE;
+          input->keys[KEY_S] = TRUE;
         }
         break;
         case SAPP_KEYCODE_W: 
         {
-          if (!input->key_down[KEY_W]) input->key_just_down[KEY_W] = TRUE;
-          input->key_down[KEY_W] = TRUE;
+          input->keys[KEY_W] = TRUE;
         }
         break;
         case SAPP_KEYCODE_0:
         {
-          if (!input->key_down[KEY_0]) input->key_just_down[KEY_0] = TRUE;
-          input->key_down[KEY_0] = TRUE;
+          input->keys[KEY_0] = TRUE;
         }
         break;
         case SAPP_KEYCODE_1: 
         {
-          if (!input->key_down[KEY_1]) input->key_just_down[KEY_1] = TRUE;
-          input->key_down[KEY_1] = TRUE;
+          input->keys[KEY_1] = TRUE;
         }
         break;
         case SAPP_KEYCODE_2: 
         {
-          if (!input->key_down[KEY_2]) input->key_just_down[KEY_2] = TRUE;
-          input->key_down[KEY_2] = TRUE;
+          input->keys[KEY_2] = TRUE;
         }
         break;
         case SAPP_KEYCODE_3:
         {
-          if (!input->key_down[KEY_3]) input->key_just_down[KEY_3] = TRUE;
-          input->key_down[KEY_3] = TRUE;
+          input->keys[KEY_3] = TRUE;
         }
         break;
         case SAPP_KEYCODE_9:
         {
-          if (!input->key_down[KEY_9]) input->key_just_down[KEY_9] = TRUE;
-          input->key_down[KEY_9] = TRUE;
+          input->keys[KEY_9] = TRUE;
         }
         break;
         case SAPP_KEYCODE_ESCAPE:
         {
-          if (!input->key_down[KEY_ESCAPE]) input->key_just_down[KEY_ESCAPE] = TRUE;
-          input->key_down[KEY_ESCAPE] = TRUE;
+          input->keys[KEY_ESCAPE] = TRUE;
         }
         break;
         case SAPP_KEYCODE_SPACE:
         {
-          if (!input->key_down[KEY_SPACE]) input->key_just_down[KEY_SPACE] = TRUE;
-          input->key_down[KEY_SPACE] = TRUE;
+          input->keys[KEY_SPACE] = TRUE;
         }
         break;
         case SAPP_KEYCODE_ENTER:
         {
-          if (!input->key_down[KEY_ENTER]) input->key_just_down[KEY_ENTER] = TRUE;
-          input->key_down[KEY_ENTER] = TRUE;
+          input->keys[KEY_ENTER] = TRUE;
         }
         break;
         case SAPP_KEYCODE_BACKSPACE:
         {
-          if (!input->key_down[KEY_BACKSPACE]) input->key_just_down[KEY_BACKSPACE] = TRUE;
-          input->key_down[KEY_BACKSPACE] = TRUE;
+          input->keys[KEY_BACKSPACE] = TRUE;
         }
         case SAPP_KEYCODE_TAB:
         {
-          if (!input->key_down[KEY_TAB]) input->key_just_down[KEY_TAB] = TRUE;
-          input->key_down[KEY_TAB] = TRUE;
+          input->keys[KEY_TAB] = TRUE;
         }
       }
       break;
@@ -147,14 +132,12 @@ void handle_input_event(const struct sapp_event *event)
         default: break;
         case SAPP_MOUSEBUTTON_LEFT:
         {
-          if (!input->key_down[KEY_MOUSE_1]) input->key_just_down[KEY_MOUSE_1] = TRUE;
-          input->key_down[KEY_MOUSE_1] = TRUE;
+          input->keys[KEY_MOUSE_1] = TRUE;
         }
         break;
         case SAPP_MOUSEBUTTON_RIGHT:
         {
-          if (!input->key_down[KEY_MOUSE_2]) input->key_just_down[KEY_MOUSE_2] = TRUE;
-          input->key_down[KEY_MOUSE_2] = TRUE;
+          input->keys[KEY_MOUSE_2] = TRUE;
         }
         break;
       }
@@ -167,86 +150,72 @@ void handle_input_event(const struct sapp_event *event)
         default: break;
         case SAPP_KEYCODE_A:
         {
-          if (input->key_down[KEY_A]) input->key_just_up[KEY_A] = TRUE;
-          input->key_down[KEY_A] = FALSE;
+          input->keys[KEY_A] = FALSE;
         }
         break;
         case SAPP_KEYCODE_D:
         {
-          if (input->key_down[KEY_D]) input->key_just_up[KEY_D] = TRUE;
-          input->key_down[KEY_D] = FALSE;
+          input->keys[KEY_D] = FALSE;
         }
         break;
         case SAPP_KEYCODE_S:
         {
-          if (input->key_down[KEY_S]) input->key_just_up[KEY_S] = TRUE;
-          input->key_down[KEY_S] = FALSE;
+          input->keys[KEY_S] = FALSE;
         }
         break;
         case SAPP_KEYCODE_W: 
         {
-          if (input->key_down[KEY_W]) input->key_just_up[KEY_W] = TRUE;
-          input->key_down[KEY_W] = FALSE;
+          input->keys[KEY_W] = FALSE;
         }
         break;
         case SAPP_KEYCODE_0:
         {
-          if (!input->key_down[KEY_0]) input->key_just_up[KEY_0] = TRUE;
-          input->key_down[KEY_0] = FALSE;
+          input->keys[KEY_0] = FALSE;
         }
         break;
         case SAPP_KEYCODE_1:
         {
-          if (!input->key_down[KEY_1]) input->key_just_up[KEY_1] = TRUE;
-          input->key_down[KEY_1] = FALSE;
+          input->keys[KEY_1] = FALSE;
         }
         break;
         case SAPP_KEYCODE_2:
         {
-          if (!input->key_down[KEY_2]) input->key_just_up[KEY_2] = TRUE;
-          input->key_down[KEY_2] = FALSE;
+          input->keys[KEY_2] = FALSE;
         }
         break;
         case SAPP_KEYCODE_3:
         {
-          if (!input->key_down[KEY_3]) input->key_just_up[KEY_3] = TRUE;
-          input->key_down[KEY_3] = FALSE;
+          input->keys[KEY_3] = FALSE;
         }
         break;
         case SAPP_KEYCODE_9:
         {
-          if (!input->key_down[KEY_9]) input->key_just_up[KEY_9] = TRUE;
-          input->key_down[KEY_9] = FALSE;
+          input->keys[KEY_9] = FALSE;
         }
         break;
         case SAPP_KEYCODE_ESCAPE:
         {
-          if (input->key_down[KEY_ESCAPE]) input->key_just_up[KEY_ESCAPE] = TRUE;
-          input->key_down[KEY_ESCAPE] = FALSE;
+          input->keys[KEY_ESCAPE] = FALSE;
         }
         break;
         case SAPP_KEYCODE_SPACE:
         {
-          if (input->key_down[KEY_SPACE]) input->key_just_up[KEY_SPACE] = TRUE;
-          input->key_down[KEY_SPACE] = FALSE;
+          input->keys[KEY_SPACE] = FALSE;
         }
         break;
         case SAPP_KEYCODE_ENTER:
         {
-          if (input->key_down[KEY_ENTER]) input->key_just_up[KEY_ENTER] = TRUE;
-          input->key_down[KEY_ENTER] = FALSE;
+          input->keys[KEY_ENTER] = FALSE;
         }
         break;
         case SAPP_KEYCODE_BACKSPACE:
         {
-          if (input->key_down[KEY_ENTER]) input->key_just_up[KEY_ENTER] = TRUE;
-          input->key_down[KEY_ENTER] = FALSE;
+          input->keys[KEY_ENTER] = FALSE;
         }
         break;
         case SAPP_KEYCODE_TAB:
         {
-          if (input->key_down[KEY_TAB]) input->key_just_up[KEY_TAB] = TRUE;
-          input->key_down[KEY_TAB] = FALSE;
+          input->keys[KEY_TAB] = FALSE;
         }
       }
       break;
@@ -259,14 +228,12 @@ void handle_input_event(const struct sapp_event *event)
         default: break;
         case SAPP_MOUSEBUTTON_LEFT:
         {
-          if (input->key_down[KEY_MOUSE_1]) input->key_just_up[KEY_MOUSE_1] = TRUE;
-          input->key_down[KEY_MOUSE_1] = FALSE;
+          input->keys[KEY_MOUSE_1] = FALSE;
         }
         break;
         case SAPP_MOUSEBUTTON_RIGHT:
         {
-          if (input->key_down[KEY_MOUSE_2]) input->key_just_up[KEY_MOUSE_2] = TRUE;
-          input->key_down[KEY_MOUSE_2] = FALSE;
+          input->keys[KEY_MOUSE_2] = FALSE;
         }
         break;
       }

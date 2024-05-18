@@ -94,11 +94,11 @@ void frame(void)
 
   while (GLOBAL->frame.accumulator >= TIME_STEP)
   {
-    clear_last_frame_input();
-
     GAME.t = stm_sec(stm_since(0));
     update_game(&GAME);
     arena_clear(&GAME.frame_arena);
+
+    remember_last_keys();
 
     GLOBAL->frame.elapsed_time += TIME_STEP;
     GLOBAL->frame.accumulator -= TIME_STEP;

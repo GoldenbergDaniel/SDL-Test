@@ -72,9 +72,13 @@ Entity *create_entity(Game *game, EntityType type)
       en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
-      en->health = 2;
+      en->health = 3;
 
       en->body_col.dim = dim_from_entity(en);
+      en->hit_col.dim = dim_from_entity(en);
+      en->hit_col.dim.x /= 2;
+      en->hit_col.dim.y /= 2;
+      en->hit_col.offset = v2f(100, 100);
     }
     break;
     case EntityType_Equipped:

@@ -1,4 +1,4 @@
 Creating a static library using MSVC:
- 1. cl /c /EHsc sokol.lib /FeSokol
+ 1. cl /c /EHsc sokol_sources /Fesokol
  2. lib sokol.obj
  

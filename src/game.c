@@ -44,8 +44,8 @@ void init_game(Game *game)
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
     zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
 
-    Entity *zombie1 = create_entity(game, EntityType_ZombieWalker);
-    zombie1->pos = v2f(WIDTH - 400.0f, HEIGHT/2.0f + 50.0f);
+    // Entity *zombie1 = create_entity(game, EntityType_ZombieWalker);
+    // zombie1->pos = v2f(WIDTH - 400.0f, HEIGHT/2.0f + 50.0f);
   }
 }
 
@@ -130,7 +130,16 @@ void update_game(Game *game)
         {
           case MoveType_Grounded:
           {
-            // Enemy grounded movement goes here
+            static const f32 zombie_speed = 50.0f;
+
+            if (en->flip_x)
+            {
+              en->new_vel.x = -zombie_speed * dt;
+            }
+            else
+            {
+              en->new_vel.x = zombie_speed * dt;
+            }
           }
           break;
           case MoveType_Flying:
@@ -550,7 +559,7 @@ void update_game(Game *game)
     {
       GLOBAL->debug = !GLOBAL->debug; 
     }
-
+    
     for (EN_IN_ENTITIES)
     {
       if (!en->is_active) continue;

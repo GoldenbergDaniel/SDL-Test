@@ -22,10 +22,10 @@ Resources load_resources(Arena *arena, String path)
   res.textures = arena_alloc(arena, sizeof (R_Texture) * TEXTURE_COUNT);
   res.shaders = arena_alloc(arena, sizeof (R_Shader) * SHADER_COUNT);
 
-  R_Shader primitive_shader = r_create_shader(primitive_VERT_SRC, primitive_FRAG_SRC);
+  R_Shader primitive_shader = r_create_shader(PRIMITIVE_VERT_SRC, PRIMITIVE_FRAG_SRC);
   res.shaders[0] = primitive_shader;
 
-  R_Shader sprite_shader = r_create_shader(sprite_VERT_SRC, sprite_FRAG_SRC);
+  R_Shader sprite_shader = r_create_shader(SPRITE_VERT_SRC, SPRITE_FRAG_SRC);
   res.shaders[1] = sprite_shader;
 
   Arena scratch = arena_get_scratch(arena);

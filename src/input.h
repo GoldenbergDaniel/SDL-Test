@@ -1,11 +1,7 @@
 #pragma once
 
-#include "base/base_inc.h"
-
-struct sapp_event;
-
-#include "base/base_inc.h"
 #include "sokol/sokol_app.h"
+#include "base/base_inc.h"
 
 typedef enum InputKey
 {
@@ -32,9 +28,8 @@ typedef enum InputKey
 typedef struct Input Input;
 struct Input
 {
-  u8 key_down[_KEY_COUNT];
-  u8 key_just_down[_KEY_COUNT];
-  u8 key_just_up[_KEY_COUNT];
+  u8 keys[_KEY_COUNT];
+  u8 keys_last[_KEY_COUNT];
   Vec2F mouse_pos;
 };
 
@@ -42,5 +37,5 @@ bool is_key_pressed(InputKey key);
 bool is_key_just_pressed(InputKey key);
 bool is_key_just_released(InputKey key);
 Vec2F get_mouse_pos(void);
-void clear_last_frame_input(void);
+void remember_last_keys(void);
 void handle_input_event(const sapp_event *event);
