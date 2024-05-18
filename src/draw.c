@@ -29,11 +29,16 @@ Resources load_resources(Arena *arena, String path)
   res.shaders[1] = sprite_shader;
 
   Arena scratch = arena_get_scratch(arena);
-  String path_to_sprites = str_concat(path, str("/texture/sprites.png"), &scratch);
-  R_Texture sprites = r_create_texture(path_to_sprites);
-  arena_clear(&scratch);
+  {
+    String path_to_texture = str_concat(path, str("/texture/sprites.png"), &scratch);
+    R_Texture texture = r_create_texture(path_to_texture);
+    res.textures[0] = texture;
 
-  res.textures[0] = sprites;
+    path_to_texture = str_concat(path, str("/texture/scene.png"), &scratch);
+    texture = r_create_texture(path_to_texture);
+    res.textures[1] = texture;
+  }
+  arena_clear(&scratch);
 
   return res;
 }
@@ -103,14 +108,13 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, TextureID tex)
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
-  // xform = mul_3x3f(translate_3x3f(off.x, off.y), xform);
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
   xform = mul_3x3f(rotate_3x3f(rot * RADIANS), xform);
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
@@ -222,6 +226,29 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex)
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
   r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
   r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
+  r_push_quad_indices(renderer);
+}
+
+void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
+{
+  R_Renderer *renderer = &GLOBAL->renderer;
+  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SCENE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+
+  Mat3x3F xform = m3x3f(1.0f);
+  xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
+  xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
+  xform = mul_3x3f(renderer->projection, xform);
+  
+  Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
+  Vec3F p1 = transform_3f(v3f(1.0f, 1.0f, 1.0f), xform); // tr
+  Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
+  Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
+
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, v4f(0, 1, 0, 0));
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, v4f(1, 1, 0, 0));
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, v4f(1, 0, 0, 0));
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, v4f(0, 0, 0, 0));
   r_push_quad_indices(renderer);
 }
 

@@ -13,6 +13,7 @@
 #define D_SHADER_SPRITE 1
 
 #define D_TEXTURE_SPRITE 0
+#define D_TEXTURE_SCENE 1
 
 #define D_SPRITE_COWBOY v2i(0, 0)
 #define D_SPRITE_ZOMBIE v2i(1, 0)
@@ -31,8 +32,8 @@ typedef struct Entity Entity;
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
 
-#define TEXTURE_COUNT 1
-#define SHADER_COUNT 2
+#define TEXTURE_COUNT 8
+#define SHADER_COUNT 8
 
 typedef Vec2I TextureID;
 
@@ -54,8 +55,9 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
 void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
 void draw_rectangle_x(Mat3x3F xform, Vec4F tint);
 
-void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec2F off, Vec4F tint, TextureID tex);
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex);
 void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex);
 void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex_id);
 
+void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint);
 void draw_particles(Entity *en);

@@ -25,8 +25,9 @@ void init_game(Game *game)
   {
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
-    ground->scale = v2f(512.0f, 24.0f);
+    ground->scale = v2f(512.0f, 15.5f);
     ground->tint = v4f(0.7f, 0.6f, 0.4f, 1.0f);
+    entity_rem_prop(ground, EntityProp_Renders);
 
     Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
@@ -642,6 +643,8 @@ void handle_game_events(Game *game)
 void render_game(Game *game)
 {
   clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
+
+  draw_scene(v2f(0, 0), mul_2f(v2f(160, 90), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
   // Batch sprites ----------------
   for (EN_IN_ENTITIES)

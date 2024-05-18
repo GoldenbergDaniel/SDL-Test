@@ -175,8 +175,8 @@ void r_set_uniform_3x3f(R_Shader *shader, i32 loc, Mat3x3F val)
 R_Texture r_create_texture(String path)
 {
   static u8 tex_slot = 0;
-  R_Texture tex;
-  tex.slot = tex_slot++;
+  R_Texture tex = {0};
+  tex.slot = ++tex_slot;
 
   stbi_set_flip_vertically_on_load(TRUE);
   u8 *data = stbi_load(path.str, &tex.width, &tex.height, NULL, 4);

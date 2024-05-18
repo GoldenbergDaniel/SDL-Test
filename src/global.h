@@ -12,8 +12,8 @@
 #define TIME_STEP (1.f / 60)
 #endif
 
-#define WIDTH 1100
-#define HEIGHT 650
+#define WIDTH 960
+#define HEIGHT 540
 #define SPRITE_SCALE ((Vec2F) {6, 6})
 
 typedef struct Frame Frame;
