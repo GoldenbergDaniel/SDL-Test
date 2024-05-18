@@ -72,12 +72,15 @@ void init(void)
   PREFAB = arena_alloc(&GAME.perm_arena, sizeof (PrefabStore));
   init_particle_prefabs(PREFAB);
 
-  GAME.input = &GLOBAL->input;
-  init_game(&GAME);
+  GLOBAL->window_dim.width = sapp_width();
+  GLOBAL->window_dim.height = sapp_height();
 
   GLOBAL->frame.current_time = stm_sec(stm_since(0));
   GLOBAL->frame.accumulator = TIME_STEP;
   GAME.dt = TIME_STEP;
+
+  GAME.input = &GLOBAL->input;
+  init_game(&GAME);
 }
 
 void event(const sapp_event *event)
@@ -91,6 +94,19 @@ void frame(void)
   f64 frame_time = new_time - GLOBAL->frame.current_time;
   GLOBAL->frame.current_time = new_time;
   GLOBAL->frame.accumulator += frame_time;
+
+  if (is_key_just_pressed(KEY_ENTER))
+  {
+    sapp_toggle_fullscreen();
+  }
+
+  if (GLOBAL->window_dim.width != sapp_width() && GLOBAL->window_dim.height != sapp_width())
+  {
+    r_set_viewport(0, 0, sapp_width(), sapp_height());
+  }
+
+  GLOBAL->window_dim.width = sapp_width();
+  GLOBAL->window_dim.height = sapp_height();
 
   while (GLOBAL->frame.accumulator >= TIME_STEP)
   {

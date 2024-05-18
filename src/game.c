@@ -25,13 +25,13 @@ void init_game(Game *game)
   {
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
-    ground->scale = v2f(512.0f, 15.5f);
-    ground->tint = v4f(0.7f, 0.6f, 0.4f, 1.0f);
-    entity_rem_prop(ground, EntityProp_Renders);
+    ground->dim = v2f(160, 26);
+    ground->tint = v4f(0.0f, 0.0f, 1.0f, 1.0f);
+    // entity_rem_prop(ground, EntityProp_Renders);
 
     Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
-    player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f + 50.0f);
+    player->pos = v2f(get_width()/2.0f, 15.0f);
 
     Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
@@ -43,10 +43,8 @@ void init_game(Game *game)
     shot_point->scale = v2f(.1, .1);
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(WIDTH - 300.0f, HEIGHT/2.0f + 50.0f);
-
-    // Entity *zombie1 = create_entity(game, EntityType_ZombieWalker);
-    // zombie1->pos = v2f(WIDTH - 400.0f, HEIGHT/2.0f + 50.0f);
+    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f + 50.0f);
+    // entity_rem_prop(zombie, EntityProp_Moves);
   }
 }
 
@@ -54,6 +52,7 @@ void update_game(Game *game)
 {
   Entity *player = get_entity_of_id(game, 1);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+  // printf("%f %f\n", player->pos.x, player->pos.y);
 
   f64 t = game->t;
   f64 dt = game->dt;
@@ -133,13 +132,20 @@ void update_game(Game *game)
           {
             static const f32 zombie_speed = 50.0f;
 
-            if (en->flip_x)
+            if (entity_has_prop(en, EntityProp_Grounded))
             {
-              en->new_vel.x = -zombie_speed * dt;
+              if (en->flip_x)
+              {
+                en->new_vel.x = -zombie_speed * dt;
+              }
+              else
+              {
+                en->new_vel.x = zombie_speed * dt;
+              }
             }
             else
             {
-              en->new_vel.x = zombie_speed * dt;
+              en->new_vel.x = 0;
             }
           }
           break;
@@ -219,9 +225,9 @@ void update_game(Game *game)
         Vec2F dim = dim_from_entity(en);
         if (en->pos.x + dim.width <= 0.0f)
         {
-          en->pos.x = WIDTH;
+          en->pos.x = get_width();
         }
-        else if (en->pos.x >= WIDTH)
+        else if (en->pos.x >= get_width())
         {
           en->pos.x = -(dim.width);
         }
@@ -304,7 +310,7 @@ void update_game(Game *game)
     {
       Vec2F dim = dim_from_entity(en);
 
-      // Player/Zombie vs. Ground collision
+      // Player/Zombie vs Ground collision
       if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
       {
         f32 ground_y = 0.0f;
@@ -320,7 +326,7 @@ void update_game(Game *game)
         P_CollisionParams params = {.collider=en->colliders[Collider_Body], .vel=en->vel};
         if (p_rect_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
         {
-          en->pos.y = ground_y + dim.height / 2.0f - en->colliders[Collider_Body].offset.y;
+          en->pos.y = ground_y + dim.height / 2.0f;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
           entity_add_prop(en, EntityProp_Grounded);
@@ -331,7 +337,7 @@ void update_game(Game *game)
         }
       }
 
-      // Bullet vs. Zombie collision
+      // Bullet vs Zombie collision
       if (en->type == EntityType_Bullet)
       {
         for (Entity *other = game->entities.head; other; other = other->next)
@@ -642,7 +648,7 @@ void handle_game_events(Game *game)
 
 void render_game(Game *game)
 {
-  clear_frame(v4f(0.34f, 0.44f, 0.47f, 1.0f));
+  clear_frame(V4F_ZERO);
 
   draw_scene(v2f(0, 0), mul_2f(v2f(160, 90), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
@@ -712,7 +718,7 @@ bool game_should_quit(Game *game)
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
-  return v2f(pos.x, HEIGHT - pos.y);
+  return v2f(pos.x, get_height() - pos.y);
 }
 
 // @Events //////////////////////////////////////////////////////////////////////////

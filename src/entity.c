@@ -18,8 +18,8 @@ Entity *create_entity(Game *game, EntityType type)
   en->type = type;
   en->is_active = TRUE;
   en->xform = m3x3f(1.0f);
-  en->scale = v2f(1.0f, 1.0f);
-  en->dim = v2f(10.0f, 10.0f);
+  en->scale = SPRITE_SCALE;
+  en->dim = v2f(16.0f, 16.0f);
   en->tint = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   switch (type)
@@ -29,6 +29,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Primitive;
       en->scale = v2f(0.1f, 0.1f);
       en->tint = D_YELLOW;
+      en->scale = v2f(1.0f, 1.0f);
     }
     break;
     case EntityType_Player:
@@ -46,7 +47,6 @@ Entity *create_entity(Game *game, EntityType type)
       en->combat_type = CombatType_Ranged;
       en->origin = v2f(0.5f, 0.5f);
       en->dim = v2f(8, 16);
-      en->scale = SPRITE_SCALE;
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
@@ -91,7 +91,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
       en->origin = v2f(0.5f, 0.5f);
-      en->dim = v2f(16.0f, 16.0f);
+      en->scale = v2f(1.0f, 1.0f);
     }
     break;
     case EntityType_Bullet:
@@ -104,8 +104,6 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
-      en->dim = v2f(16.0f, 16.0f);
-      en->scale = SPRITE_SCALE;
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->damage = 1;
 
@@ -116,11 +114,7 @@ Entity *create_entity(Game *game, EntityType type)
     break;
     case EntityType_Wall:
     {
-      en->props = EntityProp_Renders | 
-                  EntityProp_Collides;
-
-      en->draw_type = DrawType_Primitive;
-      en->dim = dim_from_entity(en);
+      en->props = EntityProp_Collides;
     }
     break;
     case EntityType_ParticleGroup:

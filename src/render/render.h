@@ -66,6 +66,8 @@ static R_Texture *R_NIL_TEXTURE = &(R_Texture) {0};
 #define R_PROJECTION_ORTHO_BL 1
 #define R_PROJECTION_ORTHO_C 2
 
+void r_set_viewport(i32 x, i32 y, i32 w, i32 h);
+
 // @Buffer ///////////////////////////////////////////////////////////////////////////////
 
 u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic);

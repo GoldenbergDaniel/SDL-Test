@@ -1,6 +1,8 @@
 #include "base/base_inc.h"
 #include "global.h"
 
+extern Global *GLOBAL;
+
 void init_particle_prefabs(PrefabStore *prefabs)
 {
   *prefabs = (PrefabStore) {
@@ -42,7 +44,7 @@ void init_particle_prefabs(PrefabStore *prefabs)
               //  ParticleProp_AffectedByGravity |
                ParticleProp_CollidesWithGround,
       .count = 40,
-      .duration = 5.0f,
+      .duration = 10.0f,
       .spread = 180.0f,
       .color_primary = v4f(0.57f, 0.23f, 0.23f, 1.0f),
       .color_secondary = v4f(0.27, 0.0f, 0.0f, 1.0f),
@@ -67,4 +69,16 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .speed_delta = 50.0f,
     },
   };
+}
+
+inline
+i32 get_width(void)
+{
+  return GLOBAL->window_dim.width;
+}
+
+inline
+i32 get_height(void)
+{
+  return GLOBAL->window_dim.height;
 }

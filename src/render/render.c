@@ -21,6 +21,12 @@ static void verify_shader(u32 id, u32 type);
 
 extern Global *GLOBAL;
 
+inline
+void r_set_viewport(i32 x, i32 y, i32 w, i32 h)
+{
+  glViewport(x, y, w, h);
+}
+
 // @Buffer ///////////////////////////////////////////////////////////////////////////////
 
 u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic)
