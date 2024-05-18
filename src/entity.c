@@ -51,7 +51,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_COWBOY;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
 
-      en->body_col.dim = dim_from_entity(en);
+      en->colliders[Collider_Body].dim = dim_from_entity(en);
     }
     break;
     case EntityType_ZombieWalker:
@@ -74,11 +74,13 @@ Entity *create_entity(Game *game, EntityType type)
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
       en->health = 3;
 
-      en->body_col.dim = dim_from_entity(en);
-      en->hit_col.dim = dim_from_entity(en);
-      en->hit_col.dim.x /= 2;
-      en->hit_col.dim.y /= 2;
-      en->hit_col.offset = v2f(100, 100);
+      en->colliders[Collider_Body].dim = dim_from_entity(en);
+
+      en->colliders[Collider_Hit].dim = pos_from_entity(en);
+      en->colliders[Collider_Hit].dim = dim_from_entity(en);
+      en->colliders[Collider_Hit].dim.x /= 2;
+      en->colliders[Collider_Hit].dim.y /= 2;;
+      en->colliders[Collider_Hit].offset = v2f(10, 10);
     }
     break;
     case EntityType_Equipped:
@@ -107,9 +109,9 @@ Entity *create_entity(Game *game, EntityType type)
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->damage = 1;
 
-      en->body_col.type = P_ColliderType_Circle;
-      en->body_col.radius = 8;
-      en->body_col.dim = v2f(8, 8);
+      en->colliders[Collider_Hit].type = P_ColliderType_Circle;
+      en->colliders[Collider_Hit].radius = 8;
+      en->colliders[Collider_Hit].dim = v2f(8, 8);
     }
     break;
     case EntityType_Wall:
@@ -264,6 +266,34 @@ f32 rot_from_entity(Entity *en)
   while (is_entity_valid(parent))
   {
     result += parent->rot;
+    parent = entity_from_ref(parent->parent);
+  }
+
+  return result;
+}
+
+bool flip_x_from_entity(Entity *en)
+{
+  bool result = en->flip_x;
+
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
+  {
+    result = parent->flip_x ? !result : result;
+    parent = entity_from_ref(parent->parent);
+  }
+
+  return result;
+}
+
+bool flip_y_from_entity(Entity *en)
+{
+  bool result = en->flip_y;
+
+  Entity *parent = entity_from_ref(en->parent);
+  while (is_entity_valid(parent))
+  {
+    result = parent->flip_y ? !result : result;
     parent = entity_from_ref(parent->parent);
   }
 

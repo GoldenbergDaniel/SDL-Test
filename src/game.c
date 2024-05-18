@@ -269,6 +269,29 @@ void update_game(Game *game)
 
       en->xform = xform;
     }
+
+    // Update entity colliders ----------------
+    {
+      for (ColliderID col_id = 0; col_id < _Collider_Count; col_id++)
+      {
+        P_Collider *col = &en->colliders[col_id];
+
+        if (col->type == P_ColliderType_Rect)
+        {
+          col->pos = add_2f(pos_bl_from_entity(en), col->offset);
+        }
+        else
+        {
+          col->pos = add_2f(pos_from_entity(en), col->offset);
+        }
+      }
+
+      bool flip_x = flip_x_from_entity(en);
+      if (flip_x)
+      {
+        
+      }
+    }
   }
   
   // Update entity collision ----------------
@@ -280,20 +303,7 @@ void update_game(Game *game)
     {
       Vec2F dim = dim_from_entity(en);
 
-      // Update entity colliders ----------------
-      {
-        Vec2F pos = pos_from_entity(en);
-
-        if (en->body_col.type == P_ColliderType_Rect)
-        {
-          en->body_col.pos = add_2f(pos_bl_from_entity(en), en->body_col.offset);
-        }
-        else
-        {
-          en->body_col.pos = add_2f(pos, en->body_col.offset);
-        }
-      }
-
+      // Player/Zombie vs. Ground collision
       if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
       {
         f32 ground_y = 0.0f;
@@ -306,10 +316,10 @@ void update_game(Game *game)
           }
         }
 
-        P_CollisionParams params = {.collider=en->body_col, .vel=en->vel};
+        P_CollisionParams params = {.collider=en->colliders[Collider_Body], .vel=en->vel};
         if (p_rect_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
         {
-          en->pos.y = ground_y + dim.height / 2.0f - en->body_col.offset.y;
+          en->pos.y = ground_y + dim.height / 2.0f - en->colliders[Collider_Body].offset.y;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
           entity_add_prop(en, EntityProp_Grounded);
@@ -320,14 +330,15 @@ void update_game(Game *game)
         }
       }
 
+      // Bullet vs. Zombie collision
       if (en->type == EntityType_Bullet)
       {
         for (Entity *other = game->entities.head; other; other = other->next)
         {
           if (other->type == EntityType_ZombieWalker)
           {
-            P_CollisionParams rect_params = {.collider=other->body_col, .vel=other->vel};
-            P_CollisionParams circle_params = {.collider=en->body_col, .vel=en->vel};
+            P_CollisionParams rect_params = {.collider=other->colliders[Collider_Body], .vel=other->vel};
+            P_CollisionParams circle_params = {.collider=en->colliders[Collider_Hit], .vel=en->vel};
             if (p_rect_circle_intersect(rect_params, circle_params))
             {
               Vec2F spawn_pos = pos_from_entity(en);
@@ -661,9 +672,26 @@ void render_game(Game *game)
       {
         if (entity_has_prop(en, EntityProp_Collides))
         {
-          Vec2F pos = add_2f(en->body_col.pos, en->body_col.offset);
-          Vec2F dim = en->body_col.dim;
-          draw_rectangle(pos, dim, 0, v4f(0, 1, 0, 0.35f));
+          for (ColliderID col_id = 0; col_id < _Collider_Count; col_id++)
+          {
+            P_Collider col = en->colliders[col_id];
+            Vec2F pos = add_2f(col.pos, col.offset);
+            Vec2F dim = col.dim;
+
+            Vec4F color;
+            switch (col_id)
+            {
+              case Collider_Body: 
+              case Collider_Head: color = v4f(0, 1, 0, 0.35f);
+              break;
+              case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
+              break;
+              default: color = v4f(1, 1, 1, 0.35f);
+              break;
+            }
+
+            draw_rectangle(pos, dim, 0, color);
+          }
         }
       }
     }

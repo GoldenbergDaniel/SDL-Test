@@ -25,6 +25,15 @@
 #define PLAYER_ATTACK_COOLDOWN 0.5f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
 
+typedef enum ColliderID
+{
+  Collider_Body,
+  Collider_Head,
+  Collider_Hit,
+
+  _Collider_Count,
+} ColliderID;
+
 typedef struct Game Game;
 typedef struct Entity Entity;
 
@@ -192,8 +201,7 @@ struct Entity
   u16 z_index;
 
   // Collision
-  P_Collider body_col;
-  P_Collider hit_col;
+  P_Collider colliders[_Collider_Count];
 
   // Targeting
   bool has_target;
@@ -263,6 +271,9 @@ Vec2F pos_br_from_entity(Entity *en);
 Vec2F dim_from_entity(Entity *en);
 Vec2F scale_from_entity(Entity *en);
 f32 rot_from_entity(Entity *en);
+
+bool flip_x_from_entity(Entity *en);
+bool flip_y_from_entity(Entity *en);
 
 void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
