@@ -14,7 +14,7 @@
 
 #define WIDTH 960
 #define HEIGHT 540
-#define SPRITE_SCALE ((Vec2F) {6, 6})
+#define SPRITE_SCALE ((Vec2F) {5, 5})
 
 typedef struct Frame Frame;
 struct Frame

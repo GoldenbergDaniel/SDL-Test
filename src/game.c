@@ -25,13 +25,13 @@ void init_game(Game *game)
   {
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
-    ground->dim = v2f(160, 26);
+    ground->dim = v2f(192, 26);
     ground->tint = v4f(0.0f, 0.0f, 1.0f, 1.0f);
     // entity_rem_prop(ground, EntityProp_Renders);
 
     Entity *player = create_entity(game, EntityType_Player);
     player->id = 1;
-    player->pos = v2f(get_width()/2.0f, 15.0f);
+    player->pos = v2f(get_width()/2.0f, get_height()/2.0f);
 
     Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
@@ -43,7 +43,7 @@ void init_game(Game *game)
     shot_point->scale = v2f(.1, .1);
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f + 50.0f);
+    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
     // entity_rem_prop(zombie, EntityProp_Moves);
   }
 }
@@ -650,7 +650,7 @@ void render_game(Game *game)
 {
   clear_frame(V4F_ZERO);
 
-  draw_scene(v2f(0, 0), mul_2f(v2f(160, 90), SPRITE_SCALE), v4f(1, 1, 1, 1));
+  draw_scene(v2f(0, 0), mul_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
   // Batch sprites ----------------
   for (EN_IN_ENTITIES)
