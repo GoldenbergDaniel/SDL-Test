@@ -2,6 +2,10 @@
 #include <stdlib.h>
 
 #if defined(_WIN32)
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "glad/glad.h"
 #endif
 
@@ -25,7 +29,11 @@ void init(void);
 void event(const sapp_event *);
 void frame(void);
 
+#if defined(_WIN32) && defined(RELEASE)
+i32 CALLBACK WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
+#else
 i32 main(void)
+#endif
 {
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",

@@ -40,14 +40,11 @@ void init_particle_prefabs(PrefabStore *prefabs)
 
     .particle.death = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
-      .props = ParticleProp_VariateColor |
-              //  ParticleProp_AffectedByGravity |
-               ParticleProp_CollidesWithGround,
+      .props = ParticleProp_CollidesWithGround,
       .count = 40,
       .duration = 10.0f,
       .spread = 180.0f,
-      .color_primary = v4f(0.57f, 0.23f, 0.23f, 1.0f),
-      .color_secondary = v4f(0.27, 0.0f, 0.0f, 1.0f),
+      .color_primary = v4f(0.37f, 0.0f, 0.0f, 1.0f),
       .scale = v2f(10, 10),
       .speed = 3000.0f,
       .vel = v2f(0.0f, 0.0f),

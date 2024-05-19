@@ -42,9 +42,8 @@ void init_game(Game *game)
     shot_point->pos = v2f(24.0f, 0.0f);
     shot_point->scale = v2f(.1, .1);
 
-    // Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    // zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
-    // entity_rem_prop(zombie, EntityProp_Moves);
+    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
+    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
   }
 }
 
