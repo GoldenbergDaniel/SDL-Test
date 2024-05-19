@@ -224,13 +224,16 @@ void update_game(Game *game)
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
-        if (en->pos.x + dim.width <= 0.0f)
+        f32 left = screen_to_world(v2f(GLOBAL->viewport.x, 0)).x;
+        f32 right = screen_to_world(v2f(GLOBAL->viewport.z, 0)).x;
+
+        if (en->pos.x + dim.width <= left)
         {
-          en->pos.x = get_width();
+          en->pos.x = right;
         }
-        else if (en->pos.x >= get_width())
+        else if (en->pos.x >= right)
         {
-          en->pos.x = -(dim.width);
+          en->pos.x = left;
         }
       }
     }
@@ -716,10 +719,12 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
+// TODO(dg): Please make this better!
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
-  return v2f(pos.x * (WIDTH / get_width()) + GLOBAL->viewport_offset.x, (get_height() - pos.y) * (HEIGHT / get_height()) + GLOBAL->viewport_offset.y);
+  return v2f(pos.x * (WIDTH / GLOBAL->window.width) + GLOBAL->viewport.x, 
+            (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height) + GLOBAL->viewport.y);
 }
 
 // @Events //////////////////////////////////////////////////////////////////////////

@@ -31,8 +31,8 @@ struct Global
   Frame frame;
   Resources resources;
   R_Renderer renderer;
-  Vec2I window_dim;
-  Vec2F viewport_offset;
+  Vec2F window;
+  Vec4F viewport;
   bool debug;
 };
 
@@ -51,5 +51,5 @@ struct PrefabStore
 void init_entity_prefabs(PrefabStore *prefabs);
 void init_particle_prefabs(PrefabStore *prefabs);
 
-i32 get_width(void);
-i32 get_height(void);
+f32 get_width(void);
+f32 get_height(void);

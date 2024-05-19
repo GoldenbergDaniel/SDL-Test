@@ -66,19 +66,21 @@ void init(void)
   #endif
 
   GLOBAL = arena_alloc(&GAME.perm_arena, sizeof (Global));
+
+  GLOBAL->window.width = sapp_width();
+  GLOBAL->window.height = sapp_height();
+  GLOBAL->viewport = v4f(0, 0, WIDTH, HEIGHT);
+
+  GLOBAL->frame.current_time = stm_sec(stm_since(0));
+  GLOBAL->frame.accumulator = TIME_STEP;
+
   GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
   GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
 
   PREFAB = arena_alloc(&GAME.perm_arena, sizeof (PrefabStore));
   init_particle_prefabs(PREFAB);
 
-  GLOBAL->window_dim.width = sapp_width();
-  GLOBAL->window_dim.height = sapp_height();
-
-  GLOBAL->frame.current_time = stm_sec(stm_since(0));
-  GLOBAL->frame.accumulator = TIME_STEP;
   GAME.dt = TIME_STEP;
-
   GAME.input = &GLOBAL->input;
   init_game(&GAME);
 }
@@ -90,36 +92,35 @@ void event(const sapp_event *event)
 
 void frame(void)
 {
-  if (GLOBAL->window_dim.width != sapp_width() || GLOBAL->window_dim.height != sapp_height())
+  // Update viewport ----------------
+  if (GLOBAL->window.width != sapp_width() || GLOBAL->window.height != sapp_height())
   {
-    Mat3x3F proj = m3x3f(1.0f);
-    Vec2F offset;
-
+    Vec4F viewport;
     f32 ratio = (f32) sapp_width() / sapp_height();
     if (ratio >= WIDTH / HEIGHT)
     {
-      proj = orthographic_3x3f(0, HEIGHT * ratio, HEIGHT, 0);
-      offset = v2f((sapp_width() - (sapp_width() / (ratio / (WIDTH / HEIGHT)))) / 2.0f, 0.0f);
-      printf("%f\n", (sapp_width() / (ratio / (WIDTH / HEIGHT))));
+      f32 img_width = sapp_width() / (ratio / (WIDTH / HEIGHT));
+      viewport = v4f((sapp_width() - img_width) / 2.0f, 0.0f, img_width, sapp_height());
     }
     else
     {
-      proj = orthographic_3x3f(0, WIDTH, WIDTH / ratio, 0);
-      offset = v2f(0.0f, (sapp_height() - (sapp_height() * (ratio / (WIDTH / HEIGHT)))) / 2.0f);
+      f32 img_height = sapp_height() * (ratio / (WIDTH / HEIGHT));
+      viewport = v4f(0.0f, (sapp_height() - img_height) / 2.0f, sapp_width(), img_height);
     }
 
-    r_set_viewport(offset.x, offset.y, sapp_width(), sapp_height());
-    GLOBAL->renderer.projection = proj;
+    r_set_viewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    GLOBAL->viewport = viewport;
   }
 
-  GLOBAL->window_dim.width = sapp_width();
-  GLOBAL->window_dim.height = sapp_height();
+  GLOBAL->window.width = sapp_width();
+  GLOBAL->window.height = sapp_height();
   
   f64 new_time = stm_sec(stm_since(0));
   f64 frame_time = new_time - GLOBAL->frame.current_time;
   GLOBAL->frame.current_time = new_time;
   GLOBAL->frame.accumulator += frame_time;
 
+  // Simulation loop ----------------
   while (GLOBAL->frame.accumulator >= TIME_STEP)
   {
     if (is_key_released(KEY_ENTER))

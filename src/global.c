@@ -72,13 +72,13 @@ void init_particle_prefabs(PrefabStore *prefabs)
 }
 
 inline
-i32 get_width(void)
+f32 get_width(void)
 {
-  return GLOBAL->window_dim.width;
+  return GLOBAL->viewport.z;
 }
 
 inline
-i32 get_height(void)
+f32 get_height(void)
 {
-  return GLOBAL->window_dim.height;
+  return GLOBAL->viewport.w;
 }
