@@ -42,8 +42,8 @@ void init_game(Game *game)
     shot_point->pos = v2f(24.0f, 0.0f);
     shot_point->scale = v2f(.1, .1);
 
-    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
+    // Entity *zombie = create_entity(game, EntityType_ZombieWalker);
+    // zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
     // entity_rem_prop(zombie, EntityProp_Moves);
   }
 }
@@ -719,7 +719,7 @@ bool game_should_quit(Game *game)
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
-  return v2f(pos.x * (WIDTH / get_width()), (get_height() - pos.y) * (HEIGHT / get_height()));
+  return v2f(pos.x * (WIDTH / get_width()) + GLOBAL->viewport_offset.x, (get_height() - pos.y) * (HEIGHT / get_height()) + GLOBAL->viewport_offset.y);
 }
 
 // @Events //////////////////////////////////////////////////////////////////////////

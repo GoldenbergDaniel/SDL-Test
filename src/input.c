@@ -22,7 +22,7 @@ bool is_key_just_pressed(InputKey key)
 }
 
 inline
-bool is_key_just_released(InputKey key)
+bool is_key_released(InputKey key)
 {
   return !GLOBAL->input.keys[key] && GLOBAL->input.keys_last[key];
 }
@@ -237,6 +237,15 @@ void handle_input_event(const struct sapp_event *event)
         }
         break;
       }
+    }
+    break;
+    case SAPP_EVENTTYPE_RESIZED:
+    {
+      // for (i32 i = 0; i < _KEY_COUNT; i++)
+      // {
+      //   GLOBAL->input.keys_last[i] = 0;
+      //   GLOBAL->input.keys[i] = 0;
+      // }
     }
     default: break;
   }

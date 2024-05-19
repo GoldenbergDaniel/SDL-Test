@@ -32,6 +32,7 @@ struct Global
   Resources resources;
   R_Renderer renderer;
   Vec2I window_dim;
+  Vec2F viewport_offset;
   bool debug;
 };
 
