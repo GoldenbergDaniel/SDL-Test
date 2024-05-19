@@ -599,7 +599,7 @@ Mat3x3F shear_3x3f(f32 x_shear, f32 y_shear)
   return result;
 }
 
-Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 bot, f32 top)
+Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 top, f32 bot)
 {
   Mat3x3F result = m3x3f(0.0f);
   result.e[0][0] = 2.0f / (right - left);

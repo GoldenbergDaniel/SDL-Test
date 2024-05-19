@@ -230,7 +230,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   r_push_vertex_attribute(&vao, 4); // color
   r_push_vertex_attribute(&vao, 4); // uv
 
-  Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, 0.0f, HEIGHT);
+  Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, HEIGHT, 0.0f);
 
   return (R_Renderer)
   {

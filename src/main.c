@@ -36,7 +36,7 @@ i32 main(void)
     .frame_cb = frame,
     .logger = {
       .func = slog_func
-    }
+    },
   });
 
   return 0;
@@ -90,26 +90,43 @@ void event(const sapp_event *event)
 
 void frame(void)
 {
+  if (GLOBAL->window_dim.width != sapp_width() || GLOBAL->window_dim.height != sapp_height())
+  {
+    Mat3x3F proj = m3x3f(1.0f);
+    Vec2F offset;
+
+    f32 ratio = (f32) sapp_width() / sapp_height();
+    if (ratio >= WIDTH / HEIGHT)
+    {
+      proj = orthographic_3x3f(0, HEIGHT * ratio, HEIGHT, 0);
+      offset = v2f((sapp_width() - (sapp_width() / (ratio / (WIDTH / HEIGHT)))) / 2.0f, 0.0f);
+      printf("%f\n", (sapp_width() / (ratio / (WIDTH / HEIGHT))));
+    }
+    else
+    {
+      proj = orthographic_3x3f(0, WIDTH, WIDTH / ratio, 0);
+      offset = v2f(0.0f, (sapp_height() - (sapp_height() * (ratio / (WIDTH / HEIGHT)))) / 2.0f);
+    }
+
+    r_set_viewport(offset.x, offset.y, sapp_width(), sapp_height());
+    GLOBAL->renderer.projection = proj;
+  }
+
+  GLOBAL->window_dim.width = sapp_width();
+  GLOBAL->window_dim.height = sapp_height();
+  
   f64 new_time = stm_sec(stm_since(0));
   f64 frame_time = new_time - GLOBAL->frame.current_time;
   GLOBAL->frame.current_time = new_time;
   GLOBAL->frame.accumulator += frame_time;
 
-  if (is_key_just_pressed(KEY_ENTER))
-  {
-    sapp_toggle_fullscreen();
-  }
-
-  if (GLOBAL->window_dim.width != sapp_width() && GLOBAL->window_dim.height != sapp_width())
-  {
-    r_set_viewport(0, 0, sapp_width(), sapp_height());
-  }
-
-  GLOBAL->window_dim.width = sapp_width();
-  GLOBAL->window_dim.height = sapp_height();
-
   while (GLOBAL->frame.accumulator >= TIME_STEP)
   {
+    if (is_key_released(KEY_ENTER))
+    {
+      sapp_toggle_fullscreen();
+    }
+
     GAME.t = stm_sec(stm_since(0));
     update_game(&GAME);
     arena_clear(&GAME.frame_arena);

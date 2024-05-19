@@ -35,7 +35,7 @@ struct Input
 
 bool is_key_pressed(InputKey key);
 bool is_key_just_pressed(InputKey key);
-bool is_key_just_released(InputKey key);
+bool is_key_released(InputKey key);
 Vec2F get_mouse_pos(void);
 void remember_last_keys(void);
 void handle_input_event(const sapp_event *event);
