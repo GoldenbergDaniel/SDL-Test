@@ -25,7 +25,7 @@ void init_game(Game *game)
   {
     Entity *ground = create_entity(game, EntityType_Wall);
     ground->pos = v2f(0.0f, 0.0f);
-    ground->dim = v2f(192, 26);
+    ground->dim = v2f(192, 30);
     ground->tint = v4f(0.0f, 0.0f, 1.0f, 1.0f);
     // entity_rem_prop(ground, EntityProp_Renders);
 
@@ -35,7 +35,7 @@ void init_game(Game *game)
 
     Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
-    gun->pos = v2f(48.0f, 0.0f);
+    gun->pos = v2f(35.0f, 5.0f);
 
     Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
@@ -131,8 +131,9 @@ void update_game(Game *game)
           case MoveType_Grounded:
           {
             static const f32 zombie_speed = 50.0f;
+            f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
 
-            if (entity_has_prop(en, EntityProp_Grounded))
+            if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 40.0f)
             {
               if (en->flip_x)
               {
@@ -718,7 +719,7 @@ bool game_should_quit(Game *game)
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
-  return v2f(pos.x, get_height() - pos.y);
+  return v2f(pos.x * (WIDTH / get_width()), (get_height() - pos.y) * (HEIGHT / get_height()));
 }
 
 // @Events //////////////////////////////////////////////////////////////////////////
