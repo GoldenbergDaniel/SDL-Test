@@ -23,35 +23,36 @@ void init_game(Game *game)
 
   // Starting entities ----------------
   {
-    Entity *ground = create_entity(game, EntityType_Wall);
+    Entity *ground = create_entity(game, EntityType_Collider);
+    ground->sp = SP_Ground;
     ground->pos = v2f(0.0f, 0.0f);
     ground->dim = v2f(192, 30);
     ground->tint = v4f(0.0f, 0.0f, 1.0f, 1.0f);
-    // entity_rem_prop(ground, EntityProp_Renders);
+    ground->scale = SPRITE_SCALE;
 
     Entity *player = create_entity(game, EntityType_Player);
-    player->id = 1;
+    player->sp = SP_Player;
     player->pos = v2f(get_width()/2.0f, get_height()/2.0f);
 
     Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
+    gun->sp = SP_Gun;
     gun->pos = v2f(35.0f, 5.0f);
 
     Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
-    shot_point->pos = v2f(24.0f, 0.0f);
-    shot_point->scale = v2f(.1, .1);
+    shot_point->pos = v2f(24.0f, 2.0f);
 
     Entity *zombie = create_entity(game, EntityType_ZombieWalker);
     zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
+    zombie->speed = 0;
   }
 }
 
 void update_game(Game *game)
 {
-  Entity *player = get_entity_of_id(game, 1);
+  Entity *player = get_entity_of_sp(game, SP_Player);
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
-  // printf("%f %f\n", player->pos.x, player->pos.y);
 
   f64 t = game->t;
   f64 dt = game->dt;
@@ -132,16 +133,9 @@ void update_game(Game *game)
             static const f32 zombie_speed = 50.0f;
             f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
 
-            if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 40.0f)
+            if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 50.0f)
             {
-              if (en->flip_x)
-              {
-                en->new_vel.x = -zombie_speed * dt;
-              }
-              else
-              {
-                en->new_vel.x = zombie_speed * dt;
-              }
+              en->new_vel.x = en->flip_x ? -zombie_speed * dt : zombie_speed * dt;
             }
             else
             {
@@ -279,29 +273,6 @@ void update_game(Game *game)
 
       en->xform = xform;
     }
-
-    // Update entity colliders ----------------
-    {
-      for (ColliderID col_id = 0; col_id < _Collider_Count; col_id++)
-      {
-        P_Collider *col = &en->colliders[col_id];
-
-        if (col->type == P_ColliderType_Rect)
-        {
-          col->pos = add_2f(pos_bl_from_entity(en), col->offset);
-        }
-        else
-        {
-          col->pos = add_2f(pos_from_entity(en), col->offset);
-        }
-      }
-
-      bool flip_x = flip_x_from_entity(en);
-      if (flip_x)
-      {
-        
-      }
-    }
   }
   
   // Update entity collision ----------------
@@ -316,18 +287,12 @@ void update_game(Game *game)
       // Player/Zombie vs Ground collision
       if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
       {
-        f32 ground_y = 0.0f;
-        for (Entity *other = game->entities.head; other; other = other->next)
-        {
-          if (other->type == EntityType_Wall)
-          {
-            ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
-            break;
-          }
-        }
+        f32 ground_y = pos_from_entity(get_entity_of_sp(game, SP_Ground)).y +
+                       dim_from_entity(get_entity_of_sp(game, SP_Ground)).height;
 
-        P_CollisionParams params = {.collider=en->colliders[Collider_Body], .vel=en->vel};
-        if (p_rect_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
+        if (p_rect_y_range_intersect(
+              collision_params_from_entity(en->colliders[Collider_Body], en->vel), 
+              v2f(-3000.0f, 3000.0f), ground_y))
         {
           en->pos.y = ground_y + dim.height / 2.0f;
           en->vel.y = 0.0f;
@@ -347,9 +312,9 @@ void update_game(Game *game)
         {
           if (other->type == EntityType_ZombieWalker)
           {
-            P_CollisionParams rect_params = {.collider=other->colliders[Collider_Body], .vel=other->vel};
-            P_CollisionParams circle_params = {.collider=en->colliders[Collider_Hit], .vel=en->vel};
-            if (p_rect_circle_intersect(rect_params, circle_params))
+            if (p_rect_circle_intersect(
+                  collision_params_from_entity(other->colliders[Collider_Body], other->vel),
+                  collision_params_from_entity(en->colliders[Collider_Hit], en->vel)))
             {
               Vec2F spawn_pos = pos_from_entity(en);
               spawn_entity(game, EntityType_ParticleGroup, 
@@ -383,7 +348,7 @@ void update_game(Game *game)
         // Shoot weapon if can shoot
         if (is_key_pressed(KEY_MOUSE_1) && is_timer_done(en->attack_timer, t))
         {
-          Entity *gun = get_entity_child_at(en, 0);
+          Entity *gun = get_entity_child_of_sp(en, SP_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
@@ -527,7 +492,7 @@ void update_game(Game *game)
               f32 ground_y = 0.0f;
               for (Entity *other = game->entities.head; other; other = other->next)
               {
-                if (other->type == EntityType_Wall)
+                if (other->sp == SP_Ground)
                 {
                   ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
                   break;
@@ -671,40 +636,31 @@ void render_game(Game *game)
     {
       if (en->draw_type == DrawType_Primitive)
       {
-        draw_rectangle_x(en->xform, en->tint);
+        if (en->type == EntityType_Collider && GLOBAL->debug)
+        {
+          Vec4F color = en->tint;
+          switch (en->col_id)
+          {
+            case Collider_Body: 
+            case Collider_Head: color = v4f(0, 1, 0, 0.35f);
+            break;
+            case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
+            break;
+            default: color = v4f(1, 1, 1, 0.35f);
+            break;
+          }
+
+          draw_rectangle_x(en->xform, color);
+        }
+        else if (en->type != EntityType_Collider)
+        {
+          draw_rectangle_x(en->xform, en->tint);
+        }
       }
 
       if (en->type == EntityType_ParticleGroup)
       {
         draw_particles(en);
-      }
-
-      // Render colliders ----------------
-      if (GLOBAL->debug)
-      {
-        if (entity_has_prop(en, EntityProp_Collides))
-        {
-          for (ColliderID col_id = 0; col_id < _Collider_Count; col_id++)
-          {
-            P_Collider col = en->colliders[col_id];
-            Vec2F pos = add_2f(col.pos, col.offset);
-            Vec2F dim = col.dim;
-
-            Vec4F color;
-            switch (col_id)
-            {
-              case Collider_Body: 
-              case Collider_Head: color = v4f(0, 1, 0, 0.35f);
-              break;
-              case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
-              break;
-              default: color = v4f(1, 1, 1, 0.35f);
-              break;
-            }
-
-            draw_rectangle(pos, dim, 0, color);
-          }
-        }
       }
     }
   }

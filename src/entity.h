@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base/base_inc.h"
-
 #include "phys/phys.h"
 #include "draw.h"
 
@@ -24,6 +23,15 @@
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_ATTACK_COOLDOWN 0.5f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
+
+// @Special //////////////////////////////////////////////////////////////////////////////
+
+enum
+{
+  SP_Player,
+  SP_Ground,
+  SP_Gun,
+};
 
 typedef enum ColliderID
 {
@@ -108,7 +116,7 @@ typedef enum EntityType
   EntityType_ZombieBird,
   EntityType_Equipped,
   EntityType_Bullet,
-  EntityType_Wall,
+  EntityType_Collider,
   EntityType_ParticleGroup,
 } EntityType;
 
@@ -163,12 +171,13 @@ struct Entity
 
   EntityRef parent;
   EntityRef *children;
-  u16 child_count;
+  i16 child_count;
   i16 *free_child_list;
-  u16 free_child_count;
+  i16 free_child_count;
 
   // General
   u64 id;
+  u8 sp;
   EntityType type;
   MoveType move_type;
   CombatType combat_type;
@@ -178,7 +187,6 @@ struct Entity
   bool marked_for_spawn;
 
   // Transform
-  Vec2F origin;
   Vec2F pos;
   f32 rot;
   Vec2F scale;
@@ -201,7 +209,10 @@ struct Entity
   u16 z_index;
 
   // Collision
-  P_Collider colliders[_Collider_Count];
+  Entity *colliders[_Collider_Count];
+  ColliderID col_id;
+  P_ColliderType col_type;
+  f32 radius;
 
   // Targeting
   bool has_target;
@@ -291,18 +302,23 @@ Entity *entity_from_ref(EntityRef ref);
 Entity *alloc_entity(Game *game);
 void free_entity(Game *game, Entity *en);
 Entity *get_entity_of_id(Game *game, u64 id);
+Entity *get_entity_of_sp(Game *game, u8 sp);
 
 void attach_entity_child(Entity *en, Entity *child);
 void attach_entity_child_at(Entity *en, Entity *child, u16 index);
 void detach_entity_child(Entity *en, Entity *child);
 Entity *get_entity_child_at(Entity *en, u16 index);
 Entity *get_entity_child_of_id(Entity *en, u64 id);
+Entity *get_entity_child_of_sp(Entity *en, u8 sp);
 Entity *get_entity_child_of_type(Entity *en, EntityType type);
+
+void entity_add_collider(Game *game, Entity *en, ColliderID col_id);
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
 
 void create_particles(Entity *en, ParticleDesc desc);
 
-// @Timer ////////////////////////////////////////////////////////////////////////////////
+// @Other ////////////////////////////////////////////////////////////////////////////////
 
+P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 bool is_timer_done(Timer timer, f64 t);

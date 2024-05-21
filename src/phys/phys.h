@@ -8,22 +8,14 @@ typedef u8 P_ColliderType;
 #define P_ColliderType_Rect 0
 #define P_ColliderType_Circle 1
 
-typedef struct P_Collider P_Collider;
-struct P_Collider
+typedef struct P_CollisionParams P_CollisionParams;
+struct P_CollisionParams
 {
   P_ColliderType type;
   Vec2F pos;
   Vec2F dim;
-  Vec2F offset;
-  f32 radius;
-};
-
-typedef struct P_CollisionParams P_CollisionParams;
-struct P_CollisionParams
-{
-  P_Collider collider;
-  Vec2F pos;
   Vec2F vel;
+  f32 radius;
 };
 
 bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y);

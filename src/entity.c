@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "base/base_inc.h"
+#include "phys/phys.h"
 #include "draw.h"
 #include "game.h"
 #include "global.h"
@@ -18,8 +19,8 @@ Entity *create_entity(Game *game, EntityType type)
   en->type = type;
   en->is_active = TRUE;
   en->xform = m3x3f(1.0f);
-  en->scale = SPRITE_SCALE;
-  en->dim = v2f(16.0f, 16.0f);
+  en->dim = v2f(16, 16);
+  en->scale = v2f(1, 1);
   en->tint = v4f(1.0f, 1.0f, 1.0f, 1.0f);
 
   switch (type)
@@ -27,9 +28,8 @@ Entity *create_entity(Game *game, EntityType type)
     case EntityType_Debug:
     {
       en->draw_type = DrawType_Primitive;
-      en->scale = v2f(0.1f, 0.1f);
+      en->scale = v2f(1/16.0f, 1/16.0f);
       en->tint = D_YELLOW;
-      en->scale = v2f(1.0f, 1.0f);
     }
     break;
     case EntityType_Player:
@@ -39,19 +39,20 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Controlled | 
                   EntityProp_Moves | 
                   EntityProp_Fights | 
-                  EntityProp_WrapsAtEdges | 
                   EntityProp_AffectedByGravity;
 
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Ranged;
-      en->origin = v2f(0.5f, 0.5f);
-      en->dim = v2f(8, 16);
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
+      en->scale = SPRITE_SCALE;
 
-      en->colliders[Collider_Body].dim = dim_from_entity(en);
+      entity_add_collider(game, en, Collider_Body);
+      en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
+      en->colliders[Collider_Body]->pos = v2f(0, 0);
+      en->colliders[Collider_Body]->scale = v2f(0.5, 1);
     }
     break;
     case EntityType_ZombieWalker:
@@ -68,19 +69,18 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = D_SPRITE_ZOMBIE;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
-      en->dim = v2f(8, 16);
-      en->origin = v2f(0.5f, 0.5f);
       en->scale = SPRITE_SCALE;
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
       en->health = 3;
+      
+      entity_add_collider(game, en, Collider_Body);
+      en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
+      en->colliders[Collider_Body]->scale = v2f(0.5, 1);
 
-      en->colliders[Collider_Body].dim = dim_from_entity(en);
-
-      en->colliders[Collider_Hit].dim = pos_from_entity(en);
-      en->colliders[Collider_Hit].dim = dim_from_entity(en);
-      en->colliders[Collider_Hit].dim.x /= 2;
-      en->colliders[Collider_Hit].dim.y /= 2;;
-      en->colliders[Collider_Hit].offset = v2f(10, 10);
+      entity_add_collider(game, en, Collider_Hit);
+      en->colliders[Collider_Hit]->col_type = P_ColliderType_Rect;
+      en->colliders[Collider_Hit]->pos = v2f(en->dim.width * en->scale.x / 3, 0);
+      en->colliders[Collider_Hit]->scale = v2f(0.25, 0.5);
     }
     break;
     case EntityType_Equipped:
@@ -90,8 +90,7 @@ Entity *create_entity(Game *game, EntityType type)
 
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_GUN;
-      en->origin = v2f(0.5f, 0.5f);
-      en->scale = v2f(1.0f, 1.0f);
+      en->dim = v2f(16, 16);
     }
     break;
     case EntityType_Bullet:
@@ -105,16 +104,23 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Projectile;
       en->combat_type = CombatType_Melee;
       en->kill_timer.duration = BULLET_KILL_TIME;
+      en->scale = SPRITE_SCALE;
       en->damage = 1;
 
-      en->colliders[Collider_Hit].type = P_ColliderType_Circle;
-      en->colliders[Collider_Hit].radius = 8;
-      en->colliders[Collider_Hit].dim = v2f(8, 8);
+      entity_add_collider(game, en, Collider_Hit);
+      en->colliders[Collider_Hit]->col_id = Collider_Hit;
+      en->colliders[Collider_Hit]->col_type = P_ColliderType_Circle;
+      en->colliders[Collider_Hit]->radius = 0;
+      en->colliders[Collider_Hit]->scale = v2f(0.5, 0.5);
+      en->colliders[Collider_Hit]->draw_type = DrawType_None;
+      en->colliders[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
-    case EntityType_Wall:
+    case EntityType_Collider:
     {
-      en->props = EntityProp_Collides;
+      en->props = EntityProp_Collides |
+                  EntityProp_Renders;
+      en->draw_type = DrawType_Primitive;
     }
     break;
     case EntityType_ParticleGroup:
@@ -183,7 +189,7 @@ Vec2F pos_tl_from_entity(Entity *en)
 {
   Vec2F result = pos_from_entity(en);
   Vec2F dim = dim_from_entity(en);
-  Vec2F offset = mul_2f(dim, en->origin);
+  Vec2F offset = scale_2f(dim, 0.5f);
   result.x -= offset.x;
   result.y += offset.y;
 
@@ -194,7 +200,7 @@ Vec2F pos_tr_from_entity(Entity *en)
 {
   Vec2F result = pos_from_entity(en);
   Vec2F dim = dim_from_entity(en);
-  Vec2F offset = mul_2f(dim, en->origin);
+  Vec2F offset = scale_2f(dim, 0.5f);
   result.x += offset.x;
   result.y += offset.y;
 
@@ -205,7 +211,7 @@ Vec2F pos_bl_from_entity(Entity *en)
 {
   Vec2F result = pos_from_entity(en);
   Vec2F dim = dim_from_entity(en);
-  Vec2F offset = mul_2f(dim, en->origin);
+  Vec2F offset = scale_2f(dim, 0.5f);
   result.x -= offset.x;
   result.y -= offset.y;
 
@@ -216,7 +222,7 @@ Vec2F pos_br_from_entity(Entity *en)
 {
   Vec2F result = pos_from_entity(en);
   Vec2F dim = dim_from_entity(en);
-  Vec2F offset = mul_2f(dim, en->origin);
+  Vec2F offset = scale_2f(dim, 0.5f);
   result.x += offset.x;
   result.y -= offset.y;
 
@@ -462,6 +468,22 @@ Entity *get_entity_of_id(Game *game, u64 id)
   return result;
 }
 
+Entity *get_entity_of_sp(Game *game, u8 sp)
+{
+  Entity *result = NIL_ENTITY;
+
+  for (Entity *en = game->entities.head; en != NULL; en = en->next)
+  {
+    if (en->sp == sp)
+    {
+      result = en;
+      break;
+    }
+  }
+
+  return result;
+}
+
 void attach_entity_child(Entity *en, Entity *child)
 {
   assert(en->child_count <= MAX_ENTITY_CHILDREN);
@@ -553,6 +575,23 @@ Entity *get_entity_child_of_id(Entity *en, u64 id)
   return result;
 }
 
+Entity *get_entity_child_of_sp(Entity *en, u8 sp)
+{
+  Entity *result = NIL_ENTITY;
+
+  for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
+  {
+    Entity *curr = entity_from_ref(en->children[i]);
+    if (curr->sp == sp)
+    {
+      result = curr;
+      break;
+    }
+  }
+
+  return result;
+}
+
 Entity *get_entity_child_of_type(Entity *en, EntityType type)
 {
   Entity *result = NIL_ENTITY;
@@ -568,6 +607,13 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
   }
 
   return result;
+}
+
+void entity_add_collider(Game *game, Entity *en, ColliderID col_id)
+{
+  en->colliders[col_id] = create_entity(game, EntityType_Collider);
+  en->colliders[col_id]->col_id = col_id;
+  attach_entity_child(en, en->colliders[col_id]);
 }
 
 // @Particles ////////////////////////////////////////////////////////////////////////////
@@ -591,10 +637,23 @@ void create_particles(Entity *en, ParticleDesc desc)
   }
 }
 
-// @Timer ////////////////////////////////////////////////////////////////////////////////
+// @Other ////////////////////////////////////////////////////////////////////////////////
 
 inline
 bool is_timer_done(Timer timer, f64 t)
 {
   return t >= timer.end_time;
+}
+
+P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)
+{
+  P_CollisionParams result = {
+    .type = en->col_type,
+    .pos = pos_bl_from_entity(en),
+    .dim = dim_from_entity(en),
+    .vel = vel,
+    .radius = en->radius,
+  };
+
+  return result;
 }
