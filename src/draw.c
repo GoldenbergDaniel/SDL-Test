@@ -72,10 +72,10 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
   Vec3F p2 = transform_3f(v3f(dim.width, 0.0f, 1.0f), xform);
   Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform);
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
   r_push_quad_indices(renderer);
 }
 
@@ -84,10 +84,10 @@ void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
   r_push_quad_indices(renderer);
 }
 
@@ -101,14 +101,14 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   Vec3F p2 = transform_3f(v3f( 8.0f, -8.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(-8.0f, -8.0f, 1.0f), xform); // bl
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex)
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -147,14 +147,16 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex)
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
+  Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
+
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, color, top_left);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, color, top_right);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, color, bot_right);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, color, bot_left);
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex)
+void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -182,14 +184,16 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
+  Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
+
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, color, top_left);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, color, top_right);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, color, bot_right);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, color, bot_left);
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex)
+void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
   r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
@@ -222,10 +226,12 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex)
     ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
   };
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, top_left);
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, top_right);
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, bot_right);
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, bot_left);
+  Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
+
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, color, top_left);
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, color, top_right);
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, color, bot_right);
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, color, bot_left);
   r_push_quad_indices(renderer);
 }
 
@@ -245,10 +251,10 @@ void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
   Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
 
-  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, v4f(0, 1, 0, 0));
-  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, v4f(1, 1, 0, 0));
-  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, v4f(1, 0, 0, 0));
-  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, v4f(0, 0, 0, 0));
+  r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO, v4f(0, 1, 0, 0));
+  r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO, v4f(1, 1, 0, 0));
+  r_push_vertex(renderer, v4f(p2.x, p2.y, p2.z, 0.0f), tint, V4F_ZERO, v4f(1, 0, 0, 0));
+  r_push_vertex(renderer, v4f(p3.x, p3.y, p3.z, 0.0f), tint, V4F_ZERO, v4f(0, 0, 0, 0));
   r_push_quad_indices(renderer);
 }
 

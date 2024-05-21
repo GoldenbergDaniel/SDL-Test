@@ -333,6 +333,8 @@ bool is_entity_valid(Entity *en)
 void damage_entity(Game *game, Entity *reciever, Entity *sender)
 {
   reciever->health -= sender->damage;
+  entity_add_prop(reciever, EntityProp_FlashWhite);
+
   if (reciever->health <= 0)
   {
     switch (reciever->type)

@@ -123,13 +123,11 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   glDeleteShader(frag);
 
   i16 u_xform = glGetUniformLocation(program, "u_xform");
-  i16 u_color = glGetUniformLocation(program, "u_color");
   i16 u_tex = glGetUniformLocation(program, "u_tex");
 
   return (R_Shader) {
     .id = program,
     .u_xform = u_xform,
-    .u_color = u_color,
     .u_tex = u_tex,
   };
 }
@@ -223,10 +221,11 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
 
-  R_VAO vao = r_create_vertex_array(3);
+  R_VAO vao = r_create_vertex_array(4);
   u32 vbo = r_create_vertex_buffer(NULL, vbo_size, TRUE);
   u32 ibo = r_create_index_buffer(NULL, ibo_size, TRUE);
   r_push_vertex_attribute(&vao, 4); // position
+  r_push_vertex_attribute(&vao, 4); // tint
   r_push_vertex_attribute(&vao, 4); // color
   r_push_vertex_attribute(&vao, 4); // uv
 
@@ -248,7 +247,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   };
 }
 
-void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F uv)
+void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec4F uv)
 {
   if (renderer->vertex_count == renderer->vertex_capacity)
   {
@@ -259,6 +258,7 @@ void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F uv)
   {
     .position = pos,
     .tint = tint,
+    .color = color,
     .uv = uv,
   };
 }
@@ -304,18 +304,12 @@ void r_use_texture(R_Renderer *renderer, R_Texture *texture)
   }
 }
 
-void r_use_projection(R_Renderer *renderer, u8 projection_type)
-{
-
-}
-
 void r_flush(R_Renderer *renderer)
 {
   if (renderer->vertex_count == 0) return;
 
   R_Shader *shader = renderer->shader;
   r_set_uniform_3x3f(shader, shader->u_xform, m3x3f(1.0f));
-  r_set_uniform_4f(shader, shader->u_color, R_BLACK);
   r_set_uniform_1i(shader, shader->u_tex, renderer->texture->slot);
   
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
@@ -337,29 +331,28 @@ void r_flush(R_Renderer *renderer)
 static
 void verify_shader(u32 id, u32 type)
 {
-  i32 success;
-
   if (type == GL_LINK_STATUS)
   {
     glValidateProgram(id);
   }
 
+  i32 success = TRUE;
   glGetShaderiv(id, type, &success);
 
   if (!success)
   {
     i32 length;
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-    char log[length];
+    char log[1000];
     glGetShaderInfoLog(id, length, &length, log);
 
     if (type == GL_COMPILE_STATUS)
     {
-      printf("[Error]: Failed to compile shader!\n");
+      printf("[ERROR]: Failed to compile shader!\n");
     }
     else
     {
-      printf("[Error]: Failed to link shaders!\n");
+      printf("[ERROR]: Failed to link shaders!\n");
     }
 
     printf("%s", log);

@@ -15,7 +15,7 @@
 extern Global *GLOBAL;
 extern PrefabStore *PREFAB;
 
-// @Main ////////////////////////////////////////////////////////////////////////////
+// @Main /////////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
 {
@@ -625,7 +625,13 @@ void render_game(Game *game)
   {
     if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
-      draw_sprite_x(en->xform, en->tint, en->texture);
+      draw_sprite_x(en->xform, en->tint, en->texture, entity_has_prop(en, EntityProp_FlashWhite));
+
+      // NOTE(dg): TEMPORTARY SOLUTION BEFORE ANIMATION SYSTEM
+      if (entity_has_prop(en, EntityProp_FlashWhite))
+      {
+        entity_rem_prop(en, EntityProp_FlashWhite);
+      }
     }
   }
   
@@ -674,20 +680,20 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
-// TODO(dg): Please make this better!
+// TODO(dg): Please make this better! Also viewport.y needs to factor in here somewhere.
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
   return v2f(pos.x * (WIDTH / GLOBAL->window.width) + GLOBAL->viewport.x, 
-            (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height) + GLOBAL->viewport.y);
+            (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height));
 }
 
-// @Events //////////////////////////////////////////////////////////////////////////
+// @Events ///////////////////////////////////////////////////////////////////////////////
 
 void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
-  Event *new_event = malloc(sizeof (Event));
+  Event *new_event = arena_alloc(&game->frame_arena, sizeof (Event));
 
   if (queue->front == NULL)
   {
@@ -714,7 +720,6 @@ void pop_event(Game *game)
   EventQueue *queue = &game->event_queue;
   Event *next = queue->front->next;
   zero(*queue->front, Event);
-  free(queue->front);
   
   if (queue->count == 2)
   {

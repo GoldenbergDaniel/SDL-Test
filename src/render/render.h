@@ -7,6 +7,7 @@ struct R_Vertex
 {
   Vec4F position;
   Vec4F tint;
+  Vec4F color;
   Vec4F uv;
 };
 
@@ -15,7 +16,6 @@ struct R_Shader
 {
   u32 id;
   i16 u_xform;
-  i16 u_color;
   i16 u_tex;
 };
 
@@ -62,10 +62,6 @@ static R_Texture *R_NIL_TEXTURE = &(R_Texture) {0};
 #define R_BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
 #define R_WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
 
-#define R_PROJECTION_ORTHO_TL 0 
-#define R_PROJECTION_ORTHO_BL 1
-#define R_PROJECTION_ORTHO_C 2
-
 void r_set_viewport(i32 x, i32 y, i32 w, i32 h);
 
 // @Buffer ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +94,7 @@ R_Texture r_create_texture(String path);
 // @Rendering ////////////////////////////////////////////////////////////////////////////
 
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
-void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F color, Vec4F uv);
+void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec4F uv);
 void r_push_quad_indices(R_Renderer *renderer);
 void r_use_shader(R_Renderer *renderer, R_Shader *shader);
 void r_use_texture(R_Renderer *renderer, R_Texture *texture);

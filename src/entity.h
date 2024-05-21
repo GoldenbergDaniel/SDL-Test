@@ -132,6 +132,7 @@ typedef enum EntityProp
   EntityProp_WrapsAtEdges = 1 << 7,
   EntityProp_AffectedByGravity = 1 << 8,
   EntityProp_Grounded = 1 << 9,
+  EntityProp_FlashWhite = 1 << 10,
 } EntityProp;
 
 typedef enum MoveType
