@@ -38,8 +38,8 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Collides | 
                   EntityProp_Controlled | 
                   EntityProp_Moves | 
-                  EntityProp_Fights | 
-                  EntityProp_AffectedByGravity;
+                  EntityProp_AffectedByGravity |
+                  EntityProp_CollidesWithGround;
 
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
@@ -47,7 +47,9 @@ Entity *create_entity(Game *game, EntityType type)
       en->speed = PLAYER_SPEED;
       en->texture = D_SPRITE_COWBOY;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
+      // en->damage_timer.duration = 0.5f;
       en->scale = SPRITE_SCALE;
+      en->health = 10;
 
       entity_add_collider(game, en, Collider_Body);
       en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -59,9 +61,9 @@ Entity *create_entity(Game *game, EntityType type)
     {
       en->props = EntityProp_Renders | 
                   EntityProp_Moves | 
-                  EntityProp_Fights | 
                   EntityProp_Collides |
-                  EntityProp_AffectedByGravity;
+                  EntityProp_AffectedByGravity |
+                  EntityProp_CollidesWithGround;
 
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
@@ -72,6 +74,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->scale = SPRITE_SCALE;
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
       en->health = 3;
+      en->damage = 1;
       
       entity_add_collider(game, en, Collider_Body);
       en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -102,7 +105,6 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->texture = D_SPRITE_BULLET;
       en->move_type = MoveType_Projectile;
-      en->combat_type = CombatType_Melee;
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->scale = SPRITE_SCALE;
       en->damage = 1;
@@ -330,8 +332,10 @@ bool is_entity_valid(Entity *en)
   return (en != NULL && en->type != EntityType_Nil);
 }
 
-void damage_entity(Game *game, Entity *reciever, Entity *sender)
+void damage_entity(Game *game, Entity *sender, Entity *reciever)
 {
+  if (reciever->health <= 0) return;
+
   reciever->health -= sender->damage;
   entity_add_prop(reciever, EntityProp_FlashWhite);
 
@@ -385,14 +389,14 @@ Entity *alloc_entity(Game *game)
 
   if (new_en == NULL)
   {
-    new_en = arena_alloc(&game->entity_arena, sizeof (Entity));
+    new_en = arena_push(&game->entity_arena, sizeof (Entity));
     zero(*new_en, Entity);
 
     u64 children_size = sizeof (EntityRef) * MAX_ENTITY_CHILDREN;
-    new_en->children = arena_alloc(&game->entity_arena, children_size);
+    new_en->children = arena_push(&game->entity_arena, children_size);
 
     u64 free_list_size = sizeof (i16) * MAX_ENTITY_CHILDREN;
-    new_en->free_child_list = arena_alloc(&game->entity_arena, free_list_size);
+    new_en->free_child_list = arena_push(&game->entity_arena, free_list_size);
 
     // Reset entity children
     for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
@@ -624,7 +628,7 @@ void create_particles(Entity *en, ParticleDesc desc)
 {
   en->particle_desc = desc;
   en->particle_arena = arena_create(MiB(1));
-  en->particles = arena_alloc(&en->particle_arena, sizeof (Particle) * desc.count);
+  en->particles = arena_push(&en->particle_arena, sizeof (Particle) * desc.count);
 
   for (i32 i = 0; i < en->particle_desc.count; i++)
   {
@@ -642,7 +646,7 @@ void create_particles(Entity *en, ParticleDesc desc)
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
 inline
-bool is_timer_done(Timer timer, f64 t)
+bool timeout(Timer timer, f64 t)
 {
   return t >= timer.end_time;
 }

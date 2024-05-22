@@ -16,7 +16,7 @@ struct Arena
 
 Arena arena_create(u64 size);
 void arena_destroy(Arena *arena);
-void *arena_alloc(Arena *arena, u64 size);
-void arena_free(Arena *arena, u64 size);
+void *arena_push(Arena *arena, u64 size);
+void arena_pop(Arena *arena, u64 size);
 void arena_clear(Arena *arena);
 Arena arena_get_scratch(Arena *conflict);

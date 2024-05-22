@@ -214,9 +214,9 @@ R_Texture r_create_texture(String path)
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
 {
   u64 vbo_size = sizeof (R_Vertex) * vertex_capacity;
-  R_Vertex *vertices = arena_alloc(arena, vbo_size);
+  R_Vertex *vertices = arena_push(arena, vbo_size);
   u64 ibo_size = (u64) (sizeof (u32) * vertex_capacity * 1.5f) + 1;
-  u32 *indices = arena_alloc(arena, ibo_size);
+  u32 *indices = arena_push(arena, ibo_size);
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);

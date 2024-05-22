@@ -22,7 +22,7 @@ void arena_destroy(Arena *arena)
   // zero(*arena, Arena);
 }
 
-void *arena_alloc(Arena *arena, u64 size)
+void *arena_push(Arena *arena, u64 size)
 {
   assert(arena->size >= arena->used + size);
 
@@ -32,7 +32,7 @@ void *arena_alloc(Arena *arena, u64 size)
   return allocated;
 }
 
-void arena_free(Arena *arena, u64 size)
+void arena_pop(Arena *arena, u64 size)
 {
   assert(arena->used - size >= 0);
 

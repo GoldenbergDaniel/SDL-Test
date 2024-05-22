@@ -9,7 +9,7 @@
 String alloc_str(u32 len, Arena *arena)
 {
   String result;
-  result.str = arena_alloc(arena, len);
+  result.str = arena_push(arena, len);
   result.len = len;
 
   return result;
@@ -112,7 +112,7 @@ i64 str_find_char(String s, char c, u32 start, u64 end)
 String str_copy(String s, Arena *arena)
 {
   String result = {0};
-  result.str = arena_alloc(arena, s.len);
+  result.str = arena_push(arena, s.len);
   result.len = s.len;
 
   for (u32 i = 0; i < s.len; i++)
@@ -331,7 +331,7 @@ StringArray create_str_array(u64 count, Arena *arena)
 {
   StringArray arr = {0};
   arr.count = count;
-  arr.e = arena_alloc(arena, sizeof (String) * count);
+  arr.e = arena_push(arena, sizeof (String) * count);
 
   return arr;
 }

@@ -15,6 +15,8 @@
 extern Global *GLOBAL;
 extern PrefabStore *PREFAB;
 
+#define GROUND_Y 30 * 5
+
 // @Main /////////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
@@ -23,13 +25,6 @@ void init_game(Game *game)
 
   // Starting entities ----------------
   {
-    Entity *ground = create_entity(game, EntityType_Collider);
-    ground->sp = SP_Ground;
-    ground->pos = v2f(0.0f, 0.0f);
-    ground->dim = v2f(192, 30);
-    ground->tint = v4f(0.0f, 0.0f, 1.0f, 1.0f);
-    ground->scale = SPRITE_SCALE;
-
     Entity *player = create_entity(game, EntityType_Player);
     player->sp = SP_Player;
     player->pos = v2f(get_width()/2.0f, get_height()/2.0f);
@@ -130,7 +125,7 @@ void update_game(Game *game)
         {
           case MoveType_Grounded:
           {
-            static const f32 zombie_speed = 50.0f;
+            static f32 zombie_speed = 50.0f;
             f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
 
             if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 50.0f)
@@ -196,7 +191,7 @@ void update_game(Game *game)
               en->kill_timer.is_ticking = TRUE;
             }
 
-            if (is_timer_done(en->kill_timer, t))
+            if (timeout(en->kill_timer, t))
             {
               kill_entity(en);
               en->kill_timer.is_ticking = FALSE;
@@ -284,17 +279,14 @@ void update_game(Game *game)
     {
       Vec2F dim = dim_from_entity(en);
 
-      // Player/Zombie vs Ground collision
-      if (en->type == EntityType_Player || en->type == EntityType_ZombieWalker)
+      // Ground collision
+      if (entity_has_prop(en, EntityProp_CollidesWithGround))
       {
-        f32 ground_y = pos_from_entity(get_entity_of_sp(game, SP_Ground)).y +
-                       dim_from_entity(get_entity_of_sp(game, SP_Ground)).height;
-
         if (p_rect_y_range_intersect(
               collision_params_from_entity(en->colliders[Collider_Body], en->vel), 
-              v2f(-3000.0f, 3000.0f), ground_y))
+              v2f(-3000.0f, 3000.0f), GROUND_Y))
         {
-          en->pos.y = ground_y + dim.height / 2.0f;
+          en->pos.y = GROUND_Y + dim.height / 2.0f;
           en->vel.y = 0.0f;
           en->new_vel.y = 0.0f;
           entity_add_prop(en, EntityProp_Grounded);
@@ -321,10 +313,36 @@ void update_game(Game *game)
                             .pos=spawn_pos, 
                             .particle_desc=PREFAB->particle.blood);
 
-              damage_entity(game, other, en);
+              damage_entity(game, en, other);
               kill_entity(en);
             }
           }
+        }
+      }
+
+      // Zombie vs Player collision
+      if (en->combat_type == CombatType_Melee)
+      {
+        if (p_rect_rect_intersect(
+              collision_params_from_entity(en->colliders[Collider_Hit], en->vel),
+              collision_params_from_entity(player->colliders[Collider_Body], player->vel)))
+        {
+          if (!en->attack_timer.is_ticking)
+          {
+            en->attack_timer.end_time = en->attack_timer.duration + t;
+            en->attack_timer.is_ticking = TRUE;
+          }
+
+          if (timeout(en->attack_timer, t))
+          {
+            printf("Player was hit\n");
+            damage_entity(game, en, player);
+            en->attack_timer.is_ticking = FALSE;
+          }
+        }
+        else
+        {
+          en->attack_timer.is_ticking = FALSE;
         }
       }
     }
@@ -335,72 +353,69 @@ void update_game(Game *game)
   {
     if (!en->is_active) continue;
 
-    if (entity_has_prop(en, EntityProp_Fights))
+    if (entity_has_prop(en, EntityProp_Controlled))
     {
-      if (entity_has_prop(en, EntityProp_Controlled))
+      if (!en->attack_timer.is_ticking)
       {
-        if (!en->attack_timer.is_ticking)
-        {
-          en->attack_timer.end_time = t + en->attack_timer.duration;
-          en->attack_timer.is_ticking = TRUE;
-        }
+        en->attack_timer.end_time = t + en->attack_timer.duration;
+        en->attack_timer.is_ticking = TRUE;
+      }
 
-        // Shoot weapon if can shoot
-        if (is_key_pressed(KEY_MOUSE_1) && is_timer_done(en->attack_timer, t))
-        {
-          Entity *gun = get_entity_child_of_sp(en, SP_Gun);
-          Entity *shot_point = get_entity_child_at(gun, 0);
-          Vec2F spawn_pos = pos_from_entity(shot_point);
-          f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
+      // Shoot weapon if can shoot
+      if (is_key_pressed(KEY_MOUSE_1) && timeout(en->attack_timer, t))
+      {
+        Entity *gun = get_entity_child_of_sp(en, SP_Gun);
+        Entity *shot_point = get_entity_child_at(gun, 0);
+        Vec2F spawn_pos = pos_from_entity(shot_point);
+        f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
-          Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
-          bullet->rot = spawn_rot;
-          bullet->speed = PROJ_SPEED;
-          entity_rem_prop(bullet, EntityProp_Renders);
+        Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+        bullet->rot = spawn_rot;
+        bullet->speed = PROJ_SPEED;
+        entity_rem_prop(bullet, EntityProp_Renders);
 
-          spawn_entity(game, EntityType_ParticleGroup, 
-                        .pos=spawn_pos, 
-                        .particle_desc=PREFAB->particle.smoke);
+        spawn_entity(game, EntityType_ParticleGroup, 
+                      .pos=spawn_pos, 
+                      .particle_desc=PREFAB->particle.smoke);
 
-          en->attack_timer.is_ticking = FALSE;
-        }
+        en->attack_timer.is_ticking = FALSE;
+      }
+    }
+    else
+    {
+      if (is_entity_valid(player) && player->is_active)
+      {
+        set_entity_target(en, ref_from_entity(player));
       }
       else
       {
-        if (is_entity_valid(player) && player->is_active)
-        {
-          set_entity_target(en, ref_from_entity(player));
-        }
-        else
-        {
-          en->has_target = FALSE;
-        }
+        en->has_target = FALSE;
+      }
 
-        if (en->has_target)
+      if (en->has_target)
+      {
+        switch (en->combat_type)
         {
-          switch (en->combat_type)
+          case CombatType_Ranged:
           {
-            case CombatType_Ranged:
+            if (!en->attack_timer.is_ticking)
             {
-              if (!en->attack_timer.is_ticking)
-              {
-                en->attack_timer.end_time = t + en->attack_timer.duration;
-                en->attack_timer.is_ticking = TRUE;
-              }
-
-              // Shoot weapon if can shoot
-              if (is_timer_done(en->attack_timer, t))
-              {
-                Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-                Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
-                laser->tint = D_GREEN;
-                laser->rot = en->rot;
-                laser->speed = 700.0f;
-              }
+              en->attack_timer.end_time = t + en->attack_timer.duration;
+              en->attack_timer.is_ticking = TRUE;
             }
-            break;
-            default: break;
+
+            // Shoot weapon if can shoot
+            if (timeout(en->attack_timer, t))
+            {
+              Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
+              Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+              laser->tint = D_GREEN;
+              laser->rot = en->rot;
+              laser->speed = 700.0f;
+            }
           }
+          break;
+          default: break;
         }
       }
     }
@@ -489,28 +504,17 @@ void update_game(Game *game)
 
             if (desc.props & ParticleProp_CollidesWithGround)
             {
-              f32 ground_y = 0.0f;
-              for (Entity *other = game->entities.head; other; other = other->next)
-              {
-                if (other->sp == SP_Ground)
-                {
-                  ground_y = pos_from_entity(other).y + dim_from_entity(other).height;
-                  break;
-                }
-              }
-
               Vec2F p_col_pos = {
                 particle->pos.x, 
                 particle->pos.y + particle->scale.y
               };
 
               P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
-              if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), ground_y))
+              if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), GROUND_Y))
               {
-                particle->pos.y = ground_y - particle->scale.y;
+                particle->pos.y = GROUND_Y - particle->scale.y;
                 particle->vel = V2F_ZERO;
                 particle->is_grounded = TRUE;
-                // particle->rot = 0;
               }
             }
             
@@ -693,7 +697,7 @@ Vec2F screen_to_world(Vec2F pos)
 void push_event(Game *game, EventType type, EventDesc desc)
 {
   EventQueue *queue = &game->event_queue;
-  Event *new_event = arena_alloc(&game->frame_arena, sizeof (Event));
+  Event *new_event = arena_push(&game->frame_arena, sizeof (Event));
 
   if (queue->front == NULL)
   {

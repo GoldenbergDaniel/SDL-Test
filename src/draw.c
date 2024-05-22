@@ -19,8 +19,8 @@ extern Global *GLOBAL;
 Resources load_resources(Arena *arena, String path)
 {
   Resources res = {0};
-  res.textures = arena_alloc(arena, sizeof (R_Texture) * TEXTURE_COUNT);
-  res.shaders = arena_alloc(arena, sizeof (R_Shader) * SHADER_COUNT);
+  res.textures = arena_push(arena, sizeof (R_Texture) * TEXTURE_COUNT);
+  res.shaders = arena_push(arena, sizeof (R_Shader) * SHADER_COUNT);
 
   R_Shader primitive_shader = r_create_shader(PRIMITIVE_VERT_SRC, PRIMITIVE_FRAG_SRC);
   res.shaders[0] = primitive_shader;

@@ -29,7 +29,6 @@
 enum
 {
   SP_Player,
-  SP_Ground,
   SP_Gun,
 };
 
@@ -53,7 +52,6 @@ struct Timer
   f32 duration;
   f64 end_time;
   bool is_ticking;
-  bool should_tick;
 };
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
@@ -126,11 +124,11 @@ typedef enum EntityProp
   EntityProp_Collides = 1 << 1,
   EntityProp_Controlled = 1 << 2,
   EntityProp_Moves = 1 << 3,
-  EntityProp_Fights = 1 << 4,
-  EntityProp_Killable = 1 << 5,
-  EntityProp_Equipped = 1 << 6,
-  EntityProp_WrapsAtEdges = 1 << 7,
-  EntityProp_AffectedByGravity = 1 << 8,
+  EntityProp_Killable = 1 << 4,
+  EntityProp_Equipped = 1 << 5,
+  EntityProp_WrapsAtEdges = 1 << 6,
+  EntityProp_AffectedByGravity = 1 << 7,
+  EntityProp_CollidesWithGround = 1 << 8,
   EntityProp_Grounded = 1 << 9,
   EntityProp_FlashWhite = 1 << 10,
 } EntityProp;
@@ -224,7 +222,9 @@ struct Entity
   i16 health;
   i16 damage;
 
+  // Timers
   Timer attack_timer;
+  Timer damage_timer;
   Timer kill_timer;
 
   // ParticleGroup
@@ -291,7 +291,7 @@ void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
 
-void damage_entity(Game *game, Entity *reciever, Entity *sender);
+void damage_entity(Game *game, Entity *sender, Entity *reciever);
 
 // @EntityRef ////////////////////////////////////////////////////////////////////////////
 
@@ -322,4 +322,4 @@ void create_particles(Entity *en, ParticleDesc desc);
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
-bool is_timer_done(Timer timer, f64 t);
+bool timeout(Timer timer, f64 t);

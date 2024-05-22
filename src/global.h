@@ -9,7 +9,7 @@
 #ifdef _WIN32
 #define TIME_STEP (1.0f / 120)
 #else
-#define TIME_STEP (1.f / 60)
+#define TIME_STEP (1.0f / 60)
 #endif
 
 #define WIDTH 960.0f
