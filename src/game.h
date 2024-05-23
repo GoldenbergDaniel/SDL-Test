@@ -60,6 +60,8 @@ struct Game
   f64 dt;
   Mat3x3F camera;
   bool should_quit;
+
+  Timer spawn_timer;
 };
 
 void init_game(Game *game);

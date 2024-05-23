@@ -321,7 +321,7 @@ void set_entity_target(Entity *en, EntityRef target)
   }
   else
   {
-    en->target_pos = V2F_ZERO; // Note(dg): why go back to origin?
+    en->target_pos = V2F_ZERO; // NOTE(dg): why go back to origin?
     en->has_target = FALSE;
   }
 }
@@ -422,7 +422,7 @@ Entity *alloc_entity(Game *game)
     list->first_free = list->first_free->next_free;
   }
 
-  new_en->id = random_u64(2, UINT64_MAX);
+  new_en->id = random_u64(2, UINT64_MAX-1);
 
   return new_en;
 }

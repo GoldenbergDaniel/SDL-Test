@@ -3,9 +3,10 @@
 #include "base_common.h"
 #include "base_random.h"
 
+// Range is inclusive
 u64 random_u64(u64 min, u64 max)
 {
-  return (rand() % max) + min;
+  return (rand() % (max + 1)) + min;
 }
 
 i32 random_i32(i32 min, i32 max)

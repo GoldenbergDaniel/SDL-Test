@@ -37,10 +37,6 @@ void init_game(Game *game)
     Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(24.0f, 2.0f);
-
-    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(get_width() - 300.0f, get_height()/2.0f);
-    zombie->speed = 0;
   }
 }
 
@@ -542,6 +538,24 @@ void update_game(Game *game)
     }
   }
 
+  // Spawn entities ----------------
+  {
+    if (!game->spawn_timer.is_ticking)
+    {
+      game->spawn_timer.end_time = 5.0f + t;
+      game->spawn_timer.is_ticking = TRUE;
+    }
+
+    if (timeout(game->spawn_timer, t))
+    {
+      f32 spawn_x[2] = {-50, get_width() + 50};
+      u32 roll = (u32) random_u64(0, 1);
+
+      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height() / 2));
+      game->spawn_timer.is_ticking = FALSE;
+    }
+  }
+
   // Developer tools ----------------
   {
     // Toggle debug
@@ -627,6 +641,8 @@ void render_game(Game *game)
   // Batch sprites ----------------
   for (EN_IN_ENTITIES)
   {
+    if (!en->is_active) continue;
+
     if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
       draw_sprite_x(en->xform, en->tint, en->texture, entity_has_prop(en, EntityProp_FlashWhite));
@@ -642,6 +658,8 @@ void render_game(Game *game)
   // Batch primitives ----------------
   for (EN_IN_ENTITIES)
   {
+    if (!en->is_active) continue;
+
     if (entity_has_prop(en, EntityProp_Renders))
     {
       if (en->draw_type == DrawType_Primitive)

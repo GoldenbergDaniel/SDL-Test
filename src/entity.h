@@ -21,7 +21,7 @@
 #define NUM_TIMERS 3
 
 #define BULLET_KILL_TIME 5.0f
-#define PLAYER_ATTACK_COOLDOWN 0.5f
+#define PLAYER_ATTACK_COOLDOWN 0.4f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
 
 // @Special //////////////////////////////////////////////////////////////////////////////
