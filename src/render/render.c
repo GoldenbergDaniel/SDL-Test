@@ -8,7 +8,7 @@
 #include "stb/stb_image.h"
 
 #include "../base/base_inc.h"
-#include "../global.h"
+#include "../globals.h"
 #include "render.h"
 
 #ifdef DEBUG
@@ -19,7 +19,7 @@ static void verify_shader(u32 id, u32 type);
 #include "glad/glad.h"
 #endif
 
-extern Global *GLOBAL;
+extern Globals *GLOBAL;
 
 inline
 void r_set_viewport(i32 x, i32 y, i32 w, i32 h)

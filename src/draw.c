@@ -8,11 +8,11 @@
 #include "base/base_inc.h"
 #include "render/render.h"
 #include "render/shaders.h"
-#include "global.h"
+#include "globals.h"
 #include "entity.h"
 #include "draw.h"
 
-extern Global *GLOBAL;
+extern Globals *GLOBAL;
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
 
@@ -60,7 +60,7 @@ void clear_frame(Vec4F color)
 void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(rotate_3x3f(rot), xform);
@@ -82,7 +82,7 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
 
   r_push_vertex(renderer, v4f(p0.x, p0.y, p0.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
   r_push_vertex(renderer, v4f(p1.x, p1.y, p1.z, 0.0f), tint, V4F_ZERO, V4F_ZERO);
@@ -94,7 +94,7 @@ void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_PRIMITIVE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
 
   Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
@@ -111,8 +111,8 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
@@ -125,26 +125,26 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
   Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
 
-  tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
+  tex.y = SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
   const Vec4F top_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F top_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
@@ -159,29 +159,29 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
 void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
 
-  tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
+  tex.y = SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
   const Vec4F top_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F top_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
@@ -196,34 +196,34 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID
 void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
 
   Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
   Vec3F p2 = transform_3f(v3f( 8.0f, -8.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(-8.0f, -8.0f, 1.0f), xform); // bl
 
-  tex.y = D_SPRITE_SHEET_COUNT_Y - tex.y - 1;
+  tex.y = SPRITE_SHEET_COUNT_Y - tex.y - 1;
 
   const Vec4F top_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F top_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) (tex.y+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) (tex.y+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_right = {
-    ((f32) (tex.x+1) * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) (tex.x+1) * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   const Vec4F bot_left = {
-    ((f32) tex.x * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_WIDTH, 
-    ((f32) tex.y * D_SPRITE_SHEET_SIZE) / D_SPRITE_SHEET_HEIGHT
+    ((f32) tex.x * SPRITE_SHEET_SIZE) / SPRITE_SHEET_WIDTH, 
+    ((f32) tex.y * SPRITE_SHEET_SIZE) / SPRITE_SHEET_HEIGHT
   };
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
@@ -238,8 +238,8 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
 {
   R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[D_TEXTURE_SCENE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[D_SHADER_SPRITE]);
+  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SCENE]);
+  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);

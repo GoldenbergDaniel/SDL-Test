@@ -1,11 +1,30 @@
 #include "base/base_inc.h"
-#include "global.h"
+#include "prefabs.h"
 
-extern Global *GLOBAL;
-
-void init_particle_prefabs(PrefabStore *prefabs)
+void init_prefabs(Prefabs *prefabs)
 {
-  *prefabs = (PrefabStore) {
+  *prefabs = (Prefabs) {
+    // Texture ----------------
+    .texture.player_idle = v2i(0, 0),
+    .texture.player_walk_0 = v2i(1, 0),
+    .texture.player_walk_1 = v2i(2, 0),
+    .texture.player_walk_2 = v2i(3, 0),
+    .texture.player_walk_3 = v2i(4, 0),
+    .texture.player_walk_4 = v2i(5, 0),
+    .texture.player_jump = v2i(6, 0),
+
+    .texture.walker_idle = v2i(0, 1),
+    .texture.walker_walk_0 = v2i(1, 1),
+    .texture.walker_walk_1 = v2i(2, 1),
+    .texture.walker_walk_2 = v2i(3, 1),
+    .texture.walker_walk_3 = v2i(4, 1),
+    .texture.walker_walk_4 = v2i(5, 1),
+    
+    .texture.pistol = v2i(0, 2),
+    .texture.bullet = v2i(1, 2),
+
+
+    // Particle ----------------
     .particle.smoke = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
@@ -60,22 +79,10 @@ void init_particle_prefabs(PrefabStore *prefabs)
       .duration = 2.0f,
       .speed = 80.0f,
       .spread = 180.0f,
-      .color_primary = D_RED,
-      .color_secondary = D_BLUE,
+      .color_primary = DEBUG_RED,
+      .color_secondary = DEBUG_BLUE,
       .scale_delta = v2f(-0.5f, -0.5f),
       .speed_delta = 50.0f,
     },
   };
-}
-
-inline
-f32 get_width(void)
-{
-  return GLOBAL->viewport.z;
-}
-
-inline
-f32 get_height(void)
-{
-  return GLOBAL->viewport.w;
 }

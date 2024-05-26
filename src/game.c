@@ -7,13 +7,14 @@
 #include "draw.h"
 #include "input.h"
 #include "entity.h"
-#include "global.h"
+#include "globals.h"
+#include "prefabs.h"
 #include "game.h"
 
 #define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
 
-extern Global *GLOBAL;
-extern PrefabStore *PREFAB;
+extern Globals *GLOBAL;
+extern Prefabs *PREFAB;
 
 #define GROUND_Y 30 * 5
 
@@ -405,7 +406,7 @@ void update_game(Game *game)
             {
               Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
               Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
-              laser->tint = D_GREEN;
+              laser->tint = DEBUG_GREEN;
               laser->rot = en->rot;
               laser->speed = 700.0f;
             }

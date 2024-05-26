@@ -1,13 +1,13 @@
 #include "base/base_inc.h"
 
-#include "global.h"
+#include "globals.h"
 #include "input.h"
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
-extern Global *GLOBAL;
+extern Globals *GLOBAL;
 
 inline
 bool is_key_pressed(InputKey key)

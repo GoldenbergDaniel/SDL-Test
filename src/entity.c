@@ -4,12 +4,13 @@
 #include "phys/phys.h"
 #include "draw.h"
 #include "game.h"
-#include "global.h"
+#include "globals.h"
+#include "prefabs.h"
 #include "entity.h"
 #include "game.h"
 
-extern Global *GLOBAL;
-extern PrefabStore *PREFAB;
+extern Globals *GLOBAL;
+extern Prefabs *PREFAB;
 
 // @SpawnKillEntity //////////////////////////////////////////////////////////////////////
 
@@ -29,7 +30,7 @@ Entity *create_entity(Game *game, EntityType type)
     {
       en->draw_type = DrawType_Primitive;
       en->scale = v2f(1/16.0f, 1/16.0f);
-      en->tint = D_YELLOW;
+      en->tint = DEBUG_YELLOW;
     }
     break;
     case EntityType_Player:
@@ -45,7 +46,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Ranged;
       en->speed = PLAYER_SPEED;
-      en->texture = D_SPRITE_COWBOY;
+      en->texture = PREFAB->texture.player_idle;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
       // en->damage_timer.duration = 0.5f;
       en->scale = SPRITE_SCALE;
@@ -68,7 +69,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Melee;
-      en->texture = D_SPRITE_ZOMBIE;
+      en->texture = PREFAB->texture.walker_idle;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
       en->scale = SPRITE_SCALE;
@@ -92,7 +93,7 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Equipped;
 
       en->draw_type = DrawType_Sprite;
-      en->texture = D_SPRITE_GUN;
+      en->texture = PREFAB->texture.pistol;
       en->dim = v2f(16, 16);
     }
     break;
@@ -103,7 +104,7 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Collides;
       
       en->draw_type = DrawType_Sprite;
-      en->texture = D_SPRITE_BULLET;
+      en->texture = PREFAB->texture.bullet;
       en->move_type = MoveType_Projectile;
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->scale = SPRITE_SCALE;

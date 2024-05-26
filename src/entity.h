@@ -44,6 +44,23 @@ typedef enum ColliderID
 typedef struct Game Game;
 typedef struct Entity Entity;
 
+// @Animation ////////////////////////////////////////////////////////////////////////////
+
+typedef enum AnimationMoveState
+{
+  Animation_Idle,
+  Animation_Walk,
+  Animation_Jump,
+} AnimationMoveState;
+
+typedef struct AnimationDesc AnimationDesc;
+struct AnimationDesc
+{
+  TextureID frames[4];
+  u8 frame_count;
+  AnimationMoveState move_state;
+};
+
 // @Timer ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct Timer Timer;
@@ -262,7 +279,7 @@ Entity *NIL_ENTITY = &(Entity) {0};
 Entity *create_entity(Game *game, EntityType type);
 
 #define spawn_entity(game, type, ...) \
-  _spawn_entity(game, type, (EntityParams) {.pos=v2f(0, 0), .color=D_WHITE, __VA_ARGS__ })
+  _spawn_entity(game, type, (EntityParams) {.pos=v2f(0, 0), .color=DEBUG_WHITE, __VA_ARGS__ })
 
 Entity *_spawn_entity(Game *game, EntityType type, EntityParams params);
 

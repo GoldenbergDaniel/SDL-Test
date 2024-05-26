@@ -19,11 +19,12 @@
 #include "input.h"
 #include "draw.h"
 #include "game.h"
-#include "global.h"
+#include "globals.h"
+#include "prefabs.h"
 
 Game GAME;
-Global *GLOBAL;
-PrefabStore *PREFAB;
+Globals *GLOBAL;
+Prefabs *PREFAB;
 
 void init(void);
 void event(const sapp_event *);
@@ -73,7 +74,7 @@ void init(void)
   String res_path = str("res");
   #endif
 
-  GLOBAL = arena_push(&GAME.perm_arena, sizeof (Global));
+  GLOBAL = arena_push(&GAME.perm_arena, sizeof (Globals));
 
   GLOBAL->window.width = sapp_width();
   GLOBAL->window.height = sapp_height();
@@ -85,8 +86,8 @@ void init(void)
   GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
   GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
 
-  PREFAB = arena_push(&GAME.perm_arena, sizeof (PrefabStore));
-  init_particle_prefabs(PREFAB);
+  PREFAB = arena_push(&GAME.perm_arena, sizeof (Prefabs));
+  init_prefabs(PREFAB);
 
   GAME.dt = TIME_STEP;
   GAME.input = &GLOBAL->input;
