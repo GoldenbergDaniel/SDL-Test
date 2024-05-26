@@ -261,7 +261,7 @@ void update_game(Game *game)
       }
 
       xform = mul_3x3f(game->camera, xform);
-      xform = mul_3x3f(GLOBAL->renderer.projection, xform);
+      // xform = mul_3x3f(GLOBAL->renderer.projection, xform);
 
       en->xform = xform;
     }

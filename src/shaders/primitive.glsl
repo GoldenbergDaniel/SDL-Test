@@ -6,11 +6,11 @@ layout (location = 1) in vec4 a_tint;
 
 out vec4 color;
 
-uniform mat3 u_xform;
+uniform mat3 u_projection;
 
 void main()
 {
-  gl_Position = vec4(a_pos * u_xform, 1.0);
+  gl_Position = vec4(a_pos * u_projection, 1.0);
   color = a_tint;
 }
 

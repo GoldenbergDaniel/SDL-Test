@@ -10,11 +10,11 @@ out vec4 tint;
 out vec4 flash_color;
 out vec2 tex_coord;
 
-uniform mat3 u_xform;
+uniform mat3 u_projection;
 
 void main()
 {
-  gl_Position = vec4(a_pos * u_xform, 1.0);
+  gl_Position = vec4(a_pos * u_projection, 1.0);
   tint = a_tint;
   flash_color = a_color;
   tex_coord = a_tex_coord;

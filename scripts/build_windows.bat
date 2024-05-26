@@ -5,26 +5,27 @@ set NAME= undeadwest
 set CC= cl
 set MODE= %1%
 
-set CFLAGS_R= /std:c17 /I extern\ /I extern\sdl3\include
-set LDFLAGS_R= /link /LIBPATH:extern\sdl3\lib SDL3.lib
+set CFLAGS_R= /std:c17 /I extern\ 
+set CFLAGS_D= /std:c17 /Od /Zi /W1 /I ..\extern\ 
 
-set CFLAGS_D= /std:c17 /Od /Zi /W4 /I ..\extern\ /I ..\extern\sdl3\include
-set LDFLAGS_D= /link /LIBPATH:..\extern\sdl3\lib SDL3.lib
+set LDFLAGS_R= /link /INCREMENTAL:NO /LIBPATH:.\extern\sokol\lib sokol.lib
+set LDFLAGS_D= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
+
+shadertoh src\shaders\ src\render\shaders.h
 
 if "%MODE%"==" d" (
   echo Building debug...
   mkdir debug
   copy SDL3.dll debug\ /b
   pushd debug
-  %CC% %CFLAGS_D% ..\src\_target.c /Feundeadwest.exe %LDFLAGS_D%
+  %CC% %CFLAGS_D% /DDEBUG ..\src\_target.c /Feundeadwest.exe %LDFLAGS_D%
   del _target.obj
-  del undeadwest.ilk
   del vc140.pdb
   popd
 ) else (
   if "%MODE%"==" r" (
     echo Building release...
-    %CC% %CFLAGS_R% /O2 src\_target.c /Feundeadwest.exe %LDFLAGS_R%
+    %CC% %CFLAGS_R% /O2 /DRELEASE src\_target.c /Feundeadwest.exe %LDFLAGS_R%
     del _target.obj
   ) else (
     echo Building...
@@ -33,3 +34,4 @@ if "%MODE%"==" d" (
     %NAME%
   )
 )
+

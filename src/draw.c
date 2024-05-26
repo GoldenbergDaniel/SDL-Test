@@ -244,7 +244,6 @@ void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
-  xform = mul_3x3f(renderer->projection, xform);
   
   Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f(1.0f, 1.0f, 1.0f), xform); // tr

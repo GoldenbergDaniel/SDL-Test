@@ -1,6 +1,8 @@
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl3.h>
+#elif defined(_WIN32)
+#include "glad/glad.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -11,12 +13,8 @@
 #include "../globals.h"
 #include "render.h"
 
-#ifdef DEBUG
+#ifndef RELEASE
 static void verify_shader(u32 id, u32 type);
-#endif
-
-#ifdef _WIN32
-#include "glad/glad.h"
 #endif
 
 extern Globals *GLOBAL;
@@ -40,7 +38,6 @@ u32 r_create_vertex_buffer(void *data, u32 size, bool dynamic)
   return id;
 }
 
-inline
 void r_update_vertex_buffer(void *data, u32 size, u32 offset)
 {
   glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
@@ -57,7 +54,6 @@ u32 r_create_index_buffer(void *data, u32 size, bool dynamic)
   return id;
 }
 
-inline
 void r_update_index_buffer(void *data, u32 size, u32 offset)
 {
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
@@ -122,7 +118,7 @@ R_Shader r_create_shader(const char *vert_src, const char *frag_src)
   glDeleteShader(vert);
   glDeleteShader(frag);
 
-  i16 u_xform = glGetUniformLocation(program, "u_xform");
+  i16 u_xform = glGetUniformLocation(program, "u_projection");
   i16 u_tex = glGetUniformLocation(program, "u_tex");
 
   return (R_Shader) {
@@ -180,7 +176,7 @@ R_Texture r_create_texture(String path)
 {
   static u8 tex_slot = 0;
   R_Texture tex = {0};
-  tex.slot = ++tex_slot;
+  tex.slot = tex_slot++;
 
   stbi_set_flip_vertically_on_load(TRUE);
   u8 *data = stbi_load(path.str, &tex.width, &tex.height, NULL, 4);
@@ -203,7 +199,6 @@ R_Texture r_create_texture(String path)
                GL_UNSIGNED_BYTE, 
                data);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
   stbi_image_free(data);
 
   return tex;
@@ -231,8 +226,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
 
   Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, HEIGHT, 0.0f);
 
-  return (R_Renderer)
-  {
+  return (R_Renderer) {
     .vertices = vertices,
     .vertex_count = 0,
     .vertex_capacity = vertex_capacity,
@@ -254,8 +248,7 @@ void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec
     r_flush(renderer);
   }
 
-  renderer->vertices[renderer->vertex_count++] = (R_Vertex)
-  {
+  renderer->vertices[renderer->vertex_count++] = (R_Vertex) {
     .position = pos,
     .tint = tint,
     .color = color,
@@ -265,10 +258,9 @@ void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec
 
 void r_push_quad_indices(R_Renderer *renderer)
 {
-  static const u32 layout[6] = 
-  {
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
+  static u32 layout[6] = {
+    0, 1, 3,
+    1, 2, 3,
   };
 
   u32 offset = renderer->vertex_count - 4;
@@ -309,7 +301,7 @@ void r_flush(R_Renderer *renderer)
   if (renderer->vertex_count == 0) return;
 
   R_Shader *shader = renderer->shader;
-  r_set_uniform_3x3f(shader, shader->u_xform, m3x3f(1.0f));
+  r_set_uniform_3x3f(shader, shader->u_xform, renderer->projection);
   r_set_uniform_1i(shader, shader->u_tex, renderer->texture->slot);
   
   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
@@ -327,7 +319,7 @@ void r_flush(R_Renderer *renderer)
 
 // @Debug ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef DEBUG
+#ifndef RELEASE
 static
 void verify_shader(u32 id, u32 type)
 {

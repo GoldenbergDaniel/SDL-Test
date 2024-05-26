@@ -24,6 +24,11 @@ void init_prefabs(Prefabs *prefabs)
     .texture.bullet = v2i(1, 2),
 
 
+    // Animation ----------------
+    .animation.player_idle = (AnimationDesc) {
+      
+    },
+
     // Particle ----------------
     .particle.smoke = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
