@@ -52,6 +52,10 @@ Entity *create_entity(Game *game, EntityType type)
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->health = 10;
 
+      en->anims[Animation_Idle] = PREFAB->animation.player_idle;
+      en->anims[Animation_Walk] = PREFAB->animation.player_walk;
+      en->anims[Animation_Jump] = PREFAB->animation.player_jump;
+
       entity_add_collider(game, en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
       en->cols[Collider_Body]->pos = v2f(0, 0);
@@ -76,6 +80,9 @@ Entity *create_entity(Game *game, EntityType type)
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
       en->health = 3;
       en->damage = 1;
+      
+      en->anims[Animation_Idle] = PREFAB->animation.walker_idle;
+      en->anims[Animation_Walk] = PREFAB->animation.walker_walk;
       
       entity_add_collider(game, en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -646,28 +653,17 @@ void create_particles(Entity *en, ParticleDesc desc)
 
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
-// TODO(dg): Make sure to test this!
-void tick_animation(Animation *anim, const AnimationDesc *prefab)
+void timer_start(Timer *timer, f64 t)
 {
-  anim->tick_counter += 1;
-
-  if (anim->tick_counter % prefab->ticks_per_frame == 0)
-  {
-    if (anim->frame_idx == prefab->frame_count - 1)
-    {
-      anim->frame_idx = 0;
-    }
-    else
-    {
-      anim->frame_idx += 1;
-    }
-  }
+  timer->end_time = t + timer->duration;
+  timer->is_ticking = TRUE;
 }
 
-inline
-bool timeout(Timer timer, f64 t)
+bool timer_timeout(Timer *timer, f64 t)
 {
-  return t >= timer.end_time;
+  bool result = t >= timer->end_time;
+  if (result) timer->is_ticking = FALSE;
+  return result;
 }
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)

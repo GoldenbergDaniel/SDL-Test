@@ -28,6 +28,12 @@ Prefabs *create_prefabs(Arena *arena)
 
   // Animation ----------------
   {
+    prefab->animation.player_idle = (AnimationDesc) {
+      .ticks_per_frame = 0,
+      .frame_count = 1,
+      .frames[0] = prefab->texture.player_idle,
+    };
+
     prefab->animation.player_walk = (AnimationDesc) {
       .ticks_per_frame = 10,
       .frame_count = 5,
@@ -38,8 +44,20 @@ Prefabs *create_prefabs(Arena *arena)
       .frames[4] = prefab->texture.player_walk_4,
     };
 
+    prefab->animation.player_jump = (AnimationDesc) {
+      .ticks_per_frame = 0,
+      .frame_count = 1,
+      .frames[0] = prefab->texture.player_jump,
+    };
+
+    prefab->animation.walker_idle = (AnimationDesc) {
+      .ticks_per_frame = 0,
+      .frame_count = 1,
+      .frames[0] = prefab->texture.walker_idle,
+    };
+
     prefab->animation.walker_walk = (AnimationDesc) {
-      .ticks_per_frame = 5,
+      .ticks_per_frame = 10,
       .frame_count = 5,
       .frames[0] = prefab->texture.walker_walk_0,
       .frames[1] = prefab->texture.walker_walk_1,

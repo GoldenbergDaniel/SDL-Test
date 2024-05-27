@@ -7,10 +7,10 @@
 
 #ifdef _WIN32
 #define TIME_STEP (1.0f / 120)
-#define ANIM_MULT 2
+#define ANIM_TICK 2
 #else
 #define TIME_STEP (1.0f / 60)
-#define ANIM_MULT 1
+#define ANIM_TICK 1
 #endif
 
 #define WIDTH 960.0f

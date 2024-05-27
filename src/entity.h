@@ -16,6 +16,7 @@
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_ATTACK_COOLDOWN 0.4f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
+#define FLASH_TIME 0.05f
 
 // @Special //////////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +64,7 @@ struct AnimationDesc
   TextureID frames[5];
   u8 frame_count;
   u16 ticks_per_frame;
+  
 };
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
@@ -235,9 +237,12 @@ struct Entity
   f32 radius;
 
   // Animation
-  Animation anims[_Animation_Count];
+  Animation anim;
+  AnimationDesc anims[_Animation_Count];
   AnimationState anim_state;
   AnimationState anim_state_prev;
+
+  Timer flash_timer;
 
   // Targeting
   bool has_target;
@@ -245,10 +250,9 @@ struct Entity
   f32 target_angle;
   f32 view_dist;
 
+  // Combat
   i16 health;
   i16 damage;
-
-  // Timers
   Timer attack_timer;
   Timer damage_timer;
   Timer kill_timer;
@@ -347,6 +351,6 @@ void create_particles(Entity *en, ParticleDesc desc);
 
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
-void tick_animation(Animation *anim, const AnimationDesc *prefab);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
-bool timeout(Timer timer, f64 t);
+void timer_start(Timer *timer, f64 t);
+bool timer_timeout(Timer *timer, f64 t);

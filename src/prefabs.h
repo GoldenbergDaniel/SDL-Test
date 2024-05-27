@@ -31,8 +31,14 @@ struct Prefabs
 
   struct
   {
+    AnimationDesc player_idle;
     AnimationDesc player_walk;
+    AnimationDesc player_jump;
+    
+    AnimationDesc walker_idle;
     AnimationDesc walker_walk;
+
+    AnimationDesc flash;
   } animation;
 
   struct

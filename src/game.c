@@ -16,13 +16,14 @@
 extern Globals *GLOBAL;
 extern Prefabs *PREFAB;
 
-#define GROUND_Y 30 * 5
+#define GROUND_Y (30 * SPRITE_SCALE)
 
 // @Main /////////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
+  game->spawn_timer.duration = 5.0f;
 
   // Starting entities ----------------
   {
@@ -43,12 +44,28 @@ void init_game(Game *game)
 
 void update_game(Game *game)
 {
-  Entity *player = get_entity_of_sp(game, SP_Player);
-  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
-
   f64 t = game->t;
   f64 dt = game->dt;
+  Entity *player = get_entity_of_sp(game, SP_Player);
+  if (player == NULL) player = NIL_ENTITY;
+  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
+  // Spawn entities ----------------
+  {
+    if (!game->spawn_timer.is_ticking)
+    {
+      timer_start(&game->spawn_timer, t);
+    }
+
+    if (timer_timeout(&game->spawn_timer, t))
+    {
+      f32 spawn_x[2] = {-50.0f, get_width() + 50.0f};
+      u32 roll = (u32) random_u64(0, 1);
+
+      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height()/2));
+    }
+  }
+  
   // Update entity spawning and dying ----------------
   for (EN_IN_ENTITIES)
   {
@@ -138,10 +155,12 @@ void update_game(Game *game)
             if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 50.0f)
             {
               en->new_vel.x = en->flip_x ? -zombie_speed * dt : zombie_speed * dt;
+              en->anim_state = Animation_Walk;
             }
             else
             {
               en->new_vel.x = 0;
+              en->anim_state = Animation_Idle;
             }
           }
           break;
@@ -194,14 +213,12 @@ void update_game(Game *game)
           {
             if (!en->kill_timer.is_ticking)
             {
-              en->kill_timer.end_time = t + BULLET_KILL_TIME;
-              en->kill_timer.is_ticking = TRUE;
+              timer_start(&en->kill_timer, t);
             }
 
-            if (timeout(en->kill_timer, t))
+            if (timer_timeout(&en->kill_timer, t))
             {
               kill_entity(en);
-              en->kill_timer.is_ticking = FALSE;
             }
 
             en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
@@ -336,15 +353,13 @@ void update_game(Game *game)
         {
           if (!en->attack_timer.is_ticking)
           {
-            en->attack_timer.end_time = en->attack_timer.duration + t;
-            en->attack_timer.is_ticking = TRUE;
+            timer_start(&en->attack_timer, t);
           }
 
-          if (timeout(en->attack_timer, t))
+          if (timer_timeout(&en->attack_timer, t))
           {
             printf("Player was hit\n");
             damage_entity(game, en, player);
-            en->attack_timer.is_ticking = FALSE;
           }
         }
         else
@@ -364,12 +379,11 @@ void update_game(Game *game)
     {
       if (!en->attack_timer.is_ticking)
       {
-        en->attack_timer.end_time = t + en->attack_timer.duration;
-        en->attack_timer.is_ticking = TRUE;
+        timer_start(&en->attack_timer, t);
       }
 
       // Shoot weapon if can shoot
-      if (is_key_pressed(KEY_MOUSE_1) && timeout(en->attack_timer, t))
+      if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer, t))
       {
         Entity *gun = get_entity_child_of_sp(en, SP_Gun);
         Entity *shot_point = get_entity_child_at(gun, 0);
@@ -384,8 +398,6 @@ void update_game(Game *game)
         spawn_entity(game, EntityType_ParticleGroup, 
                       .pos=spawn_pos, 
                       .particle_desc=PREFAB->particle.smoke);
-
-        en->attack_timer.is_ticking = FALSE;
       }
     }
     else
@@ -407,12 +419,11 @@ void update_game(Game *game)
           {
             if (!en->attack_timer.is_ticking)
             {
-              en->attack_timer.end_time = t + en->attack_timer.duration;
-              en->attack_timer.is_ticking = TRUE;
+              timer_start(&en->attack_timer, t);
             }
 
             // Shoot weapon if can shoot
-            if (timeout(en->attack_timer, t))
+            if (timer_timeout(&en->attack_timer, t))
             {
               Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
               Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
@@ -551,54 +562,50 @@ void update_game(Game *game)
 
   // Animate entities ----------------
   for (EN_IN_ENTITIES)
-  { 
+  {
+    if (entity_has_prop(en, EntityProp_FlashWhite))
+    {
+      en->flash_timer.duration = FLASH_TIME;
+
+      if (!en->flash_timer.is_ticking)
+      {
+        timer_start(&en->flash_timer, t);
+      }
+
+      if (timer_timeout(&en->flash_timer, t))
+      {
+        entity_rem_prop(en, EntityProp_FlashWhite);
+      }
+    }
+
     if (en->anim_state == Animation_None) continue;
     
     // Clear prev animation if the state changed
     if (en->anim_state_prev != en->anim_state)
     {
-      zero(en->anims[en->anim_state_prev], Animation);
+      zero(en->anim, Animation);
+      en->anim_state_prev = en->anim_state;
     }
+    
+    AnimationDesc anim_desc = en->anims[en->anim_state];
+    en->texture = anim_desc.frames[en->anim.frame_idx];
 
-    en->anim_state_prev = en->anim_state;
-
-    switch (en->anim_state)
+    // Tick animation
+    if (en->anims[en->anim_state].frame_count > 1)
     {
-      case Animation_Idle:
-      {
-        en->texture = PREFAB->texture.player_idle;
-      }
-      break;
-      case Animation_Walk:
-      {
-        const AnimationDesc anim_prefab = PREFAB->animation.player_walk;
-        en->texture = anim_prefab.frames[en->anims[en->anim_state].frame_idx];
-        tick_animation(&en->anims[en->anim_state], &anim_prefab);
-      }
-      break;
-      case Animation_Jump:
-      {
-        en->texture = PREFAB->texture.player_jump;
-      }
-      default: break;
-    }
-  }
+      en->anim.tick_counter += ANIM_TICK;
 
-  // Spawn entities ----------------
-  {
-    if (!game->spawn_timer.is_ticking)
-    {
-      game->spawn_timer.end_time = 5.0f + t;
-      game->spawn_timer.is_ticking = TRUE;
-    }
-
-    if (timeout(game->spawn_timer, t))
-    {
-      f32 spawn_x[2] = {-50.0f, get_width() + 50.0f};
-      u32 roll = (u32) random_u64(0, 1);
-
-      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height()/2));
-      game->spawn_timer.is_ticking = FALSE;
+      if (en->anim.tick_counter % anim_desc.ticks_per_frame == 0)
+      {
+        if (en->anim.frame_idx == anim_desc.frame_count - 1)
+        {
+          en->anim.frame_idx = 0;
+        }
+        else
+        {
+          en->anim.frame_idx += 1;
+        }
+      }
     }
   }
 
@@ -693,12 +700,6 @@ void render_game(Game *game)
     {
       bool flash = entity_has_prop(en, EntityProp_FlashWhite);
       draw_sprite_x(en->xform, en->tint, en->texture, flash);
-
-      // NOTE(dg): TEMPORTARY SOLUTION BEFORE ANIMATION SYSTEM
-      if (entity_has_prop(en, EntityProp_FlashWhite))
-      {
-        entity_rem_prop(en, EntityProp_FlashWhite);
-      }
     }
   }
   
