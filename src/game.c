@@ -81,6 +81,7 @@ void update_game(Game *game)
     // Update entitiy movement ----------------
     if (entity_has_prop(en, EntityProp_Moves))
     {
+      // NOTE(dg): State changes are temporary. Need proper state machine
       if (entity_has_prop(en, EntityProp_Controlled))
       {
         entity_look_at(en, mouse_pos);
@@ -88,29 +89,38 @@ void update_game(Game *game)
         if (is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
+          en->anim_state = Animation_Walk;
         }
 
         if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
+          en->anim_state = Animation_Walk;
         }
 
         if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
+          en->anim_state = Animation_Idle;
         }
         
         if (!is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
+          en->anim_state = Animation_Idle;
         }
 
         if (is_key_pressed(KEY_W) && entity_has_prop(en, EntityProp_Grounded))
         {
           en->new_vel.y = PLAYER_JUMP_VEL * dt;
           entity_rem_prop(en, EntityProp_Grounded);
+        }
+
+        if (!entity_has_prop(en, EntityProp_Grounded))
+        {
+          en->anim_state = Animation_Jump;
         }
       }
       else
@@ -280,7 +290,7 @@ void update_game(Game *game)
       if (entity_has_prop(en, EntityProp_CollidesWithGround))
       {
         if (p_rect_y_range_intersect(
-              collision_params_from_entity(en->colliders[Collider_Body], en->vel), 
+              collision_params_from_entity(en->cols[Collider_Body], en->vel), 
               v2f(-3000.0f, 3000.0f), GROUND_Y))
         {
           en->pos.y = GROUND_Y + dim.height / 2.0f;
@@ -302,8 +312,8 @@ void update_game(Game *game)
           if (other->type == EntityType_ZombieWalker)
           {
             if (p_rect_circle_intersect(
-                  collision_params_from_entity(other->colliders[Collider_Body], other->vel),
-                  collision_params_from_entity(en->colliders[Collider_Hit], en->vel)))
+                  collision_params_from_entity(other->cols[Collider_Body], other->vel),
+                  collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
             {
               Vec2F spawn_pos = pos_from_entity(en);
               spawn_entity(game, EntityType_ParticleGroup, 
@@ -321,8 +331,8 @@ void update_game(Game *game)
       if (en->combat_type == CombatType_Melee)
       {
         if (p_rect_rect_intersect(
-              collision_params_from_entity(en->colliders[Collider_Hit], en->vel),
-              collision_params_from_entity(player->colliders[Collider_Body], player->vel)))
+              collision_params_from_entity(en->cols[Collider_Hit], en->vel),
+              collision_params_from_entity(player->cols[Collider_Body], player->vel)))
         {
           if (!en->attack_timer.is_ticking)
           {
@@ -539,6 +549,41 @@ void update_game(Game *game)
     }
   }
 
+  // Animate entities ----------------
+  for (EN_IN_ENTITIES)
+  { 
+    if (en->anim_state == Animation_None) continue;
+    
+    // Clear prev animation if the state changed
+    if (en->anim_state_prev != en->anim_state)
+    {
+      zero(en->anims[en->anim_state_prev], Animation);
+    }
+
+    en->anim_state_prev = en->anim_state;
+
+    switch (en->anim_state)
+    {
+      case Animation_Idle:
+      {
+        en->texture = PREFAB->texture.player_idle;
+      }
+      break;
+      case Animation_Walk:
+      {
+        const AnimationDesc anim_prefab = PREFAB->animation.player_walk;
+        en->texture = anim_prefab.frames[en->anims[en->anim_state].frame_idx];
+        tick_animation(&en->anims[en->anim_state], &anim_prefab);
+      }
+      break;
+      case Animation_Jump:
+      {
+        en->texture = PREFAB->texture.player_jump;
+      }
+      default: break;
+    }
+  }
+
   // Spawn entities ----------------
   {
     if (!game->spawn_timer.is_ticking)
@@ -549,10 +594,10 @@ void update_game(Game *game)
 
     if (timeout(game->spawn_timer, t))
     {
-      f32 spawn_x[2] = {-50, get_width() + 50};
+      f32 spawn_x[2] = {-50.0f, get_width() + 50.0f};
       u32 roll = (u32) random_u64(0, 1);
 
-      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height() / 2));
+      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height()/2));
       game->spawn_timer.is_ticking = FALSE;
     }
   }
@@ -637,7 +682,7 @@ void render_game(Game *game)
 {
   clear_frame(V4F_ZERO);
 
-  draw_scene(v2f(0, 0), mul_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
+  draw_scene(v2f(0, 0), scale_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
   // Batch sprites ----------------
   for (EN_IN_ENTITIES)
@@ -646,7 +691,8 @@ void render_game(Game *game)
 
     if (en->draw_type == DrawType_Sprite && entity_has_prop(en, EntityProp_Renders))
     {
-      draw_sprite_x(en->xform, en->tint, en->texture, entity_has_prop(en, EntityProp_FlashWhite));
+      bool flash = entity_has_prop(en, EntityProp_FlashWhite);
+      draw_sprite_x(en->xform, en->tint, en->texture, flash);
 
       // NOTE(dg): TEMPORTARY SOLUTION BEFORE ANIMATION SYSTEM
       if (entity_has_prop(en, EntityProp_FlashWhite))
@@ -703,7 +749,7 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
-// TODO(dg): Please make this better! Also viewport.y needs to factor in here somewhere.
+// TODO(dg): vewport.y needs to factor in here somewhere.
 inline
 Vec2F screen_to_world(Vec2F pos)
 {

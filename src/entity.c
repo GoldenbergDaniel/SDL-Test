@@ -49,13 +49,13 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = PREFAB->texture.player_idle;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
       // en->damage_timer.duration = 0.5f;
-      en->scale = SPRITE_SCALE;
+      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->health = 10;
 
       entity_add_collider(game, en, Collider_Body);
-      en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
-      en->colliders[Collider_Body]->pos = v2f(0, 0);
-      en->colliders[Collider_Body]->scale = v2f(0.5, 1);
+      en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+      en->cols[Collider_Body]->pos = v2f(0, 0);
+      en->cols[Collider_Body]->scale = v2f(0.5, 1);
     }
     break;
     case EntityType_ZombieWalker:
@@ -72,19 +72,19 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = PREFAB->texture.walker_idle;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
-      en->scale = SPRITE_SCALE;
+      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
       en->health = 3;
       en->damage = 1;
       
       entity_add_collider(game, en, Collider_Body);
-      en->colliders[Collider_Body]->col_type = P_ColliderType_Rect;
-      en->colliders[Collider_Body]->scale = v2f(0.5, 1);
+      en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+      en->cols[Collider_Body]->scale = v2f(0.5, 1);
 
       entity_add_collider(game, en, Collider_Hit);
-      en->colliders[Collider_Hit]->col_type = P_ColliderType_Rect;
-      en->colliders[Collider_Hit]->pos = v2f(en->dim.width * en->scale.x / 3, 0);
-      en->colliders[Collider_Hit]->scale = v2f(0.25, 0.5);
+      en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
+      en->cols[Collider_Hit]->pos = v2f(en->dim.width * en->scale.x / 3, 0);
+      en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
     }
     break;
     case EntityType_Equipped:
@@ -107,16 +107,16 @@ Entity *create_entity(Game *game, EntityType type)
       en->texture = PREFAB->texture.bullet;
       en->move_type = MoveType_Projectile;
       en->kill_timer.duration = BULLET_KILL_TIME;
-      en->scale = SPRITE_SCALE;
+      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->damage = 1;
 
       entity_add_collider(game, en, Collider_Hit);
-      en->colliders[Collider_Hit]->col_id = Collider_Hit;
-      en->colliders[Collider_Hit]->col_type = P_ColliderType_Circle;
-      en->colliders[Collider_Hit]->radius = 0;
-      en->colliders[Collider_Hit]->scale = v2f(0.5, 0.5);
-      en->colliders[Collider_Hit]->draw_type = DrawType_None;
-      en->colliders[Collider_Hit]->dim = V2F_ZERO;
+      en->cols[Collider_Hit]->col_id = Collider_Hit;
+      en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
+      en->cols[Collider_Hit]->radius = 0;
+      en->cols[Collider_Hit]->scale = v2f(0.5, 0.5);
+      en->cols[Collider_Hit]->draw_type = DrawType_None;
+      en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
     case EntityType_Collider:
@@ -322,7 +322,7 @@ void set_entity_target(Entity *en, EntityRef target)
   }
   else
   {
-    en->target_pos = V2F_ZERO; // NOTE(dg): why go back to origin?
+    en->target_pos = V2F_ZERO;
     en->has_target = FALSE;
   }
 }
@@ -618,9 +618,9 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
 
 void entity_add_collider(Game *game, Entity *en, ColliderID col_id)
 {
-  en->colliders[col_id] = create_entity(game, EntityType_Collider);
-  en->colliders[col_id]->col_id = col_id;
-  attach_entity_child(en, en->colliders[col_id]);
+  en->cols[col_id] = create_entity(game, EntityType_Collider);
+  en->cols[col_id]->col_id = col_id;
+  attach_entity_child(en, en->cols[col_id]);
 }
 
 // @Particles ////////////////////////////////////////////////////////////////////////////
@@ -645,6 +645,24 @@ void create_particles(Entity *en, ParticleDesc desc)
 }
 
 // @Other ////////////////////////////////////////////////////////////////////////////////
+
+// TODO(dg): Make sure to test this!
+void tick_animation(Animation *anim, const AnimationDesc *prefab)
+{
+  anim->tick_counter += 1;
+
+  if (anim->tick_counter % prefab->ticks_per_frame == 0)
+  {
+    if (anim->frame_idx == prefab->frame_count - 1)
+    {
+      anim->frame_idx = 0;
+    }
+    else
+    {
+      anim->frame_idx += 1;
+    }
+  }
+}
 
 inline
 bool timeout(Timer timer, f64 t)

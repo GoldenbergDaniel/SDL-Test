@@ -31,8 +31,8 @@ struct Prefabs
 
   struct
   {
-    AnimationDesc player_idle;
     AnimationDesc player_walk;
+    AnimationDesc walker_walk;
   } animation;
 
   struct
@@ -44,4 +44,4 @@ struct Prefabs
   } particle;
 };
 
-void init_prefabs(Prefabs *prefabs);
+Prefabs *create_prefabs(Arena *arena);

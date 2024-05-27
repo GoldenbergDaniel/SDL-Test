@@ -4,21 +4,14 @@
 #include "phys/phys.h"
 #include "draw.h"
 
-#define GRAVITY 3600.0f
+#define MAX_ENTITY_CHILDREN 16
 
-#define PLAYER_SPEED 600.0f
+#define PLAYER_SPEED 400.0f
 #define PLAYER_JUMP_VEL 900.0f
 #define PLAYER_ACC 3.0f
 #define PLAYER_FRIC 8.0f
 
 #define PROJ_SPEED 1000.0f
-
-#define MAX_ENTITY_CHILDREN 16
-
-#define TIMER_Combat 0
-#define TIMER_HEALTH 1
-#define TIMER_KILL 2
-#define NUM_TIMERS 3
 
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_ATTACK_COOLDOWN 0.4f
@@ -28,6 +21,7 @@
 
 enum
 {
+  SP_Nil,
   SP_Player,
   SP_Gun,
 };
@@ -46,19 +40,29 @@ typedef struct Entity Entity;
 
 // @Animation ////////////////////////////////////////////////////////////////////////////
 
-typedef enum AnimationMoveState
+typedef enum AnimationState
 {
+  Animation_None,
   Animation_Idle,
   Animation_Walk,
   Animation_Jump,
-} AnimationMoveState;
+
+  _Animation_Count,
+} AnimationState;
+
+typedef struct Animation Animation;
+struct Animation
+{
+  u8 frame_idx;
+  u16 tick_counter;
+};
 
 typedef struct AnimationDesc AnimationDesc;
 struct AnimationDesc
 {
-  TextureID frames[4];
+  TextureID frames[5];
   u8 frame_count;
-  AnimationMoveState move_state;
+  u16 ticks_per_frame;
 };
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
@@ -225,10 +229,15 @@ struct Entity
   u16 z_index;
 
   // Collision
-  Entity *colliders[_Collider_Count];
+  Entity *cols[_Collider_Count];
   ColliderID col_id;
   P_ColliderType col_type;
   f32 radius;
+
+  // Animation
+  Animation anims[_Animation_Count];
+  AnimationState anim_state;
+  AnimationState anim_state_prev;
 
   // Targeting
   bool has_target;
@@ -338,5 +347,6 @@ void create_particles(Entity *en, ParticleDesc desc);
 
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
+void tick_animation(Animation *anim, const AnimationDesc *prefab);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 bool timeout(Timer timer, f64 t);

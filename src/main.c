@@ -86,8 +86,7 @@ void init(void)
   GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
   GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
 
-  PREFAB = arena_push(&GAME.perm_arena, sizeof (Prefabs));
-  init_prefabs(PREFAB);
+  PREFAB = create_prefabs(&GAME.perm_arena);
 
   GAME.dt = TIME_STEP;
   GAME.input = &GLOBAL->input;

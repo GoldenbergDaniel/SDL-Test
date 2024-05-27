@@ -65,7 +65,6 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(rotate_3x3f(rot), xform);
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
-  xform = mul_3x3f(renderer->projection, xform);
   
   Vec3F p0 = transform_3f(v3f(0.0f, dim.height, 1.0f), xform);
   Vec3F p1 = transform_3f(v3f(dim.width, dim.height, 1.0f), xform);
@@ -118,7 +117,6 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
   xform = mul_3x3f(rotate_3x3f(rot * RADIANS), xform);
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);
-  xform = mul_3x3f(renderer->projection, xform);
   
   Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f(1.0f, 1.0f, 1.0f), xform); // tr
