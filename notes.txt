@@ -1,4 +1,6 @@
-Creating a static library using MSVC:
- 1. cl /c /EHsc sokol_sources /Fesokol
- 2. lib sokol.obj
- 
+TODO:
+  [X] animation
+  [_] audio
+  [_] gun switching
+  [_] player death
+  [_] gameover state

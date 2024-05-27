@@ -57,7 +57,7 @@ Prefabs *create_prefabs(Arena *arena)
     };
 
     prefab->animation.walker_walk = (AnimationDesc) {
-      .ticks_per_frame = 10,
+      .ticks_per_frame = 20,
       .frame_count = 5,
       .frames[0] = prefab->texture.walker_walk_0,
       .frames[1] = prefab->texture.walker_walk_1,

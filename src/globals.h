@@ -7,15 +7,17 @@
 
 #ifdef _WIN32
 #define TIME_STEP (1.0f / 120)
-#define ANIM_TICK 2
+#define ANIM_TICK 1
 #else
 #define TIME_STEP (1.0f / 60)
-#define ANIM_TICK 1
+#define ANIM_TICK 2
 #endif
 
 #define WIDTH 960.0f
 #define HEIGHT 540.0f
 #define SPRITE_SCALE 5
+
+#define GRAVITY 3600.0f
 
 typedef struct Globals Globals;
 struct Globals

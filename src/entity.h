@@ -6,6 +6,8 @@
 
 #define MAX_ENTITY_CHILDREN 16
 
+#define WALKER_SPEED 50.0f
+
 #define PLAYER_SPEED 400.0f
 #define PLAYER_JUMP_VEL 900.0f
 #define PLAYER_ACC 3.0f

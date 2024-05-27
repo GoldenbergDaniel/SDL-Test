@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 5.0f;
+  game->spawn_timer.duration = 10.0f;
 
   // Starting entities ----------------
   {
@@ -38,7 +38,10 @@ void init_game(Game *game)
 
     Entity *shot_point = create_entity(game, EntityType_Debug);
     attach_entity_child(gun, shot_point);
-    shot_point->pos = v2f(24.0f, 2.0f);
+    shot_point->pos = v2f(20.0f, 2.0f);
+
+    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
+    zombie->pos = v2f(get_width(), get_height()/2.0f);
   }
 }
 
@@ -149,12 +152,11 @@ void update_game(Game *game)
         {
           case MoveType_Grounded:
           {
-            static f32 zombie_speed = 50.0f;
             f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
 
-            if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 50.0f)
+            if (entity_has_prop(en, EntityProp_Grounded) && dist_from_player >= 40.0f)
             {
-              en->new_vel.x = en->flip_x ? -zombie_speed * dt : zombie_speed * dt;
+              en->new_vel.x = en->flip_x ? -WALKER_SPEED * dt : WALKER_SPEED * dt;
               en->anim_state = Animation_Walk;
             }
             else
@@ -358,7 +360,6 @@ void update_game(Game *game)
 
           if (timer_timeout(&en->attack_timer, t))
           {
-            printf("Player was hit\n");
             damage_entity(game, en, player);
           }
         }
