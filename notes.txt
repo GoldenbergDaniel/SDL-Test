@@ -1,6 +1,8 @@
 TODO:
   [X] animation
+  [_] text rendering
   [_] audio
   [_] gun switching
-  [_] player death
+  [_] chicken
+  [X] player death
   [_] gameover state

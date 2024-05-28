@@ -50,7 +50,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
       // en->damage_timer.duration = 0.5f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
-      en->health = 10;
+      en->health = PLAYER_HEALTH;
 
       en->anims[Animation_Idle] = PREFAB->animation.player_idle;
       en->anims[Animation_Walk] = PREFAB->animation.player_walk;
@@ -349,17 +349,15 @@ void damage_entity(Game *game, Entity *sender, Entity *reciever)
 
   if (reciever->health <= 0)
   {
-    switch (reciever->type)
+    spawn_entity(game, EntityType_ParticleGroup,
+                  .pos=pos_from_entity(reciever),
+                  .particle_desc=PREFAB->particle.death);
+    
+    kill_entity(reciever);
+
+    if (reciever->sp == SP_Player)
     {
-      case EntityType_ZombieWalker:
-      {
-        spawn_entity(game, EntityType_ParticleGroup,
-                      .pos=pos_from_entity(reciever),
-                      .particle_desc=PREFAB->particle.death);
-        
-        kill_entity(reciever);
-      }
-      default: break;
+      printf("The player been killed.\n");
     }
   }
 }

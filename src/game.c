@@ -347,7 +347,7 @@ void update_game(Game *game)
       }
 
       // Zombie vs Player collision
-      if (en->combat_type == CombatType_Melee)
+      if (en->combat_type == CombatType_Melee && is_entity_valid(player))
       {
         if (p_rect_rect_intersect(
               collision_params_from_entity(en->cols[Collider_Hit], en->vel),
@@ -751,12 +751,12 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
-// TODO(dg): vewport.y needs to factor in here somewhere.
+// TODO(dg): viewport.y needs to factor in here somewhere.
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
   return v2f(pos.x * (WIDTH / GLOBAL->window.width) + GLOBAL->viewport.x, 
-            (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height));
+            ((get_height()) - pos.y) * (HEIGHT / GLOBAL->window.height));
 }
 
 // @Events ///////////////////////////////////////////////////////////////////////////////

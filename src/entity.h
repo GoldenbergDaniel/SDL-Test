@@ -12,6 +12,7 @@
 #define PLAYER_JUMP_VEL 900.0f
 #define PLAYER_ACC 3.0f
 #define PLAYER_FRIC 8.0f
+#define PLAYER_HEALTH 5
 
 #define PROJ_SPEED 1000.0f
 

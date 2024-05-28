@@ -118,10 +118,12 @@ void handle_input_event(const struct sapp_event *event)
         {
           input->keys[KEY_BACKSPACE] = TRUE;
         }
+        break;
         case SAPP_KEYCODE_TAB:
         {
           input->keys[KEY_TAB] = TRUE;
         }
+        break;
       }
       break;
     }
@@ -217,6 +219,7 @@ void handle_input_event(const struct sapp_event *event)
         {
           input->keys[KEY_TAB] = FALSE;
         }
+        break;
       }
       break;
     }
@@ -241,12 +244,14 @@ void handle_input_event(const struct sapp_event *event)
     break;
     case SAPP_EVENTTYPE_RESIZED:
     {
+      // NOTE(dg): Not sure why I did this
       // for (i32 i = 0; i < _KEY_COUNT; i++)
       // {
       //   GLOBAL->input.keys_last[i] = 0;
       //   GLOBAL->input.keys[i] = 0;
       // }
     }
+    break;
     default: break;
   }
 }
