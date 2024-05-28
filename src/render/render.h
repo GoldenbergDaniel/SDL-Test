@@ -5,10 +5,10 @@
 typedef struct R_Vertex R_Vertex;
 struct R_Vertex
 {
-  Vec4F position;
+  Vec3F pos;
   Vec4F tint;
-  Vec4F color;
-  Vec4F uv;
+  Vec2F uv;
+  f32 flash;
 };
 
 typedef struct R_Shader R_Shader;
@@ -32,7 +32,8 @@ typedef struct R_VAO R_VAO;
 struct R_VAO
 {
   u32 id;
-  u8 attrib_count;
+  u8 offset;
+  u8 stride;
   u8 attrib_index;
 };
 

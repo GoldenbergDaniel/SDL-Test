@@ -61,7 +61,7 @@ void r_update_index_buffer(void *data, u32 size, u32 offset)
 
 // @RAO //////////////////////////////////////////////////////////////////////////////////
 
-R_VAO r_create_vertex_array(u8 attrib_count)
+R_VAO r_create_vertex_array(u8 stride)
 {
   u32 id;
   glGenVertexArrays(1, &id);
@@ -70,7 +70,7 @@ R_VAO r_create_vertex_array(u8 attrib_count)
   return (R_VAO) 
   {
     .id = id, 
-    .attrib_count = attrib_count, 
+    .stride = stride, 
     .attrib_index = 0,
   };
 }
@@ -81,11 +81,12 @@ void r_push_vertex_attribute(R_VAO *vao, u32 count)
                         count,
                         GL_FLOAT,
                         FALSE,
-                        sizeof (f32) * vao->attrib_count * count,
-                        (void *) (u64) (sizeof (f32) * vao->attrib_index * count));
+                        sizeof (f32) * vao->stride,
+                        (void *) (sizeof (f32) * vao->offset));
 
   glEnableVertexAttribArray(vao->attrib_index);
 
+  vao->offset += count;
   vao->attrib_index++;
 }
 
@@ -216,13 +217,13 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
 
-  R_VAO vao = r_create_vertex_array(4);
+  R_VAO vao = r_create_vertex_array(10);
   u32 vbo = r_create_vertex_buffer(NULL, vbo_size, TRUE);
   u32 ibo = r_create_index_buffer(NULL, ibo_size, TRUE);
-  r_push_vertex_attribute(&vao, 4); // position
+  r_push_vertex_attribute(&vao, 3); // position
   r_push_vertex_attribute(&vao, 4); // tint
-  r_push_vertex_attribute(&vao, 4); // color
-  r_push_vertex_attribute(&vao, 4); // uv
+  r_push_vertex_attribute(&vao, 2); // uv
+  r_push_vertex_attribute(&vao, 1); // flash
 
   Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, HEIGHT, 0.0f);
 
@@ -249,10 +250,11 @@ void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec
   }
 
   renderer->vertices[renderer->vertex_count++] = (R_Vertex) {
-    .position = pos,
+    .pos = v3f(pos.x, pos.y, pos.z),
+    // .position = pos,
     .tint = tint,
-    .color = color,
-    .uv = uv,
+    .uv = v2f(uv.x, uv.y),
+    .flash = color.r,
   };
 }
 

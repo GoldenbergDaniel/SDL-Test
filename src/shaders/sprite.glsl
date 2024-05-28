@@ -3,11 +3,11 @@
 
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec4 a_tint;
-layout (location = 2) in vec4 a_color;
-layout (location = 3) in vec2 a_tex_coord;
+layout (location = 2) in vec2 a_tex_coord;
+layout (location = 3) in float a_flash;
 
 out vec4 tint;
-out vec4 flash_color;
+out float flash;
 out vec2 tex_coord;
 
 uniform mat3 u_projection;
@@ -16,7 +16,7 @@ void main()
 {
   gl_Position = vec4(a_pos * u_projection, 1.0);
   tint = a_tint;
-  flash_color = a_color;
+  flash = a_flash;
   tex_coord = a_tex_coord;
 }
 
@@ -24,7 +24,7 @@ void main()
 #version 410 core \n
 
 in vec4 tint;
-in vec4 flash_color;
+in float flash;
 in vec2 tex_coord;
 
 layout (location = 0) out vec4 frag_color;
@@ -34,5 +34,5 @@ uniform sampler2D u_tex;
 void main()
 {
   vec4 tex_color = texture(u_tex, tex_coord);
-  frag_color = (tex_color * tint) + flash_color;
+  frag_color = (tex_color * tint) + vec4(flash, flash, flash, 0);
 }

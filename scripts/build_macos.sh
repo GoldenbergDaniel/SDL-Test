@@ -12,6 +12,8 @@ LDFLAGS_D="-L../extern/sokol -lSokol -framework OpenGL -framework Cocoa"
 
 set -e
 
+shadertoh src/shaders/ src/render/shaders.h
+
 if [[ $MODE == "r" || $MODE == "-r" ]]
 then
   echo "Building macOS release..."
