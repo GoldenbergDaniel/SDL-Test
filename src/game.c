@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 10.0f;
+  game->spawn_timer.duration = 2.0f;
 
   // Starting entities ----------------
   {
