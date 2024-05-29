@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 2.0f;
+  game->spawn_timer.duration = 10.0f;
 
   ui_init_widgetstore(64, &game->perm_arena);
 
@@ -614,7 +614,14 @@ void update_game(Game *game)
     }
   }
 
-  ui_text(str("Hello, world!"), v2f(get_width()/2, get_height()/2), 8);
+  Vec2F text_pos = screen_to_world(v2f(100, get_height()/2));
+  text_pos.y -= 100;
+  // ui_text(str("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), text_pos, 4);
+  // ui_text(str("abcdefghijklmnopqrstuvwxyz"), text_pos, 4);
+  // ui_text(str("0123456789"), text_pos, 4);
+  // ui_text(str("!@#$%^&*()-+_=[]\\|:;\"\'/<>,."), text_pos, 4);
+  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 3, 300);
+  // ui_text(str("XYZ: (1-2, 2+2, 1*3)"), text_pos, 4, 500);
 
   // Developer tools ----------------
   {
@@ -751,19 +758,54 @@ void render_game(Game *game)
 
   // Draw UI batch ----------------
   UI_WidgetStore *widgets = ui_get_widgetstore();
-  for (u64 i = 0; i < widgets->count; i++)
+  for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)
   {
-    UI_Widget *widget = &widgets->data[i];
+    UI_Widget *widget = &widgets->data[wdgt_idx];
     switch (widget->type)
     {
-      case UI_WidgetType_Nil: break;
+      case UI_WidgetType_Nil:
+      break;
       case UI_WidgetType_Text:
       {
-        UI_Glyph glyph = get_glyph(widget->string.str[0]);
-        draw_glyph(widget->pos, 
-                   scale_2f(glyph.dim, widget->size), 
-                   v4f(1, 1, 1, 1), 
-                   glyph.tex_coord);
+        Vec2F offset = V2F_ZERO;
+        u32 word_start_pos = 0;
+        for (u32 chr_idx = 0; chr_idx < widget->text.len; chr_idx++)
+        {
+          char chr = widget->text.str[chr_idx];
+          if ((chr < 65 || chr > 90) && (chr < 97 || chr > 122))
+          {
+            // Calculate word length
+            f32 word_len = 0;
+            for (u32 i = word_start_pos; i <= chr_idx; i++)
+            {
+              chr = widget->text.str[i];
+              UI_Glyph glyph = get_glyph(chr);
+              word_len += (glyph.dim.width + widget->space_width) * widget->text_size;
+            }
+
+            // Move to next line
+            if (offset.x + word_len > widget->dim.width)
+            {
+              offset.x = 0;
+              offset.y -= 8 * widget->text_size;
+            }
+
+            // Draw the word
+            for (u32 i = word_start_pos; i <= chr_idx; i++)
+            {
+              chr = widget->text.str[i];
+              UI_Glyph glyph = get_glyph(chr);
+              Vec2F glyph_offset = v2f(0, glyph.y_offset * widget->text_size);
+
+              Vec2F draw_pos = add_2f(add_2f(widget->pos, glyph_offset), offset);
+              draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.uv);
+
+              offset.x += (glyph.dim.width + widget->space_width) * widget->text_size;
+            }
+            
+            word_start_pos = chr_idx + 1;
+          }
+        }
       }
       break;
     }

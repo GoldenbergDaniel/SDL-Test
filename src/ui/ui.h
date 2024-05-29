@@ -6,8 +6,9 @@
 typedef struct UI_Glyph UI_Glyph;
 struct UI_Glyph
 {
-  Vec2I tex_coord;
+  Vec2I uv;
   Vec2F dim;
+  f32 y_offset;
 };
 
 typedef enum UI_WidgetType
@@ -20,10 +21,14 @@ typedef struct UI_Widget UI_Widget;
 struct UI_Widget
 {
   UI_WidgetType type;
+
   Vec2F pos;
+  Vec2F dim;
   Vec2F scale;
-  u32 size;
-  String string;
+
+  String text;
+  u32 text_size;
+  u32 space_width;
 };
 
 typedef struct UI_WidgetStore UI_WidgetStore;
@@ -34,11 +39,11 @@ struct UI_WidgetStore
   u64 count;
 };
 
-#define ui_glyph(x, y, w, h) ((UI_Glyph) {(Vec2I) {x, y}, (Vec2F) {w, h}})
+#define ui_glyph(x, y, w, h, off) {{x, y}, {w, h}, off}
 
 void ui_init_widgetstore(u64 count, Arena *arena);
 UI_WidgetStore *ui_get_widgetstore(void);
 void ui_clear_widgetstore(void);
 void ui_push_widget(UI_Widget *widget);
 
-void ui_text(String text, Vec2F pos, u32 size);
+void ui_text(String text, Vec2F pos, f32 size, f32 width);

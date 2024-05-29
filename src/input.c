@@ -33,7 +33,6 @@ Vec2F get_mouse_pos(void)
   return GLOBAL->input.mouse_pos;
 }
 
-inline
 void remember_last_keys(void)
 {
   for (i32 i = 0; i < _KEY_COUNT; i++)

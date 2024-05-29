@@ -31,13 +31,15 @@ void ui_push_widget(UI_Widget *widget)
   WIDGET_STORE.count += 1;
 }
 
-void ui_text(String text, Vec2F pos, u32 size)
+void ui_text(String text, Vec2F pos, f32 size, f32 width)
 {
   ui_push_widget(&(UI_Widget) {
     .type = UI_WidgetType_Text,
     .pos = pos,
-    .string = text,
-    .size = size,
+    .dim = v2f(width, 1),
+    .text = text,
+    .text_size = size,
+    .space_width = 2,
     .scale = v2f(1.0f, 1.0f),
   });
 }

@@ -27,7 +27,7 @@
 #define DEBUG_BLUE ((Vec4F) {0.1f, 0.4f, 0.8f, 1.0f})
 #define DEBUG_YELLOW ((Vec4F) {0.9f, 0.8f, 0.0f, 1.0f})
 
-typedef struct Entity Entity; 
+typedef struct Entity Entity;
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,4 +62,4 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex_id, bool flash);
 
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint);
 void draw_particles(Entity *en);
-void draw_glyph(Vec2F pos, Vec2F dim, Vec4F tint, TextureID tex);
+void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex);

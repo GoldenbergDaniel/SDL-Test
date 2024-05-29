@@ -119,9 +119,10 @@ void frame(void)
     r_set_viewport(viewport.x, viewport.y, viewport.z, viewport.w);
     GLOBAL->viewport = viewport;
   }
-
+  
   GLOBAL->window.width = sapp_width();
   GLOBAL->window.height = sapp_height();
+  // printf("%f\n", get_width());
   
   f64 new_time = stm_sec(stm_since(0));
   f64 frame_time = new_time - GLOBAL->frame.current_time;
