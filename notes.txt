@@ -1,8 +1,13 @@
-TODO:
-  [X] animation
-  [_] text rendering
-  [_] audio
-  [_] gun switching
-  [_] chicken
-  [X] player death
-  [_] gameover state
+TODO
+  FEATURES
+    [X] animation
+    [_] text rendering
+    [_] audio
+    [_] gun switching
+    [_] chicken
+    [X] player death
+    [_] gameover state
+    [_] logger
+  ISSUES
+    [_] screen-to-world wrong
+    [_] hit timer should be primed

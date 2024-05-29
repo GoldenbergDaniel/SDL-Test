@@ -217,7 +217,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
 
-  R_VAO vao = r_create_vertex_array(10);
+  R_VAO vao = r_create_vertex_array(sizeof (R_Vertex) / sizeof (f32));
   u32 vbo = r_create_vertex_buffer(NULL, vbo_size, TRUE);
   u32 ibo = r_create_index_buffer(NULL, ibo_size, TRUE);
   r_push_vertex_attribute(&vao, 3); // position

@@ -2,7 +2,6 @@ debug/
 release/
 
 .DS_STORE
-compile_flags.txt
 build.bat
 build.sh
 undeadwest

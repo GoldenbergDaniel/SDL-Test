@@ -57,7 +57,7 @@ void init(void)
   GAME.entity_arena = arena_create(MiB(32));
   GAME.frame_arena = arena_create(MiB(16));
   GAME.batch_arena = arena_create(MiB(16));
-
+  
   stm_setup();
   srand((u32) stm_now());
   arena_get_scratch(NULL);
