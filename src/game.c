@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "base/base_inc.h"
-
+#include "ui/ui.h"
 #include "phys/phys.h"
 #include "draw.h"
 #include "input.h"
@@ -24,6 +24,8 @@ void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
   game->spawn_timer.duration = 2.0f;
+
+  ui_init_widgetstore(64, &game->perm_arena);
 
   // Starting entities ----------------
   {
@@ -52,6 +54,8 @@ void update_game(Game *game)
   Entity *player = get_entity_of_sp(game, SP_Player);
   if (player == NULL) player = NIL_ENTITY;
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+
+  ui_clear_widgetstore();
 
   // Spawn entities ----------------
   {
@@ -610,6 +614,8 @@ void update_game(Game *game)
     }
   }
 
+  ui_text(str("Hello, world!"), v2f(get_width()/2, get_height()/2), 8);
+
   // Developer tools ----------------
   {
     // Toggle debug
@@ -690,9 +696,10 @@ void render_game(Game *game)
 {
   clear_frame(V4F_ZERO);
 
+  // Draw scene ----------------
   draw_scene(v2f(0, 0), scale_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
-  // Batch sprites ----------------
+  // Draw sprite batch ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -704,7 +711,7 @@ void render_game(Game *game)
     }
   }
   
-  // Batch primitives ----------------
+  // Draw primitive batch ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -739,6 +746,26 @@ void render_game(Game *game)
       {
         draw_particles(en);
       }
+    }
+  }
+
+  // Draw UI batch ----------------
+  UI_WidgetStore *widgets = ui_get_widgetstore();
+  for (u64 i = 0; i < widgets->count; i++)
+  {
+    UI_Widget *widget = &widgets->data[i];
+    switch (widget->type)
+    {
+      case UI_WidgetType_Nil: break;
+      case UI_WidgetType_Text:
+      {
+        UI_Glyph glyph = get_glyph(widget->string.str[0]);
+        draw_glyph(widget->pos, 
+                   scale_2f(glyph.dim, widget->size), 
+                   v4f(1, 1, 1, 1), 
+                   glyph.tex_coord);
+      }
+      break;
     }
   }
 

@@ -10,6 +10,7 @@
 #include "base/base_math.c"
 #include "base/base_random.c"
 #include "render/render.c"
+#include "ui/ui.c"
 #include "phys/phys.c"
 #include "globals.c"
 #include "prefabs.c"
