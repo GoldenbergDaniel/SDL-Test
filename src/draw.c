@@ -112,6 +112,7 @@ UI_Glyph GLYPH_TABLE[127] = {
   ['|'] = ui_glyph(10, 6, 8, 8),
   ['\''] = ui_glyph(11, 6, 8, 8),
   ['\"'] = ui_glyph(12, 6, 8, 8),
+  [' '] = ui_glyph(13, 6, 8, 8),
 };
 
 inline
