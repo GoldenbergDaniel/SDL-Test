@@ -6,9 +6,9 @@
 typedef struct UI_Glyph UI_Glyph;
 struct UI_Glyph
 {
-  Vec2I uv;
+  Vec2I coords;
   Vec2F dim;
-  f32 y_offset;
+  Vec2F offset;
 };
 
 typedef enum UI_WidgetType
@@ -40,7 +40,7 @@ struct UI_WidgetStore
   u64 count;
 };
 
-#define ui_glyph(x, y, w, h, off) {{x, y}, {w, h}, off}
+#define ui_glyph(x, y, w, h, dx, dy) {{x, y}, {w, h}, {dx, dy}}
 
 void ui_init_widgetstore(u64 count, Arena *arena);
 UI_WidgetStore *ui_get_widgetstore(void);

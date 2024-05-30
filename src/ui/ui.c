@@ -40,7 +40,7 @@ void ui_text(String text, Vec2F pos, f32 size, f32 width)
     .scale = v2f(1.0f, 1.0f),
     .text = text,
     .text_size = size,
-    .text_spacing = 2,
+    .text_spacing = 0,
     .space_width = 4,
   });
 }
