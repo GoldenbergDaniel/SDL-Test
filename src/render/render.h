@@ -95,7 +95,7 @@ R_Texture r_create_texture(String path);
 // @Rendering ////////////////////////////////////////////////////////////////////////////
 
 R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
-void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec4F uv);
+void r_push_vertex(R_Renderer *renderer, Vec3F pos, Vec4F tint, Vec4F color, Vec2F uv);
 void r_push_quad_indices(R_Renderer *renderer);
 void r_use_shader(R_Renderer *renderer, R_Shader *shader);
 void r_use_texture(R_Renderer *renderer, R_Texture *texture);

@@ -37,9 +37,10 @@ void ui_text(String text, Vec2F pos, f32 size, f32 width)
     .type = UI_WidgetType_Text,
     .pos = pos,
     .dim = v2f(width, 1),
+    .scale = v2f(1.0f, 1.0f),
     .text = text,
     .text_size = size,
-    .space_width = 2,
-    .scale = v2f(1.0f, 1.0f),
+    .text_spacing = 2,
+    .space_width = 4,
   });
 }

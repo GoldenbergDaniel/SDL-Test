@@ -4,13 +4,13 @@
 #include "render/render.h"
 #include "ui/ui.h"
 
-#define SPRITE_SHEET_SIZE 16
-#define SPRITE_SHEET_WIDTH 256
-#define SPRITE_SHEET_HEIGHT 128
+#define SPRITE_ATLAS_CELL 16
+#define SPRITE_ATLAS_WIDTH 256
+#define SPRITE_ATLAS_HEIGHT 128
 
-#define FONT_SHEET_SIZE 8
-#define FONT_SHEET_WIDTH 128
-#define FONT_SHEET_HEIGHT 64
+#define GLYPH_ATLAS_CELL 9
+#define GLYPH_ATLAS_WIDTH 144
+#define GLYPH_ATLAS_HEIGHT 63
 
 #define SHADER_PRIMITIVE 0
 #define SHADER_SPRITE 1

@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 10.0f;
+  game->spawn_timer.duration = 300.0f;
 
   ui_init_widgetstore(64, &game->perm_arena);
 
@@ -42,8 +42,8 @@ void init_game(Game *game)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(20.0f, 2.0f);
 
-    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(get_width(), get_height()/2.0f);
+    // Entity *zombie = create_entity(game, EntityType_ZombieWalker);
+    // zombie->pos = v2f(get_width(), get_height()/2.0f);
   }
 }
 
@@ -616,12 +616,12 @@ void update_game(Game *game)
 
   Vec2F text_pos = screen_to_world(v2f(100, get_height()/2));
   text_pos.y -= 100;
-  // ui_text(str("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), text_pos, 4);
+  // ui_text(str("ABCD EFG HIJK LMNOP QRS TUV WX YZ"), text_pos, 4, 1000);
   // ui_text(str("abcdefghijklmnopqrstuvwxyz"), text_pos, 4);
   // ui_text(str("0123456789"), text_pos, 4);
   // ui_text(str("!@#$%^&*()-+_=[]\\|:;\"\'/<>,."), text_pos, 4);
-  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 3, 300);
-  // ui_text(str("XYZ: (1-2, 2+2, 1*3)"), text_pos, 4, 500);
+  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 4, 400);
+  // ui_text(str("XYZ: (1-2, 2+2^, 1*3)"), text_pos, 4, 500); 
 
   // Developer tools ----------------
   {
@@ -767,45 +767,54 @@ void render_game(Game *game)
       break;
       case UI_WidgetType_Text:
       {
-        Vec2F offset = V2F_ZERO;
-        u32 word_start_pos = 0;
-        for (u32 chr_idx = 0; chr_idx < widget->text.len; chr_idx++)
-        {
-          char chr = widget->text.str[chr_idx];
-          if ((chr < 65 || chr > 90) && (chr < 97 || chr > 122))
-          {
-            // Calculate word length
-            f32 word_len = 0;
-            for (u32 i = word_start_pos; i <= chr_idx; i++)
-            {
-              chr = widget->text.str[i];
-              UI_Glyph glyph = get_glyph(chr);
-              word_len += (glyph.dim.width + widget->space_width) * widget->text_size;
-            }
+        // Vec2F offset = V2F_ZERO;
+        // u32 word_start_pos = 0;
+        // u32 len = widget->text.len;
+        // for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
+        // {
+        //   char chr = widget->text.str[chr_idx];
+        //   if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
+        //   {
+        //     // Calculate word length
+        //     f32 word_len = 0;
+        //     for (u32 i = word_start_pos; i <= chr_idx; i++)
+        //     {
+        //       chr = widget->text.str[i];
+        //       UI_Glyph glyph = get_glyph(chr);
+        //       word_len += (glyph.dim.width + widget->space_width) * widget->text_size;
+        //     }
 
-            // Move to next line
-            if (offset.x + word_len > widget->dim.width)
-            {
-              offset.x = 0;
-              offset.y -= 8 * widget->text_size;
-            }
+        //     // Move to next line
+        //     if (offset.x + word_len > widget->dim.width && chr_idx != len-1)
+        //     {
+        //       offset.x = 0;
+        //       offset.y -= GLYPH_ATLAS_CELL * widget->text_size;
+        //     }
 
-            // Draw the word
-            for (u32 i = word_start_pos; i <= chr_idx; i++)
-            {
-              chr = widget->text.str[i];
-              UI_Glyph glyph = get_glyph(chr);
-              Vec2F glyph_offset = v2f(0, glyph.y_offset * widget->text_size);
+        //     // Draw the word
+        //     for (u32 i = word_start_pos; i <= chr_idx; i++)
+        //     {
+        //       chr = widget->text.str[i];
+        //       if (chr != ' ')
+        //       {
+        //         UI_Glyph glyph = get_glyph(chr);
 
-              Vec2F draw_pos = add_2f(add_2f(widget->pos, glyph_offset), offset);
-              draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.uv);
+        //         Vec2F glyph_offset = v2f(0, glyph.y_offset * widget->text_size);
+        //         Vec2F draw_pos = add_2f(add_2f(widget->pos, glyph_offset), offset);
+        //         draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.uv);
 
-              offset.x += (glyph.dim.width + widget->space_width) * widget->text_size;
-            }
+        //         offset.x += (glyph.dim.width + widget->text_spacing) * widget->text_size;
+        //       }
+        //       else
+        //       {
+        //         offset.x += widget->space_width * widget->text_size;
+        //         break;
+        //       }
+        //     }
             
-            word_start_pos = chr_idx + 1;
-          }
-        }
+        //     word_start_pos = chr_idx + 1;
+        //   }
+        // }
       }
       break;
     }

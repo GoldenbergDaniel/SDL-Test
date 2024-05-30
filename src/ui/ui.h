@@ -28,6 +28,7 @@ struct UI_Widget
 
   String text;
   u32 text_size;
+  u32 text_spacing;
   u32 space_width;
 };
 
