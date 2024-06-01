@@ -17,7 +17,7 @@
 #define PROJ_SPEED 1000.0f
 
 #define BULLET_KILL_TIME 5.0f
-#define PLAYER_ATTACK_COOLDOWN 0.1f
+#define PLAYER_ATTACK_COOLDOWN 0.5f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
 #define FLASH_TIME 0.05f
 
@@ -130,6 +130,19 @@ struct ParticleDesc
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
+
+typedef enum WeaponType
+{
+  WeaponType_Pistol,
+  WeaponType_Rifle,
+} WeaponType;
+
+typedef struct WeaponDesc WeaponDesc;
+struct WeaponDesc
+{
+  TextureID sprite;
+  Vec2F ancor;
+};
 
 typedef enum EntityType
 {
@@ -253,18 +266,19 @@ struct Entity
   f32 target_angle;
   f32 view_dist;
 
+  // ParticleGroup
+  Arena particle_arena;
+  Particle *particles;
+  ParticleDesc particle_desc;
+  Timer particle_timer;
+
   // Combat
   i16 health;
   i16 damage;
   Timer attack_timer;
   Timer damage_timer;
   Timer kill_timer;
-
-  // ParticleGroup
-  Arena particle_arena;
-  Particle *particles;
-  ParticleDesc particle_desc;
-  Timer particle_timer;
+  WeaponType weapon_type;
 };
 
 typedef struct EntityList EntityList;

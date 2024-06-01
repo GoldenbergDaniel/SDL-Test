@@ -1,7 +1,7 @@
 TODO
   FEATURES
     [X] animation
-    [X] text rendering
+    [~] text rendering
     [_] audio
     [_] gun switching
     [_] chicken
@@ -12,5 +12,3 @@ TODO
   ISSUES
     [_] screen-to-world wrong
     [_] hit timer should be primed
-
-the quick brown-fox jumps

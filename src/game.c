@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 10.0f;
+  game->spawn_timer.duration = 60.0f;
 
   ui_init_widgetstore(64, &game->perm_arena);
 
@@ -42,8 +42,8 @@ void init_game(Game *game)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(20.0f, 2.0f);
 
-    Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    zombie->pos = v2f(get_width(), get_height()/2.0f);
+    // Entity *zombie = create_entity(game, EntityType_ZombieWalker);
+    // zombie->pos = v2f(get_width(), get_height()/2.0f);
   }
 }
 
@@ -614,14 +614,11 @@ void update_game(Game *game)
     }
   }
 
-  Vec2F text_pos = screen_to_world(v2f(100, get_height()/2));
+  Vec2F text_pos = screen_to_world(v2f(0, get_height()/2));
   text_pos.y -= 100;
-  // ui_text(str("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), text_pos, 4);
-  // ui_text(str("abcdefghijklmnopqrstuvwxyz"), text_pos, 4);
-  // ui_text(str("0123456789"), text_pos, 4);
-  // ui_text(str("!@#$%^&*()-+_=[]\\|:;\"\'/<>,."), text_pos, 4);
-  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 3, 300);
-  // ui_text(str("XYZ: (1-2, 2+2, 1*3)"), text_pos, 4, 500);
+  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
+  ui_text_1f(str("time: %.1f"), t, screen_to_world(v2f(10, 50)), 15, &game->draw_arena);
+  ui_text_2f(str("xyz: %.0f %.0f"), mouse_pos, screen_to_world(v2f(10, 85)), 15, &game->draw_arena);
 
   // Developer tools ----------------
   {
@@ -767,12 +764,16 @@ void render_game(Game *game)
       break;
       case UI_WidgetType_Text:
       {
+        const f32 scale = 1.0f/8;
+
         Vec2F offset = V2F_ZERO;
         u32 word_start_pos = 0;
-        for (u32 chr_idx = 0; chr_idx < widget->text.len; chr_idx++)
+
+        u32 len = widget->text.len;
+        for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
         {
           char chr = widget->text.str[chr_idx];
-          if ((chr < 65 || chr > 90) && (chr < 97 || chr > 122))
+          if ((chr < 65 || chr > 90) && (chr < 97 || chr > 122) || chr_idx == len-1)
           {
             // Calculate word length
             f32 word_len = 0;
@@ -780,27 +781,33 @@ void render_game(Game *game)
             {
               chr = widget->text.str[i];
               UI_Glyph glyph = get_glyph(chr);
-              word_len += (glyph.dim.width + widget->space_width) * widget->text_size;
+              word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
             }
 
             // Move to next line
-            if (offset.x + word_len > widget->dim.width)
+            if (offset.x + word_len > widget->dim.width && chr_idx < len)
             {
               offset.x = 0;
-              offset.y -= 8 * widget->text_size;
+              offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
             }
 
             // Draw the word
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
               chr = widget->text.str[i];
-              UI_Glyph glyph = get_glyph(chr);
-              Vec2F glyph_offset = v2f(0, glyph.y_offset * widget->text_size);
+              if (chr != ' ')
+              {
+                UI_Glyph glyph = get_glyph(chr);
 
-              Vec2F draw_pos = add_2f(add_2f(widget->pos, glyph_offset), offset);
-              draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.uv);
+                Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
+                draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
 
-              offset.x += (glyph.dim.width + widget->space_width) * widget->text_size;
+                offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+              }
+              else
+              {
+                offset.x += widget->space_width * widget->text_size/8.0f;
+              }
             }
             
             word_start_pos = chr_idx + 1;
@@ -820,12 +827,14 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
-// TODO(dg): viewport.y needs to factor in here somewhere.
+// TODO(dg): viewport needs to factor in here somewhere.
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
-  return v2f(pos.x * (WIDTH / GLOBAL->window.width) + GLOBAL->viewport.x, 
-            ((get_height()) - pos.y) * (HEIGHT / GLOBAL->window.height));
+  return (Vec2F) {
+    (pos.x) * (WIDTH / GLOBAL->window.width),
+    (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height),
+  };
 }
 
 // @Events ///////////////////////////////////////////////////////////////////////////////

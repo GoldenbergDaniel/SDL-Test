@@ -2,6 +2,7 @@
 setlocal
 
 set NAME= undeadwest
+set SRC= src\_target.c
 set MODE= %1%
 
 set CFLAGS_R= /std:c17 /I extern\ 
@@ -17,18 +18,18 @@ if "%MODE%"==" d" (
   mkdir debug
   copy SDL3.dll debug\ /b
   pushd debug
-  cl %CFLAGS_D% /DDEBUG ..\src\_target.c /Feundeadwest.exe %LDFLAGS_D% || exit /b 1
+  cl %CFLAGS_D% /DDEBUG ..\%SRC% /Feundeadwest.exe %LDFLAGS_D% || exit /b 1
   del _target.obj
   del vc140.pdb
   popd
 ) else (
   if "%MODE%"==" r" (
     echo Building release...
-    cl %CFLAGS_R% /O2 /DRELEASE src\_target.c /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
+    cl %CFLAGS_R% /O2 /DRELEASE %SRC% /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
     del _target.obj
   ) else (
     echo Building...
-    cl %CFLAGS_R% /Od src\_target.c /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
+    cl %CFLAGS_R% /Od %SRC% /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
     del _target.obj
     %NAME%
   )

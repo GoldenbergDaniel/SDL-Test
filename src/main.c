@@ -40,6 +40,7 @@ i32 main(void)
     .window_title = "Undead West",
     .width = WIDTH,
     .height = HEIGHT,
+    .high_dpi = FALSE,
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
@@ -56,6 +57,7 @@ void init(void)
   GAME.perm_arena = arena_create(MiB(16));
   GAME.entity_arena = arena_create(MiB(32));
   GAME.frame_arena = arena_create(MiB(16));
+  GAME.draw_arena = arena_create(MiB(16));
   GAME.batch_arena = arena_create(MiB(16));
   
   stm_setup();
@@ -100,6 +102,7 @@ void event(const sapp_event *event)
 
 void frame(void)
 {
+  // GLOBAL->renderer.projection = orthographic_3x3f(0, sapp_width(), sapp_height(), 0);
   // Update viewport ----------------
   if (GLOBAL->window.width != sapp_width() || GLOBAL->window.height != sapp_height())
   {
@@ -122,7 +125,6 @@ void frame(void)
   
   GLOBAL->window.width = sapp_width();
   GLOBAL->window.height = sapp_height();
-  // printf("%f\n", get_width());
   
   f64 new_time = stm_sec(stm_since(0));
   f64 frame_time = new_time - GLOBAL->frame.current_time;
@@ -149,6 +151,7 @@ void frame(void)
   }
 
   render_game(&GAME);
+  arena_clear(&GAME.draw_arena);
   arena_clear(&GAME.batch_arena);
 
   if (game_should_quit(&GAME))

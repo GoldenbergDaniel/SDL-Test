@@ -187,8 +187,6 @@ R_Texture r_create_texture(String path)
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glTexImage2D(GL_TEXTURE_2D, 
                0, 
@@ -242,7 +240,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   };
 }
 
-void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec4F uv)
+void r_push_vertex(R_Renderer *renderer, Vec3F pos, Vec4F tint, Vec4F color, Vec2F uv)
 {
   if (renderer->vertex_count == renderer->vertex_capacity)
   {
@@ -250,10 +248,9 @@ void r_push_vertex(R_Renderer *renderer, Vec4F pos, Vec4F tint, Vec4F color, Vec
   }
 
   renderer->vertices[renderer->vertex_count++] = (R_Vertex) {
-    .pos = v3f(pos.x, pos.y, pos.z),
-    // .position = pos,
+    .pos = pos,
     .tint = tint,
-    .uv = v2f(uv.x, uv.y),
+    .uv = uv,
     .flash = color.r,
   };
 }

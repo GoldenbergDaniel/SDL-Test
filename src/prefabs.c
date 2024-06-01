@@ -22,8 +22,9 @@ Prefabs *create_prefabs(Arena *arena)
     prefab->texture.walker_walk_3 = v2i(4, 1);
     prefab->texture.walker_walk_4 = v2i(5, 1);
     
-    prefab->texture.pistol = v2i(0, 2);
-    prefab->texture.bullet = v2i(1, 2);
+    prefab->texture.pistol = v2i(1, 3);
+    prefab->texture.rifle = v2i(1, 3);
+    prefab->texture.bullet = v2i(5, 3);
   }
 
   // Animation ----------------

@@ -26,6 +26,7 @@ struct Prefabs
     TextureID walker_walk_5;
 
     TextureID pistol;
+    TextureID rifle;
     TextureID bullet;
   } texture;
 

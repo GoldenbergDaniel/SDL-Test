@@ -47,6 +47,7 @@ struct Game
 {
   Arena perm_arena;
   Arena frame_arena;
+  Arena draw_arena;
   Arena batch_arena;
   Arena entity_arena;
 
