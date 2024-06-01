@@ -338,6 +338,7 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
 }
 
 static inline
+
 Vec2F uv_tl(Vec2I coords, f32 size, f32 w, f32 h)
 {
   return (Vec2F) {
@@ -356,6 +357,7 @@ Vec2F uv_tr(Vec2I coords, f32 size, f32 w, f32 h)
 }
 
 static inline
+
 Vec2F uv_br(Vec2I coords, f32 size, f32 w, f32 h)
 {
   return (Vec2F) {

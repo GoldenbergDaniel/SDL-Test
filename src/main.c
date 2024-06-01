@@ -80,7 +80,7 @@ void init(void)
 
   GLOBAL->window.width = sapp_width();
   GLOBAL->window.height = sapp_height();
-  GLOBAL->viewport = v4f(0, 0, WIDTH, HEIGHT);
+  GLOBAL->viewport = v4f(0, 0, sapp_width(), sapp_height());
 
   GLOBAL->frame.current_time = stm_sec(stm_since(0));
   GLOBAL->frame.accumulator = TIME_STEP;

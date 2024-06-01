@@ -24,7 +24,6 @@ void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
   game->spawn_timer.duration = 60.0f;
-
   ui_init_widgetstore(64, &game->perm_arena);
 
   // Starting entities ----------------
@@ -773,14 +772,15 @@ void render_game(Game *game)
         for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
         {
           char chr = widget->text.str[chr_idx];
-          if ((chr < 65 || chr > 90) && (chr < 97 || chr > 122) || chr_idx == len-1)
+          if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
           {
+            UI_Glyph glyph = get_glyph(chr);
+
             // Calculate word length
             f32 word_len = 0;
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
               chr = widget->text.str[i];
-              UI_Glyph glyph = get_glyph(chr);
               word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
             }
 
@@ -789,6 +789,8 @@ void render_game(Game *game)
             {
               offset.x = 0;
               offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
+
+              word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
             }
 
             // Draw the word
@@ -806,7 +808,7 @@ void render_game(Game *game)
               }
               else
               {
-                offset.x += widget->space_width * widget->text_size/8.0f;
+                offset.x += widget->space_width * widget->text_size * scale;
               }
             }
             
