@@ -1,36 +1,50 @@
 @echo off
 setlocal
 
-set NAME= undeadwest
-set SRC= src\_target.c
-set MODE= %1%
+set SRC=src\_target.c
+set OUT=undeadwest.exe
 
-set CFLAGS_R= /std:c17 /I extern\ 
-set CFLAGS_D= /std:c17 /Od /Zi /W1 /I ..\extern\ 
+set MODE= dev
+if "%1%"=="d" set MODE= debug
+if "%1%"=="r" set MODE= release
 
-set LDFLAGS_R= /link /INCREMENTAL:NO /LIBPATH:.\extern\sokol\lib sokol.lib
-set LDFLAGS_D= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
+if "%MODE%"==" dev"     set CFLAGS= /std:c17 /I extern\
+if "%MODE%"==" debug"   set CFLAGS= /std:c17 /Od /DRELEASE /I ..\extern\
+if "%MODE%"==" release" set CFLAGS= /std:c17 /O2 /DDEBUG /I ..\extern\
+
+if "%MODE%"==" dev"     set LDFLAGS= /link /INCREMENTAL:NO /LIBPATH:extern\sokol\lib sokol.lib
+if "%MODE%"==" debug"   set LDFLAGS= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
+if "%MODE%"==" release" set LDFLAGS= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
 
 shadertoh src\shaders\ src\render\shaders.h
 
-if "%MODE%"==" d" (
-  echo Building debug...
-  mkdir debug
-  copy SDL3.dll debug\ /b
-  pushd debug
-  cl %CFLAGS_D% /DDEBUG ..\%SRC% /Feundeadwest.exe %LDFLAGS_D% || exit /b 1
+if "%MODE%"==" dev" (
+  echo Building...
+  cl %CFLAGS% %SRC% /Fe%OUT% %LDFLAGS% || exit /b 1
   del _target.obj
-  del vc140.pdb
+  %OUT%
+)
+
+if "%MODE%"==" debug" (
+  echo Building debug...
+  if not exist debug mkdir debug
+  pushd debug
+    cl %CFLAGS% ..\%SRC% /Fe%OUT% %LDFLAGS% || exit /b 1
+    del _target.obj
   popd
-) else (
-  if "%MODE%"==" r" (
-    echo Building release...
-    cl %CFLAGS_R% /O2 /DRELEASE %SRC% /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
+)
+
+if "%MODE%"==" release" (
+  echo Building release...
+  if not exist release mkdir release
+  pushd release
+    cl %CFLAGS% ..\%SRC% /Fe%OUT% %LDFLAGS% || exit /b 1
     del _target.obj
-  ) else (
-    echo Building...
-    cl %CFLAGS_R% /Od %SRC% /Feundeadwest.exe %LDFLAGS_R% || exit /b 1
-    del _target.obj
-    %NAME%
-  )
+    if not exist undead-west-windows mkdir undead-west-windows
+    pushd undead-west-windows
+      move ..\%OUT% .
+      xcopy ..\..\res\ .\res\ /E /y
+    popd
+    butler push undead-west-windows goldenbergdev/undead-west:windows --userversion-file ..\version.txt
+  popd
 )

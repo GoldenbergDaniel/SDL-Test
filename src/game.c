@@ -615,7 +615,7 @@ void update_game(Game *game)
 
   Vec2F text_pos = screen_to_world(v2f(0, get_height()/2));
   text_pos.y -= 100;
-  ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
+  // ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
   ui_text_1f(str("time: %.1f"), t, screen_to_world(v2f(10, 50)), 15, &game->draw_arena);
   ui_text_2f(str("xyz: %.0f %.0f"), mouse_pos, screen_to_world(v2f(10, 85)), 15, &game->draw_arena);
 
