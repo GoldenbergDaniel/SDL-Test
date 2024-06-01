@@ -23,7 +23,7 @@ extern Prefabs *PREFAB;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 5.0f;
+  game->spawn_timer.duration = 60.0f;
   ui_init_widgetstore(64, &game->perm_arena);
 
   // Starting entities ----------------
@@ -638,8 +638,8 @@ void update_game(Game *game)
   Vec2F text_pos = screen_to_world(v2f(0, get_height()/2));
   text_pos.y -= 100;
   // ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
-  ui_text_1f(str("time: %.1f"), t, screen_to_world(v2f(10, 50)), 15, &game->draw_arena);
-  ui_text_2f(str("xyz: %.0f %.0f"), mouse_pos, screen_to_world(v2f(10, 85)), 15, &game->draw_arena);
+  ui_text_1f(str("time: %.1f"), t, v2f(10, HEIGHT - 30), 20, &game->draw_arena);
+  ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
 
   // Developer tools ----------------
   {
@@ -844,13 +844,12 @@ bool game_should_quit(Game *game)
   return game->should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
-// TODO(dg): viewport needs to factor in here somewhere.
 inline
 Vec2F screen_to_world(Vec2F pos)
 {
   return (Vec2F) {
-    (pos.x) * (WIDTH / GLOBAL->window.width),
-    (get_height() - pos.y) * (HEIGHT / GLOBAL->window.height),
+    (pos.x - GLOBAL->viewport.x) * (WIDTH / get_width()),
+    (pos.y - GLOBAL->viewport.y) * (HEIGHT / get_height()),
   };
 }
 

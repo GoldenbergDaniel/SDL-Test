@@ -30,7 +30,7 @@ bool is_key_released(InputKey key)
 inline
 Vec2F get_mouse_pos(void)
 {
-  return GLOBAL->input.mouse_pos;
+  return v2f(GLOBAL->input.mouse_pos.x, GLOBAL->window.height - GLOBAL->input.mouse_pos.y);
 }
 
 void remember_last_keys(void)
