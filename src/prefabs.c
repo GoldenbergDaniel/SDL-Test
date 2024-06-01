@@ -22,7 +22,7 @@ Prefabs *create_prefabs(Arena *arena)
     prefab->texture.walker_walk_3 = v2i(4, 1);
     prefab->texture.walker_walk_4 = v2i(5, 1);
     
-    prefab->texture.pistol = v2i(1, 3);
+    prefab->texture.pistol = v2i(0, 3);
     prefab->texture.rifle = v2i(1, 3);
     prefab->texture.bullet = v2i(5, 3);
   }
@@ -128,6 +128,29 @@ Prefabs *create_prefabs(Arena *arena)
       .color_secondary = DEBUG_BLUE,
       .scale_delta = v2f(-0.5f, -0.5f),
       .speed_delta = 50.0f,
+    };
+  }
+
+  // Weapon ----------------
+  {
+    prefab->weapon.pistol = (WeaponDesc) {
+      .type = WeaponType_Pistol,
+      .texture = prefab->texture.pistol,
+      .ancor = v2f(35, 5),
+      .shot_point = v2f(20, 2),
+      .shot_cooldown = 0.35f,
+      .damage = 1,
+      .bullet_speed = 1000.0f,
+    };
+
+    prefab->weapon.rifle = (WeaponDesc) {
+      .type = WeaponType_Rifle,
+      .texture = prefab->texture.rifle,
+      .ancor = v2f(35, 5),
+      .shot_point = v2f(35, 2),
+      .shot_cooldown = 0.75f,
+      .damage = 2,
+      .bullet_speed = 1500.0f,
     };
   }
 

@@ -49,6 +49,12 @@ struct Prefabs
     ParticleDesc death;
     ParticleDesc debug;
   } particle;
+
+  struct
+  {
+    WeaponDesc pistol;
+    WeaponDesc rifle;
+  } weapon;
 };
 
 Prefabs *create_prefabs(Arena *arena);

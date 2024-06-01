@@ -7,6 +7,7 @@ typedef enum InputKey
 {
   KEY_A,
   KEY_D,
+  KEY_P,
   KEY_S,
   KEY_W,
   KEY_0,

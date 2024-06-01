@@ -14,8 +14,6 @@
 #define PLAYER_FRIC 8.0f
 #define PLAYER_HEALTH 3
 
-#define PROJ_SPEED 1000.0f
-
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_ATTACK_COOLDOWN 0.5f
 #define ENEMY_ATTACK_COOLDOWN 1.0f
@@ -140,8 +138,13 @@ typedef enum WeaponType
 typedef struct WeaponDesc WeaponDesc;
 struct WeaponDesc
 {
-  TextureID sprite;
+  WeaponType type;
+  TextureID texture;
   Vec2F ancor;
+  Vec2F shot_point;
+  f32 shot_cooldown;
+  f32 bullet_speed;
+  u16 damage;
 };
 
 typedef enum EntityType
@@ -279,6 +282,7 @@ struct Entity
   Timer damage_timer;
   Timer kill_timer;
   WeaponType weapon_type;
+  bool weapon_equipped;
 };
 
 typedef struct EntityList EntityList;
@@ -371,3 +375,5 @@ void create_particles(Entity *en, ParticleDesc desc);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void timer_start(Timer *timer, f64 t);
 bool timer_timeout(Timer *timer, f64 t);
+
+void equip_weapon(Entity *en, WeaponDesc desc);

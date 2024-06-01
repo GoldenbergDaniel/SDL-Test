@@ -63,6 +63,11 @@ void handle_input_event(const struct sapp_event *event)
           input->keys[KEY_D] = TRUE;
         }
         break;
+        case SAPP_KEYCODE_P:
+        {
+          input->keys[KEY_P] = TRUE;
+        }
+        break;
         case SAPP_KEYCODE_S:
         {
           input->keys[KEY_S] = TRUE;
@@ -157,6 +162,11 @@ void handle_input_event(const struct sapp_event *event)
         case SAPP_KEYCODE_D:
         {
           input->keys[KEY_D] = FALSE;
+        }
+        break;
+        case SAPP_KEYCODE_P:
+        {
+          input->keys[KEY_P] = FALSE;
         }
         break;
         case SAPP_KEYCODE_S:

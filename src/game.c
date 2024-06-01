@@ -71,6 +71,24 @@ void update_game(Game *game)
       spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height()/2));
     }
   }
+
+  // Switch weapon ----------------
+  {
+    if (is_key_just_pressed(KEY_0))
+    {
+      player->weapon_equipped = FALSE;
+      Entity *gun = get_entity_child_of_sp(player, SP_Gun);
+      entity_rem_prop(gun, EntityProp_Renders);
+    }
+    else if (is_key_just_pressed(KEY_1))
+    {
+      equip_weapon(player, PREFAB->weapon.pistol);
+    }
+    else if (is_key_just_pressed(KEY_2))
+    {
+      equip_weapon(player, PREFAB->weapon.rifle);
+    }
+  }
   
   // Update entity spawning and dying ----------------
   for (EN_IN_ENTITIES)
@@ -381,27 +399,31 @@ void update_game(Game *game)
 
     if (entity_has_prop(en, EntityProp_Controlled))
     {
-      if (!en->attack_timer.is_ticking)
+      if (en->weapon_equipped)
       {
-        timer_start(&en->attack_timer, t);
-      }
+        if (!en->attack_timer.is_ticking)
+        {
+          timer_start(&en->attack_timer, t);
+        }
 
-      // Shoot weapon if can shoot
-      if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer, t))
-      {
-        Entity *gun = get_entity_child_of_sp(en, SP_Gun);
-        Entity *shot_point = get_entity_child_at(gun, 0);
-        Vec2F spawn_pos = pos_from_entity(shot_point);
-        f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
+        // Shoot weapon if can shoot
+        if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer, t))
+        {
+          Entity *gun = get_entity_child_of_sp(en, SP_Gun);
+          Entity *shot_point = get_entity_child_at(gun, 0);
+          Vec2F spawn_pos = pos_from_entity(shot_point);
+          f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
-        Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
-        bullet->rot = spawn_rot;
-        bullet->speed = PROJ_SPEED;
-        entity_rem_prop(bullet, EntityProp_Renders);
+          Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+          bullet->rot = spawn_rot;
+          bullet->speed = gun->speed;
+          bullet->damage = gun->damage;
+          entity_rem_prop(bullet, EntityProp_Renders);
 
-        spawn_entity(game, EntityType_ParticleGroup, 
-                      .pos=spawn_pos, 
-                      .particle_desc=PREFAB->particle.smoke);
+          spawn_entity(game, EntityType_ParticleGroup, 
+                        .pos=spawn_pos, 
+                        .particle_desc=PREFAB->particle.smoke);
+        }
       }
     }
     else
@@ -650,15 +672,8 @@ void update_game(Game *game)
       kill_entity(player);
     }
 
-    // Spawn particles
-    if (is_key_just_pressed(KEY_9))
-    {
-      spawn_entity(game, EntityType_ParticleGroup, 
-                    .pos=player->pos, 
-                    .particle_desc=PREFAB->particle.debug);
-    }
-    
-    if (is_key_pressed(KEY_0))
+    // Spawn particles 
+    if (is_key_pressed(KEY_P))
     {
       spawn_entity(game, EntityType_ParticleGroup, 
                     .pos=player->pos, 

@@ -102,7 +102,6 @@ void event(const sapp_event *event)
 
 void frame(void)
 {
-  // GLOBAL->renderer.projection = orthographic_3x3f(0, sapp_width(), sapp_height(), 0);
   // Update viewport ----------------
   if (GLOBAL->window.width != sapp_width() || GLOBAL->window.height != sapp_height())
   {

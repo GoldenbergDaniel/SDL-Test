@@ -96,11 +96,9 @@ Entity *create_entity(Game *game, EntityType type)
     break;
     case EntityType_Equipped:
     {
-      en->props = EntityProp_Renders | 
-                  EntityProp_Equipped;
+      en->props = EntityProp_Equipped;
 
       en->draw_type = DrawType_Sprite;
-      en->texture = PREFAB->texture.pistol;
       en->dim = v2f(16, 16);
     }
     break;
@@ -115,7 +113,6 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Projectile;
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
-      en->damage = 1;
 
       entity_add_collider(game, en, Collider_Hit);
       en->cols[Collider_Hit]->col_id = Collider_Hit;
@@ -675,4 +672,27 @@ P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)
   };
 
   return result;
+}
+
+void equip_weapon(Entity *en, WeaponDesc desc)
+{
+  if (!is_entity_valid(en)) return;
+
+  Entity *weapon_en = get_entity_child_of_sp(en, SP_Gun);
+  if (!is_entity_valid(weapon_en)) return;
+
+  Entity *shot_point_en = get_entity_child_at(weapon_en, 0);
+  if (!is_entity_valid(shot_point_en)) return;
+
+  en->weapon_equipped = TRUE;
+  en->attack_timer.duration = desc.shot_cooldown;
+
+  weapon_en->texture = desc.texture;
+  weapon_en->weapon_type = desc.type;
+  weapon_en->pos = desc.ancor;
+  weapon_en->damage = desc.damage;
+  weapon_en->speed = desc.bullet_speed;
+  entity_add_prop(weapon_en, EntityProp_Renders);
+
+  shot_point_en->pos = desc.shot_point;
 }
