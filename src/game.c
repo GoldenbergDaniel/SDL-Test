@@ -22,7 +22,7 @@ extern Prefabs prefab;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 60.0f;
+  game->spawn_timer.duration = 30.0f;
   ui_init_widgetstore(64, &global.perm_arena);
 
   // Starting entities ----------------
