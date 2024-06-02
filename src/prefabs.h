@@ -57,4 +57,4 @@ struct Prefabs
   } weapon;
 };
 
-Prefabs *create_prefabs(Arena *arena);
+Prefabs create_prefabs(void);

@@ -40,6 +40,8 @@ struct R_VAO
 typedef struct R_Renderer R_Renderer;
 struct R_Renderer
 {
+  Arena batch_arena;
+
   R_Vertex *vertices;
   u32 vertex_count;
   u32 vertex_capacity;
@@ -94,7 +96,7 @@ R_Texture r_create_texture(String path);
 
 // @Rendering ////////////////////////////////////////////////////////////////////////////
 
-R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena);
+R_Renderer r_create_renderer(u32 vertex_capacity, u16 w, u16 h, Arena *arena);
 void r_push_vertex(R_Renderer *renderer, Vec3F pos, Vec4F tint, Vec4F color, Vec2F uv);
 void r_push_quad_indices(R_Renderer *renderer);
 void r_use_shader(R_Renderer *renderer, R_Shader *shader);

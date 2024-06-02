@@ -14,9 +14,9 @@ struct Arena
   u64 used;
 };
 
-Arena arena_create(u64 size);
-void arena_destroy(Arena *arena);
+Arena create_arena(u64 size);
+void destroy_arena(Arena *arena);
 void *arena_push(Arena *arena, u64 size);
 void arena_pop(Arena *arena, u64 size);
 void arena_clear(Arena *arena);
-Arena arena_get_scratch(Arena *conflict);
+Arena get_scratch_arena(Arena *conflict);

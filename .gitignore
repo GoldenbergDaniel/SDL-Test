@@ -2,7 +2,5 @@ debug/
 release/
 
 .DS_STORE
-build.bat
-build.sh
 undeadwest
 undeadwest.exe

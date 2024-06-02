@@ -1,14 +1,15 @@
-NAME="undeadwest"
+SRC="src/_entry.c"
+OUT="undeadwest"
+
 MODE=$1
-CC="cc"
 
 CFLAGS="-std=c17 -Iextern/ -Wno-initializer-overrides"
 CFLAGS_D="-std=c17 -g -fsanitize=address -fsanitize=undefined
           -I../extern/ -Wall -Wpedantic
           -Wno-initializer-overrides -Wno-missing-braces"
 
-LDFLAGS="-L./extern/sokol -lSokol -framework OpenGL -framework Cocoa"
-LDFLAGS_D="-L../extern/sokol -lSokol -framework OpenGL -framework Cocoa"
+LFLAGS="-L./extern/sokol -lSokol -framework OpenGL -framework Cocoa"
+LFLAGS_D="-L../extern/sokol -lSokol -framework OpenGL -framework Cocoa"
 
 set -e
 
@@ -17,16 +18,16 @@ shadertoh src/shaders/ src/render/shaders.h
 if [[ $MODE == "r" || $MODE == "-r" ]]
 then
   echo "Building macOS release..."
-  $CC $CFLAGS $LDFLAGS -O2 -DRELEASE src/_target.c -o $NAME
+  cc $CFLAGS $LFLAGS -O2 -DRELEASE src/$SRC -o $OUT
 elif [[ $MODE == "d" || $MODE == "-d" ]]
 then
   echo "Building macOS debug..."
   mkdir debug
   pushd debug
-  $CC $CFLAGS_D $LDFLAGS_D -O0 -DDEBUG ../src/_target.c -o $NAME
+  cc $CFLAGS_D $LFLAGS_D -O0 -DDEBUG ../$SRC -o $OUT
   popd
 else
   echo "Building macOS..."
-  $CC $CFLAGS $LDFLAGS -O0 src/_target.c -o $NAME
-  ./$NAME
+  cc $CFLAGS $LFLAGS -O0 $SRC -o $OUT
+  ./$OUT
 fi

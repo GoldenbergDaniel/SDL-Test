@@ -7,14 +7,13 @@
 #include "draw.h"
 #include "input.h"
 #include "entity.h"
-#include "globals.h"
 #include "prefabs.h"
 #include "game.h"
 
 #define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
 
-extern Globals *GLOBAL;
-extern Prefabs *PREFAB;
+extern Globals global;
+extern Prefabs prefab;
 
 #define GROUND_Y (30 * SPRITE_SCALE)
 
@@ -24,7 +23,7 @@ void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
   game->spawn_timer.duration = 60.0f;
-  ui_init_widgetstore(64, &game->perm_arena);
+  ui_init_widgetstore(64, &global.perm_arena);
 
   // Starting entities ----------------
   {
@@ -82,11 +81,11 @@ void update_game(Game *game)
     }
     else if (is_key_just_pressed(KEY_1))
     {
-      equip_weapon(player, PREFAB->weapon.pistol);
+      equip_weapon(player, prefab.weapon.pistol);
     }
     else if (is_key_just_pressed(KEY_2))
     {
-      equip_weapon(player, PREFAB->weapon.rifle);
+      equip_weapon(player, prefab.weapon.rifle);
     }
   }
   
@@ -259,8 +258,8 @@ void update_game(Game *game)
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
-        f32 left = screen_to_world(v2f(GLOBAL->viewport.x, 0)).x;
-        f32 right = screen_to_world(v2f(GLOBAL->viewport.z, 0)).x;
+        f32 left = screen_to_world(v2f(global.viewport.x, 0)).x;
+        f32 right = screen_to_world(v2f(global.viewport.z, 0)).x;
 
         if (en->pos.x + dim.width <= left)
         {
@@ -311,7 +310,7 @@ void update_game(Game *game)
       }
 
       xform = mul_3x3f(game->camera, xform);
-      // xform = mul_3x3f(GLOBAL->renderer.projection, xform);
+      // xform = mul_3x3f(global.renderer.projection, xform);
 
       en->xform = xform;
     }
@@ -358,7 +357,7 @@ void update_game(Game *game)
               Vec2F spawn_pos = pos_from_entity(en);
               spawn_entity(game, EntityType_ParticleGroup, 
                             .pos=spawn_pos, 
-                            .particle_desc=PREFAB->particle.blood);
+                            .particle_desc=prefab.particle.blood);
 
               damage_entity(game, en, other);
               kill_entity(en);
@@ -422,7 +421,7 @@ void update_game(Game *game)
 
           spawn_entity(game, EntityType_ParticleGroup, 
                         .pos=spawn_pos, 
-                        .particle_desc=PREFAB->particle.smoke);
+                        .particle_desc=prefab.particle.smoke);
         }
       }
     }
@@ -646,7 +645,7 @@ void update_game(Game *game)
     // Toggle debug
     if (is_key_just_pressed(KEY_TAB))
     {
-      GLOBAL->debug = !GLOBAL->debug; 
+      global.debug = !global.debug; 
     }
     
     for (EN_IN_ENTITIES)
@@ -655,7 +654,7 @@ void update_game(Game *game)
       
       if (en->type == EntityType_Debug)
       {
-        if (GLOBAL->debug)
+        if (global.debug)
         {
           entity_add_prop(en, EntityProp_Renders);
         }
@@ -677,36 +676,36 @@ void update_game(Game *game)
     {
       spawn_entity(game, EntityType_ParticleGroup, 
                     .pos=player->pos, 
-                    .particle_desc=PREFAB->particle.debug);
+                    .particle_desc=prefab.particle.debug);
     }
   }
-}
-
-void handle_game_events(Game *game)
-{
-  for (Event *e = peek_event(game); e != NULL; pop_event(game))
+  
+  // Handle game events
   {
-    switch (e->type)
+    for (Event *e = peek_event(game); e != NULL; pop_event(game))
     {
-      case EventType_EntityKilled:
+      switch (e->type)
       {
-        switch (e->desc.type)
+        case EventType_EntityKilled:
         {
-          case EntityType_Player:
+          switch (e->desc.type)
           {
-            // game_over = TRUE
+            case EntityType_Player:
+            {
+              // game_over = TRUE
+            }
+            break;
           }
-          break;
+        }
+        default: 
+        {
+          fprintf(stderr, "ERROR: Failed to process event. Invalid type!");
+          assert(FALSE);
         }
       }
-      default: 
-      {
-        fprintf(stderr, "ERROR: Failed to process event. Invalid type!");
-        assert(FALSE);
-      }
-    }
 
-    pop_event(game);
+      pop_event(game);
+    }
   }
 }
 
@@ -738,7 +737,7 @@ void render_game(Game *game)
     {
       if (en->draw_type == DrawType_Primitive)
       {
-        if (en->type == EntityType_Collider && GLOBAL->debug)
+        if (en->type == EntityType_Collider && global.debug)
         {
           Vec4F color = en->tint;
           switch (en->col_id)
@@ -835,7 +834,7 @@ void render_game(Game *game)
     }
   }
 
-  r_flush(&GLOBAL->renderer);
+  r_flush(&global.renderer);
 }
 
 inline
@@ -848,8 +847,8 @@ inline
 Vec2F screen_to_world(Vec2F pos)
 {
   return (Vec2F) {
-    (pos.x - GLOBAL->viewport.x) * (WIDTH / get_width()),
-    (pos.y - GLOBAL->viewport.y) * (HEIGHT / get_height()),
+    (pos.x - global.viewport.x) * (WIDTH / get_width()),
+    (pos.y - global.viewport.y) * (HEIGHT / get_height()),
   };
 }
 
@@ -898,4 +897,18 @@ void pop_event(Game *game)
 Event *peek_event(Game *game)
 {
   return game->event_queue.front;
+}
+
+// @Util /////////////////////////////////////////////////////////////////////////////////
+
+inline
+f32 get_width(void)
+{
+  return global.viewport.z;
+}
+
+inline
+f32 get_height(void)
+{
+  return global.viewport.w;
 }

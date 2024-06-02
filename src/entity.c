@@ -4,13 +4,12 @@
 #include "phys/phys.h"
 #include "draw.h"
 #include "game.h"
-#include "globals.h"
 #include "prefabs.h"
 #include "entity.h"
 #include "game.h"
 
-extern Globals *GLOBAL;
-extern Prefabs *PREFAB;
+extern Globals global;
+extern Prefabs prefab;
 
 // @SpawnKillEntity //////////////////////////////////////////////////////////////////////
 
@@ -46,15 +45,15 @@ Entity *create_entity(Game *game, EntityType type)
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Ranged;
       en->speed = PLAYER_SPEED;
-      en->texture = PREFAB->texture.player_idle;
+      en->texture = prefab.texture.player_idle;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
       // en->damage_timer.duration = 0.5f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->health = PLAYER_HEALTH;
 
-      en->anims[Animation_Idle] = PREFAB->animation.player_idle;
-      en->anims[Animation_Walk] = PREFAB->animation.player_walk;
-      en->anims[Animation_Jump] = PREFAB->animation.player_jump;
+      en->anims[Animation_Idle] = prefab.animation.player_idle;
+      en->anims[Animation_Walk] = prefab.animation.player_walk;
+      en->anims[Animation_Jump] = prefab.animation.player_jump;
 
       entity_add_collider(game, en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -73,7 +72,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Melee;
-      en->texture = PREFAB->texture.walker_idle;
+      en->texture = prefab.texture.walker_idle;
       en->speed = 100.0f;
       en->view_dist = 350.0f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
@@ -81,8 +80,8 @@ Entity *create_entity(Game *game, EntityType type)
       en->health = 3;
       en->damage = 1;
       
-      en->anims[Animation_Idle] = PREFAB->animation.walker_idle;
-      en->anims[Animation_Walk] = PREFAB->animation.walker_walk;
+      en->anims[Animation_Idle] = prefab.animation.walker_idle;
+      en->anims[Animation_Walk] = prefab.animation.walker_walk;
       
       entity_add_collider(game, en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -109,7 +108,7 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Collides;
       
       en->draw_type = DrawType_Sprite;
-      en->texture = PREFAB->texture.bullet;
+      en->texture = prefab.texture.bullet;
       en->move_type = MoveType_Projectile;
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
@@ -348,7 +347,7 @@ void damage_entity(Game *game, Entity *sender, Entity *reciever)
   {
     spawn_entity(game, EntityType_ParticleGroup,
                   .pos=pos_from_entity(reciever),
-                  .particle_desc=PREFAB->particle.death);
+                  .particle_desc=prefab.particle.death);
     
     kill_entity(reciever);
 
@@ -436,7 +435,7 @@ void free_entity(Game *game, Entity *en)
 
   if (en->type == EntityType_ParticleGroup)
   {
-    arena_destroy(&en->particle_arena);
+    destroy_arena(&en->particle_arena);
   }
 
   // Reset entity
@@ -630,7 +629,7 @@ void entity_add_collider(Game *game, Entity *en, ColliderID col_id)
 void create_particles(Entity *en, ParticleDesc desc)
 {
   en->particle_desc = desc;
-  en->particle_arena = arena_create(MiB(1));
+  en->particle_arena = create_arena(MiB(1));
   en->particles = arena_push(&en->particle_arena, sizeof (Particle) * desc.count);
 
   for (i32 i = 0; i < en->particle_desc.count; i++)

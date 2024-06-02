@@ -2,11 +2,12 @@
 #include <stdlib.h>
 
 #if defined(_WIN32)
-#define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef near
+#undef far
 
-#include "glad/glad.h"
+#include "glad/glad.c"
 #endif
 
 #define SOKOL_NO_ENTRY
@@ -14,17 +15,23 @@
 #include "sokol/sokol_time.h"
 #include "sokol/sokol_log.h"
 
-#include "base/base_common.h"
-#include "render/render.h"
-#include "input.h"
-#include "draw.h"
-#include "game.h"
-#include "globals.h"
-#include "prefabs.h"
+#include "base/base_os.c"
+#include "base/base_arena.c"
+#include "base/base_string.c"
+#include "base/base_math.c"
+#include "base/base_random.c"
+#include "render/render.c"
+#include "ui/ui.c"
+#include "phys/phys.c"
+#include "prefabs.c"
+#include "draw.c"
+#include "input.c"
+#include "entity.c"
+#include "game.c"
 
-Game GAME;
-Globals *GLOBAL;
-Prefabs *PREFAB;
+Globals global;
+Prefabs prefab;
+Game game;
 
 void init(void);
 void event(const sapp_event *);
@@ -54,15 +61,9 @@ i32 main(void)
 
 void init(void)
 {
-  GAME.perm_arena = arena_create(MiB(16));
-  GAME.entity_arena = arena_create(MiB(32));
-  GAME.frame_arena = arena_create(MiB(16));
-  GAME.draw_arena = arena_create(MiB(16));
-  GAME.batch_arena = arena_create(MiB(16));
-  
   stm_setup();
   srand((u32) stm_now());
-  arena_get_scratch(NULL);
+  get_scratch_arena(NULL);
 
   #if defined(_WIN32)
   gladLoadGL();
@@ -76,23 +77,26 @@ void init(void)
   String res_path = str("res");
   #endif
 
-  GLOBAL = arena_push(&GAME.perm_arena, sizeof (Globals));
+  global.perm_arena = create_arena(MiB(64));
+  global.window.width = sapp_width();
+  global.window.height = sapp_height();
+  global.viewport = v4f(0, 0, sapp_width(), sapp_height());
 
-  GLOBAL->window.width = sapp_width();
-  GLOBAL->window.height = sapp_height();
-  GLOBAL->viewport = v4f(0, 0, sapp_width(), sapp_height());
+  global.frame.current_time = stm_sec(stm_since(0));
+  global.frame.accumulator = TIME_STEP;
 
-  GLOBAL->frame.current_time = stm_sec(stm_since(0));
-  GLOBAL->frame.accumulator = TIME_STEP;
+  global.resources = load_resources(&global.perm_arena, res_path);
+  global.renderer = r_create_renderer(40000, WIDTH, HEIGHT, &global.perm_arena);
 
-  GLOBAL->resources = load_resources(&GAME.perm_arena, res_path);
-  GLOBAL->renderer = r_create_renderer(40000, &GAME.batch_arena);
+  prefab = create_prefabs();
 
-  PREFAB = create_prefabs(&GAME.perm_arena);
+  game.entity_arena = create_arena(MiB(16));
+  game.frame_arena = create_arena(MiB(16));
+  game.draw_arena = create_arena(MiB(16));
 
-  GAME.dt = TIME_STEP;
-  GAME.input = &GLOBAL->input;
-  init_game(&GAME);
+  game.dt = TIME_STEP;
+  game.input = &global.input;
+  init_game(&game);
 }
 
 void event(const sapp_event *event)
@@ -103,7 +107,7 @@ void event(const sapp_event *event)
 void frame(void)
 {
   // Update viewport ----------------
-  if (GLOBAL->window.width != sapp_width() || GLOBAL->window.height != sapp_height())
+  if (global.window.width != sapp_width() || global.window.height != sapp_height())
   {
     Vec4F viewport;
     f32 ratio = (f32) sapp_width() / sapp_height();
@@ -119,41 +123,39 @@ void frame(void)
     }
 
     r_set_viewport(viewport.x, viewport.y, viewport.z, viewport.w);
-    GLOBAL->viewport = viewport;
+    global.viewport = viewport;
   }
   
-  GLOBAL->window.width = sapp_width();
-  GLOBAL->window.height = sapp_height();
+  global.window.width = sapp_width();
+  global.window.height = sapp_height();
   
   f64 new_time = stm_sec(stm_since(0));
-  f64 frame_time = new_time - GLOBAL->frame.current_time;
-  GLOBAL->frame.current_time = new_time;
-  GLOBAL->frame.accumulator += frame_time;
+  f64 frame_time = new_time - global.frame.current_time;
+  global.frame.current_time = new_time;
+  global.frame.accumulator += frame_time;
 
   // Simulation loop ----------------
-  while (GLOBAL->frame.accumulator >= TIME_STEP)
+  while (global.frame.accumulator >= TIME_STEP)
   {
     if (is_key_released(KEY_ENTER))
     {
       sapp_toggle_fullscreen();
     }
 
-    GAME.t = stm_sec(stm_since(0));
-    update_game(&GAME);
-    handle_game_events(&GAME);
-    arena_clear(&GAME.frame_arena);
+    game.t = stm_sec(stm_since(0));
+    update_game(&game);
+    arena_clear(&game.frame_arena);
 
     remember_last_keys();
 
-    GLOBAL->frame.elapsed_time += TIME_STEP;
-    GLOBAL->frame.accumulator -= TIME_STEP;
+    global.frame.elapsed_time += TIME_STEP;
+    global.frame.accumulator -= TIME_STEP;
   }
 
-  render_game(&GAME);
-  arena_clear(&GAME.draw_arena);
-  arena_clear(&GAME.batch_arena);
+  render_game(&game);
+  arena_clear(&game.draw_arena);
 
-  if (game_should_quit(&GAME))
+  if (game_should_quit(&game))
   {
     sapp_quit();
   }

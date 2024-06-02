@@ -6,7 +6,7 @@
 #define SCRATCH_SIZE MiB(4)
 #endif
 
-Arena arena_create(u64 size)
+Arena create_arena(u64 size)
 {
   Arena arena;
   arena.memory = os_alloc(size);
@@ -16,7 +16,7 @@ Arena arena_create(u64 size)
   return arena;
 }
 
-void arena_destroy(Arena *arena)
+void destroy_arena(Arena *arena)
 {
   os_free(arena->memory, arena->size);
   // zero(*arena, Arena);
@@ -44,7 +44,7 @@ void arena_clear(Arena *arena)
   arena->used = 0;
 }
 
-Arena arena_get_scratch(Arena *conflict)
+Arena get_scratch_arena(Arena *conflict)
 {
   static thread_local Arena scratch_1;
   static thread_local Arena scratch_2;
@@ -52,8 +52,8 @@ Arena arena_get_scratch(Arena *conflict)
 
   if (init)
   {
-    scratch_1 = arena_create(SCRATCH_SIZE);
-    scratch_2 = arena_create(SCRATCH_SIZE);
+    scratch_1 = create_arena(SCRATCH_SIZE);
+    scratch_2 = create_arena(SCRATCH_SIZE);
     init = FALSE;
   }
 

@@ -1,49 +1,49 @@
 #include "base/base_inc.h"
 
-#include "globals.h"
+#include "game.h"
 #include "input.h"
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
-extern Globals *GLOBAL;
+extern Globals global;
 
 inline
 bool is_key_pressed(InputKey key)
 {
-  return GLOBAL->input.keys[key];
+  return global.input.keys[key];
 }
 
 inline
 bool is_key_just_pressed(InputKey key)
 {
-  return GLOBAL->input.keys[key] && !GLOBAL->input.keys_last[key];
+  return global.input.keys[key] && !global.input.keys_last[key];
 }
 
 inline
 bool is_key_released(InputKey key)
 {
-  return !GLOBAL->input.keys[key] && GLOBAL->input.keys_last[key];
+  return !global.input.keys[key] && global.input.keys_last[key];
 }
 
 inline
 Vec2F get_mouse_pos(void)
 {
-  return v2f(GLOBAL->input.mouse_pos.x, GLOBAL->window.height - GLOBAL->input.mouse_pos.y);
+  return v2f(global.input.mouse_pos.x, global.window.height - global.input.mouse_pos.y);
 }
 
 void remember_last_keys(void)
 {
   for (i32 i = 0; i < _KEY_COUNT; i++)
   {
-    GLOBAL->input.keys_last[i] = GLOBAL->input.keys[i];
+    global.input.keys_last[i] = global.input.keys[i];
   }
 }
 
 void handle_input_event(const struct sapp_event *event)
 {
-  Input *input = &GLOBAL->input;
+  Input *input = &global.input;
   input->mouse_pos = v2f(event->mouse_x, event->mouse_y);
 
   switch (event->type)
@@ -256,8 +256,8 @@ void handle_input_event(const struct sapp_event *event)
       // NOTE(dg): Not sure why I did this
       // for (i32 i = 0; i < _KEY_COUNT; i++)
       // {
-      //   GLOBAL->input.keys_last[i] = 0;
-      //   GLOBAL->input.keys[i] = 0;
+      //   global.input.keys_last[i] = 0;
+      //   global.input.keys[i] = 0;
       // }
     }
     break;

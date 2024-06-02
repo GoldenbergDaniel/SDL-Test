@@ -286,7 +286,7 @@ String str_join(StringArray arr, String delimiter, Arena *arena)
 
   result = alloc_str(total_len, arena);
 
-  Arena scratch = arena_get_scratch(arena);
+  Arena scratch = get_scratch_arena(arena);
 
   u32 start_offset = 0;
   for (u32 i = 0; i < arr.count; i++)

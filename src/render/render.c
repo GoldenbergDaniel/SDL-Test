@@ -10,14 +10,11 @@
 #include "stb/stb_image.h"
 
 #include "../base/base_inc.h"
-#include "../globals.h"
 #include "render.h"
 
 #ifndef RELEASE
 static void verify_shader(u32 id, u32 type);
 #endif
-
-extern Globals *GLOBAL;
 
 inline
 void r_set_viewport(i32 x, i32 y, i32 w, i32 h)
@@ -205,7 +202,7 @@ R_Texture r_create_texture(String path)
 
 // @Rendering ////////////////////////////////////////////////////////////////////////////
 
-R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
+R_Renderer r_create_renderer(u32 vertex_capacity, u16 w, u16 h, Arena *arena)
 {
   u64 vbo_size = sizeof (R_Vertex) * vertex_capacity;
   R_Vertex *vertices = arena_push(arena, vbo_size);
@@ -223,7 +220,7 @@ R_Renderer r_create_renderer(u32 vertex_capacity, Arena *arena)
   r_push_vertex_attribute(&vao, 2); // uv
   r_push_vertex_attribute(&vao, 1); // flash
 
-  Mat3x3F projection = orthographic_3x3f(0.0f, WIDTH, HEIGHT, 0.0f);
+  Mat3x3F projection = orthographic_3x3f(0.0f, w, h, 0.0f);
 
   return (R_Renderer) {
     .vertices = vertices,

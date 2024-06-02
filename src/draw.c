@@ -9,11 +9,11 @@
 #include "render/render.h"
 #include "render/shaders.h"
 #include "ui/ui.h"
-#include "globals.h"
+#include "game.h"
 #include "entity.h"
 #include "draw.h"
 
-extern Globals *GLOBAL;
+extern Globals global;
 
 // @Glyphs ///////////////////////////////////////////////////////////////////////////////
 
@@ -137,7 +137,7 @@ Resources load_resources(Arena *arena, String path)
   R_Shader sprite_shader = r_create_shader(SPRITE_VERT_SRC, SPRITE_FRAG_SRC);
   res.shaders[1] = sprite_shader;
 
-  Arena scratch = arena_get_scratch(arena);
+  Arena scratch = get_scratch_arena(arena);
   {
     String path_to_texture;
     R_Texture texture;
@@ -161,7 +161,7 @@ Resources load_resources(Arena *arena, String path)
 
 R_Shader *get_shader(u8 type)
 {
-  return &GLOBAL->resources.shaders[type];
+  return &global.resources.shaders[type];
 }
 
 // @Draw /////////////////////////////////////////////////////////////////////////////////
@@ -211,8 +211,8 @@ void clear_frame(Vec4F color)
 
 void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(rotate_3x3f(rot), xform);
@@ -232,8 +232,8 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 
 void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);
 
   r_push_vertex(renderer, p0, tint, V4F_ZERO, V2F_ZERO);
   r_push_vertex(renderer, p1, tint, V4F_ZERO, V2F_ZERO);
@@ -244,8 +244,8 @@ void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 
 void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_PRIMITIVE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);
 
   Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
@@ -261,9 +261,9 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
 
 void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool flash)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(scale_3x3f(dim.x, dim.y), xform);
@@ -292,9 +292,9 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
 
 void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex, bool flash)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
   tex.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - tex.y - 1;
   Vec2F top_left = get_tl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
@@ -313,9 +313,9 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID
 
 void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SPRITE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
+  r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
   Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
   Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
@@ -377,9 +377,9 @@ Vec2F uv_bl(Vec2I coords, f32 size, f32 w, f32 h)
 
 void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_FONT]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_texture(renderer, &global.resources.textures[TEXTURE_FONT]);
+  r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(scale_3x3f(size, size), xform);
@@ -405,9 +405,9 @@ void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex)
 
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
 {
-  R_Renderer *renderer = &GLOBAL->renderer;
-  r_use_texture(renderer, &GLOBAL->resources.textures[TEXTURE_SCENE]);
-  r_use_shader(renderer, &GLOBAL->resources.shaders[SHADER_SPRITE]);
+  R_Renderer *renderer = &global.renderer;
+  r_use_texture(renderer, &global.resources.textures[TEXTURE_SCENE]);
+  r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
   Mat3x3F xform = m3x3f(1.0f);
   xform = mul_3x3f(translate_3x3f(pos.x, pos.y), xform);

@@ -1,76 +1,76 @@
 #include "base/base_inc.h"
 #include "prefabs.h"
 
-Prefabs *create_prefabs(Arena *arena)
+Prefabs create_prefabs(void)
 {
-  Prefabs *prefab = arena_push(arena, sizeof (Prefabs));
-  
+  Prefabs prefab = {0};
+
   // Texture ----------------
   {
-    prefab->texture.player_idle = v2i(0, 0);
-    prefab->texture.player_walk_0 = v2i(1, 0);
-    prefab->texture.player_walk_1 = v2i(2, 0);
-    prefab->texture.player_walk_2 = v2i(3, 0);
-    prefab->texture.player_walk_3 = v2i(4, 0);
-    prefab->texture.player_walk_4 = v2i(5, 0);
-    prefab->texture.player_jump = v2i(6, 0);
+    prefab.texture.player_idle = v2i(0, 0);
+    prefab.texture.player_walk_0 = v2i(1, 0);
+    prefab.texture.player_walk_1 = v2i(2, 0);
+    prefab.texture.player_walk_2 = v2i(3, 0);
+    prefab.texture.player_walk_3 = v2i(4, 0);
+    prefab.texture.player_walk_4 = v2i(5, 0);
+    prefab.texture.player_jump = v2i(6, 0);
 
-    prefab->texture.walker_idle = v2i(0, 1);
-    prefab->texture.walker_walk_0 = v2i(1, 1);
-    prefab->texture.walker_walk_1 = v2i(2, 1);
-    prefab->texture.walker_walk_2 = v2i(3, 1);
-    prefab->texture.walker_walk_3 = v2i(4, 1);
-    prefab->texture.walker_walk_4 = v2i(5, 1);
+    prefab.texture.walker_idle = v2i(0, 1);
+    prefab.texture.walker_walk_0 = v2i(1, 1);
+    prefab.texture.walker_walk_1 = v2i(2, 1);
+    prefab.texture.walker_walk_2 = v2i(3, 1);
+    prefab.texture.walker_walk_3 = v2i(4, 1);
+    prefab.texture.walker_walk_4 = v2i(5, 1);
     
-    prefab->texture.pistol = v2i(0, 3);
-    prefab->texture.rifle = v2i(1, 3);
-    prefab->texture.bullet = v2i(5, 3);
+    prefab.texture.pistol = v2i(0, 3);
+    prefab.texture.rifle = v2i(1, 3);
+    prefab.texture.bullet = v2i(5, 3);
   }
 
   // Animation ----------------
   {
-    prefab->animation.player_idle = (AnimationDesc) {
+    prefab.animation.player_idle = (AnimationDesc) {
       .ticks_per_frame = 0,
       .frame_count = 1,
-      .frames[0] = prefab->texture.player_idle,
+      .frames[0] = prefab.texture.player_idle,
     };
 
-    prefab->animation.player_walk = (AnimationDesc) {
+    prefab.animation.player_walk = (AnimationDesc) {
       .ticks_per_frame = 10,
       .frame_count = 5,
-      .frames[0] = prefab->texture.player_walk_0,
-      .frames[1] = prefab->texture.player_walk_1,
-      .frames[2] = prefab->texture.player_walk_2,
-      .frames[3] = prefab->texture.player_walk_3,
-      .frames[4] = prefab->texture.player_walk_4,
+      .frames[0] = prefab.texture.player_walk_0,
+      .frames[1] = prefab.texture.player_walk_1,
+      .frames[2] = prefab.texture.player_walk_2,
+      .frames[3] = prefab.texture.player_walk_3,
+      .frames[4] = prefab.texture.player_walk_4,
     };
 
-    prefab->animation.player_jump = (AnimationDesc) {
+    prefab.animation.player_jump = (AnimationDesc) {
       .ticks_per_frame = 0,
       .frame_count = 1,
-      .frames[0] = prefab->texture.player_jump,
+      .frames[0] = prefab.texture.player_jump,
     };
 
-    prefab->animation.walker_idle = (AnimationDesc) {
+    prefab.animation.walker_idle = (AnimationDesc) {
       .ticks_per_frame = 0,
       .frame_count = 1,
-      .frames[0] = prefab->texture.walker_idle,
+      .frames[0] = prefab.texture.walker_idle,
     };
 
-    prefab->animation.walker_walk = (AnimationDesc) {
+    prefab.animation.walker_walk = (AnimationDesc) {
       .ticks_per_frame = 20,
       .frame_count = 5,
-      .frames[0] = prefab->texture.walker_walk_0,
-      .frames[1] = prefab->texture.walker_walk_1,
-      .frames[2] = prefab->texture.walker_walk_2,
-      .frames[3] = prefab->texture.walker_walk_3,
-      .frames[4] = prefab->texture.walker_walk_4,
+      .frames[0] = prefab.texture.walker_walk_0,
+      .frames[1] = prefab.texture.walker_walk_1,
+      .frames[2] = prefab.texture.walker_walk_2,
+      .frames[3] = prefab.texture.walker_walk_3,
+      .frames[4] = prefab.texture.walker_walk_4,
     };
   }
 
   // Particle ----------------
   {
-    prefab->particle.smoke = (ParticleDesc) {
+    prefab.particle.smoke = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                 ParticleProp_SpeedOverTime |
@@ -88,7 +88,7 @@ Prefabs *create_prefabs(Arena *arena)
       .rot_delta = 20.0f,
     };
 
-    prefab->particle.blood = (ParticleDesc) {
+    prefab.particle.blood = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_RotateOverTime,
@@ -102,7 +102,7 @@ Prefabs *create_prefabs(Arena *arena)
       .rot_delta = 50.0f,
     };
 
-    prefab->particle.death = (ParticleDesc) {
+    prefab.particle.death = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_CollidesWithGround,
       .count = 40,
@@ -114,7 +114,7 @@ Prefabs *create_prefabs(Arena *arena)
       .vel = v2f(0.0f, 0.0f),
     };
 
-    prefab->particle.debug = (ParticleDesc) {
+    prefab.particle.debug = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |
@@ -133,9 +133,9 @@ Prefabs *create_prefabs(Arena *arena)
 
   // Weapon ----------------
   {
-    prefab->weapon.pistol = (WeaponDesc) {
+    prefab.weapon.pistol = (WeaponDesc) {
       .type = WeaponType_Pistol,
-      .texture = prefab->texture.pistol,
+      .texture = prefab.texture.pistol,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 2),
       .shot_cooldown = 0.35f,
@@ -143,9 +143,9 @@ Prefabs *create_prefabs(Arena *arena)
       .bullet_speed = 1000.0f,
     };
 
-    prefab->weapon.rifle = (WeaponDesc) {
+    prefab.weapon.rifle = (WeaponDesc) {
       .type = WeaponType_Rifle,
-      .texture = prefab->texture.rifle,
+      .texture = prefab.texture.rifle,
       .ancor = v2f(35, 5),
       .shot_point = v2f(35, 2),
       .shot_cooldown = 0.75f,
