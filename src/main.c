@@ -15,6 +15,7 @@
 #include "sokol/sokol_time.h"
 #include "sokol/sokol_log.h"
 
+#include "base/base_common.h"
 #include "base/base_os.c"
 #include "base/base_arena.c"
 #include "base/base_string.c"
@@ -71,8 +72,8 @@ void init(void)
 
   #if defined(__APPLE__) && defined(RELEASE)
   String res_path = os_path_to_executable(str("undeadwest"));
-  res_path = str_concat(res_path, str("../Resources/res"), &GAME.frame_arena);
-  res_path = str_nullify(res_path, &GAME.frame_arena);
+  res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
+  res_path = str_nullify(res_path, &game.frame_arena);
   #else
   String res_path = str("res");
   #endif

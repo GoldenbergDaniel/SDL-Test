@@ -26,7 +26,6 @@ typedef double f64;
 #endif
 
 #if defined(__GNUC__)
-#define auto __auto_type
 #define thread_local __thread
 #define read_only __attribute__((section(RO_SECTION_NAME)))
 #elif defined(_MSC_VER)

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C30A14812B505C3900A4BE26"
+               BlueprintIdentifier = "C35F82682C0D061200A07318"
                BuildableName = "UndeadWest"
                BlueprintName = "UndeadWest"
                ReferencedContainer = "container:UndeadWest.xcodeproj">
@@ -41,7 +41,7 @@
       allowLocationSimulation = "YES">
       <PathRunnable
          runnableDebuggingMode = "0"
-         FilePath = "/Users/dg/dev/UndeadWest/dbg/UndeadWest_D">
+         FilePath = "/Users/dg/dev/UndeadWest/debug/undeadwest">
       </PathRunnable>
    </LaunchAction>
    <ProfileAction
@@ -53,7 +53,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C30A14812B505C3900A4BE26"
+            BlueprintIdentifier = "C35F82682C0D061200A07318"
             BuildableName = "UndeadWest"
             BlueprintName = "UndeadWest"
             ReferencedContainer = "container:UndeadWest.xcodeproj">

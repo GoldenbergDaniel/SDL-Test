@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		C30A14812B505C3900A4BE26 /* UndeadWest */ = {
+		C35F82682C0D061200A07318 /* UndeadWest */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = C30A14822B505C3900A4BE26 /* Build configuration list for PBXAggregateTarget "UndeadWest" */;
+			buildConfigurationList = C35F82692C0D061200A07318 /* Build configuration list for PBXAggregateTarget "UndeadWest" */;
 			buildPhases = (
 			);
 			dependencies = (
@@ -20,76 +20,15 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXFileReference section */
-		C39414912B50600F00D6560E /* game.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = game.c; sourceTree = "<group>"; };
-		C39414922B50600F00D6560E /* input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
-		C39414932B50600F00D6560E /* event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = event.h; sourceTree = "<group>"; };
-		C39414942B50600F00D6560E /* entity.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = entity.c; sourceTree = "<group>"; };
-		C39414952B50600F00D6560E /* global.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = global.h; sourceTree = "<group>"; };
-		C39414962B50600F00D6560E /* _target.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = _target.c; sourceTree = "<group>"; };
-		C39414982B50600F00D6560E /* physics.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = physics.c; sourceTree = "<group>"; };
-		C39414992B50600F00D6560E /* physics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = physics.h; sourceTree = "<group>"; };
-		C394149A2B50600F00D6560E /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
-		C394149B2B50600F00D6560E /* game.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = game.h; sourceTree = "<group>"; };
-		C394149C2B50600F00D6560E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		C394149D2B50600F00D6560E /* event.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = event.c; sourceTree = "<group>"; };
-		C394149E2B50600F00D6560E /* entity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = entity.h; sourceTree = "<group>"; };
-		C394149F2B50600F00D6560E /* global.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = global.c; sourceTree = "<group>"; };
-		C39414A12B50600F00D6560E /* draw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = draw.c; sourceTree = "<group>"; };
-		C39414A22B50600F00D6560E /* shaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shaders.h; sourceTree = "<group>"; };
-		C39414A32B50600F00D6560E /* render.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = render.c; sourceTree = "<group>"; };
-		C39414A42B50600F00D6560E /* draw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = draw.h; sourceTree = "<group>"; };
-		C39414A52B50600F00D6560E /* render.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = render.h; sourceTree = "<group>"; };
+		C35F82672C0D049A00A07318 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../src; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		C30A147A2B505BE700A4BE26 = {
 			isa = PBXGroup;
 			children = (
-				C39414902B50600F00D6560E /* src */,
+				C35F82672C0D049A00A07318 /* src */,
 			);
-			sourceTree = "<group>";
-		};
-		C39414902B50600F00D6560E /* src */ = {
-			isa = PBXGroup;
-			children = (
-				C39414912B50600F00D6560E /* game.c */,
-				C39414922B50600F00D6560E /* input.h */,
-				C39414932B50600F00D6560E /* event.h */,
-				C39414942B50600F00D6560E /* entity.c */,
-				C39414952B50600F00D6560E /* global.h */,
-				C39414962B50600F00D6560E /* _target.c */,
-				C39414972B50600F00D6560E /* phys */,
-				C394149A2B50600F00D6560E /* input.c */,
-				C394149B2B50600F00D6560E /* game.h */,
-				C394149C2B50600F00D6560E /* main.c */,
-				C394149D2B50600F00D6560E /* event.c */,
-				C394149E2B50600F00D6560E /* entity.h */,
-				C394149F2B50600F00D6560E /* global.c */,
-				C39414A02B50600F00D6560E /* gfx */,
-			);
-			name = src;
-			path = ../src;
-			sourceTree = "<group>";
-		};
-		C39414972B50600F00D6560E /* phys */ = {
-			isa = PBXGroup;
-			children = (
-				C39414982B50600F00D6560E /* physics.c */,
-				C39414992B50600F00D6560E /* physics.h */,
-			);
-			path = phys;
-			sourceTree = "<group>";
-		};
-		C39414A02B50600F00D6560E /* gfx */ = {
-			isa = PBXGroup;
-			children = (
-				C39414A12B50600F00D6560E /* draw.c */,
-				C39414A22B50600F00D6560E /* shaders.h */,
-				C39414A32B50600F00D6560E /* render.c */,
-				C39414A42B50600F00D6560E /* draw.h */,
-				C39414A52B50600F00D6560E /* render.h */,
-			);
-			path = gfx;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -101,7 +40,7 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					C30A14812B505C3900A4BE26 = {
+					C35F82682C0D061200A07318 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -118,7 +57,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C30A14812B505C3900A4BE26 /* UndeadWest */,
+				C35F82682C0D061200A07318 /* UndeadWest */,
 			);
 		};
 /* End PBXProject section */
@@ -136,7 +75,7 @@
 			};
 			name = Release;
 		};
-		C30A14832B505C3900A4BE26 /* Debug */ = {
+		C35F826A2C0D061200A07318 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -144,7 +83,7 @@
 			};
 			name = Debug;
 		};
-		C30A14842B505C3900A4BE26 /* Release */ = {
+		C35F826B2C0D061200A07318 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -164,11 +103,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C30A14822B505C3900A4BE26 /* Build configuration list for PBXAggregateTarget "UndeadWest" */ = {
+		C35F82692C0D061200A07318 /* Build configuration list for PBXAggregateTarget "UndeadWest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C30A14832B505C3900A4BE26 /* Debug */,
-				C30A14842B505C3900A4BE26 /* Release */,
+				C35F826A2C0D061200A07318 /* Debug */,
+				C35F826B2C0D061200A07318 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

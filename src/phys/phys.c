@@ -63,11 +63,11 @@ bool p_rect_rect_intersect(P_CollisionParams a, P_CollisionParams b)
   Vec2F pos_a = add_2f(a.pos, a.vel);
   Vec2F pos_b = add_2f(b.pos, b.vel);
 
-  bool x_range = pos_a.x <= pos_b.x && pos_a.x + a.dim.width >= pos_b.x ||
-                 pos_b.x <= pos_a.x && pos_b.x + b.dim.width >= pos_a.x;
+  bool x_range = (pos_a.x <= pos_b.x && pos_a.x + a.dim.width >= pos_b.x) ||
+                 (pos_b.x <= pos_a.x && pos_b.x + b.dim.width >= pos_a.x);
   
-  bool y_range = pos_a.y <= pos_b.y && pos_a.y + a.dim.height >= pos_b.y ||
-                 pos_b.y <= pos_a.y && pos_b.y + b.dim.height >= pos_a.y;  
+  bool y_range = (pos_a.y <= pos_b.y && pos_a.y + a.dim.height >= pos_b.y) ||
+                 (pos_b.y <= pos_a.y && pos_b.y + b.dim.height >= pos_a.y);  
 
   return x_range && y_range;
 }

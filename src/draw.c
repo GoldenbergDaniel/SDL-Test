@@ -120,7 +120,7 @@ UI_Glyph GLYPH_TABLE[127] = {
 inline
 UI_Glyph get_glyph(char glyph)
 {
-  return GLYPH_TABLE[glyph];
+  return GLYPH_TABLE[(u8) glyph];
 }
 
 // @Assets ///////////////////////////////////////////////////////////////////////////////
