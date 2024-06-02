@@ -10,5 +10,5 @@ TODO
     [_] logger
     [_] config parser
   ISSUES
-    [_] screen-to-world wrong
+    [X] screen-to-world wrong
     [_] hit timer should be primed
