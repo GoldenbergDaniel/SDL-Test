@@ -77,7 +77,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->view_dist = 350.0f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
-      en->health = 3;
+      en->health = 10;
       en->damage = 1;
       
       en->anims[Animation_Idle] = prefab.animation.walker_idle;
@@ -656,8 +656,17 @@ void timer_start(Timer *timer, f64 t)
 bool timer_timeout(Timer *timer, f64 t)
 {
   bool result = t >= timer->end_time;
-  if (result) timer->is_ticking = FALSE;
+  if (result)
+  {
+    timer->is_ticking = FALSE;
+  }
+
   return result;
+}
+
+void timer_reset(Timer *timer)
+{
+  timer->is_ticking = FALSE;
 }
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)

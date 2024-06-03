@@ -22,14 +22,14 @@ extern Prefabs prefab;
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 30.0f;
+  game->spawn_timer.duration = 1.0f;
   ui_init_widgetstore(64, &global.perm_arena);
 
   // Starting entities ----------------
   {
     Entity *player = create_entity(game, EntityType_Player);
     player->sp = SP_Player;
-    player->pos = v2f(get_width()/2.0f, get_height()/2.0f);
+    player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f);
 
     Entity *gun = create_entity(game, EntityType_Equipped);
     attach_entity_child(player, gun);
@@ -64,10 +64,10 @@ void update_game(Game *game)
 
     if (timer_timeout(&game->spawn_timer, t))
     {
-      f32 spawn_x[2] = {-50.0f, get_width() + 50.0f};
+      f32 spawn_x[2] = {-50.0f, WIDTH + 50.0f};
       u32 roll = (u32) random_u64(0, 1);
 
-      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], get_height()/2));
+      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], HEIGHT/2));
     }
   }
 
@@ -86,6 +86,10 @@ void update_game(Game *game)
     else if (is_key_just_pressed(KEY_2))
     {
       equip_weapon(player, prefab.weapon.rifle);
+    }
+    else if (is_key_just_pressed(KEY_3))
+    {
+      equip_weapon(player, prefab.weapon.smg);
     }
   }
   
@@ -373,19 +377,30 @@ void update_game(Game *game)
               collision_params_from_entity(en->cols[Collider_Hit], en->vel),
               collision_params_from_entity(player->cols[Collider_Body], player->vel)))
         {
-          if (!en->attack_timer.is_ticking)
+          bool timeout = TRUE;
+          if (!en->colliding_with_player)
           {
-            timer_start(&en->attack_timer, t);
+            en->colliding_with_player = TRUE;
           }
-
-          if (timer_timeout(&en->attack_timer, t))
+          else
+          {
+            if (!en->attack_timer.is_ticking)
+            {
+              timer_start(&en->attack_timer, t);
+            }
+            
+            timeout = timer_timeout(&en->attack_timer, t);
+          }
+          
+          if (timeout)
           {
             damage_entity(game, en, player);
           }
         }
         else
         {
-          en->attack_timer.is_ticking = FALSE;
+          timer_reset(&en->attack_timer);
+          en->colliding_with_player = FALSE;
         }
       }
     }
@@ -634,11 +649,10 @@ void update_game(Game *game)
     }
   }
 
-  Vec2F text_pos = screen_to_world(v2f(0, get_height()/2));
-  text_pos.y -= 100;
+  // Vec2F text_pos = screen_to_world(v2f(0, HEIGHT/2));
   // ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
   ui_text_1f(str("time: %.1f"), t, v2f(10, HEIGHT - 30), 20, &game->draw_arena);
-  ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
+  // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
 
   // Developer tools ----------------
   {
@@ -847,8 +861,8 @@ inline
 Vec2F screen_to_world(Vec2F pos)
 {
   return (Vec2F) {
-    (pos.x - global.viewport.x) * (WIDTH / get_width()),
-    (pos.y - global.viewport.y) * (HEIGHT / get_height()),
+    (pos.x - global.viewport.x) * (WIDTH / global.viewport.z),
+    (pos.y - global.viewport.y) * (HEIGHT / global.viewport.w),
   };
 }
 
@@ -900,15 +914,3 @@ Event *peek_event(Game *game)
 }
 
 // @Util /////////////////////////////////////////////////////////////////////////////////
-
-inline
-f32 get_width(void)
-{
-  return global.viewport.z;
-}
-
-inline
-f32 get_height(void)
-{
-  return global.viewport.w;
-}

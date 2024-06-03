@@ -27,6 +27,9 @@ struct Prefabs
 
     TextureID pistol;
     TextureID rifle;
+    TextureID shotgun;
+    TextureID smg;
+
     TextureID bullet;
   } texture;
 
@@ -54,6 +57,8 @@ struct Prefabs
   {
     WeaponDesc pistol;
     WeaponDesc rifle;
+    WeaponDesc shotgun;
+    WeaponDesc smg;
   } weapon;
 };
 

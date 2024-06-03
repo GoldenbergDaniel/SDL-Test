@@ -24,6 +24,9 @@ Prefabs create_prefabs(void)
     
     prefab.texture.pistol = v2i(0, 3);
     prefab.texture.rifle = v2i(1, 3);
+    prefab.texture.shotgun = v2i(2, 3);
+    prefab.texture.smg = v2i(3, 3);
+
     prefab.texture.bullet = v2i(5, 3);
   }
 
@@ -138,8 +141,8 @@ Prefabs create_prefabs(void)
       .texture = prefab.texture.pistol,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 2),
-      .shot_cooldown = 0.35f,
-      .damage = 1,
+      .shot_cooldown = 0.45f,
+      .damage = 4,
       .bullet_speed = 1000.0f,
     };
 
@@ -149,7 +152,27 @@ Prefabs create_prefabs(void)
       .ancor = v2f(35, 5),
       .shot_point = v2f(35, 2),
       .shot_cooldown = 0.75f,
+      .damage = 7,
+      .bullet_speed = 1500.0f,
+    };
+
+    prefab.weapon.shotgun = (WeaponDesc) {
+      .type = WeaponType_Shotgun,
+      .texture = prefab.texture.shotgun,
+      .ancor = v2f(35, 5),
+      .shot_point = v2f(35, 2),
+      .shot_cooldown = 0.75f,
       .damage = 2,
+      .bullet_speed = 1000.0f,
+    };
+
+    prefab.weapon.smg = (WeaponDesc) {
+      .type = WeaponType_SMG,
+      .texture = prefab.texture.smg,
+      .ancor = v2f(25, 0),
+      .shot_point = v2f(35, 2),
+      .shot_cooldown = 0.1f,
+      .damage = 1,
       .bullet_speed = 1500.0f,
     };
   }

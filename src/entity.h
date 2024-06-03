@@ -65,7 +65,6 @@ struct AnimationDesc
   TextureID frames[5];
   u8 frame_count;
   u16 ticks_per_frame;
-  
 };
 
 // @Timer ////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +132,8 @@ typedef enum WeaponType
 {
   WeaponType_Pistol,
   WeaponType_Rifle,
+  WeaponType_Shotgun,
+  WeaponType_SMG,
 } WeaponType;
 
 typedef struct WeaponDesc WeaponDesc;
@@ -254,6 +255,7 @@ struct Entity
   ColliderID col_id;
   P_ColliderType col_type;
   f32 radius;
+  bool colliding_with_player;
 
   // Animation
   Animation anim;
@@ -375,5 +377,6 @@ void create_particles(Entity *en, ParticleDesc desc);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void timer_start(Timer *timer, f64 t);
 bool timer_timeout(Timer *timer, f64 t);
+void timer_reset(Timer *timer);
 
 void equip_weapon(Entity *en, WeaponDesc desc);

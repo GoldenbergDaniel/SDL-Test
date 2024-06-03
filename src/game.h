@@ -103,6 +103,3 @@ void render_game(Game *game);
 bool game_should_quit(Game *game);
 
 Vec2F screen_to_world(Vec2F pos);
-
-f32 get_width(void);
-f32 get_height(void);
