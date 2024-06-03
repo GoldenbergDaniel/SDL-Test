@@ -3,16 +3,29 @@
 #include "base_common.h"
 #include "base_string.h"
 
-#define OS_PROT_NONE 0x00  // PROT_NONE
-#define OS_PROT_READ 0x01  // PROT_READ
-#define OS_PROT_WRITE 0x02 // PROT_WRITE
-#define OS_PROT_EXEC 0x04  // PROT_EXEC
-
-// @Memory ==================================================================================
+// @Memory ///////////////////////////////////////////////////////////////////////////////
 
 void *os_alloc(u64 size);
-void *os_map_file(i32 file, u64 size, i32 offset);
-i32 os_set_prot(void *ptr, u64 size, i32 flags);
 void os_free(void *ptr, u64 size);
 
 String os_path_to_executable(String name);
+
+// @File /////////////////////////////////////////////////////////////////////////////////
+
+typedef enum OS_Flag
+{
+  OS_FLAG_R,
+  OS_FLAG_W,
+  OS_FLAG_RW,
+} OS_Flag;
+
+typedef struct OS_Handle OS_Handle;
+struct OS_Handle
+{
+  void *data;
+};
+
+OS_Handle os_open(String path, OS_Flag flag);
+void os_close(OS_Handle handle);
+String os_read(OS_Handle handle, u64 count, u64 pos, Arena *arena);
+void os_write(OS_Handle handle, String buf);

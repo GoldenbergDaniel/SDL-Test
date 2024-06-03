@@ -9,7 +9,7 @@ typedef struct String String;
 struct String
 {
   char *str;
-  u32 len;
+  u64 len;
 };
 
 typedef struct StringArray StringArray;
@@ -21,16 +21,16 @@ struct StringArray
 
 #define str(cstr) ((String) {cstr, cstr_len(cstr)-1})
 
-String alloc_str(u32 len, Arena *arena);
+String alloc_str(u64 len, Arena *arena);
 String str_from_cstring(char *cstr, Arena *arena);
 bool str_equals(String s1, String s2);
 bool str_contains(String s, String substr);
 i64 str_find(String s, String substr, u64 start, u64 end);
-i64 str_find_char(String s, char c, u32 start, u64 end);
-String str_substr(String s, u32 start, u32 end);
+i64 str_find_char(String s, char c, u64 start, u64 end);
+String str_substr(String s, u64 start, u64 end);
 String str_copy(String s, Arena *arena);
 String str_copy_into(String src, String *dest);
-String str_insert_at(String s, String substr, u32 loc, Arena *arena);
+String str_insert_at(String s, String substr, u64 loc, Arena *arena);
 String str_concat(String s1, String s2, Arena *arena);
 String str_strip_front(String s, String substr);
 String str_strip_back(String s, String substr);
@@ -48,5 +48,5 @@ void clear_str_array(StringArray *arr, Arena *arena);
 
 // @CStr =================================================================================
 
-u32 cstr_len(char *cstr);
+u64 cstr_len(char *cstr);
 void cstr_copy(String *dest, char *src);

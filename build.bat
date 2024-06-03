@@ -8,8 +8,8 @@ set MODE= dev
 if "%1%"=="d" set MODE= debug
 if "%1%"=="r" set MODE= release
 
-set PUSH= "0"
-if "%2%"=="push" set PUSH= "1"
+set PUSH= 0
+if "%2%"=="push" set PUSH= 1
 
 if "%MODE%"==" dev"     set CFLAGS= /std:c17 /Iextern\
 if "%MODE%"==" debug"   set CFLAGS= /std:c17 /Od /Z7 /W1 /DDEBUG /I..\extern\
@@ -48,9 +48,9 @@ if "%MODE%"==" release" (
       move ..\%OUT% .
       xcopy ..\..\res\ .\res\ /E /y
     popd
-    if "%PUSH%"=="1" (
+    if %PUSH% ==1 (
       echo Pushing release to itch...
-      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion dev-0.3
+      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion dev-0.4
     )
   popd
 )

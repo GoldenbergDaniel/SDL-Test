@@ -44,6 +44,19 @@ i32 CALLBACK WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 i32 main(void)
 #endif
 {
+  Arena arena = create_arena(MiB(16));
+
+  String path = str_nullify(str("mule.txt"), &arena);
+  OS_Handle file = os_open(path, OS_FLAG_RW);
+
+  os_write(file, str("Hello, world!\n"));
+  os_write(file, str("hi\n"));
+
+  String result = os_read(file, 256, 0, &arena);
+  print_str(result);
+
+  if (1) return 0;
+
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",
     .width = WIDTH,

@@ -40,3 +40,4 @@ typedef double f64;
 #endif
 
 #define zero(x, T) x = ((T) {0})
+
