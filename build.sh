@@ -5,17 +5,16 @@ SRC="src/main.c"
 OUT="undeadwest"
 
 MODE="dev"
-if [[ $1 == "d" ]]; then MODE="debug"; fi
-if [[ $1 == "r" ]]; then MODE="release"; fi
-if [[ $1 == "g" ]]; then MODE="git"; fi
+if [[ $1 == "d" || $1 == "debug"   ]]; then MODE="debug"; fi
+if [[ $1 == "r" || $1 == "release" ]]; then MODE="release"; fi
+if [[ $1 == "g" || $1 == "git"     ]]; then MODE="git"; fi
 
-if [[ $MODE == "git" && $2 != "" ]];
+if [[ $MODE == "git" && $2 != "" && $2 != " " ]];
 then
   git status
   git add .
   git commit -m "$2"
   git push
-  echo "here"
   exit 0
 fi
 
@@ -39,18 +38,14 @@ then
   echo "Building..."
   cc $CFLAGS $WFLAGS $LFLAGS $SRC -o $OUT
   ./$OUT
-fi
-
-if [[ $MODE == "debug" ]]
+elif [[ $MODE == "debug" ]]
 then
   echo "Building debug..."
   if [[ ! -d "debug" ]]; then mkdir debug; fi
   pushd debug
     cc $CFLAGS $WFLAGS $LFLAGS ../$SRC -o $OUT
   popd
-fi
-
-if [[ $MODE == "release" ]]
+elif [[ $MODE == "release" ]]
 then
   echo "Building release..."
   cc $CFLAGS $WFLAGS $LFLAGS $SRC -o $OUT
