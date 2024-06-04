@@ -7,6 +7,17 @@ OUT="undeadwest"
 MODE="dev"
 if [[ $1 == "d" ]]; then MODE="debug"; fi
 if [[ $1 == "r" ]]; then MODE="release"; fi
+if [[ $1 == "g" ]]; then MODE="git"; fi
+
+if [[ $MODE == "git" && $2 != "" ]];
+then
+  git status
+  git add .
+  git commit -m "$2"
+  git push
+  echo "here"
+  exit 0
+fi
 
 ROOT="."
 if [[ $MODE == "debug" ]]; then ROOT=".."; fi
