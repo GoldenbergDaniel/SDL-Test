@@ -20,14 +20,14 @@ typedef float f32;
 typedef double f64;
 
 #if defined(__APPLE__)
-#define RO_SECTION_NAME "__DATA, __const"
+#define _RO_SECTION_NAME "__DATA, __const"
 #elif defined(__linux__)
-#define RO_SECTION_NAME ".rodata"
+#define _RO_SECTION_NAME ".rodata"
 #endif
 
 #if defined(__GNUC__)
 #define thread_local __thread
-#define read_only __attribute__((section(RO_SECTION_NAME)))
+#define read_only __attribute__((section(_RO_SECTION_NAME)))
 #elif defined(_MSC_VER)
 #define thread_local __declspec(thread)
 #endif
@@ -40,4 +40,3 @@ typedef double f64;
 #endif
 
 #define zero(x, T) x = ((T) {0})
-

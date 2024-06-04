@@ -14,18 +14,18 @@ String os_path_to_executable(String name);
 
 typedef enum OS_Flag
 {
-  OS_FLAG_R,
-  OS_FLAG_W,
-  OS_FLAG_RW,
+  OS_FILE_READ = 1 << 0,
+  OS_FILE_WRITE = 1 << 1,
+  OS_FILE_CREATE = 1 << 2,
 } OS_Flag;
 
 typedef struct OS_Handle OS_Handle;
 struct OS_Handle
 {
-  void *data;
+  u64 data[1];
 };
 
 OS_Handle os_open(String path, OS_Flag flag);
 void os_close(OS_Handle handle);
-String os_read(OS_Handle handle, u64 count, u64 pos, Arena *arena);
+String os_read(OS_Handle handle, u64 size, u64 pos, Arena *arena);
 void os_write(OS_Handle handle, String buf);

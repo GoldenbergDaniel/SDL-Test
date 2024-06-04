@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -9,6 +6,8 @@
 
 #include "glad/glad.c"
 #endif
+
+#include <stdlib.h>
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
@@ -46,17 +45,6 @@ i32 main(void)
 {
   Arena arena = create_arena(MiB(16));
 
-  String path = str_nullify(str("mule.txt"), &arena);
-  OS_Handle file = os_open(path, OS_FLAG_RW);
-
-  os_write(file, str("Hello, world!\n"));
-  os_write(file, str("hi\n"));
-
-  String result = os_read(file, 256, 0, &arena);
-  print_str(result);
-
-  if (1) return 0;
-
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",
     .width = WIDTH,
@@ -86,7 +74,6 @@ void init(void)
   #if defined(__APPLE__) && defined(RELEASE)
   String res_path = os_path_to_executable(str("undeadwest"));
   res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
-  res_path = str_nullify(res_path, &game.frame_arena);
   #else
   String res_path = str("res");
   #endif

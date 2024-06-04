@@ -799,7 +799,7 @@ void render_game(Game *game)
         u32 len = widget->text.len;
         for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
         {
-          char chr = widget->text.str[chr_idx];
+          char chr = widget->text.data[chr_idx];
           if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
           {
             UI_Glyph glyph = get_glyph(chr);
@@ -808,7 +808,7 @@ void render_game(Game *game)
             f32 word_len = 0;
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
-              chr = widget->text.str[i];
+              chr = widget->text.data[i];
               word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
             }
 
@@ -824,7 +824,7 @@ void render_game(Game *game)
             // Draw the word
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
-              chr = widget->text.str[i];
+              chr = widget->text.data[i];
               if (chr != ' ')
               {
                 UI_Glyph glyph = get_glyph(chr);
@@ -912,5 +912,3 @@ Event *peek_event(Game *game)
 {
   return game->event_queue.front;
 }
-
-// @Util /////////////////////////////////////////////////////////////////////////////////

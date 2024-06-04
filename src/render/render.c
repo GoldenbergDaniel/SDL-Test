@@ -177,7 +177,7 @@ R_Texture r_create_texture(String path)
   tex.slot = tex_slot++;
 
   stbi_set_flip_vertically_on_load(TRUE);
-  u8 *data = stbi_load(path.str, &tex.width, &tex.height, NULL, 4);
+  u8 *data = stbi_load(path.data, &tex.width, &tex.height, NULL, 4);
 
   glGenTextures(1, &tex.id);
   glBindTexture(GL_TEXTURE_2D, tex.id);

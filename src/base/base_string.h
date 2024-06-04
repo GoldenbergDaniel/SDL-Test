@@ -8,7 +8,7 @@
 typedef struct String String;
 struct String
 {
-  char *str;
+  char *data;
   u64 len;
 };
 
@@ -19,7 +19,7 @@ struct StringArray
   u64 count;
 };
 
-#define str(cstr) ((String) {cstr, cstr_len(cstr)-1})
+#define str(lit) ((String) {lit, sizeof (lit) - 1})
 
 String alloc_str(u64 len, Arena *arena);
 String str_from_cstring(char *cstr, Arena *arena);
@@ -34,12 +34,11 @@ String str_insert_at(String s, String substr, u64 loc, Arena *arena);
 String str_concat(String s1, String s2, Arena *arena);
 String str_strip_front(String s, String substr);
 String str_strip_back(String s, String substr);
-String str_nullify(String s, Arena *arena);
 String str_to_lower(String s, Arena *arena);
 String str_to_upper(String s, Arena *arena);
 String str_join(StringArray arr, String delimiter, Arena *arena);
 StringArray str_split(String s, String delimiter, Arena *arena);
-void print_str(String s);
+void print_str(String str, bool nl);
 
 // @StringArray ==========================================================================
 

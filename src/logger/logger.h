@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdio.h>
-
-#include "../base/base_inc.h"
+#include "../base/base_os.h"
 #include "../base/base_arena.h"
 #include "../base/base_string.h"
 
@@ -10,8 +8,8 @@ typedef struct Logger Logger;
 struct Logger
 {
   Arena *arena;
-  FILE *file;
+  OS_Handle file;
 };
 
 Logger create_logger(String path_to_log);
-void logger_write(const char *str);
+void logger_write(String s);

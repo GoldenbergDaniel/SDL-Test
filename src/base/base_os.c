@@ -1,6 +1,6 @@
 #if defined(_WIN32) 
 #define BACKEND_WINDOWS
-#elif defined(_UNIX)
+#elif defined(_UNIX) || defined(__APPLE__)
 #define BACKEND_UNIX
 #endif
 
@@ -10,8 +10,9 @@
 #endif
 
 #ifdef BACKEND_UNIX
+#include <unistd.h>
+#include <sys/fcntl.h>
 #include <sys/mman.h>
-#include <sys/dir.h>
 #include <sys/param.h>
 #endif
 
@@ -64,13 +65,22 @@ OS_Handle os_open(String path, OS_Flag flag)
   OS_Handle result = {0};
 
   #ifdef BACKEND_WINDOWS
-  u32 access;
-  switch (flag)
+  b32 access;
+  if (flag == OS_FILE_READ)
   {
-    case OS_FLAG_R: access = GENERIC_READ; break;
-    case OS_FLAG_W: access = GENERIC_WRITE; break;
-    case OS_FLAG_RW: access = GENERIC_READ | GENERIC_WRITE; break;
-    default: return (OS_Handle) {0}; break;
+    access = GENERIC_READ;
+  }
+  else if (flag == OS_FILE_READ)
+  {
+    access = GENERIC_WRITE;
+  }
+  else if (flag == (OS_FILE_READ | OS_FILE_WRITE))
+  {
+    access = GENERIC_READ | GENERIC_WRITE;
+  }
+  else
+  {
+    return (OS_Handle) {0};
   }
 
   result.data = CreateFileA(path.str, 
@@ -81,6 +91,28 @@ OS_Handle os_open(String path, OS_Flag flag)
                             NULL);
   #endif
 
+  #ifdef BACKEND_UNIX
+  b32 access;
+  if (flag == OS_FILE_READ)
+  {
+    access = O_RDONLY;
+  }
+  else if (flag == OS_FILE_READ)
+  {
+    access = O_WRONLY;
+  }
+  else if (flag == (OS_FILE_READ | OS_FILE_WRITE))
+  {
+    access = O_RDWR;
+  }
+  else
+  {
+    return (OS_Handle) {0};
+  }
+
+  result.data[0] = open(path.data, access);
+  #endif
+
   return result;
 }
 
@@ -89,16 +121,25 @@ void os_close(OS_Handle handle)
   #ifdef BACKEND_WINDOWS
   CloseHandle(handle.data);
   #endif
+
+  #ifdef BACKEND_UNIX
+  close(handle.data[0]);
+  #endif
 }
 
-String os_read(OS_Handle handle, u64 count, u64 pos, Arena *arena)
+String os_read(OS_Handle handle, u64 size, u64 pos, Arena *arena)
 {
   String result = {0};
-  result.str = arena_push(arena, count);
+  result.data = arena_push(arena, size);
 
   #ifdef BACKEND_WINDOWS
   SetFilePointer(handle.data, pos, NULL, FILE_BEGIN);
-  ReadFile(handle.data, result.str, count, (unsigned long *) &result.len, NULL);
+  ReadFile(handle.data, result.data, size, (unsigned long *) &result.len, NULL);
+  #endif
+
+  #ifdef BACKEND_UNIX
+  lseek(handle.data[0], pos, SEEK_SET);
+  result.len = read(handle.data[0], result.data, size);
   #endif
 
   return result;
@@ -107,7 +148,11 @@ String os_read(OS_Handle handle, u64 count, u64 pos, Arena *arena)
 void os_write(OS_Handle handle, String buf)
 {
   #ifdef BACKEND_WINDOWS
-  WriteFile(handle.data, buf.str, buf.len, NULL, NULL);
+  WriteFile(handle.data, buf.data, buf.len, NULL, NULL);
+  #endif
+
+  #ifdef BACKEND_UNIX
+  write(handle.data[0], buf.data, buf.len);
   #endif
 }
 
@@ -118,8 +163,7 @@ void os_set_file_pos(OS_Handle handle, u64 pos)
   #endif
 
   #ifdef BACKEND_UNIX
-  handle = (OS_Handle) {0};
-  pos = 0;
+  lseek(handle.data[0], pos, SEEK_SET);
   #endif
 }
 

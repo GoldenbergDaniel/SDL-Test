@@ -51,7 +51,7 @@ void ui_text(String text, Vec2F pos, f32 size, f32 width)
 void ui_text_1f(String text, f32 val, Vec2F pos, f32 size, Arena *arena)
 {
   char *buf = arena_push(arena, 256);
-  stbsp_snprintf(buf, 255, text.str, val);
+  stbsp_snprintf(buf, 255, text.data, val);
 
   String formatted_text = str_from_cstring(buf, arena);
   ui_push_widget(&(UI_Widget) {
@@ -69,7 +69,7 @@ void ui_text_1f(String text, f32 val, Vec2F pos, f32 size, Arena *arena)
 void ui_text_2f(String text, Vec2F val, Vec2F pos, f32 size, Arena *arena)
 {
   char *buf = arena_push(arena, 256);
-  stbsp_snprintf(buf, 255, text.str, val.x, val.y);
+  stbsp_snprintf(buf, 255, text.data, val.x, val.y);
 
   String formatted_text = str_from_cstring(buf, arena);
   ui_push_widget(&(UI_Widget) {
