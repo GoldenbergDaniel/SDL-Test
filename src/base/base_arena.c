@@ -3,8 +3,10 @@
 #include "base_arena.h"
 
 #ifndef SCRATCH_SIZE
-#define SCRATCH_SIZE MiB(4)
+#define SCRATCH_SIZE MiB(64)
 #endif
+
+#define ARENA_ALIGN_SIZE 8
 
 Arena create_arena(u64 size)
 {
@@ -19,15 +21,33 @@ Arena create_arena(u64 size)
 void destroy_arena(Arena *arena)
 {
   os_free(arena->memory, arena->size);
-  // zero(*arena, Arena);
+  arena->memory = NULL;
+  arena->size = 0;
+  arena->used = 0;
+}
+
+static inline
+u8 *_arena_align_ptr(u8 *ptr, int32_t align, int32_t *offset)
+{
+	uintptr_t result = (uintptr_t) ptr;
+	int32_t modulo = result & ((uintptr_t) (align) - 1);
+	if (modulo != 0)
+  {
+    *offset = align - modulo;
+		result += *offset;
+	}
+
+	return (u8 *) result;
 }
 
 void *arena_push(Arena *arena, u64 size)
 {
-  assert(arena->size >= arena->used + size);
+  assert(arena->size >= arena->used + size + ARENA_ALIGN_SIZE);
 
-  i8 *allocated = arena->memory + arena->used;
-  arena->used += size;
+  u8 *allocated = arena->memory + arena->used;
+  i32 offset = 0;
+  allocated = _arena_align_ptr(allocated, ARENA_ALIGN_SIZE, &offset);
+  arena->used += size + offset;
   
   return allocated;
 }
@@ -46,9 +66,9 @@ void arena_clear(Arena *arena)
 
 Arena get_scratch_arena(Arena *conflict)
 {
-  static thread_local Arena scratch_1;
-  static thread_local Arena scratch_2;
-  static thread_local bool init = TRUE;
+  thread_local static Arena scratch_1;
+  thread_local static Arena scratch_2;
+  thread_local static bool init = TRUE;
 
   if (init)
   {
@@ -58,14 +78,8 @@ Arena get_scratch_arena(Arena *conflict)
   }
 
   Arena scratch = scratch_1;
-  if (conflict == &scratch_1)
-  {
-    scratch = scratch_2;
-  }
-  else if (conflict == &scratch_2)
-  {
-    scratch = scratch_1;
-  }
+  if (conflict == &scratch_1) scratch = scratch_2;
+  else if (conflict == &scratch_2) scratch = scratch_1;
 
   return scratch;
 }
