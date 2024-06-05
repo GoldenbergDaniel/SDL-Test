@@ -9,7 +9,7 @@ if [[ $1 == "d" || $1 == "debug"   ]]; then MODE="debug"; fi
 if [[ $1 == "r" || $1 == "release" ]]; then MODE="release"; fi
 if [[ $1 == "g" || $1 == "git"     ]]; then MODE="git"; fi
 
-if [[ $MODE == "git" && $2 != "" && $2 != " " ]];
+if [[ $MODE == "git" ]];
 then
   git status
   git add .

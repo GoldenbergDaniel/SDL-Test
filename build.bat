@@ -7,6 +7,15 @@ set OUT=undeadwest.exe
 set MODE= dev
 if "%1%"=="d" set MODE= debug
 if "%1%"=="r" set MODE= release
+if "%1%"=="g" set MODE= git
+
+if "%MODE%"==" git" (
+  git status
+  git add .
+  git commit -m %2%
+  git push
+  exit /b 0
+)
 
 set PUSH= 0
 if "%2%"=="push" set PUSH= 1
@@ -26,18 +35,14 @@ if "%MODE%"==" dev" (
   cl %CFLAGS% %SRC% /Fe%OUT% %LFLAGS% || exit /b 1
   del *.obj
   %OUT%
-)
-
-if "%MODE%"==" debug" (
+) else if "%MODE%"==" debug" (
   echo Building debug...
   if not exist debug mkdir debug
   pushd debug
     cl %CFLAGS% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
     del *.obj
   popd
-)
-
-if "%MODE%"==" release" (
+) else if "%MODE%"==" release" (
   echo Building release...
   if not exist release mkdir release
   pushd release

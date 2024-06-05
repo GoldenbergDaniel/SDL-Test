@@ -171,7 +171,7 @@ Prefabs create_prefabs(void)
       .texture = prefab.texture.smg,
       .ancor = v2f(25, 0),
       .shot_point = v2f(35, 2),
-      .shot_cooldown = 0.1f,
+      .shot_cooldown = 0.075f,
       .damage = 1,
       .bullet_speed = 1500.0f,
     };

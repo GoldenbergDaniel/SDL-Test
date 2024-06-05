@@ -283,6 +283,7 @@ struct Entity
   Timer attack_timer;
   Timer damage_timer;
   Timer kill_timer;
+  Timer invincibility_timer;
   WeaponType weapon_type;
   bool weapon_equipped;
 };

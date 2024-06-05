@@ -47,9 +47,9 @@ Entity *create_entity(Game *game, EntityType type)
       en->speed = PLAYER_SPEED;
       en->texture = prefab.texture.player_idle;
       en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
-      // en->damage_timer.duration = 0.5f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->health = PLAYER_HEALTH;
+      en->invincibility_timer.duration = 0.8f;
 
       en->anims[Animation_Idle] = prefab.animation.player_idle;
       en->anims[Animation_Walk] = prefab.animation.player_walk;
@@ -89,8 +89,8 @@ Entity *create_entity(Game *game, EntityType type)
 
       entity_add_collider(game, en, Collider_Hit);
       en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
-      en->cols[Collider_Hit]->pos = v2f(en->dim.width * en->scale.x / 3, 0);
-      en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
+      en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
+      en->cols[Collider_Hit]->scale = v2f(0.25, 0.75);
     }
     break;
     case EntityType_Equipped:
@@ -354,6 +354,7 @@ void damage_entity(Game *game, Entity *sender, Entity *reciever)
     if (reciever->sp == SP_Player)
     {
       printf("The player been killed.\n");
+      game->is_over = TRUE;
     }
   }
 }

@@ -3,10 +3,16 @@ TODO
     [X] animation
     [X] text rendering
     [_] audio
-    [X] gun switching
+    [X] weapon switching
+    [_] weapon progression
+    [_] zombie progression
+    [_] reloading
     [_] chicken
+    [_] headshots
     [X] player death
-    [_] gameover state
+    [X] invincibility timer
+    [X] gameover state
+    [X] try again
     [_] logger
     [_] config parser
   ISSUES

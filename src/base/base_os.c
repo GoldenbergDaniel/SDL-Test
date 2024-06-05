@@ -83,12 +83,13 @@ OS_Handle os_open(String path, OS_Flag flag)
     return (OS_Handle) {0};
   }
 
-  result.data = CreateFileA(path.str, 
-                            access, 
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                            NULL, OPEN_EXISTING, 
-                            FILE_ATTRIBUTE_NORMAL, 
-                            NULL);
+  HANDLE handle = CreateFileA(path.data, 
+                              access, 
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, 
+                              NULL, OPEN_EXISTING, 
+                              FILE_ATTRIBUTE_NORMAL, 
+                              NULL);
+  result.id = (u64) handle;
   #endif
 
   #ifdef BACKEND_UNIX
@@ -116,10 +117,11 @@ OS_Handle os_open(String path, OS_Flag flag)
   return result;
 }
 
-void os_close(OS_Handle handle)
+void os_close_file(OS_Handle file)
 {
   #ifdef BACKEND_WINDOWS
-  CloseHandle(handle.data);
+  HANDLE handle = (HANDLE) file.id;
+  CloseHandle(handle);
   #endif
 
   #ifdef BACKEND_UNIX
@@ -127,14 +129,17 @@ void os_close(OS_Handle handle)
   #endif
 }
 
-String os_read(OS_Handle handle, u64 size, u64 pos, Arena *arena)
+String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
 {
+  assert(pos + size <= UINT_MAX);
+
   String result = {0};
   result.data = arena_push(arena, size);
 
   #ifdef BACKEND_WINDOWS
-  SetFilePointer(handle.data, pos, NULL, FILE_BEGIN);
-  ReadFile(handle.data, result.data, size, (unsigned long *) &result.len, NULL);
+  HANDLE handle = (HANDLE) file.id;
+  SetFilePointer(handle, pos, NULL, FILE_BEGIN);
+  ReadFile(handle, result.data, size, (unsigned long *) &result.len, NULL);
   #endif
 
   #ifdef BACKEND_UNIX
@@ -145,10 +150,13 @@ String os_read(OS_Handle handle, u64 size, u64 pos, Arena *arena)
   return result;
 }
 
-void os_write(OS_Handle handle, String buf)
+void os_write(OS_Handle file, String buf)
 {
+  assert(buf.len <= UINT_MAX);
+
   #ifdef BACKEND_WINDOWS
-  WriteFile(handle.data, buf.data, buf.len, NULL, NULL);
+  HANDLE handle = (HANDLE) file.id;
+  WriteFile(handle, buf.data, buf.len, NULL, NULL);
   #endif
 
   #ifdef BACKEND_UNIX
@@ -156,10 +164,11 @@ void os_write(OS_Handle handle, String buf)
   #endif
 }
 
-void os_set_file_pos(OS_Handle handle, u64 pos)
+void os_set_file_pos(OS_Handle file, u64 pos)
 {
   #ifdef BACKEND_WINDOWS
-  SetFilePointer(handle.data, pos, NULL, FILE_BEGIN);
+  HANDLE handle = (HANDLE) file.id;
+  SetFilePointer(handle, pos, NULL, FILE_BEGIN);
   #endif
 
   #ifdef BACKEND_UNIX

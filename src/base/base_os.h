@@ -22,7 +22,7 @@ typedef enum OS_Flag
 typedef struct OS_Handle OS_Handle;
 struct OS_Handle
 {
-  u64 data[1];
+  u64 id;
 };
 
 OS_Handle os_open(String path, OS_Flag flag);

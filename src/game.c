@@ -11,18 +11,18 @@
 #include "game.h"
 
 #define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
+#define GROUND_Y (30 * SPRITE_SCALE)
 
 extern Globals global;
 extern Prefabs prefab;
-
-#define GROUND_Y (30 * SPRITE_SCALE)
 
 // @Main /////////////////////////////////////////////////////////////////////////////////
 
 void init_game(Game *game)
 {
   game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 1.0f;
+  game->spawn_timer.duration = 5.0f;
+
   ui_init_widgetstore(64, &global.perm_arena);
 
   // Starting entities ----------------
@@ -56,7 +56,15 @@ void update_game(Game *game)
   ui_clear_widgetstore();
 
   // Spawn entities ----------------
+  if (!game->is_over)
   {
+    // (dg): I hate this.
+    if (game->spawn_timer.duration > 0.75f)
+    {
+      game->spawn_timer.duration -= 0.001f;
+      printf("%f\n", game->spawn_timer.duration);
+    }
+
     if (!game->spawn_timer.is_ticking)
     {
       timer_start(&game->spawn_timer, t);
@@ -66,8 +74,9 @@ void update_game(Game *game)
     {
       f32 spawn_x[2] = {-50.0f, WIDTH + 50.0f};
       u32 roll = (u32) random_u64(0, 1);
-
       spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], HEIGHT/2));
+
+      game->zombies_spawned++;
     }
   }
 
@@ -170,7 +179,10 @@ void update_game(Game *game)
       else
       {
         Vec2F player_pos = pos_from_entity(player);
-        entity_look_at(en, player_pos);
+        if (is_entity_valid(player) && !game->is_over)
+        {
+          entity_look_at(en, player_pos);
+        }
 
         switch (en->move_type)
         {
@@ -392,9 +404,10 @@ void update_game(Game *game)
             timeout = timer_timeout(&en->attack_timer, t);
           }
           
-          if (timeout)
+          if (timeout && timer_timeout(&player->invincibility_timer, t))
           {
             damage_entity(game, en, player);
+            timer_reset(&player->invincibility_timer);
           }
         }
         else
@@ -410,6 +423,15 @@ void update_game(Game *game)
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
+
+    // Update player invinsibility timer
+    if (en->sp == SP_Player)
+    {
+      if (!en->invincibility_timer.is_ticking)
+      {
+        timer_start(&en->invincibility_timer, t);
+      }
+    }
 
     if (entity_has_prop(en, EntityProp_Controlled))
     {
@@ -649,9 +671,13 @@ void update_game(Game *game)
     }
   }
 
-  // Vec2F text_pos = screen_to_world(v2f(0, HEIGHT/2));
-  // ui_text(str("The quick brown fox jumps over the lazy dog."), text_pos, 25, 300);
-  ui_text_1f(str("time: %.1f"), t, v2f(10, HEIGHT - 30), 20, &game->draw_arena);
+  if (game->is_over)
+  {
+    ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
+  }
+
+  ui_text_1f(str("%.1f"), t, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game->draw_arena);
+  ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game->draw_arena);
   // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
 
   // Developer tools ----------------
@@ -691,34 +717,6 @@ void update_game(Game *game)
       spawn_entity(game, EntityType_ParticleGroup, 
                     .pos=player->pos, 
                     .particle_desc=prefab.particle.debug);
-    }
-  }
-  
-  // Handle game events
-  {
-    for (Event *e = peek_event(game); e != NULL; pop_event(game))
-    {
-      switch (e->type)
-      {
-        case EventType_EntityKilled:
-        {
-          switch (e->desc.type)
-          {
-            case EntityType_Player:
-            {
-              // game_over = TRUE
-            }
-            break;
-          }
-        }
-        default: 
-        {
-          fprintf(stderr, "ERROR: Failed to process event. Invalid type!");
-          assert(FALSE);
-        }
-      }
-
-      pop_event(game);
     }
   }
 }
@@ -864,51 +862,4 @@ Vec2F screen_to_world(Vec2F pos)
     (pos.x - global.viewport.x) * (WIDTH / global.viewport.z),
     (pos.y - global.viewport.y) * (HEIGHT / global.viewport.w),
   };
-}
-
-// @Events ///////////////////////////////////////////////////////////////////////////////
-
-void push_event(Game *game, EventType type, EventDesc desc)
-{
-  EventQueue *queue = &game->event_queue;
-  Event *new_event = arena_push(&game->frame_arena, sizeof (Event));
-
-  if (queue->front == NULL)
-  {
-    queue->front = new_event;
-  }
-
-  if (queue->back != NULL)
-  {
-    queue->back->next = new_event;
-  }
-
-  new_event->type = type;
-  new_event->desc = desc;
-  new_event->next = NULL;
-
-  queue->back = new_event;
-  queue->count += 1;
-}
-
-void pop_event(Game *game)
-{
-  assert(game->event_queue.count > 0);
-
-  EventQueue *queue = &game->event_queue;
-  Event *next = queue->front->next;
-  zero(*queue->front, Event);
-  
-  if (queue->count == 2)
-  {
-    queue->back = next;
-  }
-
-  queue->front = next;
-  queue->count -= 1;
-}
-
-Event *peek_event(Game *game)
-{
-  return game->event_queue.front;
 }
