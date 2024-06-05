@@ -63,6 +63,12 @@ i32 main(void)
 
 void init(void)
 {
+  global.perm_arena = create_arena(MiB(64));
+
+  game.entity_arena = create_arena(MiB(16));
+  game.frame_arena = create_arena(MiB(16));
+  game.draw_arena = create_arena(MiB(16));
+  
   stm_setup();
   srand((u32) stm_now());
   get_scratch_arena(NULL);
@@ -78,7 +84,6 @@ void init(void)
   String res_path = str("res");
   #endif
 
-  global.perm_arena = create_arena(MiB(64));
   global.window.width = sapp_width();
   global.window.height = sapp_height();
   global.viewport = v4f(0, 0, sapp_width(), sapp_height());
@@ -90,10 +95,6 @@ void init(void)
   global.renderer = r_create_renderer(40000, WIDTH, HEIGHT, &global.perm_arena);
 
   prefab = create_prefabs();
-
-  game.entity_arena = create_arena(MiB(16));
-  game.frame_arena = create_arena(MiB(16));
-  game.draw_arena = create_arena(MiB(16));
 
   game.dt = TIME_STEP;
   game.input = &global.input;
