@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/base_inc.h"
-
+#include "base/base.h"
 #include "input.h"
 #include "entity.h"
 
@@ -60,6 +59,7 @@ struct Game
 
   Timer spawn_timer;
   u64 zombies_spawned;
+  f64 time_alive;
 };
 
 void init_game(Game *game);

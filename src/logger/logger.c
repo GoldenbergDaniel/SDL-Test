@@ -1,23 +1,72 @@
+#include <stdarg.h>
 #include "stb/stb_sprintf.h"
 
-#include "../base/base_os.h"
+#include <windows.h>
+#include "../base/base.h"
+#include "../os/os.h"
 #include "logger.h"
 
-Logger _LOGGER;
+Logger _logger;
 
 void logger_init(String path, Arena *arena)
 {
-  path = str_nullify(path, arena);
-  OS_Handle file = os_open(path, OS_FILE_WRITE);
-  arena_pop(arena, path.len);
+  _logger.arena = arena;
 
-  _LOGGER.arena = arena;
-  _LOGGER.file = file;
+  if (!str_equals(path, str("")))
+  {
+    _logger.output = os_open(path, OS_FILE_WRITE);
+  }
 }
 
-void logger_write(String s)
+void logger_debug(String str, ...)
 {
-  // stbsp_snprintf(buf, 255, text.str, val);
+  assert(_logger.arena->size > 0);
 
-  os_write(_LOGGER.file, s);
+  va_list vargs;
+  va_start(vargs, str);
+  
+  u64 size = _logger.arena->size;
+  String text = alloc_str(size - ARENA_ALIGN_SIZE, _logger.arena);
+  text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
+  
+  os_write(os_handle_to_stdout(), text);
+  os_windows_output_debug(text.data);
+
+  arena_clear(_logger.arena);
+  va_end(vargs);
+}
+
+void logger_error(String str, ...)
+{
+  assert(_logger.arena->size > 0);
+
+  va_list vargs;
+  va_start(vargs, str);
+  
+  u64 size = _logger.arena->size;
+  String text = alloc_str(size - ARENA_ALIGN_SIZE, _logger.arena);
+  text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
+  
+  os_write(os_handle_to_stderr(), text);
+  os_windows_output_debug(text.data);
+
+  arena_clear(_logger.arena);
+  va_end(vargs);
+}
+
+void logger_output(String str, ...)
+{
+  assert(_logger.output.id != 0);
+
+  va_list vargs;
+  va_start(vargs, str);
+  
+  u64 size = _logger.arena->size;
+  String text = alloc_str(size - ARENA_ALIGN_SIZE, _logger.arena);
+  text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
+  
+  os_write(_logger.output, text);
+
+  arena_clear(_logger.arena);
+  va_end(vargs);
 }

@@ -1,40 +1,34 @@
-#if defined(_WIN32) 
-#define BACKEND_WINDOWS
-#elif defined(_UNIX) || defined(__APPLE__)
-#define BACKEND_UNIX
-#endif
+#include <stdlib.h>
 
-#ifdef BACKEND_WINDOWS
+#include "../base/base.h"
+#include "os.h"
+
+#ifdef PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-#ifdef BACKEND_UNIX
+#ifdef PLATFORM_UNIX
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/param.h>
 #endif
 
-#ifdef __APPLE__
+#ifdef PLATFORM_MACOS
 #include <mach-o/dyld.h>
 #undef bool
 #endif
-
-#include <stdlib.h>
-
-#include "base_common.h"
-#include "base_os.h"
 
 void *os_alloc(u64 size)
 {
   void *result = NULL;
   
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   // VirtualAlloc(NULL, size, );
   #endif
 
-  #ifdef BACKEND_UNIX
+  #ifdef PLATFORM_UNIX
   // i32 p_flags = PROT_READ | PROT_WRITE | PROT_EXEC;
   // i32 m_flags = MAP_ANON | MAP_SHARED;
   // result = mmap(NULL, size, p_flags, m_flags, -1, 0);
@@ -47,12 +41,12 @@ void *os_alloc(u64 size)
 
 void os_free(void *ptr, u64 size)
 {
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   // VirtualFree();
   #endif
 
-  #ifdef BACKEND_UNIX
-  munmap(ptr, size);
+  #ifdef PLATFORM_UNIX
+  // munmap(ptr, size);
   #endif
 
   free(ptr);
@@ -64,13 +58,13 @@ OS_Handle os_open(String path, OS_Flag flag)
 {
   OS_Handle result = {0};
 
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   b32 access;
   if (flag == OS_FILE_READ)
   {
     access = GENERIC_READ;
   }
-  else if (flag == OS_FILE_READ)
+  else if (flag == OS_FILE_WRITE)
   {
     access = GENERIC_WRITE;
   }
@@ -92,13 +86,13 @@ OS_Handle os_open(String path, OS_Flag flag)
   result.id = (u64) handle;
   #endif
 
-  #ifdef BACKEND_UNIX
+  #ifdef PLATFORM_UNIX
   b32 access;
   if (flag == OS_FILE_READ)
   {
     access = O_RDONLY;
   }
-  else if (flag == OS_FILE_READ)
+  else if (flag == OS_FILE_WRITE)
   {
     access = O_WRONLY;
   }
@@ -111,7 +105,7 @@ OS_Handle os_open(String path, OS_Flag flag)
     return (OS_Handle) {0};
   }
 
-  result.data[0] = open(path.data, access);
+  result.id = open(path.data, access);
   #endif
 
   return result;
@@ -119,13 +113,13 @@ OS_Handle os_open(String path, OS_Flag flag)
 
 void os_close_file(OS_Handle file)
 {
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   CloseHandle(handle);
   #endif
 
-  #ifdef BACKEND_UNIX
-  close(handle.data[0]);
+  #ifdef PLATFORM_UNIX
+  close(file.id);
   #endif
 }
 
@@ -136,15 +130,15 @@ String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
   String result = {0};
   result.data = arena_push(arena, size);
 
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   SetFilePointer(handle, pos, NULL, FILE_BEGIN);
   ReadFile(handle, result.data, size, (unsigned long *) &result.len, NULL);
   #endif
 
-  #ifdef BACKEND_UNIX
-  lseek(handle.data[0], pos, SEEK_SET);
-  result.len = read(handle.data[0], result.data, size);
+  #ifdef PLATFORM_UNIX
+  lseek(file.id, pos, SEEK_SET);
+  result.len = read(file.id, result.data, size);
   #endif
 
   return result;
@@ -154,25 +148,25 @@ void os_write(OS_Handle file, String buf)
 {
   assert(buf.len <= UINT_MAX);
 
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   WriteFile(handle, buf.data, buf.len, NULL, NULL);
   #endif
 
-  #ifdef BACKEND_UNIX
-  write(handle.data[0], buf.data, buf.len);
+  #ifdef PLATFORM_UNIX
+  write(file.id, buf.data, buf.len);
   #endif
 }
 
 void os_set_file_pos(OS_Handle file, u64 pos)
 {
-  #ifdef BACKEND_WINDOWS
+  #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   SetFilePointer(handle, pos, NULL, FILE_BEGIN);
   #endif
 
-  #ifdef BACKEND_UNIX
-  lseek(handle.data[0], pos, SEEK_SET);
+  #ifdef PLATFORM_UNIX
+  lseek(file.id, pos, SEEK_SET);
   #endif
 }
 
@@ -187,5 +181,49 @@ String os_path_to_executable(String name)
   path = str_substr(path, 0, loc);
 
   return path;
+}
+#endif
+
+OS_Handle os_handle_to_stdin(void)
+{
+  OS_Handle result = {0};
+
+  #ifdef PLATFORM_WINDOWS
+  HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
+  result.id = (u64) handle;
+  #endif
+
+  return result;
+}
+
+OS_Handle os_handle_to_stdout(void)
+{
+  OS_Handle result = {0};
+
+  #ifdef PLATFORM_WINDOWS
+  HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  result.id = (u64) handle;
+  #endif
+
+  return result;
+}
+
+OS_Handle os_handle_to_stderr(void)
+{
+  OS_Handle result = {0};
+
+  #ifdef PLATFORM_WINDOWS
+  HANDLE handle = GetStdHandle(STD_ERROR_HANDLE);
+  result.id = (u64) handle;
+  #endif
+
+  return result;
+}
+
+#ifdef PLATFORM_WINDOWS
+inline
+void os_windows_output_debug(const char *cstr)
+{
+  OutputDebugStringA(cstr);
 }
 #endif

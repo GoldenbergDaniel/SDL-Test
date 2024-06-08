@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../base/base_inc.h"
+#include "../base/base_common.h"
+#include "../base/base_string.h"
 
 typedef struct R_Vertex R_Vertex;
 struct R_Vertex

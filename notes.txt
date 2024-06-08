@@ -13,8 +13,9 @@ TODO
     [X] invincibility timer
     [X] gameover state
     [X] try again
-    [_] logger
+    [~] logger
     [_] config parser
   ISSUES
     [X] screen-to-world wrong
     [X] hit timer should be primed
+    [X] crash when shooting on ARM macs

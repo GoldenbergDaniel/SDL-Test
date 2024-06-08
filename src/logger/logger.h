@@ -1,15 +1,16 @@
 #pragma once
 
-#include "../base/base_os.h"
-#include "../base/base_arena.h"
-#include "../base/base_string.h"
+#include "../base/base.h"
+#include "../os/os.h"
 
 typedef struct Logger Logger;
 struct Logger
 {
   Arena *arena;
-  OS_Handle file;
+  OS_Handle output;
 };
 
-Logger create_logger(String path_to_log);
-void logger_write(String s);
+void logger_init(String path, Arena *arena);
+void logger_debug(String str, ...);
+void logger_error(String str, ...);
+void logger_output(String str, ...);

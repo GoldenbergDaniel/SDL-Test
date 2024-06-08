@@ -10,8 +10,8 @@ if "%1%"=="r" set MODE= release
 if "%1%"=="g" set MODE= git
 
 if "%MODE%"==" git" (
-  git status
   git add .
+  git status
   git commit -m %2%
   git push
   exit /b 0
@@ -55,7 +55,7 @@ if "%MODE%"==" dev" (
     popd
     if %PUSH% ==1 (
       echo Pushing release to itch...
-      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion dev-0.4
+      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.5-dev
     )
   popd
 )

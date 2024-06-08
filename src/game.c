@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "base/base_inc.h"
+#include "base/base.h"
+#include "vecmath/vecmath.h"
 #include "ui/ui.h"
-#include "phys/phys.h"
+#include "physics/physics.h"
+#include "logger/logger.h"
 #include "draw.h"
 #include "input.h"
 #include "entity.h"
@@ -62,7 +64,7 @@ void update_game(Game *game)
     if (game->spawn_timer.duration > 0.75f)
     {
       game->spawn_timer.duration -= 0.001f;
-      printf("%f\n", game->spawn_timer.duration);
+      logger_debug(str("Time: %f\n"), t);
     }
 
     if (!game->spawn_timer.is_ticking)
@@ -115,8 +117,19 @@ void update_game(Game *game)
     if (en->marked_for_death)
     {
       en->marked_for_death = FALSE;
+
+      if (en->sp == SP_Player)
+      {
+        game->is_over = TRUE;
+      }
+
       free_entity(game, en);
     }
+  }
+
+  if (!game->is_over)
+  {
+    game->time_alive = t;
   }
 
   // Update entity position ----------------
@@ -165,7 +178,8 @@ void update_game(Game *game)
           en->anim_state = Animation_Idle;
         }
 
-        if (is_key_pressed(KEY_W) && entity_has_prop(en, EntityProp_Grounded))
+        bool jump_key_pressed = is_key_pressed(KEY_W) || is_key_pressed(KEY_SPACE);
+        if (jump_key_pressed && entity_has_prop(en, EntityProp_Grounded))
         {
           en->new_vel.y = PLAYER_JUMP_VEL * dt;
           entity_rem_prop(en, EntityProp_Grounded);
@@ -676,7 +690,7 @@ void update_game(Game *game)
     ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
   }
 
-  ui_text_1f(str("%.1f"), t, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game->draw_arena);
+  ui_text_1f(str("%.1f"), game->time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game->draw_arena);
   ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game->draw_arena);
   // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
 

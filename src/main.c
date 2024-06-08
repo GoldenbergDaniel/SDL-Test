@@ -15,19 +15,27 @@
 #include "sokol/sokol_log.h"
 
 #include "base/base_common.h"
-#include "base/base_os.c"
 #include "base/base_arena.c"
 #include "base/base_string.c"
-#include "base/base_math.c"
 #include "base/base_random.c"
+#include "os/os.c"
+#include "logger/logger.c"
 #include "render/render.c"
+#include "vecmath/vecmath.c"
 #include "ui/ui.c"
-#include "phys/phys.c"
+#include "physics/physics.c"
 #include "prefabs.c"
 #include "draw.c"
 #include "input.c"
 #include "entity.c"
 #include "game.c"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include "stb/stb_image.h"
+
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb/stb_sprintf.h"
 
 Globals global;
 Prefabs prefab;
@@ -43,7 +51,8 @@ i32 CALLBACK WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 i32 main(void)
 #endif
 {
-  Arena arena = create_arena(MiB(16));
+  Arena logger_arena = create_arena(MiB(1));
+  logger_init(str(""), &logger_arena);
 
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",
@@ -112,7 +121,7 @@ void frame(void)
   if (global.window.width != sapp_width() || global.window.height != sapp_height())
   {
     Vec4F viewport;
-    f32 ratio = (f32) sapp_width() / sapp_height();
+    f32 ratio = sapp_widthf() / sapp_heightf();
     if (ratio >= WIDTH / HEIGHT)
     {
       f32 img_width = sapp_width() / (ratio / (WIDTH / HEIGHT));

@@ -5,7 +5,8 @@
 #include "glad/glad.h"
 #endif
 
-#include "base/base_inc.h"
+#include "base/base.h"
+#include "vecmath/vecmath.h"
 #include "render/render.h"
 #include "render/shaders.h"
 #include "ui/ui.h"

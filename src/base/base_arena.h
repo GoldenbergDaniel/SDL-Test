@@ -6,6 +6,8 @@
 #define MiB(bytes) (bytes << 20)
 #define GiB(bytes) (bytes << 30)
 
+#define ARENA_ALIGN_SIZE 8
+
 typedef struct Arena Arena;
 struct Arena
 {

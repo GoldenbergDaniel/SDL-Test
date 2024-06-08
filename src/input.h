@@ -1,7 +1,8 @@
 #pragma once
 
 #include "sokol/sokol_app.h"
-#include "base/base_inc.h"
+
+#include "base/base_common.h"
 
 typedef enum InputKey
 {
@@ -14,6 +15,11 @@ typedef enum InputKey
   KEY_1,
   KEY_2,
   KEY_3,
+  KEY_4,
+  KEY_5,
+  KEY_6,
+  KEY_7,
+  KEY_8,
   KEY_9,
   KEY_SPACE,
   KEY_ESCAPE,

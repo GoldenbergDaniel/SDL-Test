@@ -38,7 +38,6 @@ String str_to_lower(String s, Arena *arena);
 String str_to_upper(String s, Arena *arena);
 String str_join(StringArray arr, String delimiter, Arena *arena);
 StringArray str_split(String s, String delimiter, Arena *arena);
-void print_str(String str, bool nl);
 
 // @StringArray ==========================================================================
 

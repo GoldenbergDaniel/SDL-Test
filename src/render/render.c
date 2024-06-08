@@ -5,11 +5,15 @@
 #include "glad/glad.h"
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
+#include "../base/base.h"
+#undef abs
+#undef round 
+
 #define STBI_ONLY_PNG
 #include "stb/stb_image.h"
 
-#include "../base/base_inc.h"
+#include "../vecmath/vecmath.h"
+#include "../logger/logger.h"
 #include "render.h"
 
 #ifndef RELEASE
@@ -336,14 +340,14 @@ void verify_shader(u32 id, u32 type)
 
     if (type == GL_COMPILE_STATUS)
     {
-      printf("[ERROR]: Failed to compile shader!\n");
+      logger_error(str("[ERROR]: Failed to compile shader!\n"));
     }
     else
     {
-      printf("[ERROR]: Failed to link shaders!\n");
+      logger_error(str("[ERROR]: Failed to link shaders!\n"));
     }
 
-    printf("%s", log);
+    logger_error(str("%s"), log);
   }
 }
 #endif

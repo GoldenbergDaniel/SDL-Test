@@ -1,17 +1,16 @@
+#include <stdlib.h>
+
 #include "base_common.h"
-#include "base_os.h"
 #include "base_arena.h"
 
 #ifndef SCRATCH_SIZE
 #define SCRATCH_SIZE MiB(64)
 #endif
 
-#define ARENA_ALIGN_SIZE 8
-
 Arena create_arena(u64 size)
 {
   Arena arena;
-  arena.memory = os_alloc(size);
+  arena.memory = malloc(size);
   arena.size = size;
   arena.used = 0;
 
@@ -20,7 +19,7 @@ Arena create_arena(u64 size)
 
 void destroy_arena(Arena *arena)
 {
-  os_free(arena->memory, arena->size);
+  free(arena->memory);
   arena->memory = NULL;
   arena->size = 0;
   arena->used = 0;

@@ -11,8 +11,8 @@ if [[ $1 == "g" || $1 == "git"     ]]; then MODE="git"; fi
 
 if [[ $MODE == "git" ]];
 then
-  git status
   git add .
+  git status
   git commit -m "$2"
   git push
   exit 0

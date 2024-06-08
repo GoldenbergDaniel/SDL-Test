@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base_common.h"
-#include "base_string.h"
+#include "../base/base.h"
 
 // @Memory ///////////////////////////////////////////////////////////////////////////////
 
@@ -29,3 +28,11 @@ OS_Handle os_open(String path, OS_Flag flag);
 void os_close(OS_Handle handle);
 String os_read(OS_Handle handle, u64 size, u64 pos, Arena *arena);
 void os_write(OS_Handle handle, String buf);
+
+OS_Handle os_handle_to_stdin(void);
+OS_Handle os_handle_to_stdout(void);
+OS_Handle os_handle_to_stderr(void);
+
+#ifdef PLATFORM_WINDOWS
+void os_windows_output_debug(const char *cstr);
+#endif

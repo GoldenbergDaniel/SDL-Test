@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../base/base_common.h"
 #include "../base/base_string.h"
-#include "../base/base_math.h"
 
 typedef struct UI_Glyph UI_Glyph;
 struct UI_Glyph

@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "base_common.h"
 #include "base_arena.h"
 #include "base_string.h"
@@ -11,6 +9,11 @@ String alloc_str(u64 len, Arena *arena)
   String result;
   result.data = arena_push(arena, len);
   result.len = len;
+
+  for (u64 i = 0; i < len; i++)
+  {
+    result.data[i] = '\0';
+  }
 
   return result;
 }
@@ -302,16 +305,6 @@ StringArray str_split(String s, String delimiter, Arena *arena)
   StringArray result = {0};
 
   return result;
-}
-
-void print_str(String str, bool nl)
-{
-  for (u32 i = 0; i < str.len; i++)
-  {
-    printf("%c", str.data[i]);
-  }
-
-  if (nl) printf("\n");
 }
 
 // @StringArray ==========================================================================

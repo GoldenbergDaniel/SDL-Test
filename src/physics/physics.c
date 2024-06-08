@@ -1,7 +1,6 @@
-#include "../base/base_common.h"
-#include "../base/base_math.h"
-
-#include "phys.h"
+#include "../base/base.h"
+#include "../vecmath/vecmath.h"
+#include "physics.h"
 
 typedef P_CollisionParams CollisionParams;
 

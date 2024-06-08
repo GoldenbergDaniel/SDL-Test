@@ -1,7 +1,12 @@
-#include <math.h>
+#include "../base/base_common.h"
+#include "vecmath.h"
 
-#include "base_common.h"
-#include "base_math.h"
+f32 sinf(f32);
+f32 cosf(f32);
+f32 tanf(f32);
+f32 sqrtf(f32);
+f32 powf(f32, f32);
+f32 atan2f(f32, f32);
 
 // @Scalar =====================================================================================
 
@@ -728,30 +733,6 @@ Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
   result.e[3][3] = 1.0f;
 
   return m4x4f(1);
-}
-
-// @Collision ==================================================================================
-
-inline
-Vec2F rect_center(Vec2F pos, f32 w, f32 h)
-{
-  return (Vec2F)
-  {
-    pos.x + (w / 2.0f),
-    pos.y + (h / 2.0f)
-  };
-}
-
-inline
-bool range_intersect(f32 min1, f32 max1, f32 min2, f32 max2)
-{
-  return (max1 >= min2) && (max2 >= min1);
-}
-
-bool rect_ranges_intersect(Vec2F p1, Vec2F p2, f32 w1, f32 h1, f32 w2, f32 h2)
-{
-  return range_intersect(p1.x, p1.x+w1, p2.x, p2.x+w2) &&
-         range_intersect(p1.y, p1.y+h1, p2.y, p2.y+h2);
 }
 
 #ifdef __cplusplus

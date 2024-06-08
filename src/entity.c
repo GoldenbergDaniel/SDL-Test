@@ -1,7 +1,8 @@
 #include <stdio.h>
 
-#include "base/base_inc.h"
-#include "phys/phys.h"
+#include "base/base.h"
+#include "vecmath/vecmath.h"
+#include "physics/physics.h"
 #include "draw.h"
 #include "game.h"
 #include "prefabs.h"
@@ -350,12 +351,6 @@ void damage_entity(Game *game, Entity *sender, Entity *reciever)
                   .particle_desc=prefab.particle.death);
     
     kill_entity(reciever);
-
-    if (reciever->sp == SP_Player)
-    {
-      printf("The player been killed.\n");
-      game->is_over = TRUE;
-    }
   }
 }
 
@@ -688,10 +683,7 @@ void equip_weapon(Entity *en, WeaponDesc desc)
   if (!is_entity_valid(en)) return;
 
   Entity *weapon_en = get_entity_child_of_sp(en, SP_Gun);
-  if (!is_entity_valid(weapon_en)) return;
-
   Entity *shot_point_en = get_entity_child_at(weapon_en, 0);
-  if (!is_entity_valid(shot_point_en)) return;
 
   en->weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;

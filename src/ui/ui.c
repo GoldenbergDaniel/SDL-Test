@@ -1,8 +1,8 @@
 #include "../base/base_common.h"
 #include "../base/base_arena.h"
+#include "../vecmath/vecmath.h"
 #include "ui.h"
 
-#define STB_SPRINTF_IMPLEMENTATION
 #include "stb/stb_sprintf.h"
 
 UI_WidgetStore WIDGET_STORE;
