@@ -65,9 +65,9 @@ void arena_clear(Arena *arena)
 
 Arena get_scratch_arena(Arena *conflict)
 {
-  thread_local static Arena scratch_1;
-  thread_local static Arena scratch_2;
-  thread_local static bool init = TRUE;
+  static thread_local Arena scratch_1;
+  static thread_local Arena scratch_2;
+  static thread_local bool init = TRUE;
 
   if (init)
   {

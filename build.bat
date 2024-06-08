@@ -5,9 +5,9 @@ set SRC=src\main.c
 set OUT=undeadwest.exe
 
 set MODE= dev
-if "%1%"=="d" set MODE= debug
-if "%1%"=="r" set MODE= release
-if "%1%"=="g" set MODE= git
+if "%1%"=="d"   set MODE= debug
+if "%1%"=="r"   set MODE= release
+if "%1%"=="git" set MODE= git
 
 if "%MODE%"==" git" (
   git add .

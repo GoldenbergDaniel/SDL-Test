@@ -189,8 +189,11 @@ OS_Handle os_handle_to_stdin(void)
   OS_Handle result = {0};
 
   #ifdef PLATFORM_WINDOWS
-  HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
-  result.id = (u64) handle;
+  result.id = (u64) GetStdHandle(STD_INPUT_HANDLE);
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  result.id = STDIN_FILENO;
   #endif
 
   return result;
@@ -201,8 +204,11 @@ OS_Handle os_handle_to_stdout(void)
   OS_Handle result = {0};
 
   #ifdef PLATFORM_WINDOWS
-  HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-  result.id = (u64) handle;
+  result.id = (u64) GetStdHandle(STD_OUTPUT_HANDLE);
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  result.id = STDOUT_FILENO;
   #endif
 
   return result;
@@ -213,8 +219,11 @@ OS_Handle os_handle_to_stderr(void)
   OS_Handle result = {0};
 
   #ifdef PLATFORM_WINDOWS
-  HANDLE handle = GetStdHandle(STD_ERROR_HANDLE);
-  result.id = (u64) handle;
+  result.id = (u64) GetStdHandle(STD_ERROR_HANDLE);
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  result.id = STDERR_FILENO;
   #endif
 
   return result;

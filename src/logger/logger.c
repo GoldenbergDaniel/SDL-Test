@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include "stb/stb_sprintf.h"
 
-#include <windows.h>
 #include "../base/base.h"
 #include "../os/os.h"
 #include "logger.h"
@@ -30,7 +29,9 @@ void logger_debug(String str, ...)
   text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
   
   os_write(os_handle_to_stdout(), text);
+  #ifdef PLATFORM_WINDOWS
   os_windows_output_debug(text.data);
+  #endif
 
   arena_clear(_logger.arena);
   va_end(vargs);
@@ -48,7 +49,9 @@ void logger_error(String str, ...)
   text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
   
   os_write(os_handle_to_stderr(), text);
+  #ifdef PLATFORM_WINDOWS
   os_windows_output_debug(text.data);
+  #endif
 
   arena_clear(_logger.arena);
   va_end(vargs);

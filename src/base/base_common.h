@@ -49,8 +49,8 @@ typedef double f64;
 #define thread_local __declspec(thread)
 #endif
 
-#define TRUE 1
 #define FALSE 0
+#define TRUE 1
 
 #ifndef NULL
 #define NULL ((void *) 0)
@@ -64,7 +64,7 @@ typedef double f64;
 #define RADIANS (PI / 180.0f)
 #define DEGREES (180.0f / PI)
 
-#define abs(a) (((a) < 0) ? (-(a)) : (a))
+#define absv(a) (((a) < 0) ? (-(a)) : (a))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define clamp_top(a, b) (min(a, b))
@@ -72,8 +72,8 @@ typedef double f64;
 #define clamp(x, a, b) (((x) < (a)) ? (a) : \
                         ((x) > (b)) ? (b) : (x))
 #define round(a) ((i32) (a) + 0.5f))
-#define to_zero(a, tol) ((abs(a) - tol) <= 0.0f ? 0.0f : (a))
-#define dir(a) (((a) != 0) ? ((a) / abs(a)) : 0)
+#define to_zero(a, tol) ((absv(a) - tol) <= 0.0f ? 0.0f : (a))
+#define dir(a) (((a) != 0) ? ((a) / absv(a)) : 0)
 
 typedef union Vec2F Vec2F;
 union Vec2F

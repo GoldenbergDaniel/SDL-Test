@@ -12,7 +12,11 @@
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
+
+#ifndef RELEASE
+#define SOKOL_LOG_IMPL
 #include "sokol/sokol_log.h"
+#endif
 
 #include "base/base_common.h"
 #include "base/base_arena.c"
@@ -62,9 +66,11 @@ i32 main(void)
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
+    #ifndef RELEASE
     .logger = {
       .func = slog_func
     },
+    #endif
   });
 
   return 0;

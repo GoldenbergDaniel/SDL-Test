@@ -15,6 +15,7 @@ TODO
     [X] try again
     [~] logger
     [_] config parser
+    [_] BMP and/or TGA loader
   ISSUES
     [X] screen-to-world wrong
     [X] hit timer should be primed

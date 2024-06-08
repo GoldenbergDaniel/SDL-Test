@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "base/base.h"
 #include "vecmath/vecmath.h"
 #include "ui/ui.h"
@@ -64,7 +61,6 @@ void update_game(Game *game)
     if (game->spawn_timer.duration > 0.75f)
     {
       game->spawn_timer.duration -= 0.001f;
-      logger_debug(str("Time: %f\n"), t);
     }
 
     if (!game->spawn_timer.is_ticking)
@@ -239,7 +235,7 @@ void update_game(Game *game)
             if (en->input_dir.x != 0.0f)
             {
               en->new_vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
-              f32 bound = en->speed * abs(en->input_dir.x) * dt;
+              f32 bound = en->speed * absv(en->input_dir.x) * dt;
               en->new_vel.x = clamp(en->vel.x, -bound, bound);
             }
             else
@@ -252,7 +248,7 @@ void update_game(Game *game)
             if (en->input_dir.y != 0.0f)
             {
               en->new_vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
-              f32 bound = en->speed * abs(en->input_dir.y) * dt;
+              f32 bound = en->speed * absv(en->input_dir.y) * dt;
               en->new_vel.y = clamp(en->vel.y, -bound, bound);
             }
             else
