@@ -15,6 +15,7 @@
 #include "draw.h"
 
 extern Globals global;
+extern Game game;
 
 // @Glyphs ///////////////////////////////////////////////////////////////////////////////
 
@@ -129,8 +130,8 @@ UI_Glyph get_glyph(char glyph)
 Resources load_resources(Arena *arena, String path)
 {
   Resources res = {0};
-  res.textures = arena_push(arena, sizeof (R_Texture) * TEXTURE_COUNT);
-  res.shaders = arena_push(arena, sizeof (R_Shader) * SHADER_COUNT);
+  res.textures = arena_push(arena, R_Texture, TEXTURE_COUNT);
+  res.shaders = arena_push(arena, R_Shader, SHADER_COUNT);
 
   R_Shader primitive_shader = r_create_shader(PRIMITIVE_VERT_SRC, PRIMITIVE_FRAG_SRC);
   res.shaders[0] = primitive_shader;
@@ -425,11 +426,14 @@ void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void draw_particles(Entity *en)
+void draw_particles(void)
 {
-  for (i32 i = 0; i < en->particle_desc.count; i++)
+  for (i32 i = 0; i < MAX_PARTICLES; i++)
   {
-    Particle *particle = &en->particles[i];
+    Particle *particle = &game.particle_buffer.data[i];
+    
+    if (!particle->is_active) continue;
+
     f32 rot = particle->rot * RADIANS;
     draw_rectangle(particle->pos, particle->scale, rot, particle->color);
   }

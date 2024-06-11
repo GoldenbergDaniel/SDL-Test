@@ -2,79 +2,80 @@
 #include "vecmath/vecmath.h"
 #include "ui/ui.h"
 #include "physics/physics.h"
-#include "logger/logger.h"
 #include "draw.h"
 #include "input.h"
 #include "entity.h"
 #include "prefabs.h"
 #include "game.h"
 
-#define EN_IN_ENTITIES Entity *en = game->entities.head; en; en = en->next
+#define EN_IN_ENTITIES Entity *en = game.entities.head; en; en = en->next
+#define E_IN_EVENT_QUEUE Event *e = peek_event(); game.event_queue.count != 0; pop_event()
 #define GROUND_Y (30 * SPRITE_SCALE)
 
 extern Globals global;
 extern Prefabs prefab;
+extern Game game;
 
 // @Main /////////////////////////////////////////////////////////////////////////////////
 
-void init_game(Game *game)
+void init_game(void)
 {
-  game->camera = m3x3f(1.0f);
-  game->spawn_timer.duration = 5.0f;
+  game.camera = m3x3f(1.0f);
+  game.spawn_timer.duration = 500.0f;
 
   ui_init_widgetstore(64, &global.perm_arena);
 
   // Starting entities ----------------
   {
-    Entity *player = create_entity(game, EntityType_Player);
+    Entity *player = create_entity(EntityType_Player);
     player->sp = SP_Player;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f);
 
-    Entity *gun = create_entity(game, EntityType_Equipped);
+    Entity *gun = create_entity(EntityType_Equipped);
     attach_entity_child(player, gun);
     gun->sp = SP_Gun;
     gun->pos = v2f(35.0f, 5.0f);
 
-    Entity *shot_point = create_entity(game, EntityType_Debug);
+    Entity *shot_point = create_entity(EntityType_Debug);
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(20.0f, 2.0f);
 
-    // Entity *zombie = create_entity(game, EntityType_ZombieWalker);
-    // zombie->pos = v2f(get_width(), get_height()/2.0f);
+    Entity *zombie = create_entity(EntityType_ZombieWalker);
+    zombie->pos = v2f(WIDTH, HEIGHT/2.0f);
   }
 }
 
-void update_game(Game *game)
+void update_game(void)
 {
-  f64 t = game->t;
-  f64 dt = game->dt;
-  Entity *player = get_entity_of_sp(game, SP_Player);
+  f64 t = game.t;
+  f64 dt = game.dt;
+  Entity *player = get_entity_of_sp(SP_Player);
   if (player == NULL) player = NIL_ENTITY;
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
   ui_clear_widgetstore();
 
   // Spawn entities ----------------
-  if (!game->is_over)
+  if (!game.is_over)
   {
     // (dg): I hate this.
-    if (game->spawn_timer.duration > 0.75f)
+    if (game.spawn_timer.duration > 0.75f)
     {
-      game->spawn_timer.duration -= 0.001f;
+      game.spawn_timer.duration -= 0.001f;
     }
 
-    if (!game->spawn_timer.is_ticking)
+    if (!game.spawn_timer.is_ticking)
     {
-      timer_start(&game->spawn_timer, t);
+      timer_start(&game.spawn_timer, game.spawn_timer.duration);
     }
 
-    if (timer_timeout(&game->spawn_timer, t))
+    if (timer_timeout(&game.spawn_timer))
     {
       f32 spawn_x[2] = {-50.0f, WIDTH + 50.0f};
       u32 roll = (u32) random_u64(0, 1);
-      spawn_entity(game, EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], HEIGHT/2));
+      spawn_entity(EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], HEIGHT/2));
 
-      game->zombies_spawned++;
+      game.zombies_spawned++;
     }
   }
 
@@ -113,19 +114,13 @@ void update_game(Game *game)
     if (en->marked_for_death)
     {
       en->marked_for_death = FALSE;
-
-      if (en->sp == SP_Player)
-      {
-        game->is_over = TRUE;
-      }
-
-      free_entity(game, en);
+      free_entity(en);
     }
   }
 
-  if (!game->is_over)
+  if (!game.is_over)
   {
-    game->time_alive = t;
+    game.time_alive = t;
   }
 
   // Update entity position ----------------
@@ -189,7 +184,7 @@ void update_game(Game *game)
       else
       {
         Vec2F player_pos = pos_from_entity(player);
-        if (is_entity_valid(player) && !game->is_over)
+        if (is_entity_valid(player) && !game.is_over)
         {
           entity_look_at(en, player_pos);
         }
@@ -261,10 +256,10 @@ void update_game(Game *game)
           {
             if (!en->kill_timer.is_ticking)
             {
-              timer_start(&en->kill_timer, t);
+              timer_start(&en->kill_timer, en->kill_timer.duration);
             }
 
-            if (timer_timeout(&en->kill_timer, t))
+            if (timer_timeout(&en->kill_timer))
             {
               kill_entity(en);
             }
@@ -335,7 +330,7 @@ void update_game(Game *game)
         xform = mul_3x3f(model, xform);
       }
 
-      xform = mul_3x3f(game->camera, xform);
+      xform = mul_3x3f(game.camera, xform);
       // xform = mul_3x3f(global.renderer.projection, xform);
 
       en->xform = xform;
@@ -372,7 +367,7 @@ void update_game(Game *game)
       // Bullet vs Zombie collision
       if (en->type == EntityType_Bullet)
       {
-        for (Entity *other = game->entities.head; other; other = other->next)
+        for (Entity *other = game.entities.head; other; other = other->next)
         {
           if (other->type == EntityType_ZombieWalker)
           {
@@ -381,11 +376,11 @@ void update_game(Game *game)
                   collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
             {
               Vec2F spawn_pos = pos_from_entity(en);
-              spawn_entity(game, EntityType_ParticleGroup, 
+              spawn_entity(EntityType_ParticleGroup, 
                             .pos=spawn_pos, 
                             .particle_desc=prefab.particle.blood);
 
-              damage_entity(game, en, other);
+              damage_entity(other, en->damage);
               kill_entity(en);
             }
           }
@@ -408,15 +403,15 @@ void update_game(Game *game)
           {
             if (!en->attack_timer.is_ticking)
             {
-              timer_start(&en->attack_timer, t);
+              timer_start(&en->attack_timer, en->attack_timer.duration);
             }
             
-            timeout = timer_timeout(&en->attack_timer, t);
+            timeout = timer_timeout(&en->attack_timer);
           }
           
-          if (timeout && timer_timeout(&player->invincibility_timer, t))
+          if (timeout && timer_timeout(&player->invincibility_timer))
           {
-            damage_entity(game, en, player);
+            damage_entity(player, en->damage);
             timer_reset(&player->invincibility_timer);
           }
         }
@@ -426,6 +421,22 @@ void update_game(Game *game)
           en->colliding_with_player = FALSE;
         }
       }
+
+      // Item vs Player collision
+      if (en->type == EntityType_DroppedItem)
+      {
+        if (p_rect_circle_intersect(
+              collision_params_from_entity(player->cols[Collider_Body], player->vel),
+              collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
+        {
+          kill_entity(en);
+          spawn_entity(EntityType_ParticleGroup,
+                        .pos=pos_from_entity(en),
+                        .particle_desc=prefab.particle.pickup_coin);
+          
+          game.coin_count++;
+        }
+      }  
     }
   }
 
@@ -439,7 +450,7 @@ void update_game(Game *game)
     {
       if (!en->invincibility_timer.is_ticking)
       {
-        timer_start(&en->invincibility_timer, t);
+        timer_start(&en->invincibility_timer, en->invincibility_timer.duration);
       }
     }
 
@@ -449,24 +460,23 @@ void update_game(Game *game)
       {
         if (!en->attack_timer.is_ticking)
         {
-          timer_start(&en->attack_timer, t);
+          timer_start(&en->attack_timer, en->attack_timer.duration);
         }
 
         // Shoot weapon if can shoot
-        if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer, t))
+        if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer))
         {
           Entity *gun = get_entity_child_of_sp(en, SP_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
 
-          Entity *bullet = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+          Entity *bullet = spawn_entity(EntityType_Bullet, .pos=spawn_pos);
           bullet->rot = spawn_rot;
           bullet->speed = gun->speed;
           bullet->damage = gun->damage;
-          entity_rem_prop(bullet, EntityProp_Renders);
 
-          spawn_entity(game, EntityType_ParticleGroup, 
+          spawn_entity(EntityType_ParticleGroup, 
                         .pos=spawn_pos, 
                         .particle_desc=prefab.particle.smoke);
         }
@@ -491,14 +501,14 @@ void update_game(Game *game)
           {
             if (!en->attack_timer.is_ticking)
             {
-              timer_start(&en->attack_timer, t);
+              timer_start(&en->attack_timer, en->attack_timer.duration);
             }
 
             // Shoot weapon if can shoot
-            if (timer_timeout(&en->attack_timer, t))
+            if (timer_timeout(&en->attack_timer))
             {
               Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-              Entity *laser = spawn_entity(game, EntityType_Bullet, .pos=spawn_pos);
+              Entity *laser = spawn_entity(EntityType_Bullet, .pos=spawn_pos);
               laser->tint = DEBUG_GREEN;
               laser->rot = en->rot;
               laser->speed = 700.0f;
@@ -539,96 +549,113 @@ void update_game(Game *game)
     }
   }
 
-  // Update particle groups ----------------
+  // Update entity bobbing ----------------
   for (EN_IN_ENTITIES)
   {
-    if (en->type == EntityType_ParticleGroup)
+    if (entity_has_prop(en, EntityProp_BobsOverTime))
     {
-      ParticleDesc desc = en->particle_desc;
-      switch (desc.emmission_type)
+      if (en->pos.y > en->bobbing_range.e[1] - 0.1f)
       {
-        case ParticleEmmissionType_Burst:
-        {
-          for (i32 i = 0; i < desc.count; i++)
-          {
-            Particle *particle = &en->particles[i];
-
-            if (desc.props & ParticleProp_VariateColor)
-            {
-              particle->color = lerp_4f(particle->color, desc.color_secondary, dt);
-            }
-
-            if (desc.props & ParticleProp_ScaleOverTime)
-            {
-              particle->scale = add_2f(particle->scale, scale_2f(desc.scale_delta, dt));
-              particle->scale.x = clamp_bot(particle->scale.x, 0.0f);
-              particle->scale.y = clamp_bot(particle->scale.y, 0.0f);
-            }
-
-            if (desc.props & ParticleProp_SpeedOverTime)
-            {
-              particle->speed += desc.speed_delta * dt * dt;
-              particle->speed = clamp_bot(particle->speed, 0.0f);
-            }
-
-            if (desc.props & ParticleProp_RotateOverTime)
-            {
-              particle->rot += desc.rot_delta * dt * dt;
-            }
-
-            if (desc.props & ParticleProp_AffectedByGravity)
-            {
-              if (!particle->is_grounded)
-              {
-                particle->vel.x = sin_1f(particle->dir) * particle->speed * dt;
-                particle->vel.y -= GRAVITY * dt * dt;
-              }
-            }
-            else
-            {
-              particle->vel = v2f(
-                sin_1f(particle->dir) * particle->speed * dt,
-                cos_1f(particle->dir) * particle->speed * dt
-              );
-            }
-
-            if (desc.props & ParticleProp_CollidesWithGround)
-            {
-              Vec2F p_col_pos = {
-                particle->pos.x, 
-                particle->pos.y + particle->scale.y
-              };
-
-              P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
-              if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), GROUND_Y))
-              {
-                particle->pos.y = GROUND_Y - particle->scale.y;
-                particle->vel = V2F_ZERO;
-                particle->is_grounded = TRUE;
-              }
-            }
-            
-            particle->pos = add_2f(particle->pos, particle->vel);
-          }
-
-          if (!en->particle_timer.is_ticking)
-          {
-            en->particle_timer.end_time = t + desc.duration;
-            en->particle_timer.is_ticking = TRUE;
-          }
-
-          if (t >= en->particle_timer.end_time)
-          {
-            en->particle_timer.is_ticking = FALSE;
-            kill_entity(en);
-          }
-        }
-        case ParticleEmmissionType_Linear:
-        {
-          // ...
-        }
-        break;
+        en->bobbing_state = -1;
       }
+
+      if (en->pos.y < en->bobbing_range.e[0] + 0.1f)
+      {
+        en->bobbing_state = 1;
+      }
+      
+      en->pos.y += 10 * dt * en->bobbing_state;
+    }
+  }
+
+  // Update particles ----------------
+  for (u32 i = 0; i < MAX_PARTICLES; i++)
+  {
+    Particle *particle = &game.particle_buffer.data[i];
+
+    if (!particle->is_active) continue;
+
+    Entity *owner = entity_from_ref(particle->owner);
+    ParticleDesc desc = owner->particle_desc;
+
+    switch (desc.emmission_type)
+    {
+      case ParticleEmmissionType_Burst:
+      {
+        if (desc.props & ParticleProp_VariateColor)
+        {
+          particle->color = lerp_4f(particle->color, desc.color_secondary, dt);
+        }
+
+        if (desc.props & ParticleProp_ScaleOverTime)
+        {
+          particle->scale = add_2f(particle->scale, scale_2f(desc.scale_delta, dt));
+          particle->scale.x = clamp_bot(particle->scale.x, 0.0f);
+          particle->scale.y = clamp_bot(particle->scale.y, 0.0f);
+        }
+
+        if (desc.props & ParticleProp_SpeedOverTime)
+        {
+          particle->speed += desc.speed_delta * dt * dt;
+          particle->speed = clamp_bot(particle->speed, 0.0f);
+        }
+
+        if (desc.props & ParticleProp_RotateOverTime)
+        {
+          particle->rot += desc.rot_delta * dt * dt;
+        }
+
+        if (desc.props & ParticleProp_AffectedByGravity)
+        {
+          if (!particle->is_grounded)
+          {
+            particle->vel.x = sin_1f(particle->dir) * particle->speed * dt;
+            particle->vel.y -= GRAVITY * dt * dt;
+          }
+        }
+        else
+        {
+          particle->vel = v2f(
+            sin_1f(particle->dir) * particle->speed * dt,
+            cos_1f(particle->dir) * particle->speed * dt
+          );
+        }
+
+        if (desc.props & ParticleProp_CollidesWithGround)
+        {
+          Vec2F p_col_pos = {
+            particle->pos.x, 
+            particle->pos.y + particle->scale.y
+          };
+
+          P_CollisionParams params = {.pos=p_col_pos, .vel=particle->vel};
+          if (p_point_y_range_intersect(params, v2f(-3000.0f, 3000.0f), GROUND_Y))
+          {
+            particle->pos.y = GROUND_Y - particle->scale.y;
+            particle->vel = V2F_ZERO;
+            particle->is_grounded = TRUE;
+          }
+        }
+        
+        particle->pos = add_2f(particle->pos, particle->vel);
+
+        if (!owner->particle_timer.is_ticking)
+        {
+          timer_start(&owner->particle_timer, desc.duration);
+        }
+
+        if (timer_timeout(&owner->particle_timer))
+        {
+          particle->is_active = FALSE;
+          kill_entity(owner);
+          // logger_debug(str("Timed out!\n"));
+        }
+      }
+      case ParticleEmmissionType_Linear:
+      {
+        // ...
+      }
+      break;
     }
   }
 
@@ -641,10 +668,10 @@ void update_game(Game *game)
 
       if (!en->flash_timer.is_ticking)
       {
-        timer_start(&en->flash_timer, t);
+        timer_start(&en->flash_timer, en->flash_timer.duration);
       }
 
-      if (timer_timeout(&en->flash_timer, t))
+      if (timer_timeout(&en->flash_timer))
       {
         entity_rem_prop(en, EntityProp_FlashWhite);
       }
@@ -681,14 +708,43 @@ void update_game(Game *game)
     }
   }
 
-  if (game->is_over)
+  if (game.is_over)
   {
     ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
   }
 
-  ui_text_1f(str("%.1f"), game->time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game->draw_arena);
-  ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game->draw_arena);
-  // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game->draw_arena);
+  for (E_IN_EVENT_QUEUE)
+  {
+    switch (e->type)
+    {
+      case EventType_Nil: break;
+      case EventType_EntityKilled:
+      {
+        Entity *en = e->desc.en ? e->desc.en : NIL_ENTITY;
+
+        if (e->desc.type == EntityType_Player)
+        {
+          game.is_over = TRUE;
+          logger_debug(str("Player has been killed."));
+        }
+
+        if (entity_has_prop(en, EntityProp_Zombie))
+        {
+          Entity *item = spawn_entity(EntityType_DroppedItem);
+          item->pos = v2f(en->pos.x, en->pos.y - 10);
+          item->texture = prefab.texture.coin;
+          item->bobbing_range = v2f(item->pos.y - 5, item->pos.y + 5);
+          item->bobbing_state = -1;
+
+          logger_debug(str("Spawned a coin.\n"));
+        }
+      }
+    }
+  }
+
+  // ui_text_1f(str("%.1f"), game.time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game.draw_arena);
+  // ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game.draw_arena);
+  // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game.draw_arena);
 
   // Developer tools ----------------
   {
@@ -724,14 +780,14 @@ void update_game(Game *game)
     // Spawn particles 
     if (is_key_pressed(KEY_P))
     {
-      spawn_entity(game, EntityType_ParticleGroup, 
+      spawn_entity(EntityType_ParticleGroup, 
                     .pos=player->pos, 
                     .particle_desc=prefab.particle.debug);
     }
   }
 }
 
-void render_game(Game *game)
+void render_game(void)
 {
   clear_frame(V4F_ZERO);
 
@@ -751,41 +807,40 @@ void render_game(Game *game)
   }
   
   // Draw primitive batch ----------------
-  for (EN_IN_ENTITIES)
   {
-    if (!en->is_active) continue;
-
-    if (entity_has_prop(en, EntityProp_Renders))
+    for (EN_IN_ENTITIES)
     {
-      if (en->draw_type == DrawType_Primitive)
+      if (!en->is_active) continue;
+
+      if (entity_has_prop(en, EntityProp_Renders))
       {
-        if (en->type == EntityType_Collider && global.debug)
+        if (en->draw_type == DrawType_Primitive)
         {
-          Vec4F color = en->tint;
-          switch (en->col_id)
+          if (en->type == EntityType_Collider && global.debug)
           {
-            case Collider_Body: 
-            case Collider_Head: color = v4f(0, 1, 0, 0.35f);
-            break;
-            case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
-            break;
-            default: color = v4f(1, 1, 1, 0.35f);
-            break;
+            Vec4F color = en->tint;
+            switch (en->col_id)
+            {
+              case Collider_Body: 
+              case Collider_Head: color = v4f(0, 1, 0, 0.35f);
+              break;
+              case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
+              break;
+              default: color = v4f(1, 1, 1, 0.35f);
+              break;
+            }
+
+            draw_rectangle_x(en->xform, color);
           }
-
-          draw_rectangle_x(en->xform, color);
+          else if (en->type != EntityType_Collider)
+          {
+            draw_rectangle_x(en->xform, en->tint);
+          }
         }
-        else if (en->type != EntityType_Collider)
-        {
-          draw_rectangle_x(en->xform, en->tint);
-        }
-      }
-
-      if (en->type == EntityType_ParticleGroup)
-      {
-        draw_particles(en);
       }
     }
+
+    draw_particles();
   }
 
   // Draw UI batch ----------------
@@ -859,10 +914,72 @@ void render_game(Game *game)
   r_flush(&global.renderer);
 }
 
-inline
-bool game_should_quit(Game *game)
+Particle *get_next_free_particle(void)
 {
-  return game->should_quit || is_key_pressed(KEY_ESCAPE);
+  ParticleBuffer *buffer = &game.particle_buffer;
+  
+  Particle *result = &buffer->data[buffer->pos];
+  buffer->pos += 1;
+
+  if (buffer->pos == MAX_PARTICLES)
+  {
+    buffer->pos = 0;
+  }
+
+  return result;
+}
+
+// @Events ///////////////////////////////////////////////////////////////////////////////
+
+void push_event(EventType type, EventDesc desc)
+{
+  EventQueue *queue = &game.event_queue;
+
+  Event *new_event = arena_push(&game.frame_arena, Event, 1);
+  new_event->type = type;
+  new_event->desc = desc;
+
+  if (queue->front == NULL)
+  {
+    queue->front = new_event;
+  }
+
+  if (queue->back != NULL)
+  {
+    queue->back->next = new_event;
+  }
+
+  queue->back = new_event;
+  queue->count += 1;
+}
+
+void pop_event()
+{
+  EventQueue *queue = &game.event_queue;
+  
+  Event *next = queue->front->next;
+  zero(*queue->front, Event);
+
+  if (next == NULL)
+  {
+    queue->back = NULL;
+  }
+
+  queue->front = next;
+  queue->count -= 1;
+}
+
+Event *peek_event()
+{
+  return game.event_queue.front;
+}
+
+// @Misc /////////////////////////////////////////////////////////////////////////////////
+
+inline
+bool game_should_quit(void)
+{
+  return game.should_quit || is_key_pressed(KEY_ESCAPE);
 }
 
 inline

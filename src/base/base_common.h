@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 typedef uint8_t bool;
+typedef uint8_t byte;
 typedef uint8_t b8;
 typedef uint16_t b16;
 typedef uint32_t b32;
@@ -57,6 +58,9 @@ typedef double f64;
 #endif
 
 #define zero(x, T) x = ((T) {0})
+
+#define size_of(T) sizeof(T)
+#define align_of(T) _Alignof(T)
 
 // @Math /////////////////////////////////////////////////////////////////////////////////
 

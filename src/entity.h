@@ -19,8 +19,6 @@
 #define ENEMY_ATTACK_COOLDOWN 1.0f
 #define FLASH_TIME 0.05f
 
-// @Special //////////////////////////////////////////////////////////////////////////////
-
 enum
 {
   SP_Nil,
@@ -37,8 +35,12 @@ typedef enum ColliderID
   _Collider_Count,
 } ColliderID;
 
-typedef struct Game Game;
-typedef struct Entity Entity;
+typedef struct EntityRef EntityRef;
+struct EntityRef
+{
+  Entity *ptr;
+  u64 id;
+};
 
 // @Animation ////////////////////////////////////////////////////////////////////////////
 
@@ -95,22 +97,9 @@ typedef enum ParticleProp
   ParticleProp_RotateOverTime = 1 << 5,
 } ParticleProp;
 
-typedef struct Particle Particle;
-struct Particle
-{
-  Vec4F color;
-  Vec2F pos;
-  Vec2F scale;
-  f32 dir;
-  f32 rot;
-  Vec2F vel;
-  f32 speed;
-  bool is_grounded;
-};
-
 typedef struct ParticleDesc ParticleDesc;
 struct ParticleDesc
-{
+{ 
   ParticleEmmissionType emmission_type;
   b8 props;
   u32 count;
@@ -124,6 +113,22 @@ struct ParticleDesc
   f32 speed_delta;
   f32 rot_delta;
   Vec2F vel;
+};
+
+typedef struct Particle Particle;
+struct Particle
+{
+  EntityRef owner;
+
+  Vec4F color;
+  Vec2F pos;
+  Vec2F scale;
+  f32 dir;
+  f32 rot;
+  Vec2F vel;
+  f32 speed;
+  bool is_grounded;
+  bool is_active;
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
@@ -159,6 +164,7 @@ typedef enum EntityType
   EntityType_Bullet,
   EntityType_Collider,
   EntityType_ParticleGroup,
+  EntityType_DroppedItem,
 } EntityType;
 
 typedef enum EntityProp
@@ -172,8 +178,10 @@ typedef enum EntityProp
   EntityProp_WrapsAtEdges = 1 << 6,
   EntityProp_AffectedByGravity = 1 << 7,
   EntityProp_CollidesWithGround = 1 << 8,
-  EntityProp_Grounded = 1 << 9,
-  EntityProp_FlashWhite = 1 << 10,
+  EntityProp_BobsOverTime = 1 << 9,
+  EntityProp_Grounded = 1 << 10,
+  EntityProp_FlashWhite = 1 << 11,
+  EntityProp_Zombie = 1 << 12,
 } EntityProp;
 
 typedef enum MoveType
@@ -197,14 +205,6 @@ typedef enum DrawType
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
-
-typedef struct EntityRef EntityRef;
-struct EntityRef
-{
-  Entity *ptr;
-  u64 id;
-};
-
 typedef struct Entity Entity;
 struct Entity
 {
@@ -262,6 +262,8 @@ struct Entity
   AnimationDesc anims[_Animation_Count];
   AnimationState anim_state;
   AnimationState anim_state_prev;
+  Vec2F bobbing_range;
+  i8 bobbing_state;
 
   Timer flash_timer;
 
@@ -272,8 +274,6 @@ struct Entity
   f32 view_dist;
 
   // ParticleGroup
-  Arena particle_arena;
-  Particle *particles;
   ParticleDesc particle_desc;
   Timer particle_timer;
 
@@ -300,12 +300,9 @@ struct EntityList
 typedef struct EntityParams EntityParams;
 struct EntityParams
 {
-  Entity *entity;
-  EntityType type;
-  u64 id;
   b64 props;
   Vec2F pos;
-  Vec4F color;
+  Vec4F tint;
   ParticleDesc particle_desc;
 };
 
@@ -313,14 +310,13 @@ Entity *NIL_ENTITY = &(Entity) {0};
 
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
-Entity *create_entity(Game *game, EntityType type);
+Entity *create_entity(EntityType type);
 
-#define spawn_entity(game, type, ...) \
-  _spawn_entity(game, type, (EntityParams) {.pos=v2f(0, 0), .color=DEBUG_WHITE, __VA_ARGS__ })
+#define spawn_entity(type, ...) \
+  _spawn_entity(type, (EntityParams) {.pos=v2f(0, 0), .tint=DEBUG_WHITE, .props=0, __VA_ARGS__ })
 
-Entity *_spawn_entity(Game *game, EntityType type, EntityParams params);
-
-#define kill_entity(en) en->marked_for_death = TRUE
+Entity *_spawn_entity(EntityType type, EntityParams params);
+void kill_entity(Entity *en);
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
@@ -345,7 +341,7 @@ void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
 bool is_entity_valid(Entity *en);
 
-void damage_entity(Game *game, Entity *sender, Entity *reciever);
+void damage_entity(Entity *reciever, i16 damage);
 
 // @EntityRef ////////////////////////////////////////////////////////////////////////////
 
@@ -354,10 +350,10 @@ Entity *entity_from_ref(EntityRef ref);
 
 // @EntityList ///////////////////////////////////////////////////////////////////////////
 
-Entity *alloc_entity(Game *game);
-void free_entity(Game *game, Entity *en);
-Entity *get_entity_of_id(Game *game, u64 id);
-Entity *get_entity_of_sp(Game *game, u8 sp);
+Entity *alloc_entity(void);
+void free_entity(Entity *en);
+Entity *get_entity_of_id(u64 id);
+Entity *get_entity_of_sp(u8 sp);
 
 void attach_entity_child(Entity *en, Entity *child);
 void attach_entity_child_at(Entity *en, Entity *child, u16 index);
@@ -367,7 +363,7 @@ Entity *get_entity_child_of_id(Entity *en, u64 id);
 Entity *get_entity_child_of_sp(Entity *en, u8 sp);
 Entity *get_entity_child_of_type(Entity *en, EntityType type);
 
-void entity_add_collider(Game *game, Entity *en, ColliderID col_id);
+void entity_add_collider(Entity *en, ColliderID col_id);
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
 
@@ -376,8 +372,8 @@ void create_particles(Entity *en, ParticleDesc desc);
 // @Other ////////////////////////////////////////////////////////////////////////////////
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
-void timer_start(Timer *timer, f64 t);
-bool timer_timeout(Timer *timer, f64 t);
+void timer_start(Timer *timer, f64 duration);
+bool timer_timeout(Timer *timert);
 void timer_reset(Timer *timer);
 
 void equip_weapon(Entity *en, WeaponDesc desc);

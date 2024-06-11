@@ -18,6 +18,46 @@
 
 #define GRAVITY 3600.0f
 
+
+// @Event ////////////////////////////////////////////////////////////////////////////////
+
+typedef enum EventType
+{
+  EventType_Nil,
+  EventType_EntityKilled,
+} EventType;
+
+typedef struct EventDesc EventDesc;
+struct EventDesc
+{
+  Entity *en;
+  u64 id;
+  u64 type;
+  b64 props;
+};
+
+typedef struct Event Event;
+struct Event
+{
+  Event *next;
+  EventType type;
+  EventDesc desc;
+};
+
+typedef struct EventQueue EventQueue;
+struct EventQueue
+{
+  Event *front;
+  Event *back;
+  u64 count;
+};
+
+void push_event(EventType type, EventDesc desc);
+void pop_event(void);
+Event *peek_event(void);
+
+// @Globals //////////////////////////////////////////////////////////////////////////////
+
 typedef struct Globals Globals;
 struct Globals
 {
@@ -40,6 +80,17 @@ struct Globals
 
 // @Game /////////////////////////////////////////////////////////////////////////////////
 
+#define MAX_PARTICLES 512
+
+typedef struct ParticleBuffer ParticleBuffer;
+struct ParticleBuffer
+{
+  Particle data[MAX_PARTICLES];
+  u32 pos;
+};
+
+Particle *get_next_free_particle(void);
+
 typedef struct Game Game;
 struct Game
 {
@@ -49,7 +100,8 @@ struct Game
 
   Input *input;
   EntityList entities;
-  Entity *entity_draw_list;
+  EventQueue event_queue;
+  ParticleBuffer particle_buffer;
 
   f64 t;
   f64 dt;
@@ -60,11 +112,14 @@ struct Game
   Timer spawn_timer;
   u64 zombies_spawned;
   f64 time_alive;
+
+  u16 coin_count;
+  u16 soul_count;
 };
 
-void init_game(Game *game);
-void update_game(Game *game);
-void render_game(Game *game);
-bool game_should_quit(Game *game);
+void init_game(void);
+void update_game(void);
+void render_game(void);
+bool game_should_quit(void);
 
 Vec2F screen_to_world(Vec2F pos);

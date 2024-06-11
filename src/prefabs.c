@@ -28,6 +28,8 @@ Prefabs create_prefabs(void)
     prefab.texture.smg = v2i(3, 3);
 
     prefab.texture.bullet = v2i(5, 3);
+    prefab.texture.coin = v2i(7, 3);
+    prefab.texture.soul = v2i(8, 3);
   }
 
   // Animation ----------------
@@ -131,6 +133,20 @@ Prefabs create_prefabs(void)
       .color_secondary = DEBUG_BLUE,
       .scale_delta = v2f(-0.5f, -0.5f),
       .speed_delta = 50.0f,
+    };
+
+    prefab.particle.pickup_coin = (ParticleDesc) {
+      .emmission_type = ParticleEmmissionType_Burst,
+      .props = ParticleProp_ScaleOverTime |
+               ParticleProp_RotateOverTime,
+      .count = 6,
+      .duration = 0.3f,
+      .spread = 500.0f,
+      .color_primary = v4f(0.89f, 0.78f, 0.11f, 1.0f),
+      .scale = v2f(5, 5),
+      .scale_delta = v2f(-6.0f, -6.0f),
+      .speed = 60.0f,
+      .rot_delta = 50.0f,
     };
   }
 

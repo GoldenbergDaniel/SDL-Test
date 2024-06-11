@@ -13,7 +13,6 @@
 #include "stb/stb_image.h"
 
 #include "../vecmath/vecmath.h"
-#include "../logger/logger.h"
 #include "render.h"
 
 #ifndef RELEASE
@@ -209,9 +208,9 @@ R_Texture r_create_texture(String path)
 R_Renderer r_create_renderer(u32 vertex_capacity, u16 w, u16 h, Arena *arena)
 {
   u64 vbo_size = sizeof (R_Vertex) * vertex_capacity;
-  R_Vertex *vertices = arena_push(arena, vbo_size);
+  R_Vertex *vertices = (R_Vertex *) _arena_push(arena, vbo_size, align_of(R_Vertex));
   u64 ibo_size = (u64) (sizeof (u32) * vertex_capacity * 1.5f) + 1;
-  u32 *indices = arena_push(arena, ibo_size);
+  u32 *indices = (u32 *) _arena_push(arena, ibo_size, align_of(R_Vertex));
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);

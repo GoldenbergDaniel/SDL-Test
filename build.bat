@@ -21,7 +21,7 @@ set PUSH= 0
 if "%2%"=="push" set PUSH= 1
 
 if "%MODE%"==" dev"     set CFLAGS= /std:c17 /Iextern\
-if "%MODE%"==" debug"   set CFLAGS= /std:c17 /Od /Z7 /W1 /DDEBUG /I..\extern\
+if "%MODE%"==" debug"   set CFLAGS= /std:c17 /Od /Z7 /W1 /fsanitize=address /DDEBUG /I..\extern\
 if "%MODE%"==" release" set CFLAGS= /std:c17 /O2 /DRELEASE /I..\extern\
 
 if "%MODE%"==" dev"     set LFLAGS= /link /INCREMENTAL:NO /LIBPATH:extern\sokol\lib sokol.lib
@@ -41,6 +41,7 @@ if "%MODE%"==" dev" (
   pushd debug
     cl %CFLAGS% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
     del *.obj
+    %OUT%
   popd
 ) else if "%MODE%"==" release" (
   echo Building release...

@@ -61,5 +61,5 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID
 void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex_id, bool flash);
 
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint);
-void draw_particles(Entity *en);
+void draw_particles(void);
 void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex);

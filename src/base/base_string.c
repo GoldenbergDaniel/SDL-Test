@@ -1,13 +1,11 @@
-#include "base_common.h"
-#include "base_arena.h"
-#include "base_string.h"
+#include "base.h"
 
 // @String ===============================================================================
 
 String alloc_str(u64 len, Arena *arena)
 {
   String result;
-  result.data = arena_push(arena, len);
+  result.data = arena_push(arena, char, len);
   result.len = len;
 
   for (u64 i = 0; i < len; i++)
@@ -115,7 +113,7 @@ i64 str_find_char(String s, char c, u64 start, u64 end)
 String str_copy(String str, Arena *arena)
 {
   String result = {0};
-  result.data = arena_push(arena, str.len+1);
+  result.data = arena_push(arena, char, str.len+1);
 
   for (u64 i = 0; i < str.len; i++)
   {
@@ -313,7 +311,7 @@ StringArray create_str_array(u64 count, Arena *arena)
 {
   StringArray arr = {0};
   arr.count = count;
-  arr.e = arena_push(arena, sizeof (String) * count);
+  arr.e = arena_push(arena, String, count);
 
   return arr;
 }

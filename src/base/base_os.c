@@ -1,7 +1,4 @@
-#include <stdlib.h>
-
-#include "../base/base.h"
-#include "os.h"
+#include "base_os.h"
 
 #ifdef PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -20,41 +17,106 @@
 #undef bool
 #endif
 
-void *os_alloc(u64 size)
+#define UINT_MAX 0xffffffff
+
+// @Memory ///////////////////////////////////////////////////////////////////////////////
+
+void *os_reserve_vm(void *addr, u64 size)
 {
   void *result = NULL;
   
   #ifdef PLATFORM_WINDOWS
-  // VirtualAlloc(NULL, size, );
+  result = VirtualAlloc(addr, size, MEM_RESERVE, PAGE_NOACCESS);
   #endif
 
   #ifdef PLATFORM_UNIX
-  // i32 p_flags = PROT_READ | PROT_WRITE | PROT_EXEC;
+  // i32 p_flags = PROT_READ | PROT_WRITE;
   // i32 m_flags = MAP_ANON | MAP_SHARED;
   // result = mmap(NULL, size, p_flags, m_flags, -1, 0);
   #endif
-  
-  result = malloc(size);
 
   return result;
 }
 
-void os_free(void *ptr, u64 size)
+bool os_commit_vm(void *addr, u64 size)
 {
+  bool result = 0;
+
   #ifdef PLATFORM_WINDOWS
-  // VirtualFree();
+  byte *ptr = VirtualAlloc(addr, size, MEM_COMMIT, PAGE_READWRITE);
+  if (ptr == NULL)
+  {
+    result = GetLastError();
+  }
+  else
+  {
+    SetLastError(0);
+  }
   #endif
 
   #ifdef PLATFORM_UNIX
-  // munmap(ptr, size);
+  result = mprotect(ptr, len, PROT_READ | PROT_WRITE);
   #endif
 
-  free(ptr);
+  return result;
 }
 
+bool os_decommit_vm(void *addr, u64 size)
+{
+  bool result = 0;
+
+  #ifdef PLATFORM_WINDOWS
+  result = VirtualFree(addr, size, MEM_DECOMMIT);
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  result = mprotect()
+  #endif
+
+  return result;
+}
+
+void os_release_vm(void *ptr, u64 size)
+{
+  #ifdef PLATFORM_WINDOWS
+  VirtualFree(ptr, size, MEM_RELEASE);
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  munmap(ptr, size);
+  #endif
+}
+
+// TODO(dg): This should be cached somewhere
+u64 os_get_page_size(void)
+{
+  u64 result = 0;
+
+  #ifdef PLATFORM_WINDOWS
+  SYSTEM_INFO info = {0};
+  GetSystemInfo(&info);
+  result = info.dwPageSize;
+  #endif
+
+  return result;
+}
 // @File /////////////////////////////////////////////////////////////////////////////////
 
-OS_Handle os_open(String path, OS_Flag flag)
+bool os_is_handle_valid(OS_Handle handle)
+{
+  bool result = FALSE;
+
+  #ifdef PLATFORM_WINDOWS
+  result = (void *) handle.id != INVALID_HANDLE_VALUE;
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  #endif
+
+  return result;
+}
+
+OS_Handle os_open_file(String path, OS_Flag flag)
 {
   OS_Handle result = {0};
 
@@ -127,8 +189,10 @@ String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
 {
   assert(pos + size <= UINT_MAX);
 
+  if (!os_is_handle_valid(file)) return (String) {0};
+
   String result = {0};
-  result.data = arena_push(arena, size);
+  result.data = (char *) arena_push(arena, i8, size);
 
   #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
@@ -144,9 +208,11 @@ String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
   return result;
 }
 
-void os_write(OS_Handle file, String buf)
+void os_write_file(OS_Handle file, String buf)
 {
   assert(buf.len <= UINT_MAX);
+
+  if (!os_is_handle_valid(file)) return;
 
   #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
@@ -160,6 +226,8 @@ void os_write(OS_Handle file, String buf)
 
 void os_set_file_pos(OS_Handle file, u64 pos)
 {
+  if (!os_is_handle_valid(file)) return;
+
   #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   SetFilePointer(handle, pos, NULL, FILE_BEGIN);

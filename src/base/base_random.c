@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
-#include "base_common.h"
-#include "base_random.h"
+#include "base.h"
 
 // Range is inclusive
 u64 random_u64(u64 min, u64 max)

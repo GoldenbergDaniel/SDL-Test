@@ -11,12 +11,13 @@
 
 extern Globals global;
 extern Prefabs prefab;
+extern Game game;
 
 // @SpawnKillEntity //////////////////////////////////////////////////////////////////////
 
-Entity *create_entity(Game *game, EntityType type)
+Entity *create_entity(EntityType type)
 {
-  Entity *en = alloc_entity(game);
+  Entity *en = alloc_entity();
   en->type = type;
   en->is_active = TRUE;
   en->xform = m3x3f(1.0f);
@@ -56,7 +57,7 @@ Entity *create_entity(Game *game, EntityType type)
       en->anims[Animation_Walk] = prefab.animation.player_walk;
       en->anims[Animation_Jump] = prefab.animation.player_jump;
 
-      entity_add_collider(game, en, Collider_Body);
+      entity_add_collider(en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
       en->cols[Collider_Body]->pos = v2f(0, 0);
       en->cols[Collider_Body]->scale = v2f(0.5, 1);
@@ -68,7 +69,8 @@ Entity *create_entity(Game *game, EntityType type)
                   EntityProp_Moves | 
                   EntityProp_Collides |
                   EntityProp_AffectedByGravity |
-                  EntityProp_CollidesWithGround;
+                  EntityProp_CollidesWithGround |
+                  EntityProp_Zombie;
 
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
@@ -84,11 +86,11 @@ Entity *create_entity(Game *game, EntityType type)
       en->anims[Animation_Idle] = prefab.animation.walker_idle;
       en->anims[Animation_Walk] = prefab.animation.walker_walk;
       
-      entity_add_collider(game, en, Collider_Body);
+      entity_add_collider(en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
       en->cols[Collider_Body]->scale = v2f(0.5, 1);
 
-      entity_add_collider(game, en, Collider_Hit);
+      entity_add_collider(en, Collider_Hit);
       en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
       en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
       en->cols[Collider_Hit]->scale = v2f(0.25, 0.75);
@@ -114,11 +116,27 @@ Entity *create_entity(Game *game, EntityType type)
       en->kill_timer.duration = BULLET_KILL_TIME;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
 
-      entity_add_collider(game, en, Collider_Hit);
+      entity_add_collider(en, Collider_Hit);
       en->cols[Collider_Hit]->col_id = Collider_Hit;
       en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
-      en->cols[Collider_Hit]->radius = 0;
-      en->cols[Collider_Hit]->scale = v2f(0.5, 0.5);
+      en->cols[Collider_Hit]->radius = 1;
+      en->cols[Collider_Hit]->draw_type = DrawType_None;
+      en->cols[Collider_Hit]->dim = V2F_ZERO;
+    }
+    break;
+    case EntityType_DroppedItem:
+    {
+      en->props = EntityProp_Renders |
+                  EntityProp_BobsOverTime |
+                  EntityProp_Collides;
+
+      en->draw_type = DrawType_Sprite;
+      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
+ 
+      entity_add_collider(en, Collider_Hit);
+      en->cols[Collider_Hit]->col_id = Collider_Hit;
+      en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
+      en->cols[Collider_Hit]->radius = 10;
       en->cols[Collider_Hit]->draw_type = DrawType_None;
       en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
@@ -141,21 +159,46 @@ Entity *create_entity(Game *game, EntityType type)
   return en;
 }
 
-Entity *_spawn_entity(Game *game, EntityType type, EntityParams params)
+Entity *_spawn_entity(EntityType type, EntityParams params)
 {
-  Entity *en = create_entity(game, type);
+  Entity *en = create_entity(type);
   en->pos = params.pos;
-  en->tint = params.color;
-  en->is_active = FALSE;
-  en->marked_for_spawn = TRUE;
+  en->tint = params.tint;
   entity_add_prop(en, params.props);
+
+  en->is_active = FALSE;
+  entity_rem_prop(en, EntityProp_Renders);
 
   if (type == EntityType_ParticleGroup)
   {
-    create_particles(en, params.particle_desc);
+    ParticleDesc desc = params.particle_desc;
+    en->particle_desc = desc;
+
+    for (i32 i = 0; i < en->particle_desc.count; i++)
+    {
+      Particle *particle = get_next_free_particle();
+      particle->is_active = TRUE;
+      particle->pos = en->pos;
+      particle->scale = desc.scale;
+      particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
+      particle->rot = (f32) random_i32(-45, 45);
+      particle->color = desc.color_primary;
+      particle->vel = desc.vel;
+      particle->speed = desc.speed;
+      particle->owner = ref_from_entity(en);
+    }
   }
+
+  en->marked_for_spawn = TRUE;
   
   return en;
+}
+
+void kill_entity(Entity *en)
+{
+  en->marked_for_death = TRUE;
+
+  push_event(EventType_EntityKilled, (EventDesc) {.type=en->type});
 }
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
@@ -337,19 +380,29 @@ bool is_entity_valid(Entity *en)
   return (en != NULL && en->type != EntityType_Nil);
 }
 
-void damage_entity(Game *game, Entity *sender, Entity *reciever)
+void damage_entity(Entity *reciever, i16 damage)
 {
   if (reciever->health <= 0) return;
 
-  reciever->health -= sender->damage;
+  reciever->health -= damage;
   entity_add_prop(reciever, EntityProp_FlashWhite);
 
   if (reciever->health <= 0)
   {
-    spawn_entity(game, EntityType_ParticleGroup,
+    if (entity_has_prop(reciever, EntityProp_Zombie))
+    {
+      push_event(EventType_EntityKilled, (EventDesc) {.en=reciever});
+    }
+
+    if (reciever->sp == SP_Player)
+    {
+      push_event(EventType_EntityKilled, (EventDesc) {.type=EntityType_Player});
+    }
+
+    spawn_entity(EntityType_ParticleGroup,
                   .pos=pos_from_entity(reciever),
                   .particle_desc=prefab.particle.death);
-    
+      
     kill_entity(reciever);
   }
 }
@@ -380,21 +433,18 @@ Entity *entity_from_ref(EntityRef ref)
 
 // @EntityList ///////////////////////////////////////////////////////////////////////////
 
-Entity *alloc_entity(Game *game)
+Entity *alloc_entity()
 {
-  EntityList *list = &game->entities;
+  EntityList *list = &game.entities;
   Entity *new_en = list->first_free;
 
   if (new_en == NULL)
   {
-    new_en = arena_push(&game->entity_arena, sizeof (Entity));
+    new_en = arena_push(&game.entity_arena, Entity, 1);
     zero(*new_en, Entity);
 
-    u64 children_size = sizeof (EntityRef) * MAX_ENTITY_CHILDREN;
-    new_en->children = arena_push(&game->entity_arena, children_size);
-
-    u64 free_list_size = sizeof (i16) * MAX_ENTITY_CHILDREN;
-    new_en->free_child_list = arena_push(&game->entity_arena, free_list_size);
+    new_en->children = arena_push(&game.entity_arena, EntityRef, MAX_ENTITY_CHILDREN);
+    new_en->free_child_list = arena_push(&game.entity_arena, i16, MAX_ENTITY_CHILDREN);
 
     // Reset entity children
     for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
@@ -425,14 +475,9 @@ Entity *alloc_entity(Game *game)
   return new_en;
 }
 
-void free_entity(Game *game, Entity *en)
+void free_entity(Entity *en)
 {
-  EntityList *list = &game->entities;
-
-  if (en->type == EntityType_ParticleGroup)
-  {
-    destroy_arena(&en->particle_arena);
-  }
+  EntityList *list = &game.entities;
 
   // Reset entity
   // NOTE(dg): This is a load of crap.
@@ -456,11 +501,11 @@ void free_entity(Game *game, Entity *en)
   list->first_free = en;
 }
 
-Entity *get_entity_of_id(Game *game, u64 id)
+Entity *get_entity_of_id(u64 id)
 {
   Entity *result = NIL_ENTITY;
 
-  for (Entity *en = game->entities.head; en != NULL; en = en->next)
+  for (Entity *en = game.entities.head; en != NULL; en = en->next)
   {
     if (en->id == id)
     {
@@ -472,11 +517,11 @@ Entity *get_entity_of_id(Game *game, u64 id)
   return result;
 }
 
-Entity *get_entity_of_sp(Game *game, u8 sp)
+Entity *get_entity_of_sp(u8 sp)
 {
   Entity *result = NIL_ENTITY;
 
-  for (Entity *en = game->entities.head; en != NULL; en = en->next)
+  for (Entity *en = game.entities.head; en != NULL; en = en->next)
   {
     if (en->sp == sp)
     {
@@ -613,45 +658,24 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type)
   return result;
 }
 
-void entity_add_collider(Game *game, Entity *en, ColliderID col_id)
+void entity_add_collider(Entity *en, ColliderID col_id)
 {
-  en->cols[col_id] = create_entity(game, EntityType_Collider);
+  en->cols[col_id] = create_entity(EntityType_Collider);
   en->cols[col_id]->col_id = col_id;
   attach_entity_child(en, en->cols[col_id]);
 }
 
-// @Particles ////////////////////////////////////////////////////////////////////////////
+// @General //////////////////////////////////////////////////////////////////////////////
 
-void create_particles(Entity *en, ParticleDesc desc)
+void timer_start(Timer *timer, f64 duration)
 {
-  en->particle_desc = desc;
-  en->particle_arena = create_arena(MiB(1));
-  en->particles = arena_push(&en->particle_arena, sizeof (Particle) * desc.count);
-
-  for (i32 i = 0; i < en->particle_desc.count; i++)
-  {
-    Particle *particle = &en->particles[i];
-    particle->pos = en->pos;
-    particle->scale = desc.scale;
-    particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
-    particle->rot = (f32) random_i32(-45, 45);
-    particle->color = desc.color_primary;
-    particle->vel = desc.vel;
-    particle->speed = desc.speed;
-  }
-}
-
-// @Other ////////////////////////////////////////////////////////////////////////////////
-
-void timer_start(Timer *timer, f64 t)
-{
-  timer->end_time = t + timer->duration;
+  timer->end_time = game.t + duration;
   timer->is_ticking = TRUE;
 }
 
-bool timer_timeout(Timer *timer, f64 t)
+bool timer_timeout(Timer *timer)
 {
-  bool result = t >= timer->end_time;
+  bool result = game.t >= timer->end_time;
   if (result)
   {
     timer->is_ticking = FALSE;

@@ -31,6 +31,8 @@ struct Prefabs
     TextureID smg;
 
     TextureID bullet;
+    TextureID coin;
+    TextureID soul;
   } texture;
 
   struct
@@ -50,6 +52,8 @@ struct Prefabs
     ParticleDesc smoke;
     ParticleDesc blood;
     ParticleDesc death;
+    ParticleDesc pickup_coin;
+
     ParticleDesc debug;
   } particle;
 

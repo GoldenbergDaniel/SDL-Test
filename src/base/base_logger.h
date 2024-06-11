@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../base/base.h"
-#include "../os/os.h"
+#include "base_os.h"
+#include "base_string.h"
 
 typedef struct Logger Logger;
 struct Logger

@@ -19,11 +19,11 @@
 #endif
 
 #include "base/base_common.h"
+#include "base/base_os.c"
 #include "base/base_arena.c"
 #include "base/base_string.c"
 #include "base/base_random.c"
-#include "os/os.c"
-#include "logger/logger.c"
+#include "base/base_logger.c"
 #include "render/render.c"
 #include "vecmath/vecmath.c"
 #include "ui/ui.c"
@@ -50,13 +50,18 @@ void event(const sapp_event *);
 void frame(void);
 
 #if defined(_WIN32) && defined(RELEASE)
-i32 CALLBACK WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
+i32 WINAPI WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 #else
 i32 main(void)
 #endif
 {
-  Arena logger_arena = create_arena(MiB(1));
+  init_scratch_arenas();
+
+  Arena logger_arena = create_arena(GiB(1), FALSE);
   logger_init(str(""), &logger_arena);
+
+  u8 *buf = arena_push(&logger_arena, u8, 512);
+  arena_pop(&logger_arena, 256);
 
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",
@@ -78,11 +83,11 @@ i32 main(void)
 
 void init(void)
 {
-  global.perm_arena = create_arena(MiB(64));
+  global.perm_arena = create_arena(GiB(1), TRUE);
 
-  game.entity_arena = create_arena(MiB(16));
-  game.frame_arena = create_arena(MiB(16));
-  game.draw_arena = create_arena(MiB(16));
+  game.entity_arena = create_arena(GiB(1), FALSE);
+  game.frame_arena = create_arena(GiB(1), TRUE);
+  game.draw_arena = create_arena(MiB(16), TRUE);
   
   stm_setup();
   srand((u32) stm_now());
@@ -113,7 +118,7 @@ void init(void)
 
   game.dt = TIME_STEP;
   game.input = &global.input;
-  init_game(&game);
+  init_game();
 }
 
 void event(const sapp_event *event)
@@ -160,7 +165,7 @@ void frame(void)
     }
 
     game.t = stm_sec(stm_since(0));
-    update_game(&game);
+    update_game();
     arena_clear(&game.frame_arena);
 
     remember_last_keys();
@@ -169,10 +174,10 @@ void frame(void)
     global.frame.accumulator -= TIME_STEP;
   }
 
-  render_game(&game);
+  render_game();
   arena_clear(&game.draw_arena);
 
-  if (game_should_quit(&game))
+  if (game_should_quit())
   {
     sapp_quit();
   }
