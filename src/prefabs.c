@@ -193,5 +193,20 @@ Prefabs create_prefabs(void)
     };
   }
 
+  // Collectable ----------------
+  {
+    prefab.collectable.coin = (CollectableDesc) {
+      .type = CollectableType_Coin,
+      .texture = prefab.texture.coin,
+      .draw_chance = 30,
+    };
+    
+    prefab.collectable.soul = (CollectableDesc) {
+      .type = CollectableType_Soul,
+      .texture = prefab.texture.soul,
+      .draw_chance = 5,
+    };
+  }
+
   return prefab;
 }

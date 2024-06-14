@@ -41,7 +41,7 @@ if "%MODE%"==" dev" (
   pushd debug
     cl %CFLAGS% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
     del *.obj
-    %OUT%
+    @REM %OUT%
   popd
 ) else if "%MODE%"==" release" (
   echo Building release...

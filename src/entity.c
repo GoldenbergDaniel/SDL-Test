@@ -124,7 +124,7 @@ Entity *create_entity(EntityType type)
       en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
-    case EntityType_DroppedItem:
+    case EntityType_Collectable:
     {
       en->props = EntityProp_Renders |
                   EntityProp_BobsOverTime |
@@ -197,8 +197,7 @@ Entity *_spawn_entity(EntityType type, EntityParams params)
 void kill_entity(Entity *en)
 {
   en->marked_for_death = TRUE;
-
-  push_event(EventType_EntityKilled, (EventDesc) {.type=en->type});
+  push_event(EventType_EntityKilled, (EventDesc) {.en = en, .type=en->type});
 }
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
@@ -226,7 +225,7 @@ Vec2F pos_from_entity(Entity *en)
   Mat3x3F mat = en->model_mat;
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     mat = mul_3x3f(parent->model_mat, mat);
     parent = entity_from_ref(parent->parent);
@@ -285,7 +284,7 @@ Vec2F dim_from_entity(Entity *en)
   result = mul_2f(result, en->scale);
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     result = mul_2f(result, parent->scale);
     parent = entity_from_ref(parent->parent);
@@ -299,7 +298,7 @@ Vec2F scale_from_entity(Entity *en)
   Vec2F result = en->scale;
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     result = mul_2f(result, parent->scale);
     parent = entity_from_ref(parent->parent);
@@ -313,7 +312,7 @@ f32 rot_from_entity(Entity *en)
   f32 result = en->rot;
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     result += parent->rot;
     parent = entity_from_ref(parent->parent);
@@ -327,7 +326,7 @@ bool flip_x_from_entity(Entity *en)
   bool result = en->flip_x;
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     result = parent->flip_x ? !result : result;
     parent = entity_from_ref(parent->parent);
@@ -341,7 +340,7 @@ bool flip_y_from_entity(Entity *en)
   bool result = en->flip_y;
 
   Entity *parent = entity_from_ref(en->parent);
-  while (is_entity_valid(parent))
+  while (entity_is_valid(parent))
   {
     result = parent->flip_y ? !result : result;
     parent = entity_from_ref(parent->parent);
@@ -375,7 +374,7 @@ void set_entity_target(Entity *en, EntityRef target)
 }
 
 inline
-bool is_entity_valid(Entity *en)
+bool entity_is_valid(Entity *en)
 {
   return (en != NULL && en->type != EntityType_Nil);
 }
@@ -389,16 +388,6 @@ void damage_entity(Entity *reciever, i16 damage)
 
   if (reciever->health <= 0)
   {
-    if (entity_has_prop(reciever, EntityProp_Zombie))
-    {
-      push_event(EventType_EntityKilled, (EventDesc) {.en=reciever});
-    }
-
-    if (reciever->sp == SP_Player)
-    {
-      push_event(EventType_EntityKilled, (EventDesc) {.type=EntityType_Player});
-    }
-
     spawn_entity(EntityType_ParticleGroup,
                   .pos=pos_from_entity(reciever),
                   .particle_desc=prefab.particle.death);
@@ -423,7 +412,7 @@ Entity *entity_from_ref(EntityRef ref)
 {
   Entity *result = NIL_ENTITY;
 
-  if (is_entity_valid(ref.ptr) && ref.ptr->id == ref.id && !ref.ptr->marked_for_death)
+  if (entity_is_valid(ref.ptr) && ref.ptr->id == ref.id && !ref.ptr->marked_for_death)
   {
     result = ref.ptr;
   }
@@ -544,7 +533,7 @@ void attach_entity_child(Entity *en, Entity *child)
     for (u16 i = 0; i < en->child_count; i++)
     {
       Entity *slot = entity_from_ref(en->children[i]);
-      if (!is_entity_valid(slot))
+      if (!entity_is_valid(slot))
       {
         en->children[i] = ref_from_entity(child);
         break;
@@ -572,7 +561,7 @@ void attach_entity_child(Entity *en, Entity *child)
 void attach_entity_child_at(Entity *en, Entity *child, u16 index)
 { 
   EntityRef slot = en->children[index];
-  if (!is_entity_valid(entity_from_ref(slot)))
+  if (!entity_is_valid(entity_from_ref(slot)))
   {
     slot = ref_from_entity(child);
     child->parent = ref_from_entity(en);
@@ -691,6 +680,8 @@ void timer_reset(Timer *timer)
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)
 {
+  if (en == NULL) assert(0);
+
   P_CollisionParams result = {
     .type = en->col_type,
     .pos = pos_bl_from_entity(en),
@@ -704,7 +695,7 @@ P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)
 
 void equip_weapon(Entity *en, WeaponDesc desc)
 {
-  if (!is_entity_valid(en)) return;
+  if (!entity_is_valid(en)) return;
 
   Entity *weapon_en = get_entity_child_of_sp(en, SP_Gun);
   Entity *shot_point_en = get_entity_child_at(weapon_en, 0);

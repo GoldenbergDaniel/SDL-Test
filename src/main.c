@@ -117,7 +117,6 @@ void init(void)
   prefab = create_prefabs();
 
   game.dt = TIME_STEP;
-  game.input = &global.input;
   init_game();
 }
 

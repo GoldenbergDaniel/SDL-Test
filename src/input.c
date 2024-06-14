@@ -94,7 +94,7 @@ void handle_input_event(const struct sapp_event *event)
         default: break;
         case SAPP_KEYCODE_A: input->keys[KEY_A] = FALSE; break;
         case SAPP_KEYCODE_D: input->keys[KEY_D] = FALSE; break;
-        case SAPP_KEYCODE_P: input->keys[KEY_P] = TRUE; break;
+        case SAPP_KEYCODE_P: input->keys[KEY_P] = FALSE; break;
         case SAPP_KEYCODE_S: input->keys[KEY_S] = FALSE; break;
         case SAPP_KEYCODE_W: input->keys[KEY_W] = FALSE; break;
         case SAPP_KEYCODE_0: input->keys[KEY_0] = FALSE; break;

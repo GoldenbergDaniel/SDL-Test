@@ -80,7 +80,7 @@ struct Globals
 
 // @Game /////////////////////////////////////////////////////////////////////////////////
 
-#define MAX_PARTICLES 512
+#define MAX_PARTICLES 1024
 
 typedef struct ParticleBuffer ParticleBuffer;
 struct ParticleBuffer
@@ -98,7 +98,6 @@ struct Game
   Arena draw_arena;
   Arena entity_arena;
 
-  Input *input;
   EntityList entities;
   EventQueue event_queue;
   ParticleBuffer particle_buffer;

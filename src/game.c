@@ -21,7 +21,7 @@ extern Game game;
 void init_game(void)
 {
   game.camera = m3x3f(1.0f);
-  game.spawn_timer.duration = 500.0f;
+  game.spawn_timer.duration = 5.0f;
 
   ui_init_widgetstore(64, &global.perm_arena);
 
@@ -50,7 +50,7 @@ void update_game(void)
   f64 t = game.t;
   f64 dt = game.dt;
   Entity *player = get_entity_of_sp(SP_Player);
-  if (player == NULL) player = NIL_ENTITY;
+  if (!entity_is_valid(player)) player = NIL_ENTITY;
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
   ui_clear_widgetstore();
@@ -80,6 +80,7 @@ void update_game(void)
   }
 
   // Switch weapon ----------------
+  if (entity_is_valid(player))
   {
     if (is_key_just_pressed(KEY_0))
     {
@@ -184,7 +185,7 @@ void update_game(void)
       else
       {
         Vec2F player_pos = pos_from_entity(player);
-        if (is_entity_valid(player) && !game.is_over)
+        if (entity_is_valid(player) && !game.is_over)
         {
           entity_look_at(en, player_pos);
         }
@@ -309,7 +310,7 @@ void update_game(void)
       // Translate
       {
         Vec2F scale = v2f(1.0f, 1.0f);
-        for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
+        for (Entity *p = parent; entity_is_valid(p); p = entity_from_ref(p->parent))
         {
           scale = mul_2f(scale, p->scale);
         }
@@ -322,7 +323,7 @@ void update_game(void)
       // Move to world space
       {
         Mat3x3F model = m3x3f(1.0f);
-        for (Entity *p = parent; is_entity_valid(p); p = entity_from_ref(p->parent))
+        for (Entity *p = parent; entity_is_valid(p); p = entity_from_ref(p->parent))
         {
           model = mul_3x3f(p->model_mat, model);
         }
@@ -388,7 +389,7 @@ void update_game(void)
       }
 
       // Zombie vs Player collision
-      if (en->combat_type == CombatType_Melee && is_entity_valid(player))
+      if (en->combat_type == CombatType_Melee && entity_is_valid(player))
       {
         if (p_rect_rect_intersect(
               collision_params_from_entity(en->cols[Collider_Hit], en->vel),
@@ -423,7 +424,7 @@ void update_game(void)
       }
 
       // Item vs Player collision
-      if (en->type == EntityType_DroppedItem)
+      if (en->type == EntityType_Collectable && entity_is_valid(player))
       {
         if (p_rect_circle_intersect(
               collision_params_from_entity(player->cols[Collider_Body], player->vel),
@@ -434,7 +435,8 @@ void update_game(void)
                         .pos=pos_from_entity(en),
                         .particle_desc=prefab.particle.pickup_coin);
           
-          game.coin_count++;
+          if (en->item_type == CollectableType_Coin) game.coin_count++; 
+          if (en->item_type == CollectableType_Soul) game.soul_count++; 
         }
       }  
     }
@@ -484,7 +486,7 @@ void update_game(void)
     }
     else
     {
-      if (is_entity_valid(player) && player->is_active)
+      if (entity_is_valid(player) && player->is_active)
       {
         set_entity_target(en, ref_from_entity(player));
       }
@@ -720,7 +722,8 @@ void update_game(void)
       case EventType_Nil: break;
       case EventType_EntityKilled:
       {
-        Entity *en = e->desc.en ? e->desc.en : NIL_ENTITY;
+        Entity *en = e->desc.en;
+        if (!entity_is_valid(en)) continue;
 
         if (e->desc.type == EntityType_Player)
         {
@@ -730,21 +733,42 @@ void update_game(void)
 
         if (entity_has_prop(en, EntityProp_Zombie))
         {
-          Entity *item = spawn_entity(EntityType_DroppedItem);
-          item->pos = v2f(en->pos.x, en->pos.y - 10);
-          item->texture = prefab.texture.coin;
-          item->bobbing_range = v2f(item->pos.y - 5, item->pos.y + 5);
-          item->bobbing_state = -1;
+          i32 roll = random_i32(1, 100);
+          // logger_debug(str("Roll: %i\n"), roll);
 
-          logger_debug(str("Spawned a coin.\n"));
+          CollectableDesc desc = {0};
+          if (roll <= prefab.collectable.soul.draw_chance)
+          {
+            desc = prefab.collectable.soul;
+            logger_debug(str("Zombie dropped a soul.\n"));
+          }
+          else if (roll <= prefab.collectable.coin.draw_chance)
+          {
+            desc = prefab.collectable.coin;
+            logger_debug(str("Zombie dropped a coin.\n"));
+          }
+
+          if (desc.type != CollectableType_None)
+          {
+            Entity *collectable = spawn_entity(EntityType_Collectable);
+            collectable->pos = v2f(en->pos.x, en->pos.y - 10);
+            collectable->texture = desc.texture;
+            collectable->item_type = desc.type;
+            collectable->bobbing_range = v2f(collectable->pos.y - 5, collectable->pos.y + 5);
+            collectable->bobbing_state = -1;
+          }
         }
       }
     }
   }
 
-  // ui_text_1f(str("%.1f"), game.time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game.draw_arena);
-  // ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game.draw_arena);
+  ui_text_1f(str("%.1f"), game.time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game.draw_arena);
+  ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game.draw_arena);
+  ui_text_1f(str("Coins: %.0f"), game.coin_count, v2f(10, HEIGHT - 75), 25, &game.draw_arena);
+  ui_text_1f(str("Souls: %.0f"), game.soul_count, v2f(10, HEIGHT - 100), 25, &game.draw_arena);
   // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game.draw_arena);
+
+  zero(*NIL_ENTITY, Entity);
 
   // Developer tools ----------------
   {
@@ -772,13 +796,13 @@ void update_game(void)
     }
 
     // Kill player
-    if (is_key_just_pressed(KEY_BACKSPACE))
+    if (is_key_just_pressed(KEY_BACKSPACE) && entity_is_valid(player))
     { 
       kill_entity(player);
     }
 
     // Spawn particles 
-    if (is_key_pressed(KEY_P))
+    if (is_key_pressed(KEY_P) && entity_is_valid(player))
     {
       spawn_entity(EntityType_ParticleGroup, 
                     .pos=player->pos, 

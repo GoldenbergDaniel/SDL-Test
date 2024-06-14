@@ -64,6 +64,12 @@ struct Prefabs
     WeaponDesc shotgun;
     WeaponDesc smg;
   } weapon;
+
+  struct
+  {
+    CollectableDesc coin;
+    CollectableDesc soul;
+  } collectable;
 };
 
 Prefabs create_prefabs(void);

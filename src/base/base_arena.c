@@ -21,6 +21,8 @@
 
 // @Arena ////////////////////////////////////////////////////////////////////////////////
 
+#define PAGES_PER_COMMIT 4
+
 #ifndef SCRATCH_SIZE
 #define SCRATCH_SIZE GiB(16)
 #endif
@@ -56,12 +58,9 @@ u8 *_arena_push(Arena *arena, u64 size, u64 align)
 
   if (arena->committed < arena->allocated)
   {
-    u64 page_size = os_get_page_size();
-    // u64 quotient = ((u64) (arena->allocated - arena->committed - 1)) / page_size;
-    // u64 size_to_commit = (quotient + 1) * page_size;
-
+    u64 granularity = os_get_page_size() * PAGES_PER_COMMIT;
     u64 size_to_commit = (u64) (arena->allocated - arena->committed);
-    size_to_commit += -size_to_commit & (page_size - 1);
+    size_to_commit += -size_to_commit & (granularity - 1);
 
     bool err = os_commit_vm(arena->committed, size_to_commit);
     if (err)
@@ -101,12 +100,13 @@ void arena_clear(Arena *arena)
     u64 page_size = os_get_page_size();
 
     // If committed pages > 16, decommit pages after 16th
+    // TODO(dg): Verify that this is correct
     u64 page_limit = page_size * 16;
     if (commit_size > page_limit)
     {
       byte *start_addr = arena->memory + page_limit;
       os_decommit_vm(start_addr, commit_size - page_limit);
-      arena->committed = start_addr - size_of(byte *);
+      arena->committed = start_addr;
     }
   }
 

@@ -153,6 +153,21 @@ struct WeaponDesc
   u16 damage;
 };
 
+typedef enum CollectableType
+{
+  CollectableType_None,
+  CollectableType_Coin,
+  CollectableType_Soul,
+} CollectableType;
+
+typedef struct CollectableDesc CollectableDesc;
+struct CollectableDesc
+{
+  CollectableType type;
+  TextureID texture;
+  i32 draw_chance;
+};
+
 typedef enum EntityType
 {
   EntityType_Nil,
@@ -164,7 +179,7 @@ typedef enum EntityType
   EntityType_Bullet,
   EntityType_Collider,
   EntityType_ParticleGroup,
-  EntityType_DroppedItem,
+  EntityType_Collectable,
 } EntityType;
 
 typedef enum EntityProp
@@ -205,6 +220,7 @@ typedef enum DrawType
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
+
 typedef struct Entity Entity;
 struct Entity
 {
@@ -286,6 +302,8 @@ struct Entity
   Timer invincibility_timer;
   WeaponType weapon_type;
   bool weapon_equipped;
+
+  CollectableType item_type;
 };
 
 typedef struct EntityList EntityList;
@@ -339,7 +357,7 @@ bool flip_y_from_entity(Entity *en);
 
 void entity_look_at(Entity *en, Vec2F target_pos);
 void set_entity_target(Entity *en, EntityRef target);
-bool is_entity_valid(Entity *en);
+bool entity_is_valid(Entity *en);
 
 void damage_entity(Entity *reciever, i16 damage);
 
