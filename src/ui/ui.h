@@ -35,6 +35,7 @@ struct UI_Widget
 typedef struct UI_WidgetStore UI_WidgetStore;
 struct UI_WidgetStore
 {
+  Arena arena;
   UI_Widget *data;
   u64 capacity;
   u64 count;
@@ -47,6 +48,4 @@ UI_WidgetStore *ui_get_widgetstore(void);
 void ui_clear_widgetstore(void);
 void ui_push_widget(UI_Widget *widget);
 
-void ui_text(String text, Vec2F pos, f32 size, f32 width);
-void ui_text_1f(String text, f32 val, Vec2F pos, f32 size, Arena *arena);
-void ui_text_2f(String text, Vec2F val, Vec2F pos, f32 size, Arena *arena);
+void ui_text(String text, Vec2F pos, u32 size, u32 width, ...);

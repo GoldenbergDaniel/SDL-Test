@@ -40,7 +40,7 @@ void init_game(void)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(20.0f, 2.0f);
 
-    Entity *zombie = create_entity(EntityType_ZombieWalker);
+    Entity *zombie = create_entity(EntityType_Zombie);
     zombie->pos = v2f(WIDTH, HEIGHT/2.0f);
   }
 }
@@ -49,16 +49,27 @@ void update_game(void)
 {
   f64 t = game.t;
   f64 dt = game.dt;
+  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
+
   Entity *player = get_entity_of_sp(SP_Player);
   if (!entity_is_valid(player)) player = NIL_ENTITY;
-  Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
   ui_clear_widgetstore();
 
-  // Spawn entities ----------------
+  // Zombie waves ----------------
   if (!game.is_over)
   {
-    // (dg): I hate this.
+    // @TODO(dg): Add a timer in between waves
+    if (game.current_wave.zombies_killed == zombies_to_spawn_this_wave())
+    {
+      u16 next_wave = game.current_wave.num += 1;
+      game.current_wave.zombies_spawned = 0;
+      game.current_wave.zombies_killed = 0;
+      game.current_wave.num = next_wave;
+    }
+
+    WaveDesc wave_desc = prefab.wave[game.current_wave.num];
+    
     if (game.spawn_timer.duration > 0.75f)
     {
       game.spawn_timer.duration -= 0.001f;
@@ -71,34 +82,41 @@ void update_game(void)
 
     if (timer_timeout(&game.spawn_timer))
     {
-      f32 spawn_x[2] = {-50.0f, WIDTH + 50.0f};
-      u32 roll = (u32) random_u64(0, 1);
-      spawn_entity(EntityType_ZombieWalker, .pos=v2f(spawn_x[roll], HEIGHT/2));
+      ZombieKind spawn_roll = random_i32(1, ZombieKind_COUNT-1);
+      logger_debug(str("Roll: %u\n"), spawn_roll);
 
-      game.zombies_spawned++;
+      f32 x_pos[2] = {-50.0f, WIDTH + 50.0f};
+      u32 x_roll = (u32) random_i32(0, 1);
+
+      Entity *zombie = spawn_zombie(spawn_roll);
+      zombie->pos = v2f(x_pos[x_roll], HEIGHT/2);
+
+      game.current_wave.zombies_spawned += 1;
     }
   }
 
   // Switch weapon ----------------
   if (entity_is_valid(player))
   {
-    if (is_key_just_pressed(KEY_0))
+    if (is_key_just_pressed(Key_0))
     {
-      player->weapon_equipped = FALSE;
-      Entity *gun = get_entity_child_of_sp(player, SP_Gun);
-      entity_rem_prop(gun, EntityProp_Renders);
+      equip_weapon(player, WeaponKind_Nil);
     }
-    else if (is_key_just_pressed(KEY_1))
+    else if (is_key_just_pressed(Key_1))
     {
-      equip_weapon(player, prefab.weapon.pistol);
+      equip_weapon(player, WeaponKind_Pistol);
     }
-    else if (is_key_just_pressed(KEY_2))
+    else if (is_key_just_pressed(Key_2))
     {
-      equip_weapon(player, prefab.weapon.rifle);
+      equip_weapon(player, WeaponKind_Rifle);
     }
-    else if (is_key_just_pressed(KEY_3))
+    else if (is_key_just_pressed(Key_3))
     {
-      equip_weapon(player, prefab.weapon.smg);
+      equip_weapon(player, WeaponKind_Shotgun);
+    }
+    else if (is_key_just_pressed(Key_4))
+    {
+      equip_weapon(player, WeaponKind_SMG);
     }
   }
   
@@ -144,33 +162,33 @@ void update_game(void)
       {
         entity_look_at(en, mouse_pos);
 
-        if (is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
+        if (is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
           en->anim_state = Animation_Walk;
         }
 
-        if (is_key_pressed(KEY_D) && !is_key_pressed(KEY_A))
+        if (is_key_pressed(Key_D) && !is_key_pressed(Key_A))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
           en->anim_state = Animation_Walk;
         }
 
-        if (is_key_pressed(KEY_A) && is_key_pressed(KEY_D))
+        if (is_key_pressed(Key_A) && is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
           en->anim_state = Animation_Idle;
         }
         
-        if (!is_key_pressed(KEY_A) && !is_key_pressed(KEY_D))
+        if (!is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
           en->anim_state = Animation_Idle;
         }
 
-        bool jump_key_pressed = is_key_pressed(KEY_W) || is_key_pressed(KEY_SPACE);
+        bool jump_key_pressed = is_key_pressed(Key_W) || is_key_pressed(Key_Space);
         if (jump_key_pressed && entity_has_prop(en, EntityProp_Grounded))
         {
           en->new_vel.y = PLAYER_JUMP_VEL * dt;
@@ -370,7 +388,7 @@ void update_game(void)
       {
         for (Entity *other = game.entities.head; other; other = other->next)
         {
-          if (other->type == EntityType_ZombieWalker)
+          if (other->type == EntityType_Zombie)
           {
             if (p_rect_circle_intersect(
                   collision_params_from_entity(other->cols[Collider_Body], other->vel),
@@ -435,8 +453,8 @@ void update_game(void)
                         .pos=pos_from_entity(en),
                         .particle_desc=prefab.particle.pickup_coin);
           
-          if (en->item_type == CollectableType_Coin) game.coin_count++; 
-          if (en->item_type == CollectableType_Soul) game.soul_count++; 
+          if (en->item_kind == CollectableKind_Coin) game.coin_count++; 
+          if (en->item_kind == CollectableKind_Soul) game.soul_count++; 
         }
       }  
     }
@@ -466,7 +484,7 @@ void update_game(void)
         }
 
         // Shoot weapon if can shoot
-        if (is_key_pressed(KEY_MOUSE_1) && timer_timeout(&en->attack_timer))
+        if (is_key_pressed(Key_Mouse1) && timer_timeout(&en->attack_timer))
         {
           Entity *gun = get_entity_child_of_sp(en, SP_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -712,7 +730,7 @@ void update_game(void)
 
   if (game.is_over)
   {
-    ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
+    ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999, &game.frame_arena);
   }
 
   for (E_IN_EVENT_QUEUE)
@@ -731,29 +749,32 @@ void update_game(void)
           logger_debug(str("Player has been killed."));
         }
 
-        if (entity_has_prop(en, EntityProp_Zombie))
+        if (en->type == EntityType_Zombie)
         {
+          game.current_wave.zombies_killed += 1;
+
+          // Spawn drop
           i32 roll = random_i32(1, 100);
-          // logger_debug(str("Roll: %i\n"), roll);
 
           CollectableDesc desc = {0};
-          if (roll <= prefab.collectable.soul.draw_chance)
+          CollectableKind kind = 0;
+          if (roll <= prefab.collectable[CollectableKind_Soul].draw_chance)
           {
-            desc = prefab.collectable.soul;
-            logger_debug(str("Zombie dropped a soul.\n"));
+            desc = prefab.collectable[CollectableKind_Soul];
+            kind = CollectableKind_Soul;
           }
-          else if (roll <= prefab.collectable.coin.draw_chance)
+          else if (roll <= prefab.collectable[CollectableKind_Coin].draw_chance)
           {
-            desc = prefab.collectable.coin;
-            logger_debug(str("Zombie dropped a coin.\n"));
+            desc = prefab.collectable[CollectableKind_Coin];
+            kind = CollectableKind_Coin;
           }
 
-          if (desc.type != CollectableType_None)
+          if (kind != CollectableKind_Nil)
           {
             Entity *collectable = spawn_entity(EntityType_Collectable);
+            collectable->item_kind = kind;
             collectable->pos = v2f(en->pos.x, en->pos.y - 10);
             collectable->texture = desc.texture;
-            collectable->item_type = desc.type;
             collectable->bobbing_range = v2f(collectable->pos.y - 5, collectable->pos.y + 5);
             collectable->bobbing_state = -1;
           }
@@ -762,18 +783,20 @@ void update_game(void)
     }
   }
 
-  ui_text_1f(str("%.1f"), game.time_alive, v2f(WIDTH/2 - 20, HEIGHT - 50), 25, &game.draw_arena);
-  ui_text_1f(str("Hearts: %.0f"), player->health, v2f(10, HEIGHT - 50), 25, &game.draw_arena);
-  ui_text_1f(str("Coins: %.0f"), game.coin_count, v2f(10, HEIGHT - 75), 25, &game.draw_arena);
-  ui_text_1f(str("Souls: %.0f"), game.soul_count, v2f(10, HEIGHT - 100), 25, &game.draw_arena);
-  // ui_text_2f(str("xy: %.0f %.0f"), mouse_pos, v2f(10, HEIGHT - 60), 20, &game.draw_arena);
+  ui_text(str("%.1f"), v2f(WIDTH/2 - 20, HEIGHT - 50), 25, 999, game.time_alive);
+  ui_text(str("Hearts: %i"), v2f(10, HEIGHT - 50), 25, 999, player->health);
+  ui_text(str("Coins: %i"), v2f(10, HEIGHT - 75), 25, 999, game.coin_count);
+  ui_text(str("Souls: %i"), v2f(10, HEIGHT - 100), 25, 999, game.soul_count);
+  ui_text(str("Wave: %i"), v2f(WIDTH - 150, HEIGHT - 50), 25, 999, game.current_wave);
+
+  // ui_text(str("xy: %.0f %.0f"), v2f(10, HEIGHT - 60), 20, 999, mouse_pos.x, mouse_pos.y);
 
   zero(*NIL_ENTITY, Entity);
 
   // Developer tools ----------------
   {
     // Toggle debug
-    if (is_key_just_pressed(KEY_TAB))
+    if (is_key_just_pressed(Key_Tab))
     {
       global.debug = !global.debug; 
     }
@@ -796,13 +819,13 @@ void update_game(void)
     }
 
     // Kill player
-    if (is_key_just_pressed(KEY_BACKSPACE) && entity_is_valid(player))
+    if (is_key_just_pressed(Key_Backspace) && entity_is_valid(player))
     { 
       kill_entity(player);
     }
 
     // Spawn particles 
-    if (is_key_pressed(KEY_P) && entity_is_valid(player))
+    if (is_key_pressed(Key_P) && entity_is_valid(player))
     {
       spawn_entity(EntityType_ParticleGroup, 
                     .pos=player->pos, 
@@ -832,6 +855,7 @@ void render_game(void)
   
   // Draw primitive batch ----------------
   {
+    // Draw entities
     for (EN_IN_ENTITIES)
     {
       if (!en->is_active) continue;
@@ -864,10 +888,19 @@ void render_game(void)
       }
     }
 
-    draw_particles();
+    // Draw particles
+    for (i32 i = 0; i < MAX_PARTICLES; i++)
+    {
+      Particle *particle = &game.particle_buffer.data[i];
+      
+      if (!particle->is_active) continue;
+
+      f32 rot = particle->rot * RADIANS;
+      draw_rectangle(particle->pos, particle->scale, rot, particle->color);
+    }
   }
 
-  // Draw UI batch ----------------
+  // Draw UI batch
   UI_WidgetStore *widgets = ui_get_widgetstore();
   for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)
   {
@@ -935,6 +968,8 @@ void render_game(void)
     }
   }
 
+  arena_clear(&widgets->arena);
+  
   r_flush(&global.renderer);
 }
 
@@ -948,6 +983,18 @@ Particle *get_next_free_particle(void)
   if (buffer->pos == MAX_PARTICLES)
   {
     buffer->pos = 0;
+  }
+
+  return result;
+}
+
+i16 zombies_to_spawn_this_wave(void)
+{
+  i16 result = 0;
+
+  for (i32 i = 0; i < ZombieKind_COUNT; i++)
+  {
+    result += prefab.wave[game.current_wave.num].zombie_counts[i];
   }
 
   return result;
@@ -977,7 +1024,7 @@ void push_event(EventType type, EventDesc desc)
   queue->count += 1;
 }
 
-void pop_event()
+void pop_event(void)
 {
   EventQueue *queue = &game.event_queue;
   
@@ -993,7 +1040,7 @@ void pop_event()
   queue->count -= 1;
 }
 
-Event *peek_event()
+Event *peek_event(void)
 {
   return game.event_queue.front;
 }
@@ -1003,7 +1050,7 @@ Event *peek_event()
 inline
 bool game_should_quit(void)
 {
-  return game.should_quit || is_key_pressed(KEY_ESCAPE);
+  return game.should_quit || is_key_pressed(Key_Escape);
 }
 
 inline

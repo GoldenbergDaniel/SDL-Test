@@ -6,24 +6,23 @@
 
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
-#include "sokol/sokol_time.h"
 
 extern Globals global;
 
 inline
-bool is_key_pressed(InputKey key)
+bool is_key_pressed(KeyKind key)
 {
   return global.input.keys[key];
 }
 
 inline
-bool is_key_just_pressed(InputKey key)
+bool is_key_just_pressed(KeyKind key)
 {
   return global.input.keys[key] && !global.input.keys_last[key];
 }
 
 inline
-bool is_key_released(InputKey key)
+bool is_key_released(KeyKind key)
 {
   return !global.input.keys[key] && global.input.keys_last[key];
 }
@@ -36,7 +35,7 @@ Vec2F get_mouse_pos(void)
 
 void remember_last_keys(void)
 {
-  for (i32 i = 0; i < _KEY_COUNT; i++)
+  for (i32 i = 0; i < Key_COUNT; i++)
   {
     global.input.keys_last[i] = global.input.keys[i];
   }
@@ -54,26 +53,26 @@ void handle_input_event(const struct sapp_event *event)
       switch (event->key_code)
       {
         default: break;
-        case SAPP_KEYCODE_A: input->keys[KEY_A] = TRUE; break;
-        case SAPP_KEYCODE_D: input->keys[KEY_D] = TRUE; break;
-        case SAPP_KEYCODE_P: input->keys[KEY_P] = TRUE; break;
-        case SAPP_KEYCODE_S: input->keys[KEY_S] = TRUE; break;
-        case SAPP_KEYCODE_W: input->keys[KEY_W] = TRUE; break;
-        case SAPP_KEYCODE_0: input->keys[KEY_0] = TRUE; break;
-        case SAPP_KEYCODE_1: input->keys[KEY_1] = TRUE; break;
-        case SAPP_KEYCODE_2: input->keys[KEY_2] = TRUE; break;
-        case SAPP_KEYCODE_3: input->keys[KEY_3] = TRUE; break;
-        case SAPP_KEYCODE_4: input->keys[KEY_4] = TRUE; break;
-        case SAPP_KEYCODE_5: input->keys[KEY_5] = TRUE; break;
-        case SAPP_KEYCODE_6: input->keys[KEY_6] = TRUE; break;
-        case SAPP_KEYCODE_7: input->keys[KEY_7] = TRUE; break;
-        case SAPP_KEYCODE_8: input->keys[KEY_8] = TRUE; break;
-        case SAPP_KEYCODE_9: input->keys[KEY_9] = TRUE; break;
-        case SAPP_KEYCODE_ESCAPE: input->keys[KEY_ESCAPE] = TRUE; break;
-        case SAPP_KEYCODE_SPACE: input->keys[KEY_SPACE] = TRUE; break;
-        case SAPP_KEYCODE_ENTER: input->keys[KEY_ENTER] = TRUE; break;
-        case SAPP_KEYCODE_BACKSPACE: input->keys[KEY_BACKSPACE] = TRUE; break;
-        case SAPP_KEYCODE_TAB: input->keys[KEY_TAB] = TRUE; break;
+        case SAPP_KEYCODE_A: input->keys[Key_A] = TRUE; break;
+        case SAPP_KEYCODE_D: input->keys[Key_D] = TRUE; break;
+        case SAPP_KEYCODE_P: input->keys[Key_P] = TRUE; break;
+        case SAPP_KEYCODE_S: input->keys[Key_S] = TRUE; break;
+        case SAPP_KEYCODE_W: input->keys[Key_W] = TRUE; break;
+        case SAPP_KEYCODE_0: input->keys[Key_0] = TRUE; break;
+        case SAPP_KEYCODE_1: input->keys[Key_1] = TRUE; break;
+        case SAPP_KEYCODE_2: input->keys[Key_2] = TRUE; break;
+        case SAPP_KEYCODE_3: input->keys[Key_3] = TRUE; break;
+        case SAPP_KEYCODE_4: input->keys[Key_4] = TRUE; break;
+        case SAPP_KEYCODE_5: input->keys[Key_5] = TRUE; break;
+        case SAPP_KEYCODE_6: input->keys[Key_6] = TRUE; break;
+        case SAPP_KEYCODE_7: input->keys[Key_7] = TRUE; break;
+        case SAPP_KEYCODE_8: input->keys[Key_8] = TRUE; break;
+        case SAPP_KEYCODE_9: input->keys[Key_9] = TRUE; break;
+        case SAPP_KEYCODE_ESCAPE: input->keys[Key_Escape] = TRUE; break;
+        case SAPP_KEYCODE_SPACE: input->keys[Key_Space] = TRUE; break;
+        case SAPP_KEYCODE_ENTER: input->keys[Key_Enter] = TRUE; break;
+        case SAPP_KEYCODE_BACKSPACE: input->keys[Key_Backspace] = TRUE; break;
+        case SAPP_KEYCODE_TAB: input->keys[Key_Tab] = TRUE; break;
       }
       break;
     }
@@ -82,8 +81,8 @@ void handle_input_event(const struct sapp_event *event)
       switch (event->mouse_button)
       {
         default: break;
-        case SAPP_MOUSEBUTTON_LEFT: input->keys[KEY_MOUSE_1] = TRUE; break;
-        case SAPP_MOUSEBUTTON_RIGHT: input->keys[KEY_MOUSE_2] = TRUE; break;
+        case SAPP_MOUSEBUTTON_LEFT: input->keys[Key_Mouse1] = TRUE; break;
+        case SAPP_MOUSEBUTTON_RIGHT: input->keys[Key_Mouse2] = TRUE; break;
       }
     }
     break;
@@ -92,26 +91,26 @@ void handle_input_event(const struct sapp_event *event)
       switch (event->key_code)
       {
         default: break;
-        case SAPP_KEYCODE_A: input->keys[KEY_A] = FALSE; break;
-        case SAPP_KEYCODE_D: input->keys[KEY_D] = FALSE; break;
-        case SAPP_KEYCODE_P: input->keys[KEY_P] = FALSE; break;
-        case SAPP_KEYCODE_S: input->keys[KEY_S] = FALSE; break;
-        case SAPP_KEYCODE_W: input->keys[KEY_W] = FALSE; break;
-        case SAPP_KEYCODE_0: input->keys[KEY_0] = FALSE; break;
-        case SAPP_KEYCODE_1: input->keys[KEY_1] = FALSE; break;
-        case SAPP_KEYCODE_2: input->keys[KEY_2] = FALSE; break;
-        case SAPP_KEYCODE_3: input->keys[KEY_3] = FALSE; break;
-        case SAPP_KEYCODE_4: input->keys[KEY_4] = FALSE; break;
-        case SAPP_KEYCODE_5: input->keys[KEY_5] = FALSE; break;
-        case SAPP_KEYCODE_6: input->keys[KEY_6] = FALSE; break;
-        case SAPP_KEYCODE_7: input->keys[KEY_7] = FALSE; break;
-        case SAPP_KEYCODE_8: input->keys[KEY_8] = FALSE; break;
-        case SAPP_KEYCODE_9: input->keys[KEY_9] = FALSE; break;
-        case SAPP_KEYCODE_ESCAPE: input->keys[KEY_ESCAPE] = FALSE; break;
-        case SAPP_KEYCODE_SPACE: input->keys[KEY_SPACE] = FALSE; break;
-        case SAPP_KEYCODE_ENTER: input->keys[KEY_ENTER] = FALSE; break;
-        case SAPP_KEYCODE_BACKSPACE: input->keys[KEY_ENTER] = FALSE; break;
-        case SAPP_KEYCODE_TAB: input->keys[KEY_TAB] = FALSE; break;
+        case SAPP_KEYCODE_A: input->keys[Key_A] = FALSE; break;
+        case SAPP_KEYCODE_D: input->keys[Key_D] = FALSE; break;
+        case SAPP_KEYCODE_P: input->keys[Key_P] = FALSE; break;
+        case SAPP_KEYCODE_S: input->keys[Key_S] = FALSE; break;
+        case SAPP_KEYCODE_W: input->keys[Key_W] = FALSE; break;
+        case SAPP_KEYCODE_0: input->keys[Key_0] = FALSE; break;
+        case SAPP_KEYCODE_1: input->keys[Key_1] = FALSE; break;
+        case SAPP_KEYCODE_2: input->keys[Key_2] = FALSE; break;
+        case SAPP_KEYCODE_3: input->keys[Key_3] = FALSE; break;
+        case SAPP_KEYCODE_4: input->keys[Key_4] = FALSE; break;
+        case SAPP_KEYCODE_5: input->keys[Key_5] = FALSE; break;
+        case SAPP_KEYCODE_6: input->keys[Key_6] = FALSE; break;
+        case SAPP_KEYCODE_7: input->keys[Key_7] = FALSE; break;
+        case SAPP_KEYCODE_8: input->keys[Key_8] = FALSE; break;
+        case SAPP_KEYCODE_9: input->keys[Key_9] = FALSE; break;
+        case SAPP_KEYCODE_ESCAPE: input->keys[Key_Escape] = FALSE; break;
+        case SAPP_KEYCODE_SPACE: input->keys[Key_Space] = FALSE; break;
+        case SAPP_KEYCODE_ENTER: input->keys[Key_Enter] = FALSE; break;
+        case SAPP_KEYCODE_BACKSPACE: input->keys[Key_Backspace] = FALSE; break;
+        case SAPP_KEYCODE_TAB: input->keys[Key_Tab] = FALSE; break;
       }
       break;
     }
@@ -121,8 +120,8 @@ void handle_input_event(const struct sapp_event *event)
       switch (event->mouse_button)
       {
         default: break;
-        case SAPP_MOUSEBUTTON_LEFT: input->keys[KEY_MOUSE_1] = FALSE; break;
-        case SAPP_MOUSEBUTTON_RIGHT: input->keys[KEY_MOUSE_2] = FALSE; break;
+        case SAPP_MOUSEBUTTON_LEFT: input->keys[Key_Mouse1] = FALSE; break;
+        case SAPP_MOUSEBUTTON_RIGHT: input->keys[Key_Mouse2] = FALSE; break;
       }
     }
     break;

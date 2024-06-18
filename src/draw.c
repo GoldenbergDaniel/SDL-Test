@@ -11,7 +11,6 @@
 #include "render/shaders.h"
 #include "ui/ui.h"
 #include "game.h"
-#include "entity.h"
 #include "draw.h"
 
 extern Globals global;
@@ -424,17 +423,4 @@ void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint)
   r_push_vertex(renderer, p2, tint, V4F_ZERO, v2f(1, 0));
   r_push_vertex(renderer, p3, tint, V4F_ZERO, v2f(0, 0));
   r_push_quad_indices(renderer);
-}
-
-void draw_particles(void)
-{
-  for (i32 i = 0; i < MAX_PARTICLES; i++)
-  {
-    Particle *particle = &game.particle_buffer.data[i];
-    
-    if (!particle->is_active) continue;
-
-    f32 rot = particle->rot * RADIANS;
-    draw_rectangle(particle->pos, particle->scale, rot, particle->color);
-  }
 }

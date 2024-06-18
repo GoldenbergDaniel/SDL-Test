@@ -63,7 +63,7 @@ Entity *create_entity(EntityType type)
       en->cols[Collider_Body]->scale = v2f(0.5, 1);
     }
     break;
-    case EntityType_ZombieWalker:
+    case EntityType_Zombie:
     {
       en->props = EntityProp_Renders | 
                   EntityProp_Moves | 
@@ -120,7 +120,7 @@ Entity *create_entity(EntityType type)
       en->cols[Collider_Hit]->col_id = Collider_Hit;
       en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
       en->cols[Collider_Hit]->radius = 1;
-      en->cols[Collider_Hit]->draw_type = DrawType_None;
+      en->cols[Collider_Hit]->draw_type = DrawType_Nil;
       en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
@@ -137,7 +137,7 @@ Entity *create_entity(EntityType type)
       en->cols[Collider_Hit]->col_id = Collider_Hit;
       en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
       en->cols[Collider_Hit]->radius = 10;
-      en->cols[Collider_Hit]->draw_type = DrawType_None;
+      en->cols[Collider_Hit]->draw_type = DrawType_Nil;
       en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
@@ -150,7 +150,7 @@ Entity *create_entity(EntityType type)
     break;
     case EntityType_ParticleGroup:
     {
-      en->props = EntityProp_Renders;
+      // en->props = EntityProp_Renders;
     }
     break;
     default: break;
@@ -197,8 +197,42 @@ Entity *_spawn_entity(EntityType type, EntityParams params)
 void kill_entity(Entity *en)
 {
   en->marked_for_death = TRUE;
-  push_event(EventType_EntityKilled, (EventDesc) {.en = en, .type=en->type});
+  push_event(EventType_EntityKilled, (EventDesc) {.en=en, .type=en->type});
 }
+
+Entity *spawn_zombie(ZombieKind kind)
+{
+  Entity *en = create_entity(EntityType_Zombie);
+  en->zombie_kind = kind;
+
+  ZombieDesc desc = prefab.zombie[kind];
+
+  switch (kind)
+  {
+    default: break;
+    case ZombieKind_Walker:
+    {
+      logger_debug(str("Spawned zombie walker.\n"));
+    }
+    break;
+    case ZombieKind_Chicken:
+    {
+      logger_debug(str("Spawned zombie chinken.\n"));
+    }
+    break;
+  }
+
+  en->marked_for_spawn = TRUE;
+  en->is_active = FALSE;
+  entity_rem_prop(en, EntityProp_Renders);
+
+  return en;
+}
+
+// Entity *spawn_particle_group(ParticleDesc desc)
+// {
+  
+// }
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
@@ -459,7 +493,7 @@ Entity *alloc_entity()
     list->first_free = list->first_free->next_free;
   }
 
-  new_en->id = random_u64(2, UINT64_MAX-1);
+  new_en->id = (u64) random_i32(2, UINT32_MAX-1);
 
   return new_en;
 }
@@ -693,18 +727,28 @@ P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)
   return result;
 }
 
-void equip_weapon(Entity *en, WeaponDesc desc)
+void equip_weapon(Entity *en, WeaponKind kind)
 {
   if (!entity_is_valid(en)) return;
 
   Entity *weapon_en = get_entity_child_of_sp(en, SP_Gun);
   Entity *shot_point_en = get_entity_child_at(weapon_en, 0);
 
+  if (kind == WeaponKind_Nil)
+  {
+    en->weapon_equipped = FALSE;
+    Entity *gun = get_entity_child_of_sp(en, SP_Gun);
+    entity_rem_prop(gun, EntityProp_Renders);
+    return;
+  }
+
+  WeaponDesc desc = prefab.weapon[kind];
+
   en->weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
   weapon_en->texture = desc.texture;
-  weapon_en->weapon_type = desc.type;
+  weapon_en->weapon_kind = kind;
   weapon_en->pos = desc.ancor;
   weapon_en->damage = desc.damage;
   weapon_en->speed = desc.bullet_speed;

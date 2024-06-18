@@ -18,7 +18,6 @@
 
 #define GRAVITY 3600.0f
 
-
 // @Event ////////////////////////////////////////////////////////////////////////////////
 
 typedef enum EventType
@@ -91,6 +90,16 @@ struct ParticleBuffer
 
 Particle *get_next_free_particle(void);
 
+#define TOTAL_WAVE_COUNT 5
+
+typedef struct WaveDesc WaveDesc;
+struct WaveDesc
+{
+  u16 zombie_counts[ZombieKind_COUNT];
+};
+
+i16 zombies_to_spawn_this_wave(void);
+
 typedef struct Game Game;
 struct Game
 {
@@ -109,11 +118,17 @@ struct Game
   bool is_over;
 
   Timer spawn_timer;
-  u64 zombies_spawned;
   f64 time_alive;
 
   u16 coin_count;
   u16 soul_count;
+
+  struct
+  {
+    u8 num;
+    u16 zombies_spawned;
+    u16 zombies_killed;
+  } current_wave;
 };
 
 void init_game(void);

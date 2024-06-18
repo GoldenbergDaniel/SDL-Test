@@ -158,7 +158,7 @@ void frame(void)
   // Simulation loop ----------------
   while (global.frame.accumulator >= TIME_STEP)
   {
-    if (is_key_released(KEY_ENTER))
+    if (is_key_released(Key_Enter))
     {
       sapp_toggle_fullscreen();
     }

@@ -32,7 +32,7 @@ typedef enum ColliderID
   Collider_Head,
   Collider_Hit,
 
-  _Collider_Count,
+  Collider_COUNT,
 } ColliderID;
 
 typedef struct EntityRef EntityRef;
@@ -51,7 +51,7 @@ typedef enum AnimationState
   Animation_Walk,
   Animation_Jump,
 
-  _Animation_Count,
+  Animation_COUNT,
 } AnimationState;
 
 typedef struct Animation Animation;
@@ -80,6 +80,14 @@ struct Timer
 };
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
+
+typedef enum ParticleKind
+{
+  ParticleKind_Smoke,
+  ParticleKind_Blood,
+  ParticleKind_Death,
+  ParticleKind_PickupCoin
+} ParticlePrefabType;
 
 typedef enum ParticleEmmissionType
 {
@@ -133,48 +141,12 @@ struct Particle
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
 
-typedef enum WeaponType
-{
-  WeaponType_Pistol,
-  WeaponType_Rifle,
-  WeaponType_Shotgun,
-  WeaponType_SMG,
-} WeaponType;
-
-typedef struct WeaponDesc WeaponDesc;
-struct WeaponDesc
-{
-  WeaponType type;
-  TextureID texture;
-  Vec2F ancor;
-  Vec2F shot_point;
-  f32 shot_cooldown;
-  f32 bullet_speed;
-  u16 damage;
-};
-
-typedef enum CollectableType
-{
-  CollectableType_None,
-  CollectableType_Coin,
-  CollectableType_Soul,
-} CollectableType;
-
-typedef struct CollectableDesc CollectableDesc;
-struct CollectableDesc
-{
-  CollectableType type;
-  TextureID texture;
-  i32 draw_chance;
-};
-
 typedef enum EntityType
 {
   EntityType_Nil,
   EntityType_Debug,
   EntityType_Player,
-  EntityType_ZombieWalker,
-  EntityType_ZombieBird,
+  EntityType_Zombie,
   EntityType_Equipped,
   EntityType_Bullet,
   EntityType_Collider,
@@ -199,9 +171,66 @@ typedef enum EntityProp
   EntityProp_Zombie = 1 << 12,
 } EntityProp;
 
+typedef enum WeaponKind
+{
+  WeaponKind_Nil,
+  WeaponKind_Pistol,
+  WeaponKind_Rifle,
+  WeaponKind_Shotgun,
+  WeaponKind_SMG,
+
+  WeaponKind_COUNT,
+} WeaponKind;
+
+typedef struct WeaponDesc WeaponDesc;
+struct WeaponDesc
+{
+  TextureID texture;
+  Vec2F ancor;
+  Vec2F shot_point;
+  f32 shot_cooldown;
+  f32 bullet_speed;
+  u16 damage;
+};
+
+typedef enum CollectableKind
+{
+  CollectableKind_Nil,
+  CollectableKind_Coin,
+  CollectableKind_Soul,
+
+  CollectableKind_COUNT,
+} CollectableKind;
+
+typedef struct CollectableDesc CollectableDesc;
+struct CollectableDesc
+{
+  TextureID texture;
+  i32 draw_chance;
+};
+
+typedef enum ZombieKind
+{
+  ZombieKind_Nil,
+  ZombieKind_Walker,
+  ZombieKind_Chicken,
+
+  ZombieKind_COUNT,
+} ZombieKind;
+
+typedef struct ZombieDesc ZombieDesc;
+struct ZombieDesc
+{
+  EntityProp props;
+  u16 speed;
+  u16 health;
+  u16 damage;
+  u16 cost;
+};
+
 typedef enum MoveType
 {
-  MoveType_None,
+  MoveType_Nil,
   MoveType_Grounded,
   MoveType_Projectile,
   MoveType_Flying,
@@ -209,14 +238,14 @@ typedef enum MoveType
 
 typedef enum CombatType
 {
-  CombatType_None,
+  CombatType_Nil,
   CombatType_Melee,
   CombatType_Ranged,
 } CombatType;
 
 typedef enum DrawType
 {
-  DrawType_None,
+  DrawType_Nil,
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
@@ -267,7 +296,7 @@ struct Entity
   u16 z_index;
 
   // Collision
-  Entity *cols[_Collider_Count];
+  Entity *cols[Collider_COUNT];
   ColliderID col_id;
   P_ColliderType col_type;
   f32 radius;
@@ -275,7 +304,7 @@ struct Entity
 
   // Animation
   Animation anim;
-  AnimationDesc anims[_Animation_Count];
+  AnimationDesc anims[Animation_COUNT];
   AnimationState anim_state;
   AnimationState anim_state_prev;
   Vec2F bobbing_range;
@@ -300,10 +329,11 @@ struct Entity
   Timer damage_timer;
   Timer kill_timer;
   Timer invincibility_timer;
-  WeaponType weapon_type;
   bool weapon_equipped;
 
-  CollectableType item_type;
+  ZombieKind zombie_kind;
+  WeaponKind weapon_kind;
+  CollectableKind item_kind;
 };
 
 typedef struct EntityList EntityList;
@@ -334,6 +364,9 @@ Entity *create_entity(EntityType type);
   _spawn_entity(type, (EntityParams) {.pos=v2f(0, 0), .tint=DEBUG_WHITE, .props=0, __VA_ARGS__ })
 
 Entity *_spawn_entity(EntityType type, EntityParams params);
+Entity *spawn_zombie(ZombieKind type);
+Entity *spawn_particles();
+
 void kill_entity(Entity *en);
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
@@ -394,4 +427,4 @@ void timer_start(Timer *timer, f64 duration);
 bool timer_timeout(Timer *timert);
 void timer_reset(Timer *timer);
 
-void equip_weapon(Entity *en, WeaponDesc desc);
+void equip_weapon(Entity *en, WeaponKind kind);

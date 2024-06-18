@@ -5,8 +5,8 @@ TODO
     [_] audio
     [X] weapon switching
     [_] weapon progression
-    [_] zombie progression
-    [~] zombie drops (coins and souls)
+    [~] zombie progression
+    [X] zombie drops (coins and souls)
     [_] reloading
     [_] chicken
     [_] headshots
@@ -15,7 +15,7 @@ TODO
     [X] gameover state
     [X] try again
     [X] logger
-    [_] BMP and/or TGA loader
+    [_] BMP, TGA, or QOI loader
     [X] bring back event queue
     [_] config parser
   ISSUES

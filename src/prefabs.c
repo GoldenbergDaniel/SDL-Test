@@ -150,10 +150,28 @@ Prefabs create_prefabs(void)
     };
   }
 
+  // Zombie ----------------
+  {
+    prefab.zombie[ZombieKind_Walker] = (ZombieDesc) {
+      .props = 0,
+      .speed = 1000,
+      .health = 10,
+      .damage = 1,
+      .cost = 1,
+    };
+
+    prefab.zombie[ZombieKind_Chicken] = (ZombieDesc) {
+      .props = 0,
+      .speed = 2000,
+      .health = 7,
+      .damage = 1,
+      .cost = 2,
+    };
+  }
+
   // Weapon ----------------
   {
-    prefab.weapon.pistol = (WeaponDesc) {
-      .type = WeaponType_Pistol,
+    prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
       .texture = prefab.texture.pistol,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 2),
@@ -162,8 +180,7 @@ Prefabs create_prefabs(void)
       .bullet_speed = 1000.0f,
     };
 
-    prefab.weapon.rifle = (WeaponDesc) {
-      .type = WeaponType_Rifle,
+    prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
       .texture = prefab.texture.rifle,
       .ancor = v2f(35, 5),
       .shot_point = v2f(35, 2),
@@ -172,8 +189,7 @@ Prefabs create_prefabs(void)
       .bullet_speed = 1500.0f,
     };
 
-    prefab.weapon.shotgun = (WeaponDesc) {
-      .type = WeaponType_Shotgun,
+    prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
       .texture = prefab.texture.shotgun,
       .ancor = v2f(35, 5),
       .shot_point = v2f(35, 2),
@@ -182,8 +198,7 @@ Prefabs create_prefabs(void)
       .bullet_speed = 1000.0f,
     };
 
-    prefab.weapon.smg = (WeaponDesc) {
-      .type = WeaponType_SMG,
+    prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
       .texture = prefab.texture.smg,
       .ancor = v2f(25, 0),
       .shot_point = v2f(35, 2),
@@ -195,16 +210,49 @@ Prefabs create_prefabs(void)
 
   // Collectable ----------------
   {
-    prefab.collectable.coin = (CollectableDesc) {
-      .type = CollectableType_Coin,
+    prefab.collectable[CollectableKind_Coin] = (CollectableDesc) {
       .texture = prefab.texture.coin,
       .draw_chance = 30,
     };
     
-    prefab.collectable.soul = (CollectableDesc) {
-      .type = CollectableType_Soul,
+    prefab.collectable[CollectableKind_Soul] = (CollectableDesc) {
       .texture = prefab.texture.soul,
       .draw_chance = 5,
+    };
+  }
+
+  // Wave ----------------
+  {
+    prefab.wave[0] = (WaveDesc) {
+      .zombie_counts = {
+        [ZombieKind_Walker] = 5,
+      }
+    };
+
+    prefab.wave[1] = (WaveDesc) {
+      .zombie_counts = {
+        [ZombieKind_Walker] = 7,
+      }
+    };
+
+    prefab.wave[2] = (WaveDesc) {
+      .zombie_counts = {
+        [ZombieKind_Walker] = 10,
+      }
+    };
+    
+    prefab.wave[3] = (WaveDesc) {
+      .zombie_counts = {
+        [ZombieKind_Walker] = 10,
+        [ZombieKind_Chicken] = 1,
+      }
+    };
+
+    prefab.wave[4] = (WaveDesc) {
+      .zombie_counts = {
+        [ZombieKind_Walker] = 15,
+        [ZombieKind_Chicken] = 3,
+      }
     };
   }
 

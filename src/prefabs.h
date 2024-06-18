@@ -1,7 +1,8 @@
 #pragma once
 
-#include "entity.h"
 #include "draw.h"
+#include "entity.h"
+#include "game.h"
 
 typedef struct Prefabs Prefabs;
 struct Prefabs
@@ -24,6 +25,10 @@ struct Prefabs
     TextureID walker_walk_3;
     TextureID walker_walk_4;
     TextureID walker_walk_5;
+
+    TextureID chicken_idle;
+    TextureID chicken_lay_0;
+    TextureID chicken_lay_1;
 
     TextureID pistol;
     TextureID rifle;
@@ -57,19 +62,12 @@ struct Prefabs
     ParticleDesc debug;
   } particle;
 
-  struct
-  {
-    WeaponDesc pistol;
-    WeaponDesc rifle;
-    WeaponDesc shotgun;
-    WeaponDesc smg;
-  } weapon;
+  WaveDesc wave[TOTAL_WAVE_COUNT];
 
-  struct
-  {
-    CollectableDesc coin;
-    CollectableDesc soul;
-  } collectable;
+  ZombieDesc zombie[ZombieKind_COUNT];
+  WeaponDesc weapon[WeaponKind_COUNT];
+  CollectableDesc collectable[CollectableKind_COUNT];
+  
 };
 
 Prefabs create_prefabs(void);
