@@ -22,6 +22,7 @@ void init_game(void)
 {
   game.camera = m3x3f(1.0f);
   game.spawn_timer.duration = 5.0f;
+  game.grace_period_timer.duration = 10.0f;
 
   ui_init_widgetstore(64, &global.perm_arena);
 
@@ -40,8 +41,8 @@ void init_game(void)
     attach_entity_child(gun, shot_point);
     shot_point->pos = v2f(20.0f, 2.0f);
 
-    Entity *zombie = create_entity(EntityType_Zombie);
-    zombie->pos = v2f(WIDTH, HEIGHT/2.0f);
+    // Entity *zombie = create_entity(EntityType_Zombie);
+    // zombie->pos = v2f(WIDTH, HEIGHT/2.0f);
   }
 }
 
@@ -59,39 +60,56 @@ void update_game(void)
   // Zombie waves ----------------
   if (!game.is_over)
   {
-    // @TODO(dg): Add a timer in between waves
     if (game.current_wave.zombies_killed == zombies_to_spawn_this_wave())
     {
-      u16 next_wave = game.current_wave.num += 1;
-      game.current_wave.zombies_spawned = 0;
-      game.current_wave.zombies_killed = 0;
-      game.current_wave.num = next_wave;
+      u16 next_wave = game.current_wave.num + 1;
+
+      ui_text(str("Next wave in: %0.f"), 
+              v2f(WIDTH/2 - 150, HEIGHT - 200), 30, 999,
+              game.grace_period_timer.end_time - t);
+
+      if (!game.grace_period_timer.is_ticking)
+      {
+        timer_start(&game.grace_period_timer, game.grace_period_timer.duration);
+      }
+
+      if (timer_timeout(&game.grace_period_timer))
+      {
+        game.current_wave.zombies_spawned = 0;
+        game.current_wave.zombies_killed = 0;
+        game.current_wave.num = next_wave;
+      }
+
+      if (next_wave == TOTAL_WAVE_COUNT)
+      {
+        game.is_over = TRUE;
+        game.won = TRUE;
+
+        logger_debug(str("Victory!\n"));
+      }
     }
-
-    WaveDesc wave_desc = prefab.wave[game.current_wave.num];
-    
-    if (game.spawn_timer.duration > 0.75f)
+    else
     {
-      game.spawn_timer.duration -= 0.001f;
-    }
+      WaveDesc wave_desc = prefab.wave[game.current_wave.num];
+      
+      if (!game.spawn_timer.is_ticking)
+      {
+        timer_start(&game.spawn_timer, wave_desc.time_btwn_spawns);
+      }
 
-    if (!game.spawn_timer.is_ticking)
-    {
-      timer_start(&game.spawn_timer, game.spawn_timer.duration);
-    }
+      if (timer_timeout(&game.spawn_timer))
+      {
+        ZombieKind spawn_roll = random_i32(1, ZombieKind_COUNT-1);
+        // logger_debug(str("Roll: %u\n"), spawn_roll);
 
-    if (timer_timeout(&game.spawn_timer))
-    {
-      ZombieKind spawn_roll = random_i32(1, ZombieKind_COUNT-1);
-      logger_debug(str("Roll: %u\n"), spawn_roll);
+        f32 x_pos[2] = {-50.0f, WIDTH + 50.0f};
+        u32 x_roll = (u32) random_i32(0, 1);
 
-      f32 x_pos[2] = {-50.0f, WIDTH + 50.0f};
-      u32 x_roll = (u32) random_i32(0, 1);
+        Entity *zombie = spawn_zombie(spawn_roll);
+        zombie->pos = v2f(x_pos[x_roll], HEIGHT/2);
 
-      Entity *zombie = spawn_zombie(spawn_roll);
-      zombie->pos = v2f(x_pos[x_roll], HEIGHT/2);
-
-      game.current_wave.zombies_spawned += 1;
+        game.current_wave.zombies_spawned += 1;
+      }
     }
   }
 
@@ -730,7 +748,16 @@ void update_game(void)
 
   if (game.is_over)
   {
-    ui_text(str("GAME OVER"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999, &game.frame_arena);
+    String msg;
+    if (game.won)
+    {
+      msg = str("YOU WIN");
+    }
+    else
+    {
+      msg = str("GAME OVER");  
+    }
+    ui_text(msg, v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
   }
 
   for (E_IN_EVENT_QUEUE)
@@ -787,7 +814,7 @@ void update_game(void)
   ui_text(str("Hearts: %i"), v2f(10, HEIGHT - 50), 25, 999, player->health);
   ui_text(str("Coins: %i"), v2f(10, HEIGHT - 75), 25, 999, game.coin_count);
   ui_text(str("Souls: %i"), v2f(10, HEIGHT - 100), 25, 999, game.soul_count);
-  ui_text(str("Wave: %i"), v2f(WIDTH - 150, HEIGHT - 50), 25, 999, game.current_wave);
+  ui_text(str("Wave: %i"), v2f(WIDTH - 150, HEIGHT - 50), 25, 999, game.current_wave.num+1);
 
   // ui_text(str("xy: %.0f %.0f"), v2f(10, HEIGHT - 60), 20, 999, mouse_pos.x, mouse_pos.y);
 

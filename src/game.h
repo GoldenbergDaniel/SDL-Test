@@ -90,11 +90,12 @@ struct ParticleBuffer
 
 Particle *get_next_free_particle(void);
 
-#define TOTAL_WAVE_COUNT 5
+#define TOTAL_WAVE_COUNT 1
 
 typedef struct WaveDesc WaveDesc;
 struct WaveDesc
 {
+  f32 time_btwn_spawns;
   u16 zombie_counts[ZombieKind_COUNT];
 };
 
@@ -116,7 +117,9 @@ struct Game
   Mat3x3F camera;
   bool should_quit;
   bool is_over;
-
+  bool won;
+  
+  Timer grace_period_timer;
   Timer spawn_timer;
   f64 time_alive;
 

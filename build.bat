@@ -56,7 +56,7 @@ if "%MODE%"==" dev" (
     popd
     if %PUSH% ==1 (
       echo Pushing release to itch...
-      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.5-dev
+      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.6-dev
     )
   popd
 )
