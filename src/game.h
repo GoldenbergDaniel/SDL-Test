@@ -90,7 +90,7 @@ struct ParticleBuffer
 
 Particle *get_next_free_particle(void);
 
-#define TOTAL_WAVE_COUNT 1
+#define TOTAL_WAVE_COUNT 5
 
 typedef struct WaveDesc WaveDesc;
 struct WaveDesc

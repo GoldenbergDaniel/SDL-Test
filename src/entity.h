@@ -365,7 +365,7 @@ Entity *create_entity(EntityType type);
 
 Entity *_spawn_entity(EntityType type, EntityParams params);
 Entity *spawn_zombie(ZombieKind type);
-Entity *spawn_particles();
+Entity *spawn_particles(void);
 
 void kill_entity(Entity *en);
 

@@ -17,7 +17,7 @@
 #undef bool
 #endif
 
-#define UINT_MAX 0xffffffff
+#include <stdio.h>
 
 // @Memory ///////////////////////////////////////////////////////////////////////////////
 
@@ -30,9 +30,12 @@ void *os_reserve_vm(void *addr, u64 size)
   #endif
 
   #ifdef PLATFORM_UNIX
-  // i32 p_flags = PROT_READ | PROT_WRITE;
-  // i32 m_flags = MAP_ANON | MAP_SHARED;
-  // result = mmap(NULL, size, p_flags, m_flags, -1, 0);
+  result = mmap(NULL, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
+  if (result == MAP_FAILED)
+  {
+    printf("mmap failed with size %llu \n", size);
+    assert(0);
+  }
   #endif
 
   return result;
@@ -40,7 +43,7 @@ void *os_reserve_vm(void *addr, u64 size)
 
 bool os_commit_vm(void *addr, u64 size)
 {
-  bool result = 0;
+  bool result = TRUE;
 
   #ifdef PLATFORM_WINDOWS
   byte *ptr = VirtualAlloc(addr, size, MEM_COMMIT, PAGE_READWRITE);
@@ -48,14 +51,16 @@ bool os_commit_vm(void *addr, u64 size)
   {
     result = GetLastError();
   }
-  else
-  {
-    SetLastError(0);
-  }
   #endif
 
   #ifdef PLATFORM_UNIX
-  result = mprotect(ptr, len, PROT_READ | PROT_WRITE);
+  i32 err = mprotect(addr, size, PROT_READ | PROT_WRITE);
+  if (err != 0)
+  {
+    printf("Failed to commit with mprotect.\n");
+    result = FALSE;
+  }
+
   #endif
 
   return result;
@@ -63,14 +68,19 @@ bool os_commit_vm(void *addr, u64 size)
 
 bool os_decommit_vm(void *addr, u64 size)
 {
-  bool result = 0;
+  bool result = TRUE;
 
   #ifdef PLATFORM_WINDOWS
   result = VirtualFree(addr, size, MEM_DECOMMIT);
   #endif
 
   #ifdef PLATFORM_UNIX
-  result = mprotect()
+  i32 err = mprotect(addr, size, PROT_NONE);
+  if (err != 0)
+  {
+    printf("Failed to decommit with mprotect.\n");
+    result = FALSE;
+  }
   #endif
 
   return result;
@@ -90,7 +100,7 @@ void os_release_vm(void *ptr, u64 size)
 // TODO(dg): This should be cached somewhere
 u64 os_get_page_size(void)
 {
-  u64 result = 0;
+  u64 result = getpagesize();
 
   #ifdef PLATFORM_WINDOWS
   SYSTEM_INFO info = {0};

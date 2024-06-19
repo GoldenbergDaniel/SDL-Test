@@ -62,12 +62,12 @@ u8 *_arena_push(Arena *arena, u64 size, u64 align)
     u64 size_to_commit = (u64) (arena->allocated - arena->committed);
     size_to_commit += -size_to_commit & (granularity - 1);
 
-    bool err = os_commit_vm(arena->committed, size_to_commit);
-    if (err)
+    bool ok = os_commit_vm(arena->committed, size_to_commit);
+    if (!ok)
     {
+      #ifdef PLATFORM_WINDOWS
       i32 code = GetLastError();
       printf("Error %i. Failed to commit! Size: %llu\n", code, size_to_commit);
-      #ifdef PLATFORM_WINDOWS
       OutputDebugStringA("Failed to commit!\n");
       #endif
       assert(0);

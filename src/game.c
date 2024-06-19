@@ -798,7 +798,7 @@ void update_game(void)
 
           if (kind != CollectableKind_Nil)
           {
-            Entity *collectable = spawn_entity(EntityType_Collectable);
+            Entity *collectable = spawn_entity(EntityType_Collectable, .pos=V2F_ZERO);
             collectable->item_kind = kind;
             collectable->pos = v2f(en->pos.x, en->pos.y - 10);
             collectable->texture = desc.texture;

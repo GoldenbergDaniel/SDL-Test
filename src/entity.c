@@ -456,7 +456,7 @@ Entity *entity_from_ref(EntityRef ref)
 
 // @EntityList ///////////////////////////////////////////////////////////////////////////
 
-Entity *alloc_entity()
+Entity *alloc_entity(void)
 {
   EntityList *list = &game.entities;
   Entity *new_en = list->first_free;

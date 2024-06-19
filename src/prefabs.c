@@ -230,35 +230,35 @@ Prefabs create_prefabs(void)
       }
     };
 
-    // prefab.wave[1] = (WaveDesc) {
-    //   .time_btwn_spawns = 5,
-    //   .zombie_counts = {
-    //     [ZombieKind_Walker] = 7,
-    //   }
-    // };
+    prefab.wave[1] = (WaveDesc) {
+      .time_btwn_spawns = 5,
+      .zombie_counts = {
+        [ZombieKind_Walker] = 7,
+      }
+    };
 
-    // prefab.wave[2] = (WaveDesc) {
-    //   .time_btwn_spawns = 4,
-    //   .zombie_counts = {
-    //     [ZombieKind_Walker] = 10,
-    //   }
-    // };
+    prefab.wave[2] = (WaveDesc) {
+      .time_btwn_spawns = 4,
+      .zombie_counts = {
+        [ZombieKind_Walker] = 10,
+      }
+    };
     
-    // prefab.wave[3] = (WaveDesc) {
-    //   .time_btwn_spawns = 4,
-    //   .zombie_counts = {
-    //     [ZombieKind_Walker] = 10,
-    //     [ZombieKind_Chicken] = 1,
-    //   }
-    // };
+    prefab.wave[3] = (WaveDesc) {
+      .time_btwn_spawns = 4,
+      .zombie_counts = {
+        [ZombieKind_Walker] = 10,
+        [ZombieKind_Chicken] = 1,
+      }
+    };
 
-    // prefab.wave[4] = (WaveDesc) {
-    //   .time_btwn_spawns = 3,
-    //   .zombie_counts = {
-    //     [ZombieKind_Walker] = 15,
-    //     [ZombieKind_Chicken] = 3,
-    //   }
-    // };
+    prefab.wave[4] = (WaveDesc) {
+      .time_btwn_spawns = 3,
+      .zombie_counts = {
+        [ZombieKind_Walker] = 15,
+        [ZombieKind_Chicken] = 3,
+      }
+    };
   }
 
   return prefab;
