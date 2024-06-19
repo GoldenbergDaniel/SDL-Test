@@ -100,12 +100,16 @@ void os_release_vm(void *ptr, u64 size)
 // TODO(dg): This should be cached somewhere
 u64 os_get_page_size(void)
 {
-  u64 result = getpagesize();
+  u64 result = 0;
 
   #ifdef PLATFORM_WINDOWS
   SYSTEM_INFO info = {0};
   GetSystemInfo(&info);
   result = info.dwPageSize;
+  #endif
+
+  #ifdef PLATFORM_UNIX
+  result = getpagesize();
   #endif
 
   return result;
@@ -197,7 +201,7 @@ void os_close_file(OS_Handle file)
 
 String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
 {
-  assert(pos + size <= UINT_MAX);
+  assert(pos + size <= 0xffffffff);
 
   if (!os_is_handle_valid(file)) return (String) {0};
 
@@ -220,7 +224,7 @@ String os_read_file(OS_Handle file, u64 size, u64 pos, Arena *arena)
 
 void os_write_file(OS_Handle file, String buf)
 {
-  assert(buf.len <= UINT_MAX);
+  assert(buf.len <= 0xffffffff);
 
   if (!os_is_handle_valid(file)) return;
 
