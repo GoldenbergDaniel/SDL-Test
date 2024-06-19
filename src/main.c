@@ -60,23 +60,26 @@ i32 main(void)
   Arena logger_arena = create_arena(GiB(1), FALSE);
   logger_init(str(""), &logger_arena);
 
-  u8 *buf = arena_push(&logger_arena, u8, 512);
-  arena_pop(&logger_arena, 256);
+  // sapp_run(&(sapp_desc) {
+  //   .window_title = "Undead West",
+  //   .width = WIDTH,
+  //   .height = HEIGHT,
+  //   .high_dpi = FALSE,
+  //   .init_cb = init,
+  //   .event_cb = event,
+  //   .frame_cb = frame,
+  //   #ifndef RELEASE
+  //   .logger = {
+  //     .func = slog_func
+  //   },
+  //   #endif
+  // });
 
-  sapp_run(&(sapp_desc) {
-    .window_title = "Undead West",
-    .width = WIDTH,
-    .height = HEIGHT,
-    .high_dpi = FALSE,
-    .init_cb = init,
-    .event_cb = event,
-    .frame_cb = frame,
-    #ifndef RELEASE
-    .logger = {
-      .func = slog_func
-    },
-    #endif
-  });
+  Mat3x3F xform = m3x3f(1);
+  for (;TRUE;)
+  {
+    Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
+  }
 
   return 0;
 }
