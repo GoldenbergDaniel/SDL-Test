@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(SOKOL_IMPL) && !defined(SOKOL_APP_IMPL)
 #define SOKOL_APP_IMPL
 #endif

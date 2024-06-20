@@ -9,12 +9,13 @@
 
 #include <stdlib.h>
 
+#define SOKOL_IMPL
+#define SOKOL_GLCORE
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
 #ifndef RELEASE
-#define SOKOL_LOG_IMPL
 #include "sokol/sokol_log.h"
 #endif
 
@@ -60,26 +61,20 @@ i32 main(void)
   Arena logger_arena = create_arena(GiB(1), FALSE);
   logger_init(str(""), &logger_arena);
 
-  // sapp_run(&(sapp_desc) {
-  //   .window_title = "Undead West",
-  //   .width = WIDTH,
-  //   .height = HEIGHT,
-  //   .high_dpi = FALSE,
-  //   .init_cb = init,
-  //   .event_cb = event,
-  //   .frame_cb = frame,
-  //   #ifndef RELEASE
-  //   .logger = {
-  //     .func = slog_func
-  //   },
-  //   #endif
-  // });
-
-  Mat3x3F xform = m3x3f(1);
-  for (;TRUE;)
-  {
-    Vec3F p0 = transform_3f(v3f(0.0f, 1.0f, 1.0f), xform); // tl
-  }
+  sapp_run(&(sapp_desc) {
+    .window_title = "Undead West",
+    .width = WIDTH,
+    .height = HEIGHT,
+    .high_dpi = FALSE,
+    .init_cb = init,
+    .event_cb = event,
+    .frame_cb = frame,
+    #ifndef RELEASE
+    .logger = {
+      .func = slog_func
+    },
+    #endif
+  });
 
   return 0;
 }

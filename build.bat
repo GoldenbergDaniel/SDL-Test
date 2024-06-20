@@ -5,9 +5,12 @@ set SRC=src\main.c
 set OUT=undeadwest.exe
 
 set MODE= dev
-if "%1%"=="d"   set MODE= debug
-if "%1%"=="r"   set MODE= release
-if "%1%"=="git" set MODE= git
+if "%1%"=="d"    set MODE= debug
+if "%1%"=="r"    set MODE= release
+if "%1%"=="git"  set MODE= git
+if "%1%"=="push" set MODE= push
+
+if "%2%"=="fsan" set FSAN= /fsanitize=address
 
 if "%MODE%"==" git" (
   git add .
@@ -17,16 +20,19 @@ if "%MODE%"==" git" (
   exit /b 0
 )
 
-set PUSH= 0
-if "%2%"=="push" set PUSH= 1
+if "%MODE%"==" push" (
+  echo Pushing release to itch...
+  butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.6-dev
+  exit /b 0
+)
 
 if "%MODE%"==" dev"     set CFLAGS= /std:c17 /Iextern\
-if "%MODE%"==" debug"   set CFLAGS= /std:c17 /fsanitize=address /Od /Z7 /W1 /DDEBUG /I..\extern\
+if "%MODE%"==" debug"   set CFLAGS= /std:c17 /Od /Z7 /W1 /DDEBUG /I..\extern\
 if "%MODE%"==" release" set CFLAGS= /std:c17 /O2 /DRELEASE /I..\extern\
 
-if "%MODE%"==" dev"     set LFLAGS= /link /INCREMENTAL:NO /LIBPATH:extern\sokol\lib sokol.lib
-if "%MODE%"==" debug"   set LFLAGS= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
-if "%MODE%"==" release" set LFLAGS= /link /INCREMENTAL:NO /LIBPATH:..\extern\sokol\lib sokol.lib
+if "%MODE%"==" dev"     set LFLAGS= /link /INCREMENTAL:NO
+if "%MODE%"==" debug"   set LFLAGS= /link /INCREMENTAL:NO
+if "%MODE%"==" release" set LFLAGS= /link /INCREMENTAL:NO
 
 shadertoh src\shaders\ src\render\shaders.h
 
@@ -39,9 +45,8 @@ if "%MODE%"==" dev" (
   echo Building debug...
   if not exist debug mkdir debug
   pushd debug
-    cl %CFLAGS% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
+    cl %CFLAGS% %FSAN% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
     del *.obj
-    @REM %OUT%
   popd
 ) else if "%MODE%"==" release" (
   echo Building release...
@@ -54,9 +59,5 @@ if "%MODE%"==" dev" (
       move ..\%OUT% .
       xcopy ..\..\res\ .\res\ /E /y
     popd
-    if %PUSH% ==1 (
-      echo Pushing release to itch...
-      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.6-dev
-    )
   popd
 )

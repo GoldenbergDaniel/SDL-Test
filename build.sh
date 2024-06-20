@@ -9,6 +9,8 @@ if [[ $1 == "d" || $1 == "debug"   ]]; then MODE="debug"; fi
 if [[ $1 == "r" || $1 == "release" ]]; then MODE="release"; fi
 if [[ $1 == "g" || $1 == "git"     ]]; then MODE="git"; fi
 
+if [[ $2 == "fsan" ]]; then FSAN="-fsanitize=address -fsanitize=undefined"; fi
+
 if [[ $MODE == "git" ]];
 then
   git add .
@@ -22,7 +24,7 @@ ROOT="."
 if [[ $MODE == "debug" ]]; then ROOT=".."; fi
 
 if [[ $MODE == "dev"     ]]; then CFLAGS="-std=c17 -O0"; fi
-if [[ $MODE == "debug"   ]]; then CFLAGS="-std=c17 -O0 -g -fsanitize=address -fsanitize=undefined -DDEBUG"; fi
+if [[ $MODE == "debug"   ]]; then CFLAGS="-std=c17 -O0 -g  -DDEBUG"; fi
 if [[ $MODE == "release" ]]; then CFLAGS="-std=c17 -O2 -DRELEASE"; fi
 
 if [[ $MODE == "dev"     ]]; then WFLAGS="-Wpedantic -Wno-initializer-overrides"; fi
@@ -43,7 +45,7 @@ then
   echo "Building debug..."
   if [[ ! -d "debug" ]]; then mkdir debug; fi
   pushd debug
-    cc $CFLAGS $WFLAGS $LFLAGS ../$SRC -o $OUT
+    cc $CFLAGS $WFLAGS $FSAN $LFLAGS ../$SRC -o $OUT
   popd
 elif [[ $MODE == "release" ]]
 then
