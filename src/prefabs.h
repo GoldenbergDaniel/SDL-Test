@@ -52,18 +52,8 @@ struct Prefabs
     AnimationDesc flash;
   } animation;
 
-  struct
-  {
-    ParticleDesc smoke;
-    ParticleDesc blood;
-    ParticleDesc death;
-    ParticleDesc pickup_coin;
-
-    ParticleDesc debug;
-  } particle;
-
   WaveDesc wave[TOTAL_WAVE_COUNT];
-
+  ParticleDesc particle[ParticleKind_COUNT];
   ZombieDesc zombie[ZombieKind_COUNT];
   WeaponDesc weapon[WeaponKind_COUNT];
   CollectableDesc collectable[CollectableKind_COUNT];

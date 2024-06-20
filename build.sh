@@ -21,9 +21,9 @@ fi
 ROOT="."
 if [[ $MODE == "debug" ]]; then ROOT=".."; fi
 
-if [[ $MODE == "dev"     ]]; then CFLAGS="-std=c17 -O0"; fi
-if [[ $MODE == "debug"   ]]; then CFLAGS="-std=c17 -O0 -g -fsanitize=address -fsanitize=undefined -DDEBUG"; fi
-if [[ $MODE == "release" ]]; then CFLAGS="-std=c17 -O2 -DRELEASE"; fi
+if [[ $MODE == "dev"     ]]; then CFLAGS="-O0"; fi
+if [[ $MODE == "debug"   ]]; then CFLAGS="-Og -g -fsanitize=address -fsanitize=undefined -DDEBUG"; fi
+if [[ $MODE == "release" ]]; then CFLAGS="-O2 -DRELEASE"; fi
 
 if [[ $MODE == "dev"     ]]; then WFLAGS="-Wpedantic -Wno-initializer-overrides"; fi
 if [[ $MODE == "debug"   ]]; then WFLAGS="-Wall -Wpedantic -Wextra -Wno-initializer-overrides -Wno-missing-braces"; fi
@@ -37,7 +37,7 @@ if [[ $MODE == "dev" ]]
 then
   echo "Building..."
   cc $CFLAGS $WFLAGS $LFLAGS $SRC -o $OUT
-  ./$OUT
+  # ./$OUT
 elif [[ $MODE == "debug" ]]
 then
   echo "Building debug..."

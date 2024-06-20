@@ -412,11 +412,7 @@ void update_game(void)
                   collision_params_from_entity(other->cols[Collider_Body], other->vel),
                   collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
             {
-              Vec2F spawn_pos = pos_from_entity(en);
-              spawn_entity(EntityType_ParticleGroup, 
-                            .pos=spawn_pos, 
-                            .particle_desc=prefab.particle.blood);
-
+              spawn_particles(ParticleKind_Blood, pos_from_entity(en));
               damage_entity(other, en->damage);
               kill_entity(en);
             }
@@ -466,13 +462,12 @@ void update_game(void)
               collision_params_from_entity(player->cols[Collider_Body], player->vel),
               collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
         {
-          kill_entity(en);
-          spawn_entity(EntityType_ParticleGroup,
-                        .pos=pos_from_entity(en),
-                        .particle_desc=prefab.particle.pickup_coin);
-          
           if (en->item_kind == CollectableKind_Coin) game.coin_count++; 
-          if (en->item_kind == CollectableKind_Soul) game.soul_count++; 
+          if (en->item_kind == CollectableKind_Soul) game.soul_count++;
+
+          spawn_particles(ParticleKind_PickupCoin, pos_from_entity(en));
+
+          kill_entity(en);
         }
       }  
     }
@@ -514,9 +509,7 @@ void update_game(void)
           bullet->speed = gun->speed;
           bullet->damage = gun->damage;
 
-          spawn_entity(EntityType_ParticleGroup, 
-                        .pos=spawn_pos, 
-                        .particle_desc=prefab.particle.smoke);
+          spawn_particles(ParticleKind_Smoke, spawn_pos);
         }
       }
     }
@@ -854,9 +847,7 @@ void update_game(void)
     // Spawn particles 
     if (is_key_pressed(Key_P) && entity_is_valid(player))
     {
-      spawn_entity(EntityType_ParticleGroup, 
-                    .pos=player->pos, 
-                    .particle_desc=prefab.particle.debug);
+      spawn_particles(ParticleKind_Debug, player->pos);
     }
   }
 }

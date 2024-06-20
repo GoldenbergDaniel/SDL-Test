@@ -75,7 +75,7 @@ Prefabs create_prefabs(void)
 
   // Particle ----------------
   {
-    prefab.particle.smoke = (ParticleDesc) {
+    prefab.particle[ParticleKind_Smoke] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                 ParticleProp_SpeedOverTime |
@@ -93,7 +93,7 @@ Prefabs create_prefabs(void)
       .rot_delta = 20.0f,
     };
 
-    prefab.particle.blood = (ParticleDesc) {
+    prefab.particle[ParticleKind_Blood] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_RotateOverTime,
@@ -107,7 +107,7 @@ Prefabs create_prefabs(void)
       .rot_delta = 50.0f,
     };
 
-    prefab.particle.death = (ParticleDesc) {
+    prefab.particle[ParticleKind_Death] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_CollidesWithGround,
       .count = 40,
@@ -119,7 +119,21 @@ Prefabs create_prefabs(void)
       .vel = v2f(0.0f, 0.0f),
     };
 
-    prefab.particle.debug = (ParticleDesc) {
+    prefab.particle[ParticleKind_PickupCoin] = (ParticleDesc) {
+      .emmission_type = ParticleEmmissionType_Burst,
+      .props = ParticleProp_ScaleOverTime |
+               ParticleProp_RotateOverTime,
+      .count = 6,
+      .duration = 0.3f,
+      .spread = 500.0f,
+      .color_primary = v4f(0.89f, 0.78f, 0.11f, 1.0f),
+      .scale = v2f(5, 5),
+      .scale_delta = v2f(-6.0f, -6.0f),
+      .speed = 60.0f,
+      .rot_delta = 50.0f,
+    };
+
+    prefab.particle[ParticleKind_Debug] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |
@@ -133,20 +147,6 @@ Prefabs create_prefabs(void)
       .color_secondary = DEBUG_BLUE,
       .scale_delta = v2f(-0.5f, -0.5f),
       .speed_delta = 50.0f,
-    };
-
-    prefab.particle.pickup_coin = (ParticleDesc) {
-      .emmission_type = ParticleEmmissionType_Burst,
-      .props = ParticleProp_ScaleOverTime |
-               ParticleProp_RotateOverTime,
-      .count = 6,
-      .duration = 0.3f,
-      .spread = 500.0f,
-      .color_primary = v4f(0.89f, 0.78f, 0.11f, 1.0f),
-      .scale = v2f(5, 5),
-      .scale_delta = v2f(-6.0f, -6.0f),
-      .speed = 60.0f,
-      .rot_delta = 50.0f,
     };
   }
 

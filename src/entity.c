@@ -171,33 +171,12 @@ Entity *_spawn_entity(EntityType type, EntityParams params)
 
   if (type == EntityType_ParticleGroup)
   {
-    ParticleDesc desc = params.particle_desc;
-    en->particle_desc = desc;
 
-    for (i32 i = 0; i < en->particle_desc.count; i++)
-    {
-      Particle *particle = get_next_free_particle();
-      particle->is_active = TRUE;
-      particle->pos = en->pos;
-      particle->scale = desc.scale;
-      particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
-      particle->rot = (f32) random_i32(-45, 45);
-      particle->color = desc.color_primary;
-      particle->vel = desc.vel;
-      particle->speed = desc.speed;
-      particle->owner = ref_from_entity(en);
-    }
   }
 
   en->marked_for_spawn = TRUE;
   
   return en;
-}
-
-void kill_entity(Entity *en)
-{
-  en->marked_for_death = TRUE;
-  push_event(EventType_EntityKilled, (EventDesc) {.en=en, .type=en->type});
 }
 
 Entity *spawn_zombie(ZombieKind kind)
@@ -229,10 +208,36 @@ Entity *spawn_zombie(ZombieKind kind)
   return en;
 }
 
-// Entity *spawn_particle_group(ParticleDesc desc)
-// {
-  
-// }
+Entity *spawn_particles(ParticleKind kind, Vec2F pos)
+{
+  Entity *en = create_entity(EntityType_ParticleGroup);
+  en->pos = pos;
+
+  ParticleDesc desc = prefab.particle[kind];
+  en->particle_desc = desc;
+
+  for (i32 i = 0; i < en->particle_desc.count; i++)
+  {
+    Particle *particle = get_next_free_particle();
+    particle->is_active = TRUE;
+    particle->pos = en->pos;
+    particle->scale = desc.scale;
+    particle->dir = (f32) random_i32(-en->particle_desc.spread, en->particle_desc.spread);
+    particle->rot = (f32) random_i32(-45, 45);
+    particle->color = desc.color_primary;
+    particle->vel = desc.vel;
+    particle->speed = desc.speed;
+    particle->owner = ref_from_entity(en);
+  }
+
+  return en;
+}
+
+void kill_entity(Entity *en)
+{
+  en->marked_for_death = TRUE;
+  push_event(EventType_EntityKilled, (EventDesc) {.en=en, .type=en->type});
+}
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
@@ -422,10 +427,7 @@ void damage_entity(Entity *reciever, i16 damage)
 
   if (reciever->health <= 0)
   {
-    spawn_entity(EntityType_ParticleGroup,
-                  .pos=pos_from_entity(reciever),
-                  .particle_desc=prefab.particle.death);
-      
+    spawn_particles(ParticleKind_Death, pos_from_entity(reciever));
     kill_entity(reciever);
   }
 }

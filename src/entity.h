@@ -86,8 +86,11 @@ typedef enum ParticleKind
   ParticleKind_Smoke,
   ParticleKind_Blood,
   ParticleKind_Death,
-  ParticleKind_PickupCoin
-} ParticlePrefabType;
+  ParticleKind_PickupCoin,
+  ParticleKind_Debug,
+
+  ParticleKind_COUNT,
+} ParticleKind;
 
 typedef enum ParticleEmmissionType
 {
@@ -364,8 +367,8 @@ Entity *create_entity(EntityType type);
   _spawn_entity(type, (EntityParams) {.pos=v2f(0, 0), .tint=DEBUG_WHITE, .props=0, __VA_ARGS__ })
 
 Entity *_spawn_entity(EntityType type, EntityParams params);
-Entity *spawn_zombie(ZombieKind type);
-Entity *spawn_particles(void);
+Entity *spawn_zombie(ZombieKind kind);
+Entity *spawn_particles(ParticleKind kind, Vec2F pos);
 
 void kill_entity(Entity *en);
 
