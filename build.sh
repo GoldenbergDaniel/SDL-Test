@@ -24,7 +24,7 @@ ROOT="."
 if [[ $MODE == "debug" ]]; then ROOT=".."; fi
 
 if [[ $MODE == "dev"     ]]; then CFLAGS="-std=c17 -O0"; fi
-if [[ $MODE == "debug"   ]]; then CFLAGS="-std=c17 -O0 -g  -DDEBUG"; fi
+if [[ $MODE == "debug"   ]]; then CFLAGS="-std=c17 -Og -g  -DDEBUG"; fi
 if [[ $MODE == "release" ]]; then CFLAGS="-std=c17 -O2 -DRELEASE"; fi
 
 if [[ $MODE == "dev"     ]]; then WFLAGS="-Wpedantic -Wno-initializer-overrides"; fi
@@ -39,7 +39,7 @@ if [[ $MODE == "dev" ]]
 then
   echo "Building..."
   cc $CFLAGS $WFLAGS $LFLAGS $SRC -o $OUT
-  ./$OUT
+  # ./$OUT
 elif [[ $MODE == "debug" ]]
 then
   echo "Building debug..."

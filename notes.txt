@@ -2,7 +2,6 @@ TODO
   FEATURES
     [X] animation
     [X] text rendering
-    [_] audio
     [X] weapon switching
     [_] weapon progression
     [~] zombie progression
@@ -14,11 +13,13 @@ TODO
     [X] invincibility timer
     [X] gameover state
     [X] try again
+    [_] ui text centering
+  ENGINE
+    [_] audio
+    [X] bring back event queue
     [X] logger
     [_] BMP, TGA, or QOI loader
-    [X] bring back event queue
     [_] config parser
-    [_] ui text centering
   ISSUES
     [X] screen-to-world wrong
     [X] hit timer should be primed

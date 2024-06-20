@@ -42,6 +42,8 @@
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb/stb_sprintf.h"
 
+#define PATH_TO_RES "../res"
+
 Globals global;
 Prefabs prefab;
 Game game;
@@ -99,7 +101,7 @@ void init(void)
   String res_path = os_path_to_executable(str("undeadwest"));
   res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
   #else
-  String res_path = str("res");
+  String res_path = str(PATH_TO_RES);
   #endif
 
   global.window.width = sapp_width();
