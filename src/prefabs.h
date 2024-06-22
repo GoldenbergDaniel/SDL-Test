@@ -35,6 +35,7 @@ struct Prefabs
     TextureID shotgun;
     TextureID smg;
 
+    TextureID muzzle_flash;
     TextureID bullet;
     TextureID coin;
     TextureID soul;
@@ -49,7 +50,8 @@ struct Prefabs
     AnimationDesc walker_idle;
     AnimationDesc walker_walk;
 
-    AnimationDesc flash;
+    AnimationDesc chicken_idle;
+    AnimationDesc chicken_lay;
   } animation;
 
   WaveDesc wave[TOTAL_WAVE_COUNT];

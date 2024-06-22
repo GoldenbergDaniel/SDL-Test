@@ -4,16 +4,17 @@ TODO
     [X] text rendering
     [X] weapon switching
     [_] weapon progression
-    [~] zombie progression
+    [X] zombie progression
     [X] zombie drops (coins and souls)
     [_] reloading
-    [_] chicken
+    [~] chicken
     [_] headshots
     [X] player death
     [X] invincibility timer
     [X] gameover state
     [X] try again
     [_] ui text centering
+    [X] muzzle flash
   ENGINE
     [_] audio
     [X] bring back event queue
@@ -24,3 +25,4 @@ TODO
     [X] screen-to-world wrong
     [X] hit timer should be primed
     [X] crash when shooting on ARM macs
+    [X] wave ends before last zombie killed

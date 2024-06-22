@@ -69,22 +69,13 @@ Entity *create_entity(EntityType type)
                   EntityProp_Moves | 
                   EntityProp_Collides |
                   EntityProp_AffectedByGravity |
-                  EntityProp_CollidesWithGround |
-                  EntityProp_Zombie;
-
+                  EntityProp_CollidesWithGround;
+      
       en->draw_type = DrawType_Sprite;
       en->move_type = MoveType_Grounded;
       en->combat_type = CombatType_Melee;
-      en->texture = prefab.texture.walker_idle;
-      en->speed = 100.0f;
-      en->view_dist = 350.0f;
       en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
       en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
-      en->health = 10;
-      en->damage = 1;
-      
-      en->anims[Animation_Idle] = prefab.animation.walker_idle;
-      en->anims[Animation_Walk] = prefab.animation.walker_walk;
       
       entity_add_collider(en, Collider_Body);
       en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -124,6 +115,12 @@ Entity *create_entity(EntityType type)
       en->cols[Collider_Hit]->dim = V2F_ZERO;
     }
     break;
+    case EntityType_Decoration:
+    {
+      en->props = EntityProp_Renders;
+      en->draw_type = DrawType_Sprite;
+    }
+    break;
     case EntityType_Collectable:
     {
       en->props = EntityProp_Renders |
@@ -148,75 +145,93 @@ Entity *create_entity(EntityType type)
       en->draw_type = DrawType_Primitive;
     }
     break;
-    case EntityType_ParticleGroup:
-    {
-      // en->props = EntityProp_Renders;
-    }
-    break;
     default: break;
   }
 
   return en;
 }
 
-Entity *_spawn_entity(EntityType type, EntityParams params)
+Entity *spawn_entity(EntityType type, Vec2F pos)
 {
   Entity *en = create_entity(type);
-  en->pos = params.pos;
-  en->tint = params.tint;
-  entity_add_prop(en, params.props);
+  en->pos = pos;
 
-  en->is_active = FALSE;
   entity_rem_prop(en, EntityProp_Renders);
-
-  if (type == EntityType_ParticleGroup)
-  {
-
-  }
-
+  en->is_active = FALSE;
   en->marked_for_spawn = TRUE;
-  
+
   return en;
 }
 
-Entity *spawn_zombie(ZombieKind kind)
+Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
 {
   Entity *en = create_entity(EntityType_Zombie);
+  en->pos = pos;
   en->zombie_kind = kind;
 
   ZombieDesc desc = prefab.zombie[kind];
+  en->health = desc.health;
+  en->damage = desc.damage;
+  en->speed = desc.speed;
+  en->view_dist = 350.0f;
 
   switch (kind)
   {
     default: break;
     case ZombieKind_Walker:
     {
+      en->texture = prefab.texture.walker_idle;
+      en->anims[Animation_Idle] = prefab.animation.walker_idle;
+      en->anims[Animation_Walk] = prefab.animation.walker_walk;
+
       logger_debug(str("Spawned zombie walker.\n"));
     }
     break;
     case ZombieKind_Chicken:
     {
+      en->texture = prefab.texture.chicken_idle;
+      en->anims[Animation_Idle] = prefab.animation.chicken_idle;
+      en->anims[Animation_Walk] = prefab.animation.chicken_idle;
+
       logger_debug(str("Spawned zombie chinken.\n"));
     }
     break;
   }
 
-  en->marked_for_spawn = TRUE;
-  en->is_active = FALSE;
   entity_rem_prop(en, EntityProp_Renders);
+  en->is_active = FALSE;
+  en->marked_for_spawn = TRUE;
+
+  return en;
+}
+
+Entity *spawn_collectable(CollectableKind kind, Vec2F pos)
+{
+  CollectableDesc desc = prefab.collectable[kind];
+
+  Entity *en = create_entity(EntityType_Collectable);
+  en->pos = pos;
+  en->item_kind = kind;
+  en->texture = desc.texture;
+  en->bobbing_range = v2f(en->pos.y - 5, en->pos.y + 5);
+  en->bobbing_state = -1;
+
+  entity_rem_prop(en, EntityProp_Renders);
+  en->is_active = FALSE;
+  en->marked_for_spawn = TRUE;
 
   return en;
 }
 
 Entity *spawn_particles(ParticleKind kind, Vec2F pos)
 {
-  Entity *en = create_entity(EntityType_ParticleGroup);
+  Entity *en = create_entity(EntityType_Any);
   en->pos = pos;
 
   ParticleDesc desc = prefab.particle[kind];
   en->particle_desc = desc;
 
-  for (i32 i = 0; i < en->particle_desc.count; i++)
+  for (u32 i = 0; i < en->particle_desc.count; i++)
   {
     Particle *particle = get_next_free_particle();
     particle->is_active = TRUE;
@@ -690,28 +705,33 @@ void entity_add_collider(Entity *en, ColliderID col_id)
   attach_entity_child(en, en->cols[col_id]);
 }
 
-// @General //////////////////////////////////////////////////////////////////////////////
+// @Timer ////////////////////////////////////////////////////////////////////////////////
 
+inline
 void timer_start(Timer *timer, f64 duration)
 {
   timer->end_time = game.t + duration;
   timer->is_ticking = TRUE;
 }
 
+inline
 bool timer_timeout(Timer *timer)
 {
-  bool result = game.t >= timer->end_time;
-  if (result)
-  {
-    timer->is_ticking = FALSE;
-  }
-
-  return result;
+  return timer->is_ticking && game.t >= timer->end_time;
 }
 
+inline
 void timer_reset(Timer *timer)
 {
   timer->is_ticking = FALSE;
+}
+
+// @Misc /////////////////////////////////////////////////////////////////////////////////
+
+inline
+bool has_prop(b64 props, u64 prop)
+{
+  return (props & prop) != 0;
 }
 
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel)

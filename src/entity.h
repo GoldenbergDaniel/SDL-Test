@@ -106,6 +106,7 @@ typedef enum ParticleProp
   ParticleProp_ScaleOverTime = 1 << 3,
   ParticleProp_SpeedOverTime = 1 << 4,
   ParticleProp_RotateOverTime = 1 << 5,
+  ParticleProp_KillAfterTime = 1 << 6,
 } ParticleProp;
 
 typedef struct ParticleDesc ParticleDesc;
@@ -147,13 +148,14 @@ struct Particle
 typedef enum EntityType
 {
   EntityType_Nil,
+  EntityType_Any,
   EntityType_Debug,
   EntityType_Player,
   EntityType_Zombie,
   EntityType_Equipped,
   EntityType_Bullet,
+  EntityType_Decoration,
   EntityType_Collider,
-  EntityType_ParticleGroup,
   EntityType_Collectable,
 } EntityType;
 
@@ -171,7 +173,7 @@ typedef enum EntityProp
   EntityProp_BobsOverTime = 1 << 9,
   EntityProp_Grounded = 1 << 10,
   EntityProp_FlashWhite = 1 << 11,
-  EntityProp_Zombie = 1 << 12,
+  EntityProp_HideAfterTime = 1 << 12,
 } EntityProp;
 
 typedef enum WeaponKind
@@ -224,11 +226,10 @@ typedef enum ZombieKind
 typedef struct ZombieDesc ZombieDesc;
 struct ZombieDesc
 {
-  EntityProp props;
+  b64 props;
   u16 speed;
   u16 health;
   u16 damage;
-  u16 cost;
 };
 
 typedef enum MoveType
@@ -271,7 +272,7 @@ struct Entity
   EntityType type;
   MoveType move_type;
   CombatType combat_type;
-  b64 props;
+  EntityProp props;
   bool is_active;
   bool marked_for_death;
   bool marked_for_spawn;
@@ -324,6 +325,7 @@ struct Entity
   // ParticleGroup
   ParticleDesc particle_desc;
   Timer particle_timer;
+  u32 particles_killed;
 
   // Combat
   i16 health;
@@ -332,6 +334,7 @@ struct Entity
   Timer damage_timer;
   Timer kill_timer;
   Timer invincibility_timer;
+  Timer muzzle_flash_timer;
   bool weapon_equipped;
 
   ZombieKind zombie_kind;
@@ -348,26 +351,15 @@ struct EntityList
   u16 count;
 };
 
-typedef struct EntityParams EntityParams;
-struct EntityParams
-{
-  b64 props;
-  Vec2F pos;
-  Vec4F tint;
-  ParticleDesc particle_desc;
-};
-
 Entity *NIL_ENTITY = &(Entity) {0};
 
 // @SpawnEntity //////////////////////////////////////////////////////////////////////////
 
 Entity *create_entity(EntityType type);
 
-#define spawn_entity(type, ...) \
-  _spawn_entity(type, (EntityParams) {.pos=v2f(0, 0), .tint=DEBUG_WHITE, .props=0, __VA_ARGS__ })
-
-Entity *_spawn_entity(EntityType type, EntityParams params);
-Entity *spawn_zombie(ZombieKind kind);
+Entity *spawn_entity(EntityType type, Vec2F pos);
+Entity *spawn_zombie(ZombieKind kind, Vec2F pos);
+Entity *spawn_collectable(CollectableKind kind, Vec2F pos);
 Entity *spawn_particles(ParticleKind kind, Vec2F pos);
 
 void kill_entity(Entity *en);
@@ -419,15 +411,14 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type);
 
 void entity_add_collider(Entity *en, ColliderID col_id);
 
-// @Particle /////////////////////////////////////////////////////////////////////////////
+// @Timer ////////////////////////////////////////////////////////////////////////////////
 
-void create_particles(Entity *en, ParticleDesc desc);
-
-// @Other ////////////////////////////////////////////////////////////////////////////////
-
-P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void timer_start(Timer *timer, f64 duration);
 bool timer_timeout(Timer *timert);
 void timer_reset(Timer *timer);
 
+// @Misc /////////////////////////////////////////////////////////////////////////////////
+
+bool has_prop(b64 props, u64 prop);
+P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void equip_weapon(Entity *en, WeaponKind kind);

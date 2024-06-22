@@ -26,8 +26,9 @@ if "%MODE%"=="push" (
     pushd undead-west-windows
       move ..\%OUT% .
       xcopy ..\..\res\ .\res\ /E /y
-      butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.6-dev
     popd
+    butler push undead-west-windows goldenbergdev/undead-west:windows --userversion 0.7-dev || /b exit 1
+  popd
   exit /b 0
 )
 
@@ -66,6 +67,7 @@ if "%BUILD%"=="1" (
     cl %COMMON% %CFLAGS% %FSAN% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
     del *.obj
     if "%RUN%"=="1" (
+      echo %OUT%
       %OUT%
     )
   popd

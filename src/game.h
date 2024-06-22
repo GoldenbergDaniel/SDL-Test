@@ -79,7 +79,7 @@ struct Globals
 
 // @Game /////////////////////////////////////////////////////////////////////////////////
 
-#define MAX_PARTICLES 1024
+#define MAX_PARTICLES 2048
 
 typedef struct ParticleBuffer ParticleBuffer;
 struct ParticleBuffer
@@ -99,7 +99,7 @@ struct WaveDesc
   u16 zombie_counts[ZombieKind_COUNT];
 };
 
-i16 zombies_to_spawn_this_wave(void);
+i32 zombies_to_spawn_this_wave(void);
 
 typedef struct Game Game;
 struct Game
@@ -116,9 +116,11 @@ struct Game
   f64 dt;
   Mat3x3F camera;
   bool should_quit;
-  bool is_over;
+  bool is_so_over;
   bool won;
   
+  bool is_grace_period;
+  bool wave_just_began;
   Timer grace_period_timer;
   Timer spawn_timer;
   f64 time_alive;

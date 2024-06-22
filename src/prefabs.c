@@ -21,21 +21,25 @@ Prefabs create_prefabs(void)
     prefab.texture.walker_walk_2 = v2i(3, 1);
     prefab.texture.walker_walk_3 = v2i(4, 1);
     prefab.texture.walker_walk_4 = v2i(5, 1);
+
+    prefab.texture.chicken_idle = v2i(0, 2);
+    prefab.texture.chicken_lay_0 = v2i(1, 2);
+    prefab.texture.chicken_lay_1 = v2i(2, 2);
     
     prefab.texture.pistol = v2i(0, 3);
     prefab.texture.rifle = v2i(1, 3);
     prefab.texture.shotgun = v2i(2, 3);
     prefab.texture.smg = v2i(3, 3);
 
-    prefab.texture.bullet = v2i(5, 3);
-    prefab.texture.coin = v2i(7, 3);
-    prefab.texture.soul = v2i(8, 3);
+    prefab.texture.muzzle_flash = v2i(5, 3);
+    prefab.texture.bullet = v2i(6, 3);
+    prefab.texture.coin = v2i(7, 4);
+    prefab.texture.soul = v2i(8, 4);
   }
 
   // Animation ----------------
   {
     prefab.animation.player_idle = (AnimationDesc) {
-      .ticks_per_frame = 0,
       .frame_count = 1,
       .frames[0] = prefab.texture.player_idle,
     };
@@ -57,7 +61,6 @@ Prefabs create_prefabs(void)
     };
 
     prefab.animation.walker_idle = (AnimationDesc) {
-      .ticks_per_frame = 0,
       .frame_count = 1,
       .frames[0] = prefab.texture.walker_idle,
     };
@@ -71,6 +74,17 @@ Prefabs create_prefabs(void)
       .frames[3] = prefab.texture.walker_walk_3,
       .frames[4] = prefab.texture.walker_walk_4,
     };
+
+    prefab.animation.chicken_idle = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0] = prefab.texture.chicken_idle,
+    };
+
+    prefab.animation.chicken_lay = (AnimationDesc) {
+      .frame_count = 2,
+      .frames[0] = prefab.texture.chicken_lay_0,
+      .frames[0] = prefab.texture.chicken_lay_1,
+    };
   }
 
   // Particle ----------------
@@ -78,9 +92,10 @@ Prefabs create_prefabs(void)
     prefab.particle[ParticleKind_Smoke] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
-                ParticleProp_SpeedOverTime |
-                ParticleProp_VariateColor |
-                ParticleProp_RotateOverTime,
+               ParticleProp_SpeedOverTime |
+               ParticleProp_VariateColor |
+               ParticleProp_RotateOverTime |
+               ParticleProp_KillAfterTime,
       .count = 3,
       .duration = 1.5f,
       .spread = 180.0f,
@@ -96,7 +111,8 @@ Prefabs create_prefabs(void)
     prefab.particle[ParticleKind_Blood] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
-               ParticleProp_RotateOverTime,
+               ParticleProp_RotateOverTime |
+               ParticleProp_KillAfterTime,
       .count = 6,
       .duration = 0.3f,
       .spread = 180.0f,
@@ -122,7 +138,8 @@ Prefabs create_prefabs(void)
     prefab.particle[ParticleKind_PickupCoin] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
-               ParticleProp_RotateOverTime,
+               ParticleProp_RotateOverTime |
+               ParticleProp_KillAfterTime,
       .count = 6,
       .duration = 0.3f,
       .spread = 500.0f,
@@ -137,7 +154,8 @@ Prefabs create_prefabs(void)
       .emmission_type = ParticleEmmissionType_Burst,
       .props = ParticleProp_ScaleOverTime |
                ParticleProp_SpeedOverTime |
-               ParticleProp_VariateColor,
+               ParticleProp_VariateColor |
+               ParticleProp_KillAfterTime,
       .scale = v2f(20, 20),
       .count = 100,
       .duration = 2.0f,
@@ -154,18 +172,16 @@ Prefabs create_prefabs(void)
   {
     prefab.zombie[ZombieKind_Walker] = (ZombieDesc) {
       .props = 0,
-      .speed = 1000,
+      .speed = 50,
       .health = 10,
       .damage = 1,
-      .cost = 1,
     };
 
     prefab.zombie[ZombieKind_Chicken] = (ZombieDesc) {
       .props = 0,
-      .speed = 2000,
+      .speed = 150,
       .health = 7,
       .damage = 1,
-      .cost = 2,
     };
   }
 
@@ -175,16 +191,16 @@ Prefabs create_prefabs(void)
       .texture = prefab.texture.pistol,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 2),
-      .shot_cooldown = 0.45f,
-      .damage = 4,
+      .shot_cooldown = 0.75f,
+      .damage = 3,
       .bullet_speed = 1000.0f,
     };
 
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
       .texture = prefab.texture.rifle,
       .ancor = v2f(35, 5),
-      .shot_point = v2f(35, 2),
-      .shot_cooldown = 0.75f,
+      .shot_point = v2f(40, 2),
+      .shot_cooldown = 1.15f,
       .damage = 7,
       .bullet_speed = 1500.0f,
     };
@@ -192,8 +208,8 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
       .texture = prefab.texture.shotgun,
       .ancor = v2f(35, 5),
-      .shot_point = v2f(35, 2),
-      .shot_cooldown = 0.75f,
+      .shot_point = v2f(40, 2),
+      .shot_cooldown = 0.95f,
       .damage = 2,
       .bullet_speed = 1000.0f,
     };
@@ -202,7 +218,7 @@ Prefabs create_prefabs(void)
       .texture = prefab.texture.smg,
       .ancor = v2f(25, 0),
       .shot_point = v2f(35, 2),
-      .shot_cooldown = 0.075f,
+      .shot_cooldown = 0.085f,
       .damage = 1,
       .bullet_speed = 1500.0f,
     };
@@ -224,28 +240,28 @@ Prefabs create_prefabs(void)
   // Wave ----------------
   {
     prefab.wave[0] = (WaveDesc) {
-      .time_btwn_spawns = 5,
+      .time_btwn_spawns = 3,
       .zombie_counts = {
         [ZombieKind_Walker] = 5,
       }
     };
 
     prefab.wave[1] = (WaveDesc) {
-      .time_btwn_spawns = 5,
+      .time_btwn_spawns = 3,
       .zombie_counts = {
         [ZombieKind_Walker] = 7,
       }
     };
 
     prefab.wave[2] = (WaveDesc) {
-      .time_btwn_spawns = 4,
+      .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 10,
       }
     };
     
     prefab.wave[3] = (WaveDesc) {
-      .time_btwn_spawns = 4,
+      .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 10,
         [ZombieKind_Chicken] = 1,
@@ -253,7 +269,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.wave[4] = (WaveDesc) {
-      .time_btwn_spawns = 3,
+      .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 15,
         [ZombieKind_Chicken] = 3,

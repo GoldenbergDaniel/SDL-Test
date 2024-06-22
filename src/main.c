@@ -42,7 +42,11 @@
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb/stb_sprintf.h"
 
+#ifdef RELEASE
+#define PATH_TO_RES "res"
+#else
 #define PATH_TO_RES "../res"
+#endif
 
 Globals global;
 Prefabs prefab;
