@@ -33,7 +33,7 @@ thread_local Arena _scratch_2;
 Arena create_arena(u64 size, bool decommit_on_clear)
 {
   Arena arena;
-  arena.memory = os_reserve_vm(NULL, size);
+  arena.memory = os_reserve_vm(NULL, size);;
   arena.allocated = arena.memory;
   arena.committed = arena.memory;
   arena.size = size;
@@ -108,6 +108,11 @@ void arena_clear(Arena *arena)
       os_decommit_vm(start_addr, commit_size - page_limit);
       arena->committed = start_addr;
     }
+  }
+
+  for (u64 i = 0; i < arena->allocated - arena->memory; i++)
+  {
+    arena->memory[i] = 0;
   }
 
   arena->allocated = arena->memory;

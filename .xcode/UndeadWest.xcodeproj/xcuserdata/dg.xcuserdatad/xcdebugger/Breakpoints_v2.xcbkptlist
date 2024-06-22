@@ -8,7 +8,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "EF31C0F8-CEB6-4229-B9FC-656014A49298"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/game.c"
@@ -16,7 +16,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "30"
             endingLineNumber = "30"
-            landmarkName = "init_game(game)"
+            landmarkName = "init_game()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -32,7 +32,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "75"
             endingLineNumber = "75"
-            landmarkName = "init()"
+            landmarkName = "WinMain(_a, _b, _c, _d)"
             landmarkType = "9">
             <Locations>
                <Location
@@ -64,6 +64,118 @@
                   startingLineNumber = "75"
                   endingLineNumber = "75"
                   offsetFromSymbolStart = "716">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7D271BEA-CB32-418B-BD0D-7C9B41258CCA"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/game.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1068"
+            endingLineNumber = "1068"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "C74AB5F2-A39B-45F6-A642-0CED40FAB7A9"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/game.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "811"
+            endingLineNumber = "811"
+            landmarkName = "update_game()"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "C74AB5F2-A39B-45F6-A642-0CED40FAB7A9 - 479f42a87e4f1ff3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "update_game"
+                  moduleName = "undeadwest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dg/dev/UndeadWest/src/game.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "811"
+                  endingLineNumber = "811"
+                  offsetFromSymbolStart = "12914">
+               </Location>
+               <Location
+                  uuid = "C74AB5F2-A39B-45F6-A642-0CED40FAB7A9 - 479f42a87e4f1ff3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "update_game"
+                  moduleName = "undeadwest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dg/dev/UndeadWest/src/game.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "811"
+                  endingLineNumber = "811"
+                  offsetFromSymbolStart = "12905">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "68A7106A-A3F5-42D4-B3D6-DF007FD1809C"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/game.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "813"
+            endingLineNumber = "813"
+            landmarkName = "update_game()"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "68A7106A-A3F5-42D4-B3D6-DF007FD1809C - 479f42a87e4f1f35"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "update_game"
+                  moduleName = "undeadwest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dg/dev/UndeadWest/src/game.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "813"
+                  endingLineNumber = "813"
+                  offsetFromSymbolStart = "13077">
+               </Location>
+               <Location
+                  uuid = "68A7106A-A3F5-42D4-B3D6-DF007FD1809C - 479f42a87e4f1f35"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "update_game"
+                  moduleName = "undeadwest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dg/dev/UndeadWest/src/game.c"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "813"
+                  endingLineNumber = "813"
+                  offsetFromSymbolStart = "13045">
                </Location>
             </Locations>
          </BreakpointContent>

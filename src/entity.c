@@ -184,7 +184,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
       en->anims[Animation_Idle] = prefab.animation.walker_idle;
       en->anims[Animation_Walk] = prefab.animation.walker_walk;
 
-      logger_debug(str("Spawned zombie walker.\n"));
+      // logger_debug(str("Spawned zombie walker.\n"));
     }
     break;
     case ZombieKind_Chicken:
@@ -193,7 +193,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
       en->anims[Animation_Idle] = prefab.animation.chicken_idle;
       en->anims[Animation_Walk] = prefab.animation.chicken_idle;
 
-      logger_debug(str("Spawned zombie chinken.\n"));
+      // logger_debug(str("Spawned zombie chinken.\n"));
     }
     break;
   }

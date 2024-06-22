@@ -9,13 +9,16 @@
 
 #include <stdlib.h>
 
+#ifdef PLATFORM_WINDOWS
 #define SOKOL_IMPL
 #define SOKOL_GLCORE
+#endif
 #define SOKOL_NO_ENTRY
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
 #ifndef RELEASE
+#define SOKOL_IMPL
 #include "sokol/sokol_log.h"
 #endif
 
@@ -41,12 +44,6 @@
 
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb/stb_sprintf.h"
-
-#ifdef RELEASE
-#define PATH_TO_RES "res"
-#else
-#define PATH_TO_RES "../res"
-#endif
 
 Globals global;
 Prefabs prefab;
@@ -101,11 +98,13 @@ void init(void)
   gladLoadGL();
   #endif
 
-  #if defined(__APPLE__) && defined(RELEASE)
+  #if defined(PLATFORM_MACOS) && defined(RELEASE)
   String res_path = os_path_to_executable(str("undeadwest"));
   res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
+  #elif defined(PLATFORM_WINDOWS) && defined(RELEASE)
+  String res_path = str("res");
   #else
-  String res_path = str(PATH_TO_RES);
+  String res_path = str("../res");
   #endif
 
   global.window.width = sapp_width();

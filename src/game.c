@@ -9,7 +9,7 @@
 #include "game.h"
 
 #define EN_IN_ENTITIES Entity *en = game.entities.head; en; en = en->next
-#define E_IN_EVENT_QUEUE Event *e = peek_event(); game.event_queue.count != 0; pop_event()
+#define E_IN_EVENT_QUEUE Event *ev = peek_event(); game.event_queue.count != 0; pop_event()
 #define GROUND_Y (30 * SPRITE_SCALE)
 
 extern Globals global;
@@ -111,7 +111,7 @@ void update_game(void)
 
         f32 x_pos[2] = {-50.0f, WIDTH + 50.0f};
         u32 x_roll = (u32) random_i32(0, 1);
-        Entity *zombie = spawn_zombie(spawn_roll, v2f(x_pos[x_roll], HEIGHT/2));
+        spawn_zombie(spawn_roll, v2f(x_pos[x_roll], HEIGHT/2));
         game.current_wave.zombies_spawned += 1;
       }
     }
@@ -808,17 +808,18 @@ void update_game(void)
     ui_text(msg, v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
   }
 
-  for (E_IN_EVENT_QUEUE)
+  for (Event *ev = peek_event(); game.event_queue.count != 0; pop_event())
   {
-    switch (e->type)
+    assert(ev);
+    switch (ev->type)
     {
       case EventType_Nil: break;
       case EventType_EntityKilled:
       {
-        Entity *en = e->desc.en;
+        Entity *en = ev->desc.en;
         if (!entity_is_valid(en)) continue;
 
-        if (e->desc.type == EntityType_Player)
+        if (ev->desc.type == EntityType_Player)
         {
           game.is_so_over = TRUE;
           logger_debug(str("Player has been killed."));
@@ -843,7 +844,7 @@ void update_game(void)
           // Spawn drop
           if (kind != CollectableKind_Nil)
           {
-            Entity *collectable = spawn_collectable(kind, v2f(en->pos.x, en->pos.y - 10));
+            spawn_collectable(kind, v2f(en->pos.x, en->pos.y - 10));
           }
         }
       }
@@ -1093,6 +1094,7 @@ void pop_event(void)
   
   Event *next = queue->front->next;
   zero(*queue->front, Event);
+  queue->front = NULL;
 
   if (next == NULL)
   {

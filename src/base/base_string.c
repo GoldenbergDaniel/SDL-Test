@@ -6,6 +6,7 @@ String alloc_str(u64 len, Arena *arena)
 {
   String result;
   result.data = arena_push(arena, char, len);
+  // logger_debug(str("%i\n"), result.len);
   result.len = len;
 
   for (u64 i = 0; i < len; i++)
