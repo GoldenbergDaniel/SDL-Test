@@ -29,6 +29,7 @@ inline
 void ui_clear_widgetstore(void)
 {
   _widget_store.count = 0;
+  arena_clear(&_widget_store.arena);
 }
 
 void ui_push_widget(UI_Widget *widget)

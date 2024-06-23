@@ -59,8 +59,6 @@ i32 WINAPI WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 i32 main(void)
 #endif
 {
-  init_scratch_arenas();
-
   Arena logger_arena = create_arena(GiB(1), FALSE);
   logger_init(str(""), &logger_arena);
 
@@ -84,6 +82,8 @@ i32 main(void)
 
 void init(void)
 {
+  init_scratch_arenas();
+
   global.perm_arena = create_arena(GiB(1), TRUE);
 
   game.entity_arena = create_arena(GiB(1), FALSE);

@@ -24,7 +24,7 @@ void init_game(void)
   game.spawn_timer.duration = 5.0f;
   game.grace_period_timer.duration = 10.0f;
 
-  ui_init_widgetstore(64, &global.perm_arena);
+  ui_init_widgetstore(128, &global.perm_arena);
 
   // Starting entities ----------------
   {
@@ -57,7 +57,12 @@ void update_game(void)
   Entity *player = get_entity_of_sp(SP_Player);
   if (!entity_is_valid(player)) player = NIL_ENTITY;
 
-  ui_clear_widgetstore();
+  // Clear widgets
+  // if (ui_get_widgetstore()->was_consumed)
+  {
+    ui_clear_widgetstore();
+    // logger_debug(str("Twas not consumed\n"));
+  }
 
   // Zombie waves ----------------
   if (!game.is_so_over)
@@ -966,74 +971,74 @@ void render_game(void)
 
   // Draw UI batch
   UI_WidgetStore *widgets = ui_get_widgetstore();
-  for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)
   {
-    UI_Widget *widget = &widgets->data[wdgt_idx];
-    switch (widget->type)
+    for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)
     {
-      case UI_WidgetType_Nil:
-      break;
-      case UI_WidgetType_Text:
+      UI_Widget *widget = &widgets->data[wdgt_idx];
+      switch (widget->type)
       {
-        const f32 scale = 1.0f/8;
-
-        Vec2F offset = V2F_ZERO;
-        u32 word_start_pos = 0;
-
-        u32 len = widget->text.len;
-        for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
+        case UI_WidgetType_Nil:
+        break;
+        case UI_WidgetType_Text:
         {
-          char chr = widget->text.data[chr_idx];
-          if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
+          const f32 scale = 1.0f/8;
+
+          Vec2F offset = V2F_ZERO;
+          u32 word_start_pos = 0;
+
+          u32 len = widget->text.len;
+          for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
           {
-            UI_Glyph glyph = get_glyph(chr);
-
-            // Calculate word length
-            f32 word_len = 0;
-            for (u32 i = word_start_pos; i <= chr_idx; i++)
+            char chr = widget->text.data[chr_idx];
+            if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
             {
-              chr = widget->text.data[i];
-              word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
-            }
+              UI_Glyph glyph = get_glyph(chr);
 
-            // Move to next line
-            if (offset.x + word_len > widget->dim.width && chr_idx < len)
-            {
-              offset.x = 0;
-              offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
-
-              word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
-            }
-
-            // Draw the word
-            for (u32 i = word_start_pos; i <= chr_idx; i++)
-            {
-              chr = widget->text.data[i];
-              if (chr != ' ')
+              // Calculate word length
+              f32 word_len = 0;
+              for (u32 i = word_start_pos; i <= chr_idx; i++)
               {
-                UI_Glyph glyph = get_glyph(chr);
-
-                Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
-                draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
-
-                offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+                chr = widget->text.data[i];
+                word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
               }
-              else
+
+              // Move to next line
+              if (offset.x + word_len > widget->dim.width && chr_idx < len)
               {
-                offset.x += widget->space_width * widget->text_size * scale;
+                offset.x = 0;
+                offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
+
+                word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
               }
+
+              // Draw the word
+              for (u32 i = word_start_pos; i <= chr_idx; i++)
+              {
+                chr = widget->text.data[i];
+                if (chr != ' ')
+                {
+                  UI_Glyph glyph = get_glyph(chr);
+
+                  Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
+                  draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
+
+                  offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+                }
+                else
+                {
+                  offset.x += widget->space_width * widget->text_size * scale;
+                }
+              }
+              
+              word_start_pos = chr_idx + 1;
             }
-            
-            word_start_pos = chr_idx + 1;
           }
         }
+        break;
       }
-      break;
     }
   }
 
-  arena_clear(&widgets->arena);
-  
   r_flush(&global.renderer);
 }
 
