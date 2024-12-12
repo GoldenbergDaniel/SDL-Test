@@ -57,14 +57,6 @@ void init_game(void)
     Entity *en = create_entity(EntityType_Any);
     en->pos = v2f(200, 200);
   }
-
-  #ifdef DEV_MODE
-  {
-    game.progression.rifle = TRUE;
-    game.progression.shotgun = TRUE;
-    game.progression.smg = TRUE;
-  }
-  #endif
 }
 
 void update_game(void)
@@ -508,7 +500,7 @@ void update_game(void)
     }
   }
 
-  // Update zombie behaviors ----------------
+  // --- Update zombie behaviors ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -550,7 +542,7 @@ void update_game(void)
     }
   }
 
-  // Update entity collision ----------------
+  // --- Update entity collision ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -1015,8 +1007,7 @@ void update_game(void)
   }
   #endif
 
-  // Developer tools ----------------
-  #ifdef DEV_MODE
+  // --- Developer tools ----------------
   {
     // Toggle debug
     if (is_key_just_pressed(Key_Tab))
@@ -1052,8 +1043,15 @@ void update_game(void)
     {
       spawn_particles(ParticleKind_Debug, player->pos);
     }
+
+    // Unlock all progression
+    if (is_key_just_pressed(Key_P) && entity_is_valid(player))
+    {
+      game.progression.rifle = TRUE;
+      game.progression.shotgun = TRUE;  
+      game.progression.smg = TRUE;
+    }
   }
-  #endif
 
   zero(*NIL_ENTITY, Entity);
   arena_clear(&game.frame_arena);
@@ -1092,12 +1090,15 @@ void render_game(void)
           Vec4F color = en->tint;
           switch (en->col_id)
           {
-            case Collider_Body: 
-            case Collider_Head: color = v4f(0, 1, 0, 0.35f);
+          case Collider_Body: 
+          case Collider_Head: 
+            color = v4f(0, 1, 0, 0.35f); 
             break;
-            case Collider_Hit: color = v4f(1, 0, 0, 0.35f);
+          case Collider_Hit:  
+            color = v4f(1, 0, 0, 0.35f); 
             break;
-            default: color = v4f(1, 1, 1, 0.35f);
+          default:            
+            color = v4f(1, 1, 1, 0.35f); 
             break;
           }
 
@@ -1127,64 +1128,63 @@ void render_game(void)
   {
     for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)
     {
+      const f32 scale = 1.0f/8;
+
       UI_Widget *widget = &widgets->data[wdgt_idx];
       switch (widget->type)
       {
-        case UI_WidgetType_Nil:
+      case UI_WidgetType_Nil:
         break;
-        case UI_WidgetType_Text:
+      case UI_WidgetType_Text:
+        {}
+        Vec2F offset = V2F_ZERO;
+        u32 word_start_pos = 0;
+
+        u32 len = widget->text.len;
+        for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
         {
-          const f32 scale = 1.0f/8;
-
-          Vec2F offset = V2F_ZERO;
-          u32 word_start_pos = 0;
-
-          u32 len = widget->text.len;
-          for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
+          char chr = widget->text.data[chr_idx];
+          if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
           {
-            char chr = widget->text.data[chr_idx];
-            if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
+            UI_Glyph glyph = get_glyph(chr);
+
+            // Calculate word length
+            f32 word_len = 0;
+            for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
-              UI_Glyph glyph = get_glyph(chr);
-
-              // Calculate word length
-              f32 word_len = 0;
-              for (u32 i = word_start_pos; i <= chr_idx; i++)
-              {
-                chr = widget->text.data[i];
-                word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
-              }
-
-              // Move to next line
-              if (offset.x + word_len > widget->dim.width && chr_idx < len)
-              {
-                offset.x = 0;
-                offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
-
-                word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
-              }
-
-              // Draw the word
-              for (u32 i = word_start_pos; i <= chr_idx; i++)
-              {
-                chr = widget->text.data[i];
-                if (chr != ' ')
-                {
-                  UI_Glyph glyph = get_glyph(chr);
-
-                  Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
-                  draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
-
-                  offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
-                }
-                else
-                {
-                  offset.x += widget->space_width * widget->text_size * scale;
-                }
-              }
-              
-              word_start_pos = chr_idx + 1;
+              chr = widget->text.data[i];
+              word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
             }
+
+            // Move to next line
+            if (offset.x + word_len > widget->dim.width && chr_idx < len)
+            {
+              offset.x = 0;
+              offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
+
+              word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
+            }
+
+            // Draw the word
+            for (u32 i = word_start_pos; i <= chr_idx; i++)
+            {
+              chr = widget->text.data[i];
+              if (chr != ' ')
+              {
+                UI_Glyph glyph = get_glyph(chr);
+
+                Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
+                draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
+
+                offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+              }
+              else
+              {
+                offset.x += widget->space_width * widget->text_size * scale;
+              }
+            }
+            
+            word_start_pos = chr_idx + 1;
           }
         }
         break;

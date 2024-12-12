@@ -1,43 +1,15 @@
 #if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef near
-#undef far
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+  #undef near
+  #undef far
+#endif
 
-/*
-
-{
-  "scope": "storage.type.glsl",
-  "settings": {
-    "foreground": "#ed8836"
-  }
-},
-{
-  "scope": "variable.language.glsl",
-  "settings": {
-    "foreground": "#e4b547"
-  }
-},
-
-*/
-
-#include "glad/glad.c"
+#if !defined(__APPLE__)
+  #include "glad/glad.c"
 #endif
 
 #include <stdlib.h>
-
-#ifdef PLATFORM_WINDOWS
-#define SOKOL_IMPL
-#define SOKOL_GLCORE
-#endif
-#define SOKOL_NO_ENTRY
-#include "sokol/sokol_app.h"
-#include "sokol/sokol_time.h"
-
-#ifndef RELEASE
-#define SOKOL_IMPL
-#include "sokol/sokol_log.h"
-#endif
 
 #include "base/base_common.h"
 #include "base/base_os.c"
@@ -54,6 +26,16 @@
 #include "input.c"
 #include "entity.c"
 #include "game.c"
+
+#define SOKOL_IMPL
+#define SOKOL_GLCORE
+#define SOKOL_NO_ENTRY
+#include "sokol/sokol_app.h"
+#include "sokol/sokol_time.h"
+
+#ifndef RELEASE
+  #include "sokol/sokol_log.h"
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -111,18 +93,16 @@ void init(void)
   srand((u32) stm_now());
   get_scratch_arena(NULL);
 
-  #if defined(_WIN32)
+#if defined(PLATFORM_LINUX) || defined(PLATFORM_WINDOWS)
   gladLoadGL();
-  #endif
+#endif
 
-  #if defined(PLATFORM_MACOS) && defined(RELEASE)
+#if defined(PLATFORM_MACOS) && defined(RELEASE)
   String res_path = os_path_to_executable(str("undeadwest"));
   res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
-  #elif defined(PLATFORM_WINDOWS) && defined(RELEASE)
+#else
   String res_path = str("res");
-  #else
-  String res_path = str("../res");
-  #endif
+#endif
 
   global.window.width = sapp_width();
   global.window.height = sapp_height();

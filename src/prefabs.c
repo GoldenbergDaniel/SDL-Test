@@ -5,7 +5,7 @@ Prefabs create_prefabs(void)
 {
   Prefabs prefab = {0};
 
-  // Texture ----------------
+  // --- Texture ----------------
   {
     prefab.texture.player_idle = v2i(0, 0);
     prefab.texture.player_walk_0 = v2i(1, 0);
@@ -42,7 +42,7 @@ Prefabs create_prefabs(void)
     prefab.texture.egg_2 = v2i(2, 4);
   }
 
-  // Animation ----------------
+  // --- Animation ----------------
   {
     prefab.animation.player_idle = (AnimationDesc) {
       .frame_count = 1,
@@ -94,7 +94,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // Particle ----------------
+  // --- Particle ----------------
   {
     prefab.particle[ParticleKind_Smoke] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
@@ -175,7 +175,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // Zombie ----------------
+  // --- Zombie ----------------
   {
     prefab.zombie[ZombieKind_Walker] = (ZombieDesc) {
       .props = 0,
@@ -192,7 +192,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // Weapon ----------------
+  // --- Weapon ----------------
   {
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
       .texture = prefab.texture.revolver,
@@ -234,7 +234,7 @@ Prefabs create_prefabs(void)
       .shot_cooldown = 0.085f,
       .damage = 1,
       .bullet_speed = 1500.0f,
-      .ammo = 40,
+      .ammo = 30,
       .reload_duration = 5
     };
 
@@ -250,7 +250,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // Collectable ----------------
+  // --- Collectable ----------------
   {
     prefab.collectable[CollectableKind_Coin] = (CollectableDesc) {
       .texture = prefab.texture.coin,
@@ -263,7 +263,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // Wave ----------------
+  // --- Wave ----------------
   {
     prefab.wave[0] = (WaveDesc) {
       .time_btwn_spawns = 3,

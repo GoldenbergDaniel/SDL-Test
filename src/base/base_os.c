@@ -33,7 +33,7 @@ void *os_reserve_vm(void *addr, u64 size)
   result = mmap(NULL, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (result == MAP_FAILED)
   {
-    printf("mmap failed with size %llu \n", size);
+    printf("mmap failed with size %llu \n", (long long int) size);
     assert(0);
   }
   #endif
@@ -228,13 +228,15 @@ void os_write_file(OS_Handle file, String buf)
 
   if (!os_is_handle_valid(file)) return;
 
+  // FIXME(dg): we need to return the written count
+
   #ifdef PLATFORM_WINDOWS
   HANDLE handle = (HANDLE) file.id;
   WriteFile(handle, buf.data, buf.len, NULL, NULL);
   #endif
 
   #ifdef PLATFORM_UNIX
-  write(file.id, buf.data, buf.len);
+  i64 written = write(file.id, buf.data, buf.len);
   #endif
 }
 

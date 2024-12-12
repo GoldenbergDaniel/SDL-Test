@@ -4,12 +4,12 @@
 #include "input.h"
 #include "entity.h"
 
-#ifdef _WIN32
-#define TIME_STEP (1.0f / 120)
-#define ANIM_TICK 1
+#if defined(PLATFORM_LINUX) || defined(PLATFORM_WINDOWS)
+  #define TIME_STEP (1.0f / 120)
+  #define ANIM_TICK 1
 #else
-#define TIME_STEP (1.0f / 60)
-#define ANIM_TICK 2
+  #define TIME_STEP (1.0f / 60)
+  #define ANIM_TICK 2
 #endif
 
 #define WIDTH 960.0f
