@@ -5,19 +5,9 @@ set SRC=src\main.c
 set OUT=undeadwest.exe
 
 set MODE=dev
-if "%1%"=="d"    set MODE=debug
-if "%1%"=="r"    set MODE=release
-if "%1%"=="git"  set MODE=git
+if "%1%"=="d"    set MODE=dbg
+if "%1%"=="r"    set MODE=rls
 if "%1%"=="push" set MODE=push
-
-if "%MODE%"=="git" (
-  echo - Pushing to GitHub.com -
-  git add .
-  git status
-  git commit -m %2%
-  git push
-  exit /b 0
-)
 
 if "%MODE%"=="push" (
   echo - Pushing to Itch.io -
@@ -38,9 +28,9 @@ if "%1%"=="d" (
 
 set COMMON= /std:c17 /nologo /I..\extern\
 
-if "%MODE%"=="dev"     set CFLAGS= /Od /DDEBUG
-if "%MODE%"=="debug"   set CFLAGS= /Od /Z7 /W1 /DDEBUG
-if "%MODE%"=="release" set CFLAGS= /O2 /DRELEASE
+if "%MODE%"=="dev" set CFLAGS= /Od /DDEV_MODE
+if "%MODE%"=="dbg" set CFLAGS= /Od /Z7 /W1 /DDEBUG /DDEV_MODE
+if "%MODE%"=="rls" set CFLAGS= /O2 /DRELEASE
 
 set LFLAGS= /link /incremental:no /libpath:..\extern\sokol\lib sokol.lib
 
@@ -52,23 +42,16 @@ if not "%2"=="fsan" echo [fsan:off]
 echo - Processing -
 shadertoh src\shaders\ src\render\shaders.h
 
-set BUILD=0
-if "%MODE%"=="dev"     set BUILD=1
-if "%MODE%"=="debug"   set BUILD=1
-if "%MODE%"=="release" set BUILD=1
-
 set RUN=0
 if "%MODE%"=="dev" set RUN=1
 
-if "%BUILD%"=="1" (
-  echo - Building -
-  if not exist build mkdir build 
-  pushd build
-    cl %COMMON% %CFLAGS% %FSAN% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
-    del *.obj
-    if "%RUN%"=="1" (
-      echo %OUT%
-      %OUT%
-    )
-  popd
-)
+echo - Building -
+if not exist build mkdir build 
+pushd build
+  cl %COMMON% %CFLAGS% %FSAN% ..\%SRC% /Fe%OUT% %LFLAGS% || exit /b 1
+  del *.obj
+  if "%RUN%"=="1" (
+    echo %OUT%
+    %OUT%
+  )
+popd

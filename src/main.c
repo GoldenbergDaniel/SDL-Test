@@ -4,6 +4,23 @@
 #undef near
 #undef far
 
+/*
+
+{
+  "scope": "storage.type.glsl",
+  "settings": {
+    "foreground": "#ed8836"
+  }
+},
+{
+  "scope": "variable.language.glsl",
+  "settings": {
+    "foreground": "#e4b547"
+  }
+},
+
+*/
+
 #include "glad/glad.c"
 #endif
 
@@ -59,7 +76,7 @@ i32 WINAPI WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 i32 main(void)
 #endif
 {
-  Arena logger_arena = create_arena(GiB(1), FALSE);
+  Arena logger_arena = create_arena(MiB(64), TRUE);
   logger_init(str(""), &logger_arena);
 
   sapp_run(&(sapp_desc) {
@@ -88,7 +105,7 @@ void init(void)
 
   game.entity_arena = create_arena(GiB(1), FALSE);
   game.frame_arena = create_arena(GiB(1), TRUE);
-  game.draw_arena = create_arena(MiB(16), TRUE);
+  game.draw_arena = create_arena(MiB(16), FALSE);
   
   stm_setup();
   srand((u32) stm_now());
@@ -166,9 +183,16 @@ void frame(void)
       sapp_toggle_fullscreen();
     }
 
+    f64 time_start = stm_ns(stm_since(0));
     game.t = stm_sec(stm_since(0));
     update_game();
-    arena_clear(&game.frame_arena);
+    f64 time_end = stm_ns(stm_since(0));
+
+    String duration_str = format_duration(time_end - time_start, &game.frame_arena);
+    duration_str = str_concat(str("update: "), duration_str, &game.frame_arena);
+    duration_str = str_concat(duration_str, str("\n"), &game.frame_arena);
+    // logger_debug(duration_str, &game.frame_arena);
+    game.update_time = time_end - time_start;
 
     remember_last_keys();
 
@@ -176,8 +200,15 @@ void frame(void)
     global.frame.accumulator -= TIME_STEP;
   }
 
+  u64 time_start = stm_ns(stm_since(0));
   render_game();
-  arena_clear(&game.draw_arena);
+  u64 time_end = stm_ns(stm_since(0));
+
+  String duration_str = format_duration(time_end - time_start, &game.frame_arena);
+  duration_str = str_concat(str("render: "), duration_str, &game.frame_arena);
+  duration_str = str_concat(duration_str, str("\n"), &game.frame_arena);
+  // logger_debug(duration_str, &game.frame_arena);
+  game.render_time = time_end - time_start;
 
   if (game_should_quit())
   {

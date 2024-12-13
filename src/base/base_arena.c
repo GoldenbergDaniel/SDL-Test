@@ -21,10 +21,10 @@
 
 // @Arena ////////////////////////////////////////////////////////////////////////////////
 
-#define PAGES_PER_COMMIT 4
+#define PAGES_PER_COMMIT 2
 
 #ifndef SCRATCH_SIZE
-#define SCRATCH_SIZE GiB(16)
+#define SCRATCH_SIZE GiB(8)
 #endif
 
 thread_local Arena _scratch_1;

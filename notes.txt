@@ -6,13 +6,13 @@ TODO
     [_] weapon progression
     [X] zombie progression
     [X] zombie drops (coins and souls)
-    [_] reloading
+    [X] reloading
     [~] chicken
     [_] headshots
     [X] player death
     [X] invincibility timer
     [X] gameover state
-    [X] try again
+    [_] try again
     [_] ui text centering
     [X] muzzle flash
   ENGINE

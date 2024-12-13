@@ -24,6 +24,7 @@ typedef enum EventType
 {
   EventType_Nil,
   EventType_EntityKilled,
+  EventType_UsedWeapon,
 } EventType;
 
 typedef struct EventDesc EventDesc;
@@ -79,7 +80,7 @@ struct Globals
 
 // @Game /////////////////////////////////////////////////////////////////////////////////
 
-#define MAX_PARTICLES 2048
+#define MAX_PARTICLES 1024
 
 typedef struct ParticleBuffer ParticleBuffer;
 struct ParticleBuffer
@@ -99,7 +100,7 @@ struct WaveDesc
   u16 zombie_counts[ZombieKind_COUNT];
 };
 
-i32 zombies_to_spawn_this_wave(void);
+bool is_zombie_remaining_to_spawn(WaveDesc *desc);
 
 typedef struct Game Game;
 struct Game
@@ -107,6 +108,9 @@ struct Game
   Arena frame_arena;
   Arena draw_arena;
   Arena entity_arena;
+
+  u64 update_time;
+  u64 render_time;
 
   EntityList entities;
   EventQueue event_queue;
@@ -130,10 +134,25 @@ struct Game
 
   struct
   {
-    u8 num;
+    i16 num;
     u16 zombies_spawned;
     u16 zombies_killed;
+    WaveDesc desc;
   } current_wave;
+
+  struct
+  {
+    i16 ammo_remaining;
+    Timer reload_timer;
+    bool is_reloading;
+  } weapon;
+
+  struct
+  {
+    bool rifle;
+    bool shotgun;
+    bool smg;
+  } progression;
 };
 
 void init_game(void);
@@ -142,3 +161,4 @@ void render_game(void);
 bool game_should_quit(void);
 
 Vec2F screen_to_world(Vec2F pos);
+String format_duration(u64 ns, Arena *arena);

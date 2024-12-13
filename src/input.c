@@ -56,6 +56,7 @@ void handle_input_event(const struct sapp_event *event)
         case SAPP_KEYCODE_A: input->keys[Key_A] = TRUE; break;
         case SAPP_KEYCODE_D: input->keys[Key_D] = TRUE; break;
         case SAPP_KEYCODE_P: input->keys[Key_P] = TRUE; break;
+        case SAPP_KEYCODE_R: input->keys[Key_R] = TRUE; break;
         case SAPP_KEYCODE_S: input->keys[Key_S] = TRUE; break;
         case SAPP_KEYCODE_W: input->keys[Key_W] = TRUE; break;
         case SAPP_KEYCODE_0: input->keys[Key_0] = TRUE; break;
@@ -94,6 +95,7 @@ void handle_input_event(const struct sapp_event *event)
         case SAPP_KEYCODE_A: input->keys[Key_A] = FALSE; break;
         case SAPP_KEYCODE_D: input->keys[Key_D] = FALSE; break;
         case SAPP_KEYCODE_P: input->keys[Key_P] = FALSE; break;
+        case SAPP_KEYCODE_R: input->keys[Key_R] = FALSE; break;
         case SAPP_KEYCODE_S: input->keys[Key_S] = FALSE; break;
         case SAPP_KEYCODE_W: input->keys[Key_W] = FALSE; break;
         case SAPP_KEYCODE_0: input->keys[Key_0] = FALSE; break;

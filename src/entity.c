@@ -183,8 +183,6 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
       en->texture = prefab.texture.walker_idle;
       en->anims[Animation_Idle] = prefab.animation.walker_idle;
       en->anims[Animation_Walk] = prefab.animation.walker_walk;
-
-      // logger_debug(str("Spawned zombie walker.\n"));
     }
     break;
     case ZombieKind_Chicken:
@@ -192,8 +190,9 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
       en->texture = prefab.texture.chicken_idle;
       en->anims[Animation_Idle] = prefab.animation.chicken_idle;
       en->anims[Animation_Walk] = prefab.animation.chicken_idle;
+      en->anims[Animation_LayEgg] = prefab.animation.chicken_lay;
 
-      // logger_debug(str("Spawned zombie chinken.\n"));
+      // entity_add_prop(en, EntityProp_LaysEggs);
     }
     break;
   }
@@ -758,7 +757,7 @@ void equip_weapon(Entity *en, WeaponKind kind)
 
   if (kind == WeaponKind_Nil)
   {
-    en->weapon_equipped = FALSE;
+    en->is_weapon_equipped = FALSE;
     Entity *gun = get_entity_child_of_sp(en, SP_Gun);
     entity_rem_prop(gun, EntityProp_Renders);
     return;
@@ -766,7 +765,12 @@ void equip_weapon(Entity *en, WeaponKind kind)
 
   WeaponDesc desc = prefab.weapon[kind];
 
-  en->weapon_equipped = TRUE;
+  if (weapon_en->weapon_kind != kind)
+  {
+    game.weapon.ammo_remaining = desc.ammo;
+  }
+
+  en->is_weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
   weapon_en->texture = desc.texture;

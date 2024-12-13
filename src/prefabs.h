@@ -30,6 +30,7 @@ struct Prefabs
     TextureID chicken_lay_0;
     TextureID chicken_lay_1;
 
+    TextureID revolver;
     TextureID pistol;
     TextureID rifle;
     TextureID shotgun;
@@ -39,6 +40,10 @@ struct Prefabs
     TextureID bullet;
     TextureID coin;
     TextureID soul;
+
+    TextureID egg_0;
+    TextureID egg_1;
+    TextureID egg_2;
   } texture;
 
   struct

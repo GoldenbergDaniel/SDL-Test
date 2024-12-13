@@ -26,15 +26,20 @@ Prefabs create_prefabs(void)
     prefab.texture.chicken_lay_0 = v2i(1, 2);
     prefab.texture.chicken_lay_1 = v2i(2, 2);
     
-    prefab.texture.pistol = v2i(0, 3);
+    prefab.texture.revolver = v2i(0, 3);
     prefab.texture.rifle = v2i(1, 3);
     prefab.texture.shotgun = v2i(2, 3);
     prefab.texture.smg = v2i(3, 3);
+    prefab.texture.pistol = v2i(4, 3);
 
-    prefab.texture.muzzle_flash = v2i(5, 3);
-    prefab.texture.bullet = v2i(6, 3);
+    prefab.texture.muzzle_flash = v2i(7, 3);
+    prefab.texture.bullet = v2i(8, 3);
     prefab.texture.coin = v2i(7, 4);
     prefab.texture.soul = v2i(8, 4);
+
+    prefab.texture.egg_0 = v2i(0, 4);
+    prefab.texture.egg_1 = v2i(1, 4);
+    prefab.texture.egg_2 = v2i(2, 4);
   }
 
   // Animation ----------------
@@ -81,9 +86,11 @@ Prefabs create_prefabs(void)
     };
 
     prefab.animation.chicken_lay = (AnimationDesc) {
-      .frame_count = 2,
-      .frames[0] = prefab.texture.chicken_lay_0,
-      .frames[0] = prefab.texture.chicken_lay_1,
+      .ticks_per_frame = 20,
+      .frame_count = 3,
+      .frames[0] = prefab.texture.chicken_idle,
+      .frames[1] = prefab.texture.chicken_lay_0,
+      .frames[2] = prefab.texture.chicken_lay_1,
     };
   }
 
@@ -173,27 +180,29 @@ Prefabs create_prefabs(void)
     prefab.zombie[ZombieKind_Walker] = (ZombieDesc) {
       .props = 0,
       .speed = 50,
-      .health = 10,
+      .health = 20,
       .damage = 1,
     };
 
     prefab.zombie[ZombieKind_Chicken] = (ZombieDesc) {
       .props = 0,
       .speed = 150,
-      .health = 7,
+      .health = 14,
       .damage = 1,
     };
   }
 
   // Weapon ----------------
   {
-    prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
-      .texture = prefab.texture.pistol,
-      .ancor = v2f(35, 5),
+    prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
+      .texture = prefab.texture.revolver,
+      .ancor = v2f(35, 0),
       .shot_point = v2f(20, 2),
       .shot_cooldown = 0.75f,
-      .damage = 3,
+      .damage = 6,
       .bullet_speed = 1000.0f,
+      .ammo = 6,
+      .reload_duration = 3,
     };
 
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
@@ -201,8 +210,10 @@ Prefabs create_prefabs(void)
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 2),
       .shot_cooldown = 1.15f,
-      .damage = 7,
+      .damage = 14,
       .bullet_speed = 1500.0f,
+      .ammo = 5,
+      .reload_duration = 5,
     };
 
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
@@ -210,8 +221,10 @@ Prefabs create_prefabs(void)
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 2),
       .shot_cooldown = 0.95f,
-      .damage = 2,
+      .damage = 4,
       .bullet_speed = 1000.0f,
+      .ammo = 7,
+      .reload_duration = 3,
     };
 
     prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
@@ -221,6 +234,19 @@ Prefabs create_prefabs(void)
       .shot_cooldown = 0.085f,
       .damage = 1,
       .bullet_speed = 1500.0f,
+      .ammo = 40,
+      .reload_duration = 5
+    };
+
+    prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
+      .texture = prefab.texture.pistol,
+      .ancor = v2f(35, 5),
+      .shot_point = v2f(20, 2),
+      .shot_cooldown = 0.75f,
+      .damage = 6,
+      .bullet_speed = 1000.0f,
+      .ammo = 12,
+      .reload_duration = 5,
     };
   }
 
@@ -257,6 +283,7 @@ Prefabs create_prefabs(void)
       .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 10,
+        [ZombieKind_Chicken] = 1,
       }
     };
     
@@ -264,7 +291,7 @@ Prefabs create_prefabs(void)
       .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 10,
-        [ZombieKind_Chicken] = 1,
+        [ZombieKind_Chicken] = 3,
       }
     };
 
@@ -272,7 +299,7 @@ Prefabs create_prefabs(void)
       .time_btwn_spawns = 2,
       .zombie_counts = {
         [ZombieKind_Walker] = 15,
-        [ZombieKind_Chicken] = 3,
+        [ZombieKind_Chicken] = 5,
       }
     };
   }

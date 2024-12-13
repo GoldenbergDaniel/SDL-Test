@@ -79,6 +79,8 @@ typedef double f64;
 #define to_zero(a, tol) ((absv(a) - tol) <= 0.0f ? 0.0f : (a))
 #define dir(a) (((a) != 0) ? ((a) / absv(a)) : 0)
 
+#define bit(n) 1 << n
+
 typedef union Vec2F Vec2F;
 union Vec2F
 {

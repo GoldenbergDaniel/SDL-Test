@@ -9,6 +9,7 @@ typedef enum KeyKind
   Key_A,
   Key_D,
   Key_P,
+  Key_R,
   Key_S,
   Key_W,
   Key_0,

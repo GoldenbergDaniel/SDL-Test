@@ -50,6 +50,7 @@ typedef enum AnimationState
   Animation_Idle,
   Animation_Walk,
   Animation_Jump,
+  Animation_LayEgg,
 
   Animation_COUNT,
 } AnimationState;
@@ -74,9 +75,9 @@ struct AnimationDesc
 typedef struct Timer Timer;
 struct Timer
 {
+  bool is_ticking;
   f32 duration;
   f64 end_time;
-  bool is_ticking;
 };
 
 // @Particle /////////////////////////////////////////////////////////////////////////////
@@ -145,6 +146,16 @@ struct Particle
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
 
+typedef enum EntityState
+{
+  EntityState_Idle,
+  EntityState_Walk,
+  EntityState_Jump,
+  EntityState_LayEggBegin,
+  EntityState_LayEggLaying,
+  EntityState_LayEggEnd,
+} EntityState;
+
 typedef enum EntityType
 {
   EntityType_Nil,
@@ -154,6 +165,7 @@ typedef enum EntityType
   EntityType_Zombie,
   EntityType_Equipped,
   EntityType_Bullet,
+  EntityType_Egg,
   EntityType_Decoration,
   EntityType_Collider,
   EntityType_Collectable,
@@ -161,28 +173,30 @@ typedef enum EntityType
 
 typedef enum EntityProp
 {
-  EntityProp_Renders = 1 << 0,
-  EntityProp_Collides = 1 << 1,
-  EntityProp_Controlled = 1 << 2,
-  EntityProp_Moves = 1 << 3,
-  EntityProp_Killable = 1 << 4,
-  EntityProp_Equipped = 1 << 5,
-  EntityProp_WrapsAtEdges = 1 << 6,
-  EntityProp_AffectedByGravity = 1 << 7,
-  EntityProp_CollidesWithGround = 1 << 8,
-  EntityProp_BobsOverTime = 1 << 9,
-  EntityProp_Grounded = 1 << 10,
-  EntityProp_FlashWhite = 1 << 11,
-  EntityProp_HideAfterTime = 1 << 12,
+  EntityProp_Renders =            bit(0),
+  EntityProp_Collides =           bit(1),
+  EntityProp_Controlled =         bit(2),
+  EntityProp_Moves =              bit(3),
+  EntityProp_Killable =           bit(4),
+  EntityProp_Equipped =           bit(5),
+  EntityProp_WrapsAtEdges =       bit(6),
+  EntityProp_AffectedByGravity =  bit(7),
+  EntityProp_CollidesWithGround = bit(8),
+  EntityProp_BobsOverTime =       bit(9),
+  EntityProp_Grounded =           bit(10),
+  EntityProp_FlashWhite =         bit(11),
+  EntityProp_HideAfterTime =      bit(12),
+  EntityProp_LaysEggs =           bit(13),
 } EntityProp;
 
 typedef enum WeaponKind
 {
   WeaponKind_Nil,
-  WeaponKind_Pistol,
+  WeaponKind_Revolver,
   WeaponKind_Rifle,
   WeaponKind_Shotgun,
   WeaponKind_SMG,
+  WeaponKind_Pistol,
 
   WeaponKind_COUNT,
 } WeaponKind;
@@ -196,6 +210,8 @@ struct WeaponDesc
   f32 shot_cooldown;
   f32 bullet_speed;
   u16 damage;
+  u16 ammo;
+  f32 reload_duration;
 };
 
 typedef enum CollectableKind
@@ -297,7 +313,6 @@ struct Entity
   Vec2F dim;
   bool flip_x;
   bool flip_y;
-  u16 z_index;
 
   // Collision
   Entity *cols[Collider_COUNT];
@@ -307,14 +322,13 @@ struct Entity
   bool colliding_with_player;
 
   // Animation
+  Timer flash_timer;
   Animation anim;
   AnimationDesc anims[Animation_COUNT];
   AnimationState anim_state;
   AnimationState anim_state_prev;
   Vec2F bobbing_range;
   i8 bobbing_state;
-
-  Timer flash_timer;
 
   // Targeting
   bool has_target;
@@ -328,6 +342,7 @@ struct Entity
   u32 particles_killed;
 
   // Combat
+  bool is_weapon_equipped;
   i16 health;
   i16 damage;
   Timer attack_timer;
@@ -335,8 +350,9 @@ struct Entity
   Timer kill_timer;
   Timer invincibility_timer;
   Timer muzzle_flash_timer;
-  bool weapon_equipped;
+  Timer lay_egg_timer;
 
+  // Kinds
   ZombieKind zombie_kind;
   WeaponKind weapon_kind;
   CollectableKind item_kind;
