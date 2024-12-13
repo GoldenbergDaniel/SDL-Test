@@ -25,18 +25,18 @@ void *os_reserve_vm(void *addr, u64 size)
 {
   void *result = NULL;
   
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   result = VirtualAlloc(addr, size, MEM_RESERVE, PAGE_NOACCESS);
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
+#ifdef PLATFORM_UNIX
   result = mmap(NULL, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (result == MAP_FAILED)
   {
     printf("mmap failed with size %llu \n", (long long int) size);
     assert(0);
   }
-  #endif
+#endif
 
   return result;
 }
@@ -45,15 +45,15 @@ bool os_commit_vm(void *addr, u64 size)
 {
   bool result = TRUE;
 
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   byte *ptr = VirtualAlloc(addr, size, MEM_COMMIT, PAGE_READWRITE);
   if (ptr == NULL)
   {
     result = GetLastError();
   }
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
+#ifdef PLATFORM_UNIX
   i32 err = mprotect(addr, size, PROT_READ | PROT_WRITE);
   if (err != 0)
   {
@@ -61,7 +61,7 @@ bool os_commit_vm(void *addr, u64 size)
     result = FALSE;
   }
 
-  #endif
+#endif
 
   return result;
 }
@@ -70,31 +70,31 @@ bool os_decommit_vm(void *addr, u64 size)
 {
   bool result = TRUE;
 
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   result = VirtualFree(addr, size, MEM_DECOMMIT);
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
+#ifdef PLATFORM_UNIX
   i32 err = mprotect(addr, size, PROT_NONE);
   if (err != 0)
   {
     printf("Failed to decommit with mprotect.\n");
     result = FALSE;
   }
-  #endif
+#endif
 
   return result;
 }
 
 void os_release_vm(void *ptr, u64 size)
 {
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   VirtualFree(ptr, size, MEM_RELEASE);
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
+#ifdef PLATFORM_UNIX
   munmap(ptr, size);
-  #endif
+#endif
 }
 
 // TODO(dg): This should be cached somewhere
@@ -102,15 +102,15 @@ u64 os_get_page_size(void)
 {
   u64 result = 0;
 
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   SYSTEM_INFO info = {0};
   GetSystemInfo(&info);
   result = info.dwPageSize;
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
+#ifdef PLATFORM_UNIX
   result = getpagesize();
-  #endif
+#endif
 
   return result;
 }
@@ -120,12 +120,13 @@ bool os_is_handle_valid(OS_Handle handle)
 {
   bool result = FALSE;
 
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   result = (void *) handle.id != INVALID_HANDLE_VALUE;
-  #endif
+#endif
 
-  #ifdef PLATFORM_UNIX
-  #endif
+#ifdef PLATFORM_UNIX
+  result = handle.id > -1;
+#endif
 
   return result;
 }

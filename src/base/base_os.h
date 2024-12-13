@@ -24,7 +24,7 @@ typedef enum OS_Flag
 typedef struct OS_Handle OS_Handle;
 struct OS_Handle
 {
-  u64 id;
+  i64 id;
 };
 
 bool os_is_handle_valid(OS_Handle handle);

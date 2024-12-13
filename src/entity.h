@@ -15,8 +15,7 @@
 #define PLAYER_HEALTH 3
 
 #define BULLET_KILL_TIME 5.0f
-#define PLAYER_ATTACK_COOLDOWN 0.5f
-#define ENEMY_ATTACK_COOLDOWN 1.0f
+#define PLAYER_INVINCIBILITY_TIMER 0.5f
 #define FLASH_TIME 0.05f
 
 enum
@@ -246,6 +245,7 @@ struct ZombieDesc
   u16 speed;
   u16 health;
   u16 damage;
+  f32 attack_cooldown;
 };
 
 typedef enum MoveType
@@ -431,7 +431,7 @@ void entity_add_collider(Entity *en, ColliderID col_id);
 
 void timer_start(Timer *timer, f64 duration);
 bool timer_timeout(Timer *timert);
-void timer_reset(Timer *timer);
+void timer_stop(Timer *timer);
 
 // @Misc /////////////////////////////////////////////////////////////////////////////////
 

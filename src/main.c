@@ -59,7 +59,7 @@ i32 main(void)
 #endif
 {
   Arena logger_arena = create_arena(MiB(64), TRUE);
-  logger_init(str(""), &logger_arena);
+  init_logger(str(""), &logger_arena);
 
   sapp_run(&(sapp_desc) {
     .window_title = "Undead West",

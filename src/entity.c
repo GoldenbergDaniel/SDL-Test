@@ -27,125 +27,105 @@ Entity *create_entity(EntityType type)
 
   switch (type)
   {
-    case EntityType_Debug:
-    {
-      en->draw_type = DrawType_Primitive;
-      en->scale = v2f(1/16.0f, 1/16.0f);
-      en->tint = DEBUG_YELLOW;
-    }
+  case EntityType_Debug:
+    en->draw_type = DrawType_Primitive;
+    en->scale = v2f(1/16.0f, 1/16.0f);
+    en->tint = DEBUG_YELLOW;
     break;
-    case EntityType_Player:
-    {
-      en->props = EntityProp_Renders | 
-                  EntityProp_Collides | 
-                  EntityProp_Controlled | 
-                  EntityProp_Moves | 
-                  EntityProp_AffectedByGravity |
-                  EntityProp_CollidesWithGround;
+  case EntityType_Player:
+    en->props = EntityProp_Renders | 
+                EntityProp_Collides | 
+                EntityProp_Controlled | 
+                EntityProp_Moves | 
+                EntityProp_AffectedByGravity |
+                EntityProp_CollidesWithGround;
 
-      en->draw_type = DrawType_Sprite;
-      en->move_type = MoveType_Grounded;
-      en->combat_type = CombatType_Ranged;
-      en->speed = PLAYER_SPEED;
-      en->texture = prefab.texture.player_idle;
-      en->attack_timer.duration = PLAYER_ATTACK_COOLDOWN;
-      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
-      en->health = PLAYER_HEALTH;
-      en->invincibility_timer.duration = 0.8f;
+    en->draw_type = DrawType_Sprite;
+    en->move_type = MoveType_Grounded;
+    en->combat_type = CombatType_Ranged;
+    en->speed = PLAYER_SPEED;
+    en->texture = prefab.texture.player_idle;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
+    en->health = PLAYER_HEALTH;
+    en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
+    en->dim = v2f(7, 15);
 
-      en->anims[Animation_Idle] = prefab.animation.player_idle;
-      en->anims[Animation_Walk] = prefab.animation.player_walk;
-      en->anims[Animation_Jump] = prefab.animation.player_jump;
+    en->anims[Animation_Idle] = prefab.animation.player_idle;
+    en->anims[Animation_Walk] = prefab.animation.player_walk;
+    en->anims[Animation_Jump] = prefab.animation.player_jump;
 
-      entity_add_collider(en, Collider_Body);
-      en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
-      en->cols[Collider_Body]->pos = v2f(0, 0);
-      en->cols[Collider_Body]->scale = v2f(0.5, 1);
-    }
+    entity_add_collider(en, Collider_Body);
+    en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Body]->pos = v2f(0, 0);
+    en->cols[Collider_Body]->scale = v2f(0.5, 1);
     break;
-    case EntityType_Zombie:
-    {
-      en->props = EntityProp_Renders | 
-                  EntityProp_Moves | 
-                  EntityProp_Collides |
-                  EntityProp_AffectedByGravity |
-                  EntityProp_CollidesWithGround;
-      
-      en->draw_type = DrawType_Sprite;
-      en->move_type = MoveType_Grounded;
-      en->combat_type = CombatType_Melee;
-      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
-      en->attack_timer.duration = ENEMY_ATTACK_COOLDOWN;
-      
-      entity_add_collider(en, Collider_Body);
-      en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
-      en->cols[Collider_Body]->scale = v2f(0.5, 1);
+  case EntityType_Zombie:
+    en->props = EntityProp_Renders | 
+                EntityProp_Moves | 
+                EntityProp_Collides |
+                EntityProp_AffectedByGravity |
+                EntityProp_CollidesWithGround;
+    
+    en->draw_type = DrawType_Sprite;
+    en->move_type = MoveType_Grounded;
+    en->combat_type = CombatType_Melee;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
+    break;
+  case EntityType_Equipped:
+    en->props = EntityProp_Equipped;
 
-      entity_add_collider(en, Collider_Hit);
-      en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
-      en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
-      en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
-    }
+    en->draw_type = DrawType_Sprite;
+    en->dim = v2f(16, 16);
     break;
-    case EntityType_Equipped:
-    {
-      en->props = EntityProp_Equipped;
+  case EntityType_Bullet:
+    en->props = EntityProp_Renders | 
+                EntityProp_Moves | 
+                EntityProp_Collides;
+    
+    en->draw_type = DrawType_Sprite;
+    en->texture = prefab.texture.bullet;
+    en->move_type = MoveType_Projectile;
+    en->kill_timer.duration = BULLET_KILL_TIME;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
 
-      en->draw_type = DrawType_Sprite;
-      en->dim = v2f(16, 16);
-    }
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_id = Collider_Hit;
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
+    en->cols[Collider_Hit]->radius = 1;
+    en->cols[Collider_Hit]->draw_type = DrawType_Nil;
+    en->cols[Collider_Hit]->dim = V2F_ZERO;
     break;
-    case EntityType_Bullet:
-    {
-      en->props = EntityProp_Renders | 
-                  EntityProp_Moves | 
-                  EntityProp_Collides;
-      
-      en->draw_type = DrawType_Sprite;
-      en->texture = prefab.texture.bullet;
-      en->move_type = MoveType_Projectile;
-      en->kill_timer.duration = BULLET_KILL_TIME;
-      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
+  case EntityType_Decoration:
+    en->props = EntityProp_Renders;
+    en->draw_type = DrawType_Sprite;
+    break;
+  case EntityType_Collectable:
+    en->props = EntityProp_Renders |
+                EntityProp_BobsOverTime |
+                EntityProp_Collides;
 
-      entity_add_collider(en, Collider_Hit);
-      en->cols[Collider_Hit]->col_id = Collider_Hit;
-      en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
-      en->cols[Collider_Hit]->radius = 1;
-      en->cols[Collider_Hit]->draw_type = DrawType_Nil;
-      en->cols[Collider_Hit]->dim = V2F_ZERO;
-    }
-    break;
-    case EntityType_Decoration:
-    {
-      en->props = EntityProp_Renders;
-      en->draw_type = DrawType_Sprite;
-    }
-    break;
-    case EntityType_Collectable:
-    {
-      en->props = EntityProp_Renders |
-                  EntityProp_BobsOverTime |
-                  EntityProp_Collides;
+    en->draw_type = DrawType_Sprite;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
 
-      en->draw_type = DrawType_Sprite;
-      en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
- 
-      entity_add_collider(en, Collider_Hit);
-      en->cols[Collider_Hit]->col_id = Collider_Hit;
-      en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
-      en->cols[Collider_Hit]->radius = 10;
-      en->cols[Collider_Hit]->draw_type = DrawType_Nil;
-      en->cols[Collider_Hit]->dim = V2F_ZERO;
-    }
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_id = Collider_Hit;
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Circle;
+    en->cols[Collider_Hit]->radius = 10;
+    en->cols[Collider_Hit]->draw_type = DrawType_Nil;
+    en->cols[Collider_Hit]->dim = V2F_ZERO;
     break;
-    case EntityType_Collider:
-    {
-      en->props = EntityProp_Collides |
-                  EntityProp_Renders;
-      en->draw_type = DrawType_Primitive;
-    }
+  case EntityType_Egg:
+    en->props = EntityProp_Renders;
+    en->draw_type = DrawType_Sprite;
+    en->texture = prefab.texture.egg_0;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
-    default: break;
+  case EntityType_Collider:
+    en->props = EntityProp_Collides |
+                EntityProp_Renders;
+    en->draw_type = DrawType_Primitive;
+    break;
+  default: break;
   }
 
   return en;
@@ -159,6 +139,8 @@ Entity *spawn_entity(EntityType type, Vec2F pos)
   entity_rem_prop(en, EntityProp_Renders);
   en->is_active = FALSE;
   en->marked_for_spawn = TRUE;
+
+  logger_debug(str("Spawned entity of kind %i\n"), type);
 
   return en;
 }
@@ -174,26 +156,45 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   en->damage = desc.damage;
   en->speed = desc.speed;
   en->view_dist = 350.0f;
+  en->attack_timer.duration = desc.attack_cooldown;
 
   switch (kind)
   {
-    default: break;
-    case ZombieKind_Walker:
-    {
-      en->texture = prefab.texture.walker_idle;
-      en->anims[Animation_Idle] = prefab.animation.walker_idle;
-      en->anims[Animation_Walk] = prefab.animation.walker_walk;
-    }
-    break;
-    case ZombieKind_Chicken:
-    {
-      en->texture = prefab.texture.chicken_idle;
-      en->anims[Animation_Idle] = prefab.animation.chicken_idle;
-      en->anims[Animation_Walk] = prefab.animation.chicken_idle;
-      en->anims[Animation_LayEgg] = prefab.animation.chicken_lay;
+  default: break;
+  case ZombieKind_Walker:
+    en->texture = prefab.texture.walker_idle;
+    en->anims[Animation_Idle] = prefab.animation.walker_idle;
+    en->anims[Animation_Walk] = prefab.animation.walker_walk;
 
-      // entity_add_prop(en, EntityProp_LaysEggs);
-    }
+    entity_add_collider(en, Collider_Body);
+    en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Body]->pos = v2f(0, 0);
+    en->cols[Collider_Body]->scale = v2f(0.5, 1);
+
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
+    en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
+    break;
+  case ZombieKind_Chicken:
+    en->dim = v2f(10, 8);
+
+    en->texture = prefab.texture.chicken_idle;
+    en->anims[Animation_Idle] = prefab.animation.chicken_idle;
+    en->anims[Animation_Walk] = prefab.animation.chicken_idle;
+    en->anims[Animation_LayEgg] = prefab.animation.chicken_lay;
+
+    entity_add_collider(en, Collider_Body);
+    en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Body]->pos = v2f(0, pos_bl_from_entity(en).y);
+    en->cols[Collider_Body]->scale = v2f(0.5, 0.5);
+
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Hit]->pos = v2f(20, pos_bl_from_entity(en).y + 10);
+    en->cols[Collider_Hit]->scale = v2f(0.25, 0.25);
+
+    entity_add_prop(en, EntityProp_LaysEggs);
     break;
   }
 
@@ -720,7 +721,7 @@ bool timer_timeout(Timer *timer)
 }
 
 inline
-void timer_reset(Timer *timer)
+void timer_stop(Timer *timer)
 {
   timer->is_ticking = FALSE;
 }

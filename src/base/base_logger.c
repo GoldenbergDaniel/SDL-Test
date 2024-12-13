@@ -5,7 +5,7 @@
 
 Logger _logger;
 
-void logger_init(String path, Arena *arena)
+void init_logger(String path, Arena *arena)
 {
   _logger.arena = arena;
 
@@ -27,9 +27,9 @@ void logger_debug(String str, ...)
   text.len = stbsp_vsnprintf(text.data, size, str.data, vargs);
   
   os_write_file(os_handle_to_stdout(), text);
-  #ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
   os_windows_output_debug(text.data);
-  #endif
+#endif
 
   arena_clear(_logger.arena);
   va_end(vargs);

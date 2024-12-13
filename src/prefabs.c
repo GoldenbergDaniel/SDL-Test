@@ -5,7 +5,7 @@ Prefabs create_prefabs(void)
 {
   Prefabs prefab = {0};
 
-  // --- Texture ----------------
+  // - Texture ----------------
   {
     prefab.texture.player_idle = v2i(0, 0);
     prefab.texture.player_walk_0 = v2i(1, 0);
@@ -42,7 +42,7 @@ Prefabs create_prefabs(void)
     prefab.texture.egg_2 = v2i(2, 4);
   }
 
-  // --- Animation ----------------
+  // - Animation ----------------
   {
     prefab.animation.player_idle = (AnimationDesc) {
       .frame_count = 1,
@@ -94,7 +94,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // --- Particle ----------------
+  // - Particle ----------------
   {
     prefab.particle[ParticleKind_Smoke] = (ParticleDesc) {
       .emmission_type = ParticleEmmissionType_Burst,
@@ -175,13 +175,14 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // --- Zombie ----------------
+  // - Zombie ----------------
   {
     prefab.zombie[ZombieKind_Walker] = (ZombieDesc) {
       .props = 0,
       .speed = 50,
       .health = 20,
       .damage = 1,
+      .attack_cooldown = 1.0f,
     };
 
     prefab.zombie[ZombieKind_Chicken] = (ZombieDesc) {
@@ -189,10 +190,11 @@ Prefabs create_prefabs(void)
       .speed = 150,
       .health = 14,
       .damage = 1,
+      .attack_cooldown = 0.5f,
     };
   }
 
-  // --- Weapon ----------------
+  // - Weapon ----------------
   {
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
       .texture = prefab.texture.revolver,
@@ -250,7 +252,7 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // --- Collectable ----------------
+  // - Collectable ----------------
   {
     prefab.collectable[CollectableKind_Coin] = (CollectableDesc) {
       .texture = prefab.texture.coin,
@@ -263,26 +265,26 @@ Prefabs create_prefabs(void)
     };
   }
 
-  // --- Wave ----------------
+  // - Wave ----------------
   {
     prefab.wave[0] = (WaveDesc) {
       .time_btwn_spawns = 3,
       .zombie_counts = {
-        [ZombieKind_Walker] = 5,
+        [ZombieKind_Walker] = 4,
       }
     };
 
     prefab.wave[1] = (WaveDesc) {
       .time_btwn_spawns = 3,
       .zombie_counts = {
-        [ZombieKind_Walker] = 7,
+        [ZombieKind_Walker] = 6,
       }
     };
 
     prefab.wave[2] = (WaveDesc) {
       .time_btwn_spawns = 2,
       .zombie_counts = {
-        [ZombieKind_Walker] = 10,
+        [ZombieKind_Walker] = 8,
         [ZombieKind_Chicken] = 1,
       }
     };
