@@ -27,7 +27,7 @@ void init_game(void)
 
   ui_init_widgetstore(128, &global.perm_arena);
 
-  // Starting entities ----------------
+  // - Starting entities ----------------
   {
     Entity *player = create_entity(EntityType_Player);
     player->sp = SP_Player;
@@ -46,6 +46,8 @@ void init_game(void)
     entity_add_prop(muzzle_flash, EntityProp_HideAfterTime);
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
+
+    spawn_zombie(ZombieKind_Chicken, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -66,9 +68,9 @@ void update_game(void)
 
   ui_clear_widgetstore();
 
-  // --- Zombie waves ----------------
-  if (!game.is_so_over)
-  // if (0)
+  // - Zombie waves ----------------
+  // if (!game.is_so_over)
+  if (0)
   {
     i32 total_zombies_this_wave = 0;
     if (game.current_wave.num >= 0)
@@ -91,14 +93,14 @@ void update_game(void)
               v2f(WIDTH/2 - 150, HEIGHT - 200), 30, 999,
               game.grace_period_timer.end_time - t);
       
-      if (!game.grace_period_timer.is_ticking)
+      if (!game.grace_period_timer.ticking)
       {
         timer_start(&game.grace_period_timer, game.grace_period_timer.duration);
       }
 
       if (timer_timeout(&game.grace_period_timer))
       {
-        game.grace_period_timer.is_ticking = FALSE;
+        game.grace_period_timer.ticking = FALSE;
 
         game.current_wave.num += 1;
         game.current_wave.zombies_spawned = 0;
@@ -123,14 +125,14 @@ void update_game(void)
         game.wave_just_began = FALSE;
         WaveDesc *desc = &game.current_wave.desc;
 
-        if (!game.spawn_timer.is_ticking)
+        if (!game.spawn_timer.ticking)
         {
           timer_start(&game.spawn_timer, desc->time_btwn_spawns);
         }
 
         if (timer_timeout(&game.spawn_timer))
         {
-          game.spawn_timer.is_ticking = FALSE;
+          game.spawn_timer.ticking = FALSE;
 
           i32 spawn_roll = 0;
           while (is_zombie_remaining_to_spawn(desc))
@@ -152,7 +154,7 @@ void update_game(void)
     }
   }
 
-  // --- Switch weapon ----------------
+  // - Switch weapon ----------------
   {
     if (game.is_grace_period)
     {
@@ -189,7 +191,7 @@ void update_game(void)
     }
   }
 
-  // Weapon reloading ----------------
+  // - Weapon reloading ----------------
   if (entity_is_valid(player))
   {
     Entity *gun = get_entity_child_of_sp(player, SP_Gun);
@@ -204,13 +206,13 @@ void update_game(void)
     }
     else if (timer_timeout(&game.weapon.reload_timer))
     {
-      game.weapon.reload_timer.is_ticking = FALSE;
+      game.weapon.reload_timer.ticking = FALSE;
       game.weapon.ammo_remaining = desc.ammo;
       game.weapon.is_reloading = FALSE;
     }
   }
   
-  // Update entity spawning and dying ----------------
+  // - Update entity spawning and dying ----------------
   for (EN_IN_ENTITIES)
   {
     if (en->marked_for_spawn)
@@ -232,7 +234,7 @@ void update_game(void)
     game.time_alive = t;
   }
 
-  // --- Update entity position ----------------
+  // - Update entity position ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -244,7 +246,7 @@ void update_game(void)
       en->new_vel.y -= GRAVITY * dt * dt;
     }
 
-    // --- Update entitiy movement ----------------
+    // - Update entitiy movement ----------------
     if (entity_has_prop(en, EntityProp_Moves))
     {
       // NOTE(dg): State changes are temporary. Need proper state machine
@@ -376,14 +378,14 @@ void update_game(void)
           }
           case MoveType_Projectile:
           {
-            if (!en->kill_timer.is_ticking)
+            if (!en->kill_timer.ticking)
             {
               timer_start(&en->kill_timer, en->kill_timer.duration);
             }
 
             if (timer_timeout(&en->kill_timer))
             {
-              en->kill_timer.is_ticking = FALSE;
+              en->kill_timer.ticking = FALSE;
 
               kill_entity(en);
             }
@@ -399,7 +401,7 @@ void update_game(void)
       en->vel = en->new_vel;
       en->pos = add_2f(en->pos, en->vel);
 
-      // --- Handle entity wrapping ----------------
+      // - Handle entity wrapping ----------------
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
@@ -417,7 +419,7 @@ void update_game(void)
       }
     }
 
-    // -- Update entity xform ----------------
+    // - Update entity xform ----------------
     {
       Mat3x3F xform = m3x3f(1.0f);
       Entity *parent = entity_from_ref(en->parent);
@@ -458,7 +460,7 @@ void update_game(void)
     }
   }
 
-  // --- Update equipped entities ----------------
+  // - Update equipped entities ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -491,28 +493,28 @@ void update_game(void)
     }
   }
 
-  // --- Update zombie behaviors ----------------
+  // - Update zombie behaviors ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
 
     if (entity_has_prop(en, EntityProp_LaysEggs))
     {
-      if (!en->lay_egg_timer.is_ticking)
+      if (!en->egg_timer.ticking)
       {
         if (en->anim_state != Animation_LayEgg)
         {
-          timer_start(&en->lay_egg_timer, 2.0f);
+          timer_start(&en->egg_timer, 2.0f);
         }
         else
         {
-          timer_start(&en->lay_egg_timer, 3.0f);
+          timer_start(&en->egg_timer, 3.0f);
         }
       }
 
-      if (timer_timeout(&en->lay_egg_timer))
+      if (timer_timeout(&en->egg_timer))
       {
-        en->lay_egg_timer.is_ticking = FALSE;
+        en->egg_timer.ticking = FALSE;
 
         if (en->anim_state != Animation_LayEgg)
         {
@@ -526,13 +528,32 @@ void update_game(void)
       }
     }
 
+    // - Update egg ---
     if (en->type == EntityType_Egg)
     {
-      
+      if (!en->egg_timer.ticking)
+      {
+        timer_start(&en->egg_timer, 6.0f);
+      }
+
+      f64 remaining_time = timer_remaining(&en->egg_timer);
+      if (remaining_time <= 2.0f)
+      {
+        en->texture = prefab.texture.egg_2;
+      }
+      else if (remaining_time <= 4.0f)
+      {
+        en->texture = prefab.texture.egg_1;
+      }
+
+      if (timer_timeout(&en->egg_timer))
+      {
+        kill_entity(en);
+      }
     }
   }
 
-  // --- Update entity collision ----------------
+  // - Update entity collision ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -597,7 +618,7 @@ void update_game(void)
           }
           else
           {
-            if (!en->attack_timer.is_ticking)
+            if (!en->attack_timer.ticking)
             {
               timer_start(&en->attack_timer, en->attack_timer.duration);
             }
@@ -605,8 +626,8 @@ void update_game(void)
           
           if (timer_timeout(&en->attack_timer) && timer_timeout(&player->invincibility_timer))
           {
-            timer_stop(&en->attack_timer);
-            timer_stop(&player->invincibility_timer);
+            en->attack_timer.ticking = FALSE;
+            player->invincibility_timer.ticking = FALSE;
 
             damage_entity(player, en->damage);
           }
@@ -614,7 +635,7 @@ void update_game(void)
         else
         {
           en->colliding_with_player = FALSE;
-          timer_stop(&en->attack_timer);
+          en->attack_timer.ticking = FALSE;
         }
       }
 
@@ -636,7 +657,7 @@ void update_game(void)
     }
   }
 
-  // --- Update entity combat ----------------
+  // - Update entity combat ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -644,7 +665,7 @@ void update_game(void)
     // Update player invinsibility timer
     if (en->sp == SP_Player)
     {
-      if (!en->invincibility_timer.is_ticking)
+      if (!en->invincibility_timer.ticking)
       {
         timer_start(&en->invincibility_timer, en->invincibility_timer.duration);
       }
@@ -654,7 +675,7 @@ void update_game(void)
     {
       if (en->is_weapon_equipped)
       {
-        if (!en->attack_timer.is_ticking)
+        if (!en->attack_timer.ticking)
         {
           timer_start(&en->attack_timer, en->attack_timer.duration);
         }
@@ -666,7 +687,7 @@ void update_game(void)
 
         if (can_shoot)
         {
-          en->attack_timer.is_ticking = FALSE;
+          en->attack_timer.ticking = FALSE;
 
           Entity *gun = get_entity_child_of_sp(en, SP_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -680,7 +701,7 @@ void update_game(void)
 
           Entity *muzzle_flash = get_entity_child_at(gun, 1);
           muzzle_flash->pos = shot_point->pos;
-          if (!muzzle_flash->muzzle_flash_timer.is_ticking)
+          if (!muzzle_flash->muzzle_flash_timer.ticking)
           {
             timer_start(&muzzle_flash->muzzle_flash_timer, 0.05f);
             entity_add_prop(muzzle_flash, EntityProp_Renders);
@@ -708,13 +729,13 @@ void update_game(void)
         {
           case CombatType_Ranged:
           {
-            if (!en->attack_timer.is_ticking)
+            if (!en->attack_timer.ticking)
             {
               timer_start(&en->attack_timer, en->attack_timer.duration);
             }
             else if (timer_timeout(&en->attack_timer))
             {
-              en->attack_timer.is_ticking = FALSE;
+              en->attack_timer.ticking = FALSE;
 
               Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
               Entity *laser = spawn_entity(EntityType_Bullet, spawn_pos);
@@ -730,7 +751,7 @@ void update_game(void)
     }
   }
 
-  // --- Animate entities ----------------
+  // - Animate entities ----------------
   for (EN_IN_ENTITIES)
   {
     if (entity_has_prop(en, EntityProp_BobsOverTime))
@@ -752,14 +773,14 @@ void update_game(void)
     {
       en->flash_timer.duration = FLASH_TIME;
 
-      if (!en->flash_timer.is_ticking)
+      if (!en->flash_timer.ticking)
       {
         timer_start(&en->flash_timer, en->flash_timer.duration);
       }
 
       if (timer_timeout(&en->flash_timer))
       {
-        en->flash_timer.is_ticking = FALSE;
+        en->flash_timer.ticking = FALSE;
 
         entity_rem_prop(en, EntityProp_FlashWhite);
       }
@@ -769,7 +790,7 @@ void update_game(void)
     {
       if (timer_timeout(&en->muzzle_flash_timer))
       {
-        en->muzzle_flash_timer.is_ticking = FALSE;
+        en->muzzle_flash_timer.ticking = FALSE;
         
         entity_rem_prop(en, EntityProp_Renders);
       }
@@ -876,7 +897,7 @@ void update_game(void)
 
       if (has_prop(desc.props, ParticleProp_KillAfterTime))
       {
-        if (!owner->particle_timer.is_ticking)
+        if (!owner->particle_timer.ticking)
         {
           timer_start(&owner->particle_timer, desc.duration);
         }
@@ -913,20 +934,18 @@ void update_game(void)
 
   if (game.is_so_over)
   {
-    String msg;
+    // FIXME(dg): these alignments
     if (game.won)
     {
-      msg = str("YOU WIN");
+      ui_text(str("YOU WIN!"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
     }
     else
     {
-      msg = str("GAME OVER");  
+      ui_text(str("GAME OVER!"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
     }
-    
-    ui_text(msg, v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
   }
 
-  // --- Event queue ----------------
+  // - Event queue ----------------
   for (Event *ev = peek_event(); game.event_queue.count != 0; pop_event())
   {
     assert(ev);
@@ -982,7 +1001,7 @@ void update_game(void)
   ui_text(str("Souls: %i"), v2f(10, HEIGHT - 100), 25, 999, game.soul_count);
   ui_text(str("Wave: %i"), v2f(WIDTH - 150, HEIGHT - 50), 25, 999, game.current_wave.num+1);
 
-  #if FALSE
+#if FALSE
   {
     String duration_str = format_duration(game.update_time, &game.frame_arena);
     duration_str = str_concat(str("update: "), duration_str, &game.frame_arena);
@@ -996,9 +1015,9 @@ void update_game(void)
     duration_str = str_concat(duration_str, str("\n"), &game.frame_arena);
     ui_text(duration_str, v2f(WIDTH - 150, HEIGHT - 100), 15, 999);
   }
-  #endif
+#endif
 
-  // --- Developer tools ----------------
+  // - Developer tools ----------------
   {
     // - Toggle debug ---
     if (is_key_just_pressed(Key_Tab))
@@ -1052,10 +1071,10 @@ void render_game(void)
 {
   clear_frame(V4F_ZERO);
 
-  // --- Draw scene ----------------
+  // - Draw scene ----------------
   draw_scene(v2f(0, 0), scale_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
-  // --- Draw sprite batch ----------------
+  // - Draw sprite batch ----------------
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active || en->draw_type != DrawType_Sprite) continue;
@@ -1067,7 +1086,7 @@ void render_game(void)
     }
   }
   
-  // --- Draw primitive batch ----------------
+  // - Draw primitive batch ----------------
   {
     // Draw entities
     for (EN_IN_ENTITIES)
@@ -1114,7 +1133,7 @@ void render_game(void)
     }
   }
 
-  // --- Draw UI batch ---
+  // - Draw UI batch ----------------
   UI_WidgetStore *widgets = ui_get_widgetstore();
   {
     for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)

@@ -74,8 +74,8 @@ struct AnimationDesc
 typedef struct Timer Timer;
 struct Timer
 {
-  bool is_ticking;
-  f32 duration;
+  bool ticking;
+  f64 duration;
   f64 end_time;
 };
 
@@ -350,7 +350,7 @@ struct Entity
   Timer kill_timer;
   Timer invincibility_timer;
   Timer muzzle_flash_timer;
-  Timer lay_egg_timer;
+  Timer egg_timer;
 
   // Kinds
   ZombieKind zombie_kind;
@@ -431,7 +431,7 @@ void entity_add_collider(Entity *en, ColliderID col_id);
 
 void timer_start(Timer *timer, f64 duration);
 bool timer_timeout(Timer *timert);
-void timer_stop(Timer *timer);
+f64 timer_remaining(Timer *timer);
 
 // @Misc /////////////////////////////////////////////////////////////////////////////////
 

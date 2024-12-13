@@ -1,7 +1,7 @@
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl3.h>
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(__linux__)
 #include "glad/glad.h"
 #endif
 
@@ -16,8 +16,9 @@
 extern Globals global;
 extern Game game;
 
-// @Glyphs ///////////////////////////////////////////////////////////////////////////////
+// @Glyphs //////////////////////////////////////////////////////////////////////////
 
+static
 UI_Glyph GLYPH_TABLE[127] = {
   ['A'] = ui_glyph(0, 0, 5, 8, 0, 0),
   ['B'] = ui_glyph(1, 0, 5, 8, 0, 0),
@@ -33,7 +34,7 @@ UI_Glyph GLYPH_TABLE[127] = {
   ['L'] = ui_glyph(11, 0, 5, 8, 0, 0),
   ['M'] = ui_glyph(12, 0, 5, 8, 0, 0),
   ['N'] = ui_glyph(13, 0, 5, 8, 0, 0),
-  ['O'] = ui_glyph(14, 0, 6, 8, 0, 0),
+  ['O'] = ui_glyph(14, 0, 5, 8, 0, 0),
   ['P'] = ui_glyph(15, 0, 5, 8, 0, 0),
   ['Q'] = ui_glyph(0, 1, 6, 8, 0, 0),
   ['R'] = ui_glyph(1, 1, 5, 8, 0, 0),
@@ -110,10 +111,10 @@ UI_Glyph GLYPH_TABLE[127] = {
   [','] = ui_glyph(7, 6, 2, 8, 0, 0),
   ['_'] = ui_glyph(8, 6, 5, 8, 0, 0),
   ['|'] = ui_glyph(9, 6, 1, 8, 0, 0),
+  ['~'] = ui_glyph(12, 6, 6, 8, 0, 0),
+  ['`'] = ui_glyph(10, 6, 1, 8, 0, 0),
   ['\''] = ui_glyph(10, 6, 1, 8, 0, 0),
   ['\"'] = ui_glyph(11, 6, 3, 8, 0, 0),
-  ['~'] = ui_glyph(12, 6, 6, 8, 0, 0),
-  ['~'] = ui_glyph(13, 6, 6, 8, 0, 0),
   ['^'] = ui_glyph(14, 6, 3, 8, 0, 0),
   ['*'] = ui_glyph(15, 6, 3, 8, 0, 0),
 };
@@ -165,7 +166,7 @@ R_Shader *get_shader(u8 type)
   return &global.resources.shaders[type];
 }
 
-// @Draw /////////////////////////////////////////////////////////////////////////////////
+// Draw /////////////////////////////////////////////////////////////////////////////
 
 static inline
 Vec2F get_tl(Vec2I coords, f32 size, f32 w, f32 h)

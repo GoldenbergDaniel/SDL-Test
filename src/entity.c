@@ -711,19 +711,19 @@ inline
 void timer_start(Timer *timer, f64 duration)
 {
   timer->end_time = game.t + duration;
-  timer->is_ticking = TRUE;
+  timer->ticking = TRUE;
 }
 
 inline
 bool timer_timeout(Timer *timer)
 {
-  return timer->is_ticking && game.t >= timer->end_time;
+  return timer->ticking && game.t >= timer->end_time;
 }
 
 inline
-void timer_stop(Timer *timer)
+f64 timer_remaining(Timer *timer)
 {
-  timer->is_ticking = FALSE;
+  return timer->end_time - game.t;
 }
 
 // @Misc /////////////////////////////////////////////////////////////////////////////////
