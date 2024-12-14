@@ -34,7 +34,12 @@ typedef struct Entity Entity;
 #define TEXTURE_COUNT 8
 #define SHADER_COUNT 8
 
-typedef Vec2I TextureID;
+typedef struct Sprite Sprite;
+struct Sprite
+{
+  Vec2I coord;
+  Vec2I grid;
+};
 
 typedef struct Resources Resources;
 struct Resources
@@ -56,9 +61,9 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
 void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
 void draw_rectangle_x(Mat3x3F xform, Vec4F tint);
 
-void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool flash);
-void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex, bool flash);
-void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex_id, bool flash);
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, Sprite sprite, bool flash);
+void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, Sprite sprite, bool flash);
+void draw_sprite_x(Mat3x3F xform, Vec4F tint, Sprite sprite, bool flash);
 
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint);
-void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex);
+void draw_glyph(Vec2F pos, f32 size, Vec4F tint, Vec2I tex_coord);

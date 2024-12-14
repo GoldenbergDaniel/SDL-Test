@@ -261,7 +261,7 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool flash)
+void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, Sprite sprite, bool flash)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
@@ -277,11 +277,27 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
   Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
 
-  tex.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - tex.y - 1;
-  Vec2F top_left = get_tl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F top_right = get_tr(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_right = get_br(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_left = get_bl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
+  sprite.coord.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - sprite.coord.y - 1;
+
+  Vec2F top_left = get_tl(v2i(sprite.coord.x, sprite.coord.y), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH, 
+                          SPRITE_ATLAS_HEIGHT);
+  
+  Vec2F top_right = get_tr(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_right = get_br(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y-(sprite.grid.y-1)), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_left = get_bl(v2i(sprite.coord.x, sprite.coord.y-(sprite.grid.y-1)), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH,
+                          SPRITE_ATLAS_HEIGHT);
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
 
@@ -292,17 +308,33 @@ void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, TextureID tex, bool 
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID tex, bool flash)
+void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, Sprite sprite, bool flash)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
   r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
-  tex.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - tex.y - 1;
-  Vec2F top_left = get_tl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F top_right = get_tr(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_right = get_br(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_left = get_bl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
+  sprite.coord.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - sprite.coord.y - 1;
+  
+  Vec2F top_left = get_tl(v2i(sprite.coord.x, sprite.coord.y), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH, 
+                          SPRITE_ATLAS_HEIGHT);
+  
+  Vec2F top_right = get_tr(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_right = get_br(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y-(sprite.grid.y-1)), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_left = get_bl(v2i(sprite.coord.x, sprite.coord.y-(sprite.grid.y-1)), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH,
+                          SPRITE_ATLAS_HEIGHT);
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
 
@@ -313,7 +345,7 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, TextureID
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
+void draw_sprite_x(Mat3x3F xform, Vec4F tint, Sprite sprite, bool flash)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
@@ -324,11 +356,27 @@ void draw_sprite_x(Mat3x3F xform, Vec4F tint, TextureID tex, bool flash)
   Vec3F p2 = transform_3f(v3f( 8.0f, -8.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(-8.0f, -8.0f, 1.0f), xform); // bl
 
-  tex.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - tex.y - 1;
-  Vec2F top_left = get_tl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F top_right = get_tr(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_right = get_br(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
-  Vec2F bot_left = get_bl(tex, SPRITE_ATLAS_CELL, SPRITE_ATLAS_WIDTH, SPRITE_ATLAS_HEIGHT);
+  sprite.coord.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - sprite.coord.y - 1;
+
+  Vec2F top_left = get_tl(v2i(sprite.coord.x, sprite.coord.y), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH, 
+                          SPRITE_ATLAS_HEIGHT);
+  
+  Vec2F top_right = get_tr(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_right = get_br(v2i(sprite.coord.x+sprite.grid.x-1, sprite.coord.y-(sprite.grid.y-1)), 
+                           SPRITE_ATLAS_CELL, 
+                           SPRITE_ATLAS_WIDTH, 
+                           SPRITE_ATLAS_HEIGHT);
+
+  Vec2F bot_left = get_bl(v2i(sprite.coord.x, sprite.coord.y-(sprite.grid.y-1)), 
+                          SPRITE_ATLAS_CELL, 
+                          SPRITE_ATLAS_WIDTH,
+                          SPRITE_ATLAS_HEIGHT);
 
   Vec4F color = flash ? v4f(1, 1, 1, 0) : v4f(0, 0, 0, 0);
 
@@ -377,7 +425,7 @@ Vec2F uv_bl(Vec2I coords, f32 size, f32 w, f32 h)
   };
 }
 
-void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex)
+void draw_glyph(Vec2F pos, f32 size, Vec4F tint, Vec2I tex_coord)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_texture(renderer, &global.resources.textures[TEXTURE_FONT]);
@@ -392,11 +440,11 @@ void draw_glyph(Vec2F pos, f32 size, Vec4F tint, TextureID tex)
   Vec3F p2 = transform_3f(v3f(1.0f, 0.0f, 1.0f), xform); // br
   Vec3F p3 = transform_3f(v3f(0.0f, 0.0f, 1.0f), xform); // bl
 
-  tex.y = (GLYPH_ATLAS_HEIGHT/GLYPH_ATLAS_CELL) - tex.y - 1;
-  Vec2F top_left = uv_tl(tex, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
-  Vec2F top_right = uv_tr(tex, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
-  Vec2F bot_right = uv_br(tex, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
-  Vec2F bot_left = uv_bl(tex, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
+  tex_coord.y = (GLYPH_ATLAS_HEIGHT/GLYPH_ATLAS_CELL) - tex_coord.y - 1;
+  Vec2F top_left = uv_tl(tex_coord, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
+  Vec2F top_right = uv_tr(tex_coord, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
+  Vec2F bot_right = uv_br(tex_coord, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
+  Vec2F bot_left = uv_bl(tex_coord, GLYPH_ATLAS_CELL, GLYPH_ATLAS_WIDTH, GLYPH_ATLAS_HEIGHT);
 
   r_push_vertex(renderer, p0, tint, V4F_ZERO, top_left);
   r_push_vertex(renderer, p1, tint, V4F_ZERO, top_right);

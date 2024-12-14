@@ -18,6 +18,8 @@
 #define PLAYER_INVINCIBILITY_TIMER 0.5f
 #define FLASH_TIME 0.05f
 
+#define BABY_CHICKEN_GROWTH_DURATION 3.0f
+
 enum
 {
   SP_Nil,
@@ -64,7 +66,7 @@ struct Animation
 typedef struct AnimationDesc AnimationDesc;
 struct AnimationDesc
 {
-  TextureID frames[5];
+  Sprite frames[5];
   u8 frame_count;
   u16 ticks_per_frame;
 };
@@ -75,7 +77,7 @@ typedef struct Timer Timer;
 struct Timer
 {
   bool ticking;
-  f64 duration;
+  f32 duration;
   f64 end_time;
 };
 
@@ -87,6 +89,8 @@ typedef enum ParticleKind
   ParticleKind_Blood,
   ParticleKind_Death,
   ParticleKind_PickupCoin,
+  ParticleKind_PickupSoul,
+  ParticleKind_EggHatch,
   ParticleKind_Debug,
 
   ParticleKind_COUNT,
@@ -130,8 +134,6 @@ struct ParticleDesc
 typedef struct Particle Particle;
 struct Particle
 {
-  EntityRef owner;
-
   Vec4F color;
   Vec2F pos;
   Vec2F scale;
@@ -141,6 +143,8 @@ struct Particle
   f32 speed;
   bool is_grounded;
   bool is_active;
+  
+  EntityRef owner;
 };
 
 // @Entity ///////////////////////////////////////////////////////////////////////////////
@@ -168,6 +172,7 @@ typedef enum EntityType
   EntityType_Decoration,
   EntityType_Collider,
   EntityType_Collectable,
+  EntityType_Wagon,
 } EntityType;
 
 typedef enum EntityProp
@@ -186,6 +191,7 @@ typedef enum EntityProp
   EntityProp_FlashWhite =         bit(11),
   EntityProp_HideAfterTime =      bit(12),
   EntityProp_LaysEggs =           bit(13),
+  EntityProp_Morphs =             bit(14),
 } EntityProp;
 
 typedef enum WeaponKind
@@ -203,7 +209,7 @@ typedef enum WeaponKind
 typedef struct WeaponDesc WeaponDesc;
 struct WeaponDesc
 {
-  TextureID texture;
+  Sprite sprite;
   Vec2F ancor;
   Vec2F shot_point;
   f32 shot_cooldown;
@@ -225,7 +231,7 @@ typedef enum CollectableKind
 typedef struct CollectableDesc CollectableDesc;
 struct CollectableDesc
 {
-  TextureID texture;
+  Sprite sprite;
   i32 draw_chance;
 };
 
@@ -234,6 +240,7 @@ typedef enum ZombieKind
   ZombieKind_Nil,
   ZombieKind_Walker,
   ZombieKind_Chicken,
+  ZombieKind_BabyChicken,
 
   ZombieKind_COUNT,
 } ZombieKind;
@@ -309,7 +316,7 @@ struct Entity
   // Drawing
   DrawType draw_type;
   Vec4F tint;
-  TextureID texture;
+  Sprite sprite;
   Vec2F dim;
   bool flip_x;
   bool flip_y;
@@ -335,6 +342,13 @@ struct Entity
   Vec2F target_pos;
   f32 target_angle;
   f32 view_dist;
+
+  // Morphing
+  struct
+  {
+    Timer timer;
+    EntityType into;
+  } morphing;
 
   // ParticleGroup
   ParticleDesc particle_desc;

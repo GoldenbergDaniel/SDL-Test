@@ -33,7 +33,7 @@
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_time.h"
 
-#ifndef RELEASE
+#ifdef DEBUG
   #include "sokol/sokol_log.h"
 #endif
 
@@ -52,7 +52,7 @@ void init(void);
 void event(const sapp_event *);
 void frame(void);
 
-#if defined(_WIN32) && defined(RELEASE)
+#if defined(_WIN32) && !defined(DEBUG)
 i32 WINAPI WinMain(HINSTANCE _a, HINSTANCE _b, LPSTR _c, i32 _d)
 #else
 i32 main(void)
@@ -69,7 +69,7 @@ i32 main(void)
     .init_cb = init,
     .event_cb = event,
     .frame_cb = frame,
-    #ifndef RELEASE
+    #ifdef DEBUG
     .logger = {
       .func = slog_func
     },
@@ -97,7 +97,7 @@ void init(void)
   gladLoadGL();
 #endif
 
-#if defined(PLATFORM_MACOS) && defined(RELEASE)
+#if defined(PLATFORM_MACOS) && !defined(DEBUG)
   String res_path = os_path_to_executable(str("undeadwest"));
   res_path = str_concat(res_path, str("../Resources/res"), &game.frame_arena);
 #else

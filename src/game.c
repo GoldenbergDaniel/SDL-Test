@@ -29,6 +29,9 @@ void init_game(void)
 
   // - Starting entities ----------------
   {
+    // Entity *wagon = create_entity(EntityType_Wagon);
+    // wagon->pos = v2f(WIDTH/2, GROUND_Y + 80);
+
     Entity *player = create_entity(EntityType_Player);
     player->sp = SP_Player;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f);
@@ -42,12 +45,12 @@ void init_game(void)
     attach_entity_child(gun, shot_point);
 
     Entity *muzzle_flash = create_entity(EntityType_Decoration);
-    muzzle_flash->texture = prefab.texture.muzzle_flash;
+    muzzle_flash->sprite = prefab.sprite.muzzle_flash;
     entity_add_prop(muzzle_flash, EntityProp_HideAfterTime);
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
 
-    spawn_zombie(ZombieKind_Chicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -419,6 +422,21 @@ void update_game(void)
       }
     }
 
+    // - Wagon merhchant face player ---
+    if (en->type == EntityType_Wagon)
+    {
+      Vec2F en_pos = pos_from_entity(en);
+      Vec2F player_pos = pos_from_entity(player);
+      if (en_pos.x < player_pos.x)
+      {
+        en->sprite = prefab.sprite.wagon_left;
+      }
+      else
+      {
+        en->sprite = prefab.sprite.wagon_right;
+      }
+    }
+
     // - Update entity xform ----------------
     {
       Mat3x3F xform = m3x3f(1.0f);
@@ -460,7 +478,7 @@ void update_game(void)
     }
   }
 
-  // - Update equipped entities ----------------
+  // - Update equipped entities ---
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -493,7 +511,7 @@ void update_game(void)
     }
   }
 
-  // - Update zombie behaviors ----------------
+  // - Update zombie behaviors ---
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -533,22 +551,40 @@ void update_game(void)
     {
       if (!en->egg_timer.ticking)
       {
-        timer_start(&en->egg_timer, 6.0f);
+        timer_start(&en->egg_timer, 3.0f);
       }
 
       f64 remaining_time = timer_remaining(&en->egg_timer);
-      if (remaining_time <= 2.0f)
+      if (remaining_time <= 1.0f)
       {
-        en->texture = prefab.texture.egg_2;
+        en->sprite = prefab.sprite.egg_2;
       }
-      else if (remaining_time <= 4.0f)
+      else if (remaining_time <= 2.0f)
       {
-        en->texture = prefab.texture.egg_1;
+        en->sprite = prefab.sprite.egg_1;
       }
 
+      // - Hatched ---
       if (timer_timeout(&en->egg_timer))
       {
         kill_entity(en);
+        spawn_zombie(ZombieKind_BabyChicken, pos_from_entity(en));
+        spawn_particles(ParticleKind_EggHatch, sub_2f(pos_from_entity(en), v2f(0, 25)));
+      }
+    }
+
+    // - Morphing ---
+    if (entity_has_prop(en, EntityProp_Morphs))
+    {
+      if (!en->morphing.timer.ticking)
+      {
+        timer_start(&en->morphing.timer, BABY_CHICKEN_GROWTH_DURATION);
+      }
+
+      if (timer_timeout(&en->morphing.timer))
+      {
+        kill_entity(en);
+        spawn_zombie(ZombieKind_Chicken, pos_from_entity(en));
       }
     }
   }
@@ -570,7 +606,7 @@ void update_game(void)
               v2f(-3000.0f, 3000.0f), GROUND_Y))
         {
           en->pos.y = GROUND_Y + 
-                      (dim_from_entity(en->cols[Collider_Body]).height / 2) -
+                      dim_from_entity(en->cols[Collider_Body]).height/2 -
                       en->cols[Collider_Body]->pos.y;
 
           en->vel.y = 0.0f;
@@ -646,11 +682,17 @@ void update_game(void)
               collision_params_from_entity(player->cols[Collider_Body], player->vel),
               collision_params_from_entity(en->cols[Collider_Hit], en->vel)))
         {
-          if (en->item_kind == CollectableKind_Coin) game.coin_count++; 
-          if (en->item_kind == CollectableKind_Soul) game.soul_count++;
-
-          spawn_particles(ParticleKind_PickupCoin, pos_from_entity(en));
-
+          if (en->item_kind == CollectableKind_Coin)
+          {
+            spawn_particles(ParticleKind_PickupCoin, pos_from_entity(en));
+            game.coin_count++;
+          }
+          else if (en->item_kind == CollectableKind_Soul)
+          {
+            spawn_particles(ParticleKind_PickupSoul, pos_from_entity(en));
+            game.soul_count++;
+          }
+          
           kill_entity(en);
         }
       }
@@ -806,7 +848,7 @@ void update_game(void)
     }
     
     AnimationDesc anim_desc = en->anims[en->anim_state];
-    en->texture = anim_desc.frames[en->anim.frame_idx];
+    en->sprite = anim_desc.frames[en->anim.frame_idx];
 
     // Tick animation
     if (en->anims[en->anim_state].frame_count > 1)
@@ -825,7 +867,7 @@ void update_game(void)
     }
   }
 
-  // --- Update particles ----------------
+  // - Update particles ----------------
   for (i32 i = 0; i < MAX_PARTICLES; i++)
   {
     Particle *particle = &game.particle_buffer.data[i];
@@ -995,11 +1037,11 @@ void update_game(void)
     }
   }
 
-  ui_text(str("%.1f"), v2f(WIDTH/2 - 20, HEIGHT - 50), 25, 999, game.time_alive);
-  ui_text(str("Hearts: %i"), v2f(10, HEIGHT - 50), 25, 999, player->health);
-  ui_text(str("Coins: %i"), v2f(10, HEIGHT - 75), 25, 999, game.coin_count);
-  ui_text(str("Souls: %i"), v2f(10, HEIGHT - 100), 25, 999, game.soul_count);
-  ui_text(str("Wave: %i"), v2f(WIDTH - 150, HEIGHT - 50), 25, 999, game.current_wave.num+1);
+  ui_text(str("%.1f"), v2f(WIDTH/2 - 20, HEIGHT-50), 25, 999, game.time_alive);
+  ui_text(str("Hearts: %i"), v2f(10, HEIGHT-50), 25, 999, player->health);
+  ui_text(str("Coins: %i"), v2f(10, HEIGHT-75), 25, 999, game.coin_count);
+  ui_text(str("Souls: %i"), v2f(10, HEIGHT-100), 25, 999, game.soul_count);
+  ui_text(str("Wave %i"), v2f(WIDTH-150, HEIGHT - 50), 25, 999, game.current_wave.num+1);
 
 #if FALSE
   {
@@ -1082,7 +1124,7 @@ void render_game(void)
     if (entity_has_prop(en, EntityProp_Renders))
     {
       bool flash = entity_has_prop(en, EntityProp_FlashWhite);
-      draw_sprite_x(en->xform, en->tint, en->texture, flash);
+      draw_sprite_x(en->xform, en->tint, en->sprite, flash);
     }
   }
   
@@ -1205,6 +1247,8 @@ void render_game(void)
   r_flush(&global.renderer);
   arena_clear(&game.draw_arena);
 }
+
+
 
 Particle *get_next_free_particle(void)
 {

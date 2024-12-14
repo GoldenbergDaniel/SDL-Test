@@ -15,7 +15,7 @@
 #include "../vecmath/vecmath.h"
 #include "render.h"
 
-#ifndef RELEASE
+#ifdef DEBUG
 static void verify_shader(u32 id, u32 type);
 #endif
 
@@ -318,7 +318,7 @@ void r_flush(R_Renderer *renderer)
 
 // @Debug ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef RELEASE
+#ifdef DEBUG
 static
 void verify_shader(u32 id, u32 type)
 {

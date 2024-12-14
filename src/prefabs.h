@@ -9,42 +9,47 @@ struct Prefabs
 {
   struct
   {
-    TextureID player_idle;
-    TextureID player_walk_0;
-    TextureID player_walk_1;
-    TextureID player_walk_2;
-    TextureID player_walk_3;
-    TextureID player_walk_4;
-    TextureID player_walk_5;
-    TextureID player_jump;
+    Sprite player_idle;
+    Sprite player_walk_0;
+    Sprite player_walk_1;
+    Sprite player_walk_2;
+    Sprite player_walk_3;
+    Sprite player_walk_4;
+    Sprite player_walk_5;
+    Sprite player_jump;
 
-    TextureID walker_idle;
-    TextureID walker_walk_0;
-    TextureID walker_walk_1;
-    TextureID walker_walk_2;
-    TextureID walker_walk_3;
-    TextureID walker_walk_4;
-    TextureID walker_walk_5;
+    Sprite walker_idle;
+    Sprite walker_walk_0;
+    Sprite walker_walk_1;
+    Sprite walker_walk_2;
+    Sprite walker_walk_3;
+    Sprite walker_walk_4;
+    Sprite walker_walk_5;
 
-    TextureID chicken_idle;
-    TextureID chicken_lay_0;
-    TextureID chicken_lay_1;
+    Sprite chicken_idle;
+    Sprite chicken_lay_0;
+    Sprite chicken_lay_1;
 
-    TextureID revolver;
-    TextureID pistol;
-    TextureID rifle;
-    TextureID shotgun;
-    TextureID smg;
+    Sprite baby_chicken_idle;
 
-    TextureID muzzle_flash;
-    TextureID bullet;
-    TextureID coin;
-    TextureID soul;
+    Sprite revolver;
+    Sprite pistol;
+    Sprite rifle;
+    Sprite shotgun;
+    Sprite smg;
 
-    TextureID egg_0;
-    TextureID egg_1;
-    TextureID egg_2;
-  } texture;
+    Sprite muzzle_flash;
+    Sprite bullet;
+    Sprite coin;
+    Sprite soul;
+
+    Sprite egg_0;
+    Sprite egg_1;
+    Sprite egg_2;
+
+    Sprite wagon_left;
+    Sprite wagon_right;
+  } sprite;
 
   struct
   {
@@ -57,14 +62,15 @@ struct Prefabs
 
     AnimationDesc chicken_idle;
     AnimationDesc chicken_lay;
+
+    AnimationDesc baby_chicken_idle;
   } animation;
 
-  WaveDesc wave[TOTAL_WAVE_COUNT];
   ParticleDesc particle[ParticleKind_COUNT];
+  WaveDesc wave[TOTAL_WAVE_COUNT];
   ZombieDesc zombie[ZombieKind_COUNT];
   WeaponDesc weapon[WeaponKind_COUNT];
   CollectableDesc collectable[CollectableKind_COUNT];
-  
 };
 
 Prefabs create_prefabs(void);

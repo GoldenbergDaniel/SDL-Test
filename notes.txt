@@ -1,24 +1,24 @@
 TODO
-  FEATURES
-    [X] animation
-    [_] complex animation
-    [_] squash and stretch
-    [X] text rendering
-    [X] weapon switching
-    [_] weapon progression
-    [X] zombie progression
-    [X] zombie drops (coins and souls)
-    [X] reloading
-    [X] chicken
-    [~] egg hatching
-    [_] headshots
-    [X] player death
-    [X] invincibility timer
-    [X] gameover state
-    [_] play again
-    [_] ui text centering
-    [X] muzzle flash
-  ENGINE
-    [_] audio
-    [X] bring back event queue
-    [X] logger
+  [X] animation
+  [_] complex animation
+  [_] squash and stretch
+  [X] text rendering
+  [X] weapon switching
+  [~] merchant
+  [X] zombie progression
+  [X] zombie drops (coins and souls)
+  [X] reloading
+  [X] chicken
+  [X] egg hatching
+  [_] headshots
+  [_] shotgun (pellets)
+  [X] player death
+  [X] invincibility timer
+  [X] gameover state
+  [_] play again
+  [_] text centering
+  [_] ui (health, ammo, collectables)
+  [X] muzzle flash
+  [_] audio
+  [X] event queue
+  [X] logger

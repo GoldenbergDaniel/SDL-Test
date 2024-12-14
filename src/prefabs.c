@@ -5,92 +5,104 @@ Prefabs create_prefabs(void)
 {
   Prefabs prefab = {0};
 
-  // - Texture ----------------
+  // - Sprite ----------------
   {
-    prefab.texture.player_idle = v2i(0, 0);
-    prefab.texture.player_walk_0 = v2i(1, 0);
-    prefab.texture.player_walk_1 = v2i(2, 0);
-    prefab.texture.player_walk_2 = v2i(3, 0);
-    prefab.texture.player_walk_3 = v2i(4, 0);
-    prefab.texture.player_walk_4 = v2i(5, 0);
-    prefab.texture.player_jump = v2i(6, 0);
+    prefab.sprite.player_idle       = (Sprite) {v2i(0, 0), v2i(1, 1)};
+    prefab.sprite.player_walk_0     = (Sprite) {v2i(1, 0), v2i(1, 1)};
+    prefab.sprite.player_walk_1     = (Sprite) {v2i(2, 0), v2i(1, 1)};
+    prefab.sprite.player_walk_2     = (Sprite) {v2i(3, 0), v2i(1, 1)};
+    prefab.sprite.player_walk_3     = (Sprite) {v2i(4, 0), v2i(1, 1)};
+    prefab.sprite.player_walk_4     = (Sprite) {v2i(5, 0), v2i(1, 1)};
+    prefab.sprite.player_jump       = (Sprite) {v2i(6, 0), v2i(1, 1)};
 
-    prefab.texture.walker_idle = v2i(0, 1);
-    prefab.texture.walker_walk_0 = v2i(1, 1);
-    prefab.texture.walker_walk_1 = v2i(2, 1);
-    prefab.texture.walker_walk_2 = v2i(3, 1);
-    prefab.texture.walker_walk_3 = v2i(4, 1);
-    prefab.texture.walker_walk_4 = v2i(5, 1);
+    prefab.sprite.walker_idle       = (Sprite) {v2i(0, 1), v2i(1, 1)};
+    prefab.sprite.walker_walk_0     = (Sprite) {v2i(1, 1), v2i(1, 1)};
+    prefab.sprite.walker_walk_1     = (Sprite) {v2i(2, 1), v2i(1, 1)};
+    prefab.sprite.walker_walk_2     = (Sprite) {v2i(3, 1), v2i(1, 1)};
+    prefab.sprite.walker_walk_3     = (Sprite) {v2i(4, 1), v2i(1, 1)};
+    prefab.sprite.walker_walk_4     = (Sprite) {v2i(5, 1), v2i(1, 1)};
 
-    prefab.texture.chicken_idle = v2i(0, 2);
-    prefab.texture.chicken_lay_0 = v2i(1, 2);
-    prefab.texture.chicken_lay_1 = v2i(2, 2);
+    prefab.sprite.chicken_idle      = (Sprite) {v2i(0, 2), v2i(1, 1)};
+    prefab.sprite.chicken_lay_0     = (Sprite) {v2i(1, 2), v2i(1, 1)};
+    prefab.sprite.chicken_lay_1     = (Sprite) {v2i(2, 2), v2i(1, 1)};
+
+    prefab.sprite.baby_chicken_idle = (Sprite) {v2i(6, 2), v2i(1, 1)};
     
-    prefab.texture.revolver = v2i(0, 3);
-    prefab.texture.rifle = v2i(1, 3);
-    prefab.texture.shotgun = v2i(2, 3);
-    prefab.texture.smg = v2i(3, 3);
-    prefab.texture.pistol = v2i(4, 3);
+    prefab.sprite.revolver          = (Sprite) {v2i(0, 4), v2i(1, 1)};
+    prefab.sprite.rifle             = (Sprite) {v2i(1, 4), v2i(1, 1)};
+    prefab.sprite.shotgun           = (Sprite) {v2i(2, 4), v2i(1, 1)};
+    prefab.sprite.smg               = (Sprite) {v2i(3, 4), v2i(1, 1)};
+    prefab.sprite.pistol            = (Sprite) {v2i(4, 4), v2i(1, 1)};
 
-    prefab.texture.muzzle_flash = v2i(7, 3);
-    prefab.texture.bullet = v2i(8, 3);
-    prefab.texture.coin = v2i(7, 4);
-    prefab.texture.soul = v2i(8, 4);
+    prefab.sprite.muzzle_flash      = (Sprite) {v2i(5, 4), v2i(1, 1)};
+    prefab.sprite.bullet            = (Sprite) {v2i(6, 4), v2i(1, 1)};
+    prefab.sprite.coin              = (Sprite) {v2i(8, 4), v2i(1, 1)};
+    prefab.sprite.soul              = (Sprite) {v2i(9, 4), v2i(1, 1)};
 
-    prefab.texture.egg_0 = v2i(0, 4);
-    prefab.texture.egg_1 = v2i(1, 4);
-    prefab.texture.egg_2 = v2i(2, 4);
+    prefab.sprite.egg_0             = (Sprite) {v2i(0, 5), v2i(1, 1)};
+    prefab.sprite.egg_1             = (Sprite) {v2i(1, 5), v2i(1, 1)};
+    prefab.sprite.egg_2             = (Sprite) {v2i(2, 5), v2i(1, 1)};
+
+    prefab.sprite.wagon_left        = (Sprite) {v2i(8, 6), v2i(4, 2)};
+    prefab.sprite.wagon_right       = (Sprite) {v2i(12, 6), v2i(4, 2)};
   }
 
   // - Animation ----------------
   {
     prefab.animation.player_idle = (AnimationDesc) {
       .frame_count = 1,
-      .frames[0] = prefab.texture.player_idle,
+      .frames[0] = prefab.sprite.player_idle,
     };
 
     prefab.animation.player_walk = (AnimationDesc) {
       .ticks_per_frame = 10,
       .frame_count = 5,
-      .frames[0] = prefab.texture.player_walk_0,
-      .frames[1] = prefab.texture.player_walk_1,
-      .frames[2] = prefab.texture.player_walk_2,
-      .frames[3] = prefab.texture.player_walk_3,
-      .frames[4] = prefab.texture.player_walk_4,
+      .frames[0] = prefab.sprite.player_walk_0,
+      .frames[1] = prefab.sprite.player_walk_1,
+      .frames[2] = prefab.sprite.player_walk_2,
+      .frames[3] = prefab.sprite.player_walk_3,
+      .frames[4] = prefab.sprite.player_walk_4,
     };
 
     prefab.animation.player_jump = (AnimationDesc) {
       .ticks_per_frame = 0,
       .frame_count = 1,
-      .frames[0] = prefab.texture.player_jump,
+      .frames[0] = prefab.sprite.player_jump,
     };
 
     prefab.animation.walker_idle = (AnimationDesc) {
       .frame_count = 1,
-      .frames[0] = prefab.texture.walker_idle,
+      .frames[0] = prefab.sprite.walker_idle,
     };
 
     prefab.animation.walker_walk = (AnimationDesc) {
       .ticks_per_frame = 20,
       .frame_count = 5,
-      .frames[0] = prefab.texture.walker_walk_0,
-      .frames[1] = prefab.texture.walker_walk_1,
-      .frames[2] = prefab.texture.walker_walk_2,
-      .frames[3] = prefab.texture.walker_walk_3,
-      .frames[4] = prefab.texture.walker_walk_4,
+      .frames[0] = prefab.sprite.walker_walk_0,
+      .frames[1] = prefab.sprite.walker_walk_1,
+      .frames[2] = prefab.sprite.walker_walk_2,
+      .frames[3] = prefab.sprite.walker_walk_3,
+      .frames[4] = prefab.sprite.walker_walk_4,
     };
 
     prefab.animation.chicken_idle = (AnimationDesc) {
-      .frame_count = 1,
-      .frames[0] = prefab.texture.chicken_idle,
+      .ticks_per_frame = 40,
+      .frame_count = 2,
+      .frames[0] = prefab.sprite.chicken_idle,
+      .frames[1] = prefab.sprite.chicken_lay_0,
     };
 
     prefab.animation.chicken_lay = (AnimationDesc) {
       .ticks_per_frame = 20,
       .frame_count = 3,
-      .frames[0] = prefab.texture.chicken_idle,
-      .frames[1] = prefab.texture.chicken_lay_0,
-      .frames[2] = prefab.texture.chicken_lay_1,
+      .frames[0] = prefab.sprite.chicken_idle,
+      .frames[1] = prefab.sprite.chicken_lay_0,
+      .frames[2] = prefab.sprite.chicken_lay_1,
+    };
+
+    prefab.animation.baby_chicken_idle = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0] = prefab.sprite.baby_chicken_idle,
     };
   }
 
@@ -135,7 +147,7 @@ Prefabs create_prefabs(void)
       .props = ParticleProp_CollidesWithGround,
       .count = 40,
       .duration = 10.0f,
-      .spread = 180.0f,
+      .spread = 100.0f,
       .color_primary = v4f(0.37f, 0.0f, 0.0f, 1.0f),
       .scale = v2f(10, 10),
       .speed = 3000.0f,
@@ -151,6 +163,36 @@ Prefabs create_prefabs(void)
       .duration = 0.3f,
       .spread = 500.0f,
       .color_primary = v4f(0.89f, 0.78f, 0.11f, 1.0f),
+      .scale = v2f(5, 5),
+      .scale_delta = v2f(-6.0f, -6.0f),
+      .speed = 60.0f,
+      .rot_delta = 50.0f,
+    };
+
+    prefab.particle[ParticleKind_PickupSoul] = (ParticleDesc) {
+      .emmission_type = ParticleEmmissionType_Burst,
+      .props = ParticleProp_ScaleOverTime |
+               ParticleProp_RotateOverTime |
+               ParticleProp_KillAfterTime,
+      .count = 6,
+      .duration = 0.3f,
+      .spread = 500.0f,
+      .color_primary = v4f(119/255.0f, 176/255.0f, 231/255.0f, 1.0f),
+      .scale = v2f(5, 5),
+      .scale_delta = v2f(-6.0f, -6.0f),
+      .speed = 60.0f,
+      .rot_delta = 50.0f,
+    };
+
+    prefab.particle[ParticleKind_EggHatch] = (ParticleDesc) {
+      .emmission_type = ParticleEmmissionType_Burst,
+      .props = ParticleProp_ScaleOverTime |
+               ParticleProp_RotateOverTime |
+               ParticleProp_KillAfterTime,
+      .count = 6,
+      .duration = 0.3f,
+      .spread = 500.0f,
+      .color_primary = v4f(209/255.0f, 177/255.0f, 113/255.0f, 1.0f),
       .scale = v2f(5, 5),
       .scale_delta = v2f(-6.0f, -6.0f),
       .speed = 60.0f,
@@ -186,10 +228,18 @@ Prefabs create_prefabs(void)
     };
 
     prefab.zombie[ZombieKind_Chicken] = (ZombieDesc) {
-      .props = 0,
+      .props = EntityProp_LaysEggs,
       .speed = 150,
       .health = 14,
       .damage = 1,
+      .attack_cooldown = 0.5f,
+    };
+
+    prefab.zombie[ZombieKind_BabyChicken] = (ZombieDesc) {
+      .props = EntityProp_Morphs,
+      .speed = 50,
+      .health = 1,
+      .damage = 0,
       .attack_cooldown = 0.5f,
     };
   }
@@ -197,7 +247,7 @@ Prefabs create_prefabs(void)
   // - Weapon ----------------
   {
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
-      .texture = prefab.texture.revolver,
+      .sprite = prefab.sprite.revolver,
       .ancor = v2f(35, 0),
       .shot_point = v2f(20, 2),
       .shot_cooldown = 0.75f,
@@ -208,7 +258,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
-      .texture = prefab.texture.rifle,
+      .sprite = prefab.sprite.rifle,
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 2),
       .shot_cooldown = 1.15f,
@@ -219,7 +269,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
-      .texture = prefab.texture.shotgun,
+      .sprite = prefab.sprite.shotgun,
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 2),
       .shot_cooldown = 0.95f,
@@ -230,7 +280,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
-      .texture = prefab.texture.smg,
+      .sprite = prefab.sprite.smg,
       .ancor = v2f(25, 0),
       .shot_point = v2f(35, 2),
       .shot_cooldown = 0.085f,
@@ -241,7 +291,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
-      .texture = prefab.texture.pistol,
+      .sprite = prefab.sprite.pistol,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 2),
       .shot_cooldown = 0.75f,
@@ -255,12 +305,12 @@ Prefabs create_prefabs(void)
   // - Collectable ----------------
   {
     prefab.collectable[CollectableKind_Coin] = (CollectableDesc) {
-      .texture = prefab.texture.coin,
+      .sprite = prefab.sprite.coin,
       .draw_chance = 30,
     };
     
     prefab.collectable[CollectableKind_Soul] = (CollectableDesc) {
-      .texture = prefab.texture.soul,
+      .sprite = prefab.sprite.soul,
       .draw_chance = 5,
     };
   }

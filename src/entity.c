@@ -44,7 +44,7 @@ Entity *create_entity(EntityType type)
     en->move_type = MoveType_Grounded;
     en->combat_type = CombatType_Ranged;
     en->speed = PLAYER_SPEED;
-    en->texture = prefab.texture.player_idle;
+    en->sprite = prefab.sprite.player_idle;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     en->health = PLAYER_HEALTH;
     en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
@@ -83,7 +83,7 @@ Entity *create_entity(EntityType type)
                 EntityProp_Collides;
     
     en->draw_type = DrawType_Sprite;
-    en->texture = prefab.texture.bullet;
+    en->sprite = prefab.sprite.bullet;
     en->move_type = MoveType_Projectile;
     en->kill_timer.duration = BULLET_KILL_TIME;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
@@ -117,13 +117,20 @@ Entity *create_entity(EntityType type)
   case EntityType_Egg:
     en->props = EntityProp_Renders;
     en->draw_type = DrawType_Sprite;
-    en->texture = prefab.texture.egg_0;
+    en->sprite = prefab.sprite.egg_0;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
   case EntityType_Collider:
     en->props = EntityProp_Collides |
                 EntityProp_Renders;
     en->draw_type = DrawType_Primitive;
+    break;
+  case EntityType_Wagon:
+    en->props = EntityProp_Renders;
+    en->draw_type = DrawType_Sprite;
+    en->sprite = prefab.sprite.wagon_left;
+    en->dim = v2f(16 * 4, 16 * 2);
+    en->scale = v2f(SPRITE_SCALE * 4, SPRITE_SCALE * 2);
     break;
   default: break;
   }
@@ -140,8 +147,6 @@ Entity *spawn_entity(EntityType type, Vec2F pos)
   en->is_active = FALSE;
   en->marked_for_spawn = TRUE;
 
-  logger_debug(str("Spawned entity of kind %i\n"), type);
-
   return en;
 }
 
@@ -152,6 +157,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   en->zombie_kind = kind;
 
   ZombieDesc desc = prefab.zombie[kind];
+  en->props |= desc.props;
   en->health = desc.health;
   en->damage = desc.damage;
   en->speed = desc.speed;
@@ -162,7 +168,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   {
   default: break;
   case ZombieKind_Walker:
-    en->texture = prefab.texture.walker_idle;
+    en->sprite = prefab.sprite.walker_idle;
     en->anims[Animation_Idle] = prefab.animation.walker_idle;
     en->anims[Animation_Walk] = prefab.animation.walker_walk;
 
@@ -175,11 +181,12 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
     en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
     en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
+
     break;
   case ZombieKind_Chicken:
     en->dim = v2f(10, 8);
 
-    en->texture = prefab.texture.chicken_idle;
+    en->sprite = prefab.sprite.chicken_idle;
     en->anims[Animation_Idle] = prefab.animation.chicken_idle;
     en->anims[Animation_Walk] = prefab.animation.chicken_idle;
     en->anims[Animation_LayEgg] = prefab.animation.chicken_lay;
@@ -191,10 +198,27 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
 
     entity_add_collider(en, Collider_Hit);
     en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Hit]->pos = v2f(20, pos_bl_from_entity(en).y + 10);
-    en->cols[Collider_Hit]->scale = v2f(0.25, 0.25);
+    en->cols[Collider_Hit]->pos = v2f(20, pos_bl_from_entity(en).y);
+    en->cols[Collider_Hit]->scale = v2f(0.2, 0.2);
 
-    entity_add_prop(en, EntityProp_LaysEggs);
+    break;
+  case ZombieKind_BabyChicken:
+    en->dim = v2f(5, 4);
+
+    en->sprite = prefab.sprite.baby_chicken_idle;
+    en->anims[Animation_Idle] = prefab.animation.baby_chicken_idle;
+    en->anims[Animation_Walk] = prefab.animation.baby_chicken_idle;
+
+    entity_add_collider(en, Collider_Body);
+    en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Body]->pos = v2f(0, -en->dim.height * SPRITE_SCALE);
+    en->cols[Collider_Body]->scale = v2f(0.5, 0.5);
+
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Hit]->pos = v2f(20, 0);
+    en->cols[Collider_Hit]->scale = v2f(0.1, 0.1);
+    
     break;
   }
 
@@ -212,7 +236,7 @@ Entity *spawn_collectable(CollectableKind kind, Vec2F pos)
   Entity *en = create_entity(EntityType_Collectable);
   en->pos = pos;
   en->item_kind = kind;
-  en->texture = desc.texture;
+  en->sprite = desc.sprite;
   en->bobbing_range = v2f(en->pos.y - 5, en->pos.y + 5);
   en->bobbing_state = -1;
 
@@ -774,7 +798,7 @@ void equip_weapon(Entity *en, WeaponKind kind)
   en->is_weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
-  weapon_en->texture = desc.texture;
+  weapon_en->sprite = desc.sprite;
   weapon_en->weapon_kind = kind;
   weapon_en->pos = desc.ancor;
   weapon_en->damage = desc.damage;
