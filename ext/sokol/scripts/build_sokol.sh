@@ -4,7 +4,7 @@ SOURCES="sokol_app.h sokol_audio.h sokol_time.h"
 DEFINES="-DSOKOL_IMPL -DSOKOL_NO_ENTRY -DSOKOL_GLCORE"
 
 TARGET="linux_amd64"
-if [[ $1 != "" ]]; then TARGET=$2; fi
+if [[ $1 != "" ]]; then TARGET=$1; fi
 
 if [[ $TARGET == "darwin_amd64" ]]; 
 then

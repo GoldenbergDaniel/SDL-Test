@@ -22,3 +22,6 @@ TODO
   [_] audio
   [X] event queue
   [X] logger
+
+BUGS
+  [_] drops spawn on entity morph
