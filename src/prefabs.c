@@ -45,6 +45,10 @@ Prefabs create_prefabs(void)
 
     prefab.sprite.wagon_left        = (Sprite) {v2i(8, 6), v2i(4, 2)};
     prefab.sprite.wagon_right       = (Sprite) {v2i(12, 6), v2i(4, 2)};
+
+    prefab.sprite.ui_heart_full     = (Sprite) {v2i(0, 6), v2i(1, 1)};
+    prefab.sprite.ui_heart_empty    = (Sprite) {v2i(1, 6), v2i(1, 1)};
+    prefab.sprite.ui_ammo           = (Sprite) {v2i(3, 6), v2i(1, 1)};
   }
 
   // - Animation ----------------
@@ -249,7 +253,7 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
       .sprite = prefab.sprite.revolver,
       .ancor = v2f(35, 0),
-      .shot_point = v2f(20, 2),
+      .shot_point = v2f(20, 2.5),
       .shot_cooldown = 0.75f,
       .damage = 6,
       .bullet_speed = 1000.0f,
@@ -260,7 +264,7 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
       .sprite = prefab.sprite.rifle,
       .ancor = v2f(35, 5),
-      .shot_point = v2f(40, 2),
+      .shot_point = v2f(40, 0),
       .shot_cooldown = 1.15f,
       .damage = 14,
       .bullet_speed = 1500.0f,
@@ -271,7 +275,7 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
       .sprite = prefab.sprite.shotgun,
       .ancor = v2f(35, 5),
-      .shot_point = v2f(40, 2),
+      .shot_point = v2f(40, 0),
       .shot_cooldown = 0.95f,
       .damage = 4,
       .bullet_speed = 1000.0f,
@@ -282,7 +286,7 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
       .sprite = prefab.sprite.smg,
       .ancor = v2f(25, 0),
-      .shot_point = v2f(35, 2),
+      .shot_point = v2f(35, 0),
       .shot_cooldown = 0.085f,
       .damage = 1,
       .bullet_speed = 1500.0f,
@@ -293,11 +297,11 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
       .sprite = prefab.sprite.pistol,
       .ancor = v2f(35, 5),
-      .shot_point = v2f(20, 2),
-      .shot_cooldown = 0.75f,
+      .shot_point = v2f(20, 0),
+      .shot_cooldown = 0.2f,
       .damage = 6,
-      .bullet_speed = 1000.0f,
-      .ammo = 12,
+      .bullet_speed = 1250.0f,
+      .ammo = 999,
       .reload_duration = 5,
     };
   }

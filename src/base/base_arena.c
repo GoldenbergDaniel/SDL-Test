@@ -51,9 +51,9 @@ void destroy_arena(Arena *arena)
 }
 
 // @NOTE(dg): Think about splitting commit across multiple calls
-u8 *_arena_push(Arena *arena, u64 size, u64 align)
+byte *_arena_push(Arena *arena, u64 size, u64 align)
 {
-  u8 *ptr = align_ptr(arena->allocated, align);
+  byte *ptr = align_ptr(arena->allocated, align);
   arena->allocated = ptr + size;
 
   if (arena->committed < arena->allocated)
@@ -94,6 +94,11 @@ void arena_pop(Arena *arena, u64 size)
 
 void arena_clear(Arena *arena)
 {
+  for (u64 i = 0; i < arena->allocated - arena->memory; i++)
+  {
+    arena->memory[i] = 0;
+  }
+
   if (arena->decommit_on_clear)
   {
     u64 commit_size = arena->committed - arena->memory;
@@ -108,11 +113,6 @@ void arena_clear(Arena *arena)
       os_decommit_vm(start_addr, commit_size - page_limit);
       arena->committed = start_addr;
     }
-  }
-
-  for (u64 i = 0; i < arena->allocated - arena->memory; i++)
-  {
-    arena->memory[i] = 0;
   }
 
   arena->allocated = arena->memory;
@@ -145,7 +145,7 @@ Arena get_scratch_arena(Arena *conflict)
   return result;
 }
 
-u8 *align_ptr(u8 *ptr, u32 align)
+byte *align_ptr(byte *ptr, u32 align)
 {
 	u64 result = (u64) ptr;
   u64 remainder = result % align;
@@ -154,5 +154,5 @@ u8 *align_ptr(u8 *ptr, u32 align)
     result += align - remainder;
   }
 
-	return (u8 *) result;
+	return (byte *) result;
 }

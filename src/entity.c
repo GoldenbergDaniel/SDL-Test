@@ -125,7 +125,7 @@ Entity *create_entity(EntityType type)
                 EntityProp_Renders;
     en->draw_type = DrawType_Primitive;
     break;
-  case EntityType_Wagon:
+  case EntityType_Merchant:
     en->props = EntityProp_Renders;
     en->draw_type = DrawType_Sprite;
     en->sprite = prefab.sprite.wagon_left;
@@ -272,10 +272,14 @@ Entity *spawn_particles(ParticleKind kind, Vec2F pos)
   return en;
 }
 
-void kill_entity(Entity *en)
+void kill_entity(Entity *en, bool slain)
 {
   en->marked_for_death = TRUE;
-  push_event(EventType_EntityKilled, (EventDesc) {.en=en, .type=en->type});
+  push_event(EventType_EntityKilled, (EventDesc) {
+    .en=en, 
+    .type=en->type, 
+    .slain = slain
+  });
 }
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
@@ -462,12 +466,16 @@ void damage_entity(Entity *reciever, i16 damage)
   if (reciever->health <= 0) return;
 
   reciever->health -= damage;
-  entity_add_prop(reciever, EntityProp_FlashWhite);
+
+  if (damage != 0)
+  {
+    entity_add_prop(reciever, EntityProp_FlashWhite);
+  }
 
   if (reciever->health <= 0)
   {
     spawn_particles(ParticleKind_Death, pos_from_entity(reciever));
-    kill_entity(reciever);
+    kill_entity(reciever, TRUE);
   }
 }
 
@@ -565,7 +573,7 @@ void free_entity(Entity *en)
   list->first_free = en;
 }
 
-Entity *get_entity_of_id(u64 id)
+Entity *get_entity_by_id(u64 id)
 {
   Entity *result = NIL_ENTITY;
 
@@ -581,7 +589,7 @@ Entity *get_entity_of_id(u64 id)
   return result;
 }
 
-Entity *get_entity_of_sp(u8 sp)
+Entity *get_entity_by_sp(u8 sp)
 {
   Entity *result = NIL_ENTITY;
 
@@ -777,13 +785,13 @@ void equip_weapon(Entity *en, WeaponKind kind)
 {
   if (!entity_is_valid(en)) return;
 
-  Entity *weapon_en = get_entity_child_of_sp(en, SP_Gun);
+  Entity *weapon_en = get_entity_child_of_sp(en, SPID_Gun);
   Entity *shot_point_en = get_entity_child_at(weapon_en, 0);
 
   if (kind == WeaponKind_Nil)
   {
     en->is_weapon_equipped = FALSE;
-    Entity *gun = get_entity_child_of_sp(en, SP_Gun);
+    Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
     entity_rem_prop(gun, EntityProp_Renders);
     return;
   }

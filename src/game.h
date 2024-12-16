@@ -34,6 +34,7 @@ struct EventDesc
   u64 id;
   u64 type;
   b64 props;
+  bool slain;
 };
 
 typedef struct Event Event;

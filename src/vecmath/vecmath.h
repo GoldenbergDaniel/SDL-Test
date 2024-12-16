@@ -34,7 +34,7 @@ f32 distance_squared_2f(Vec2F a, Vec2F b);
 Vec2F normalize_2f(Vec2F a);
 Vec2F project_2f(Vec2F a, Vec2F b);
 
-Vec2F lerp_2f(Vec2F curr, Vec2F target, f32 rate);
+Vec2F lerp_2f(Vec2F current, Vec2F target, f32 rate);
 Vec2F normal_2f(Vec2F a, Vec2F b);
 Vec2F midpoint_2f(Vec2F a, Vec2F b);
 Vec2F intersection_2f(Vec2F a, Vec2F b, Vec2F c, Vec2F d);

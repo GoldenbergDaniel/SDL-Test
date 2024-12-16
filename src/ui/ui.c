@@ -40,6 +40,17 @@ void ui_push_widget(UI_Widget *widget)
   _widget_store.count += 1;
 }
 
+void ui_rect(Vec2F pos, Vec2F dim, UI_Sprite sprite)
+{
+  ui_push_widget(&(UI_Widget) {
+    .type = UI_WidgetType_Rect,
+    .pos = pos,
+    .dim = dim,
+    .scale = v2f(1.0f, 1.0f),
+    .sprite = sprite,
+  });
+}
+
 void ui_text(String text, Vec2F pos, u32 size, u32 width, ...)
 {
   va_list vargs;

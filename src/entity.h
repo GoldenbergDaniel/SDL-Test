@@ -6,25 +6,25 @@
 
 #define MAX_ENTITY_CHILDREN 16
 
-#define WALKER_SPEED 50.0f
-
 #define PLAYER_SPEED 400.0f
 #define PLAYER_JUMP_VEL 900.0f
 #define PLAYER_ACC 3.0f
 #define PLAYER_FRIC 8.0f
-#define PLAYER_HEALTH 3
+#define PLAYER_HEALTH 5
 
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_INVINCIBILITY_TIMER 0.5f
 #define FLASH_TIME 0.05f
 
+#define WALKER_SPEED 50.0f
 #define BABY_CHICKEN_GROWTH_DURATION 3.0f
 
 enum
 {
-  SP_Nil,
-  SP_Player,
-  SP_Gun,
+  SPID_Nil,
+  SPID_Player,
+  SPID_Merchant,
+  SPID_Gun,
 };
 
 typedef enum ColliderID
@@ -172,7 +172,7 @@ typedef enum EntityType
   EntityType_Decoration,
   EntityType_Collider,
   EntityType_Collectable,
-  EntityType_Wagon,
+  EntityType_Merchant,
 } EntityType;
 
 typedef enum EntityProp
@@ -378,7 +378,7 @@ struct EntityList
   Entity *head;
   Entity *tail;
   Entity *first_free;
-  u16 count;
+  u64 count;
 };
 
 Entity *NIL_ENTITY = &(Entity) {0};
@@ -392,7 +392,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos);
 Entity *spawn_collectable(CollectableKind kind, Vec2F pos);
 Entity *spawn_particles(ParticleKind kind, Vec2F pos);
 
-void kill_entity(Entity *en);
+void kill_entity(Entity *en, bool slain);
 
 // @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
@@ -428,8 +428,8 @@ Entity *entity_from_ref(EntityRef ref);
 
 Entity *alloc_entity(void);
 void free_entity(Entity *en);
-Entity *get_entity_of_id(u64 id);
-Entity *get_entity_of_sp(u8 sp);
+Entity *get_entity_by_id(u64 id);
+Entity *get_entity_by_sp(u8 sp);
 
 void attach_entity_child(Entity *en, Entity *child);
 void attach_entity_child_at(Entity *en, Entity *child, u16 index);

@@ -49,6 +49,10 @@ struct Prefabs
 
     Sprite wagon_left;
     Sprite wagon_right;
+
+    Sprite ui_heart_full;
+    Sprite ui_heart_empty;
+    Sprite ui_ammo;
   } sprite;
 
   struct

@@ -12,7 +12,7 @@ typedef struct Arena Arena;
 struct Arena
 {
   u64 size;
-  u8 *memory;
+  byte *memory;
   u8 *allocated;
   u8 *committed;
   u8 id;
@@ -23,11 +23,11 @@ struct Arena
 
 Arena create_arena(u64 size, bool decommit_on_clear);
 void destroy_arena(Arena *arena);
-u8 *_arena_push(Arena *arena, u64 size, u64 align);
+byte *_arena_push(Arena *arena, u64 size, u64 align);
 void arena_pop(Arena *arena, u64 size);
 void arena_clear(Arena *arena);
 
 void init_scratch_arenas(void);
 Arena get_scratch_arena(Arena *conflict);
 
-u8 *align_ptr(u8 *ptr, u32 align);
+byte *align_ptr(u8 *ptr, u32 align);

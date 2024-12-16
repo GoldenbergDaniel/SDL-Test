@@ -29,15 +29,16 @@ void init_game(void)
 
   // - Starting entities ----------------
   {
-    // Entity *wagon = create_entity(EntityType_Wagon);
-    // wagon->pos = v2f(WIDTH/2, GROUND_Y + 80);
+    Entity *merchant = create_entity(EntityType_Merchant);
+    merchant->sp = SPID_Merchant;
+    merchant->pos = v2f(WIDTH/2, GROUND_Y + 80);
 
     Entity *player = create_entity(EntityType_Player);
-    player->sp = SP_Player;
+    player->sp = SPID_Player;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f);
 
     Entity *gun = create_entity(EntityType_Equipped);
-    gun->sp = SP_Gun;
+    gun->sp = SPID_Gun;
     gun->pos = v2f(35.0f, 5.0f);
     attach_entity_child(player, gun);
 
@@ -50,7 +51,7 @@ void init_game(void)
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
 
-    spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -66,14 +67,14 @@ void update_game(void)
   f64 dt = game.dt;
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
-  Entity *player = get_entity_of_sp(SP_Player);
+  Entity *player = get_entity_by_sp(SPID_Player);
   if (!entity_is_valid(player)) player = NIL_ENTITY;
 
   ui_clear_widgetstore();
 
   // - Zombie waves ----------------
-  // if (!game.is_so_over)
-  if (0)
+  if (!game.is_so_over)
+  // if (0)
   {
     i32 total_zombies_this_wave = 0;
     if (game.current_wave.num >= 0)
@@ -157,6 +158,20 @@ void update_game(void)
     }
   }
 
+  // - Merchant ---
+  {
+    Entity *merchant = get_entity_by_sp(SPID_Merchant);
+
+    if (game.is_grace_period)
+    {
+      merchant->scale = lerp_2f(merchant->scale, v2f(SPRITE_SCALE*4, SPRITE_SCALE*2), dt*3);
+    }
+    else
+    {
+      merchant->scale = lerp_2f(merchant->scale, V2F_ZERO, dt*3);
+    }
+  }
+
   // - Switch weapon ----------------
   {
     if (game.is_grace_period)
@@ -191,13 +206,17 @@ void update_game(void)
       {
         equip_weapon(player, WeaponKind_SMG);
       }
+      else if (is_key_just_pressed(Key_5) && game.progression.smg)
+      {
+        equip_weapon(player, WeaponKind_Pistol);
+      }
     }
   }
 
   // - Weapon reloading ----------------
   if (entity_is_valid(player))
   {
-    Entity *gun = get_entity_child_of_sp(player, SP_Gun);
+    Entity *gun = get_entity_child_of_sp(player, SPID_Gun);
     WeaponDesc desc = prefab.weapon[gun->weapon_kind];
 
     if (!game.weapon.is_reloading && is_key_just_pressed(Key_R) && player->is_weapon_equipped)
@@ -390,7 +409,7 @@ void update_game(void)
             {
               en->kill_timer.ticking = FALSE;
 
-              kill_entity(en);
+              kill_entity(en, TRUE);
             }
 
             en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
@@ -423,7 +442,7 @@ void update_game(void)
     }
 
     // - Wagon merhchant face player ---
-    if (en->type == EntityType_Wagon)
+    if (en->type == EntityType_Merchant)
     {
       Vec2F en_pos = pos_from_entity(en);
       Vec2F player_pos = pos_from_entity(player);
@@ -567,7 +586,7 @@ void update_game(void)
       // - Hatched ---
       if (timer_timeout(&en->egg_timer))
       {
-        kill_entity(en);
+        kill_entity(en, FALSE);
         spawn_zombie(ZombieKind_BabyChicken, pos_from_entity(en));
         spawn_particles(ParticleKind_EggHatch, sub_2f(pos_from_entity(en), v2f(0, 25)));
       }
@@ -583,7 +602,7 @@ void update_game(void)
 
       if (timer_timeout(&en->morphing.timer))
       {
-        kill_entity(en);
+        kill_entity(en, FALSE);
         spawn_zombie(ZombieKind_Chicken, pos_from_entity(en));
       }
     }
@@ -632,7 +651,7 @@ void update_game(void)
             {
               spawn_particles(ParticleKind_Blood, pos_from_entity(en));
               damage_entity(other, en->damage);
-              kill_entity(en);
+              kill_entity(en, TRUE);
             }
           }
         }
@@ -693,7 +712,7 @@ void update_game(void)
             game.soul_count++;
           }
           
-          kill_entity(en);
+          kill_entity(en, TRUE);
         }
       }
     }
@@ -705,7 +724,7 @@ void update_game(void)
     if (!en->is_active) continue;
 
     // Update player invinsibility timer
-    if (en->sp == SP_Player)
+    if (en->sp == SPID_Player)
     {
       if (!en->invincibility_timer.ticking)
       {
@@ -731,7 +750,7 @@ void update_game(void)
         {
           en->attack_timer.ticking = FALSE;
 
-          Entity *gun = get_entity_child_of_sp(en, SP_Gun);
+          Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
@@ -749,7 +768,7 @@ void update_game(void)
             entity_add_prop(muzzle_flash, EntityProp_Renders);
           }
 
-          spawn_particles(ParticleKind_Smoke, spawn_pos);
+          // spawn_particles(ParticleKind_Smoke, spawn_pos);
           push_event(EventType_UsedWeapon, (EventDesc) {.type=gun->weapon_kind});
         }
       }
@@ -951,7 +970,7 @@ void update_game(void)
 
           if (owner->particles_killed == desc.count)
           {
-            kill_entity(owner);
+            kill_entity(owner, TRUE);
           }
         }
       }
@@ -964,7 +983,7 @@ void update_game(void)
           
           if (owner->particles_killed == desc.count)
           {
-            kill_entity(owner);
+            kill_entity(owner, TRUE);
           }
         }
       }
@@ -1005,13 +1024,12 @@ void update_game(void)
           logger_debug(str("Player has been killed.\n"));
         }
 
-        if (en->type == EntityType_Zombie)
+        if (en->type == EntityType_Zombie && ev->desc.slain)
         {
           game.current_wave.zombies_killed += 1;
 
+          CollectableKind kind = CollectableKind_Nil;
           i32 roll = random_i32(1, 100);
-
-          CollectableKind kind = 0;
           if (roll <= prefab.collectable[CollectableKind_Soul].draw_chance)
           {
             kind = CollectableKind_Soul;
@@ -1024,7 +1042,7 @@ void update_game(void)
           // Spawn drop
           if (kind != CollectableKind_Nil)
           {
-            spawn_collectable(kind, v2f(en->pos.x, en->pos.y - 10));
+            spawn_collectable(kind, v2f(en->pos.x, GROUND_Y + (4 * SPRITE_SCALE)));
           }
         }
       }
@@ -1037,27 +1055,67 @@ void update_game(void)
     }
   }
 
-  ui_text(str("%.1f"), v2f(WIDTH/2 - 20, HEIGHT-50), 25, 999, game.time_alive);
-  ui_text(str("Hearts: %i"), v2f(10, HEIGHT-50), 25, 999, player->health);
-  ui_text(str("Coins: %i"), v2f(10, HEIGHT-75), 25, 999, game.coin_count);
-  ui_text(str("Souls: %i"), v2f(10, HEIGHT-100), 25, 999, game.soul_count);
-  ui_text(str("Wave %i"), v2f(WIDTH-150, HEIGHT - 50), 25, 999, game.current_wave.num+1);
-
-#if FALSE
+  // - HUD ---
   {
-    String duration_str = format_duration(game.update_time, &game.frame_arena);
+    // - Hearts ---
+    {
+      for (i32 heart_idx = 1; heart_idx <= PLAYER_HEALTH; heart_idx++)
+      {
+        Sprite sprite;
+        if (heart_idx <= player->health)
+        {
+          sprite = prefab.sprite.ui_heart_full;
+        }
+        else
+        {
+          sprite = prefab.sprite.ui_heart_empty;
+        }
+
+        ui_rect(v2f((45 * heart_idx) - 45, HEIGHT - 75), 
+                v2f(14 * SPRITE_SCALE, 14 * SPRITE_SCALE), 
+                *(UI_Sprite *) &sprite);
+      }
+    }
+
+    // - Ammo ---
+    {
+      ui_rect(v2f(0, HEIGHT-130), 
+              v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              *(UI_Sprite *) &prefab.sprite.ui_ammo);
+      ui_text(str("%i"), v2f(65, HEIGHT-110), 30, 999, game.weapon.ammo_remaining);
+    }
+
+    // - Collectables ---
+    {
+      ui_rect(v2f(0, 65), 
+              v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              *(UI_Sprite *) &prefab.sprite.coin);
+      ui_text(str("%i"), v2f(65, 85), 30, 999, game.coin_count);
+
+      ui_rect(v2f(0, 15), 
+              v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              *(UI_Sprite *) &prefab.sprite.soul);
+      ui_text(str("%i"), v2f(65, 35), 30, 999, game.soul_count);
+    }
+
+    ui_text(str("%.0f"), v2f(WIDTH/2 - 20, HEIGHT-50), 25, 999, game.time_alive);
+    ui_text(str("Wave %i"), v2f(WIDTH-150, HEIGHT-50), 25, 999, game.current_wave.num+1);
+  }
+
+  if (global.debug)
+  {
+    String duration_str;
+
+    duration_str = format_duration(game.update_time, &game.frame_arena);
     duration_str = str_concat(str("update: "), duration_str, &game.frame_arena);
     duration_str = str_concat(duration_str, str("\n"), &game.frame_arena);
     ui_text(duration_str, v2f(WIDTH - 150, HEIGHT - 75), 15, 999);
-  }
 
-  {
-    String duration_str = format_duration(game.render_time, &game.frame_arena);
+    duration_str = format_duration(game.render_time, &game.frame_arena);
     duration_str = str_concat(str("render: "), duration_str, &game.frame_arena);
     duration_str = str_concat(duration_str, str("\n"), &game.frame_arena);
     ui_text(duration_str, v2f(WIDTH - 150, HEIGHT - 100), 15, 999);
   }
-#endif
 
   // - Developer tools ----------------
   {
@@ -1087,7 +1145,7 @@ void update_game(void)
     // - Kill player ---
     if (is_key_just_pressed(Key_Backspace) && entity_is_valid(player))
     { 
-      kill_entity(player);
+      kill_entity(player, TRUE);
     }
 
     // - Spawn particles --- 
@@ -1182,20 +1240,23 @@ void render_game(void)
     {
       const f32 scale = 1.0f/8;
 
-      UI_Widget *widget = &widgets->data[wdgt_idx];
-      switch (widget->type)
+      UI_Widget widget = widgets->data[wdgt_idx];
+      switch (widget.type)
       {
       case UI_WidgetType_Nil:
+        break;
+      case UI_WidgetType_Rect:
+        draw_sprite(widget.pos, widget.dim, 0, v4f(1, 1, 1, 1), *(Sprite *) &widget.sprite, FALSE);
         break;
       case UI_WidgetType_Text:
         {}
         Vec2F offset = V2F_ZERO;
         u32 word_start_pos = 0;
 
-        u32 len = widget->text.len;
+        u32 len = widget.text.len;
         for (u32 chr_idx = 0; chr_idx < len; chr_idx++)
         {
-          char chr = widget->text.data[chr_idx];
+          char chr = widget.text.data[chr_idx];
           if (((chr < 65 || chr > 90) && (chr < 97 || chr > 122)) || chr_idx == len-1)
           {
             UI_Glyph glyph = get_glyph(chr);
@@ -1204,35 +1265,41 @@ void render_game(void)
             f32 word_len = 0;
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
-              chr = widget->text.data[i];
-              word_len += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+              chr = widget.text.data[i];
+              word_len += (widget.text_size * (glyph.dim.width * scale)) + 
+                          (widget.text_spacing.x * (widget.text_size * scale));
             }
 
             // Move to next line
-            if (offset.x + word_len > widget->dim.width && chr_idx < len)
+            if (offset.x + word_len > widget.dim.width && chr_idx < len)
             {
               offset.x = 0;
-              offset.y -= widget->text_size + (widget->text_spacing.y * (widget->text_size * scale));
+              offset.y -= (widget.text_spacing.y * (widget.text_size * scale)) + 
+                          widget.text_size;
 
-              word_len += (glyph.dim.width + glyph.offset.x + widget->space_width) * widget->text_size;
+              word_len += (glyph.dim.width + glyph.off.x + widget.space_width) * 
+                          widget.text_size;
             }
 
             // Draw the word
             for (u32 i = word_start_pos; i <= chr_idx; i++)
             {
-              chr = widget->text.data[i];
+              chr = widget.text.data[i];
               if (chr != ' ')
               {
                 UI_Glyph glyph = get_glyph(chr);
 
-                Vec2F draw_pos = add_2f(add_2f(widget->pos, scale_2f(glyph.offset, widget->text_size*scale)), offset);
-                draw_glyph(draw_pos, widget->text_size, R_WHITE, glyph.coords);
+                Vec2F draw_pos = add_2f(add_2f(widget.pos, 
+                                        scale_2f(glyph.off, widget.text_size*scale)), 
+                                        offset);
+                draw_glyph(draw_pos, widget.text_size, R_WHITE, glyph.coords);
 
-                offset.x += (widget->text_size * (glyph.dim.width * scale)) + (widget->text_spacing.x * (widget->text_size * scale));
+                offset.x += (widget.text_size * (glyph.dim.width * scale)) + 
+                            (widget.text_spacing.x * (widget.text_size * scale));
               }
               else
               {
-                offset.x += widget->space_width * widget->text_size * scale;
+                offset.x += widget.space_width * widget.text_size * scale;
               }
             }
             
@@ -1343,7 +1410,7 @@ Vec2F screen_to_world(Vec2F pos)
 String format_duration(u64 ns, Arena *arena)
 {
   String result;
-  char *unit = "ns";
+  cstr unit = "ns";
   f64 duration = ns;
 
   if (ns >= 1000000000)
@@ -1363,7 +1430,7 @@ String format_duration(u64 ns, Arena *arena)
   }
 
   char *buf = arena_push(arena, char, 64);
-  i32 len = stbsp_snprintf(buf, 64, "%0.2f %s", duration, unit);
+  i32 len = stbsp_snprintf(buf, 64, "%0.0f %s", duration, unit);
   result = (String) {buf, len};
 
   return result;

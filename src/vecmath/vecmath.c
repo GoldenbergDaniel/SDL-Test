@@ -1,4 +1,4 @@
-#include "../base/base_common.h"
+#include "../base/base.h"
 #include "vecmath.h"
 
 f32 sinf(f32);
@@ -8,7 +8,7 @@ f32 sqrtf(f32);
 f32 powf(f32, f32);
 f32 atan2f(f32, f32);
 
-// @Scalar =====================================================================================
+// Scalar ///////////////////////////////////////////////////////////////////////////
 
 inline
 f32 sin_1f(f32 angle)
@@ -34,7 +34,7 @@ f32 lerp_1f(f32 curr, f32 target, f32 rate)
   return curr + (target - curr) * rate;
 }
 
-// @Vec2F ======================================================================================
+// Vec2F ////////////////////////////////////////////////////////////////////////////
 
 inline
 Vec2F v2f(f32 x, f32 y)
@@ -183,7 +183,7 @@ f32 atan_2f(Vec2F a)
   return atan2f(a.y, a.x);
 }
 
-// @Vec3F ======================================================================================
+// Vec3F ////////////////////////////////////////////////////////////////////////////
 
 inline
 Vec3F v3f(f32 x, f32 y, f32 z)
@@ -292,7 +292,7 @@ Vec3F lerp_3f(Vec3F curr, Vec3F target, f32 rate)
   return add_3f(curr, scale_3f(sub_3f(target, curr), rate));
 }
 
-// @Vec4F ======================================================================================
+// Vec4F ////////////////////////////////////////////////////////////////////////////
 
 inline
 Vec4F v4f(f32 x, f32 y, f32 z, f32 w)
@@ -397,7 +397,7 @@ Vec4F lerp_4f(Vec4F curr, Vec4F target, f32 rate)
   return add_4f(curr, scale_4f(sub_4f(target, curr), rate));
 }
 
-// @Mat2x2F =================================================================================
+// Mat2x2F //////////////////////////////////////////////////////////////////////////
 
 Mat2x2F m2x2f(f32 k)
 {
@@ -476,7 +476,7 @@ Mat2x2F inverse_2x2f(Mat2x2F m)
   return result;
 }
 
-// @Mat3x3F ====================================================================================
+// Mat3x3F //////////////////////////////////////////////////////////////////////////
 
 inline
 Mat3x3F m3x3f(f32 k)
@@ -543,11 +543,10 @@ Mat3x3F transpose_3x3f(Mat3x3F m)
   result.e[1][2] = m.e[2][1];
   result.e[2][0] = m.e[0][2];
   result.e[2][1] = m.e[1][2];
-
   return result;
 }
 
-// TODO: Learn how this works
+// @TODO(dg): Learn how this works
 Mat3x3F invert_3x3f(Mat3x3F m)
 {
   Mat3x3F cross;
@@ -561,7 +560,7 @@ Mat3x3F invert_3x3f(Mat3x3F m)
   result.cols[0] = scale_3f(cross.cols[0], inv_det);
   result.cols[1] = scale_3f(cross.cols[1], inv_det);
   result.cols[2] = scale_3f(cross.cols[2], inv_det);
-
+  
   return transpose_3x3f(result);
 }
 
@@ -570,11 +569,9 @@ Mat3x3F translate_3x3f(f32 x_shift, f32 y_shift)
   Mat3x3F result = m3x3f(1.0f);
   result.e[0][2] = x_shift;
   result.e[1][2] = y_shift;
-
   return result;
 }
 
-// Angle is in radians
 Mat3x3F rotate_3x3f(f32 angle)
 {
   Mat3x3F result = m3x3f(1.0f);
@@ -582,7 +579,6 @@ Mat3x3F rotate_3x3f(f32 angle)
   result.e[0][1] = -sin_1f(angle);
   result.e[1][0] = sin_1f(angle);
   result.e[1][1] = cos_1f(angle);
-
   return result;
 }
 
@@ -591,7 +587,6 @@ Mat3x3F scale_3x3f(f32 x_scale, f32 y_scale)
   Mat3x3F result = m3x3f(1.0f);
   result.e[0][0] = x_scale;
   result.e[1][1] = y_scale;
-
   return result;
 }
 
@@ -600,7 +595,6 @@ Mat3x3F shear_3x3f(f32 x_shear, f32 y_shear)
   Mat3x3F result = m3x3f(1.0f);
   result.e[0][1] = x_shear;
   result.e[1][0] = y_shear;
-
   return result;
 }
 
@@ -612,186 +606,5 @@ Mat3x3F orthographic_3x3f(f32 left, f32 right, f32 top, f32 bot)
   result.e[0][2] = -(right + left) / (right - left);
   result.e[1][2] = -(top + bot) / (top - bot);
   result.e[2][2] = 1.0f;
-
   return result;
 }
-
-// @Mat4x4F ====================================================================================
-
-inline
-Mat4x4F m4x4f(f32 k)
-{
-  return (Mat4x4F)
-  {
-    {
-      {k, 0, 0, 0},
-      {0, k, 0, 0},
-      {0, 0, k, 0},
-      {0, 0, 0, k}
-    }
-  };
-}
-
-inline
-Mat4x4F rows_4x4f(Vec4F v1, Vec4F v2, Vec4F v3, Vec4F v4)
-{
-
-  return (Mat4x4F)
-  {
-    {
-      {v1.x, v1.y, v1.z, v1.w},
-      {v2.x, v2.y, v2.z, v2.w},
-      {v3.x, v3.y, v3.z, v3.w},
-      {v4.x, v4.y, v4.z, v4.w}
-    }
-  };
-}
-
-inline
-Mat4x4F cols_4x4f(Vec4F v1, Vec4F v2, Vec4F v3, Vec4F v4)
-{
-  return (Mat4x4F)
-  {
-    {
-      {v1.x, v2.x, v3.x, v4.x},
-      {v1.y, v2.y, v3.y, v4.y},
-      {v1.z, v2.z, v3.z, v4.z},
-      {v1.w, v2.w, v3.w, v4.w}
-    }
-  };
-}
-
-Mat4x4F mul_4x4f(Mat4x4F a, Mat4x4F b)
-{
-  Mat4x4F result = {0};
-
-  for (u8 r = 0; r < 4; r++)
-  {
-    for (u8 c = 0; c < 4; c++)
-    {
-      result.e[r][c] += a.e[0][c] * b.e[r][0];
-      result.e[r][c] += a.e[1][c] * b.e[r][1];
-      result.e[r][c] += a.e[2][c] * b.e[r][2];
-      result.e[r][c] += a.e[3][c] * b.e[r][3];
-    }
-  }
-
-  return result;
-}
-
-Mat4x4F transpose_4x4f(Mat4x4F m)
-{
-  Mat4x4F result = m;
-  result.e[0][1] = m.e[1][0];
-  result.e[0][2] = m.e[2][0];
-  result.e[0][3] = m.e[3][0];
-  result.e[1][0] = m.e[0][1];
-  result.e[1][2] = m.e[2][1];
-  result.e[1][3] = m.e[3][1];
-  result.e[2][0] = m.e[0][2];
-  result.e[2][1] = m.e[1][2];
-  result.e[2][3] = m.e[3][2];
-  result.e[3][0] = m.e[0][3];
-  result.e[3][1] = m.e[1][3];
-  result.e[3][2] = m.e[2][3];
-
-  return result;
-}
-
-Mat4x4F translate_4x4f(f32 x_shift, f32 y_shift, f32 z_shift)
-{
-  Mat4x4F result = m4x4f(1.0f);
-  result.e[0][3] = x_shift;
-  result.e[1][3] = y_shift;
-  result.e[2][3] = z_shift;
-
-  return result;
-}
-
-Mat4x4F scale_4x4f(f32 x_scale, f32 y_scale, f32 z_scale)
-{
-  Mat4x4F result = m4x4f(1.0f);
-  result.e[0][0] = x_scale;
-  result.e[1][1] = y_scale;
-  result.e[2][2] = z_scale;
-
-  return result;
-}
-
-Mat4x4F orthographic_4x4f(f32 left, f32 right, f32 bot, f32 top)
-{
-  static f32 near = -1.0f;
-  static f32 far = 1.0f;
-
-  Mat4x4F result = {0};
-  result.e[0][0] = 2.0f / (right - left);
-  result.e[1][1] = 2.0f / (top - bot);
-  result.e[2][2] = -2.0f / (far - near);
-  result.e[0][3] = -(right + left) / (right - left);
-  result.e[1][3] = -(top + bot) / (top - bot);
-  result.e[2][3] = -(far + near) / (far - near);
-  result.e[3][3] = 1.0f;
-
-  return m4x4f(1);
-}
-
-#ifdef __cplusplus
-
-// @Overloading ================================================================================
-
-Vec2F operator+(Vec2F a, Vec2F b)
-{
-  return add_2f(a, b);
-}
-
-Vec3F operator+(Vec3F a, Vec3F b)
-{
-  return add_3f(a, b);
-}
-
-Vec4F operator+(Vec4F a, Vec4F b)
-{
-  return add_4f(a, b);
-}
-
-Vec2F operator-(Vec2F a, Vec2F b)
-{
-  return sub_2f(a, b);
-}
-
-Vec3F operator-(Vec3F a, Vec3F b)
-{
-  return sub_3f(a, b);
-}
-
-Vec4F operator-(Vec4F a, Vec4F b)
-{
-  return sub_4f(a, b);
-}
-
-f32 operator*(Vec2F a, Vec2F b)
-{
-  return dot_2f(a, b);
-}
-
-f32 operator*(Vec3F a, Vec3F b)
-{
-  return dot_3f(a, b);
-}
-
-f32 operator*(Vec4F a, Vec4F b)
-{
-  return dot_4f(a, b);
-}
-
-Mat3x3F operator*(Mat3x3F a, Mat3x3F b)
-{
-  return mul_3x3f(a, b);
-}
-
-Mat4x4F operator*(Mat4x4F a, Mat4x4F b)
-{
-  return mul_4x4f(a, b);
-}
-
-#endif

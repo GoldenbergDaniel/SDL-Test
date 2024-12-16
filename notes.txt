@@ -5,6 +5,7 @@ TODO
   [X] text rendering
   [X] weapon switching
   [~] merchant
+  [_] merchant ui
   [X] zombie progression
   [X] zombie drops (coins and souls)
   [X] reloading
@@ -17,11 +18,8 @@ TODO
   [X] gameover state
   [_] play again
   [_] text centering
-  [_] ui (health, ammo, collectables)
+  [X] hud ui (health, ammo, collectables)
   [X] muzzle flash
   [_] audio
   [X] event queue
   [X] logger
-
-BUGS
-  [_] drops spawn on entity morph

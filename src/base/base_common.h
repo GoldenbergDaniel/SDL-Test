@@ -19,6 +19,7 @@ typedef int32_t i32;
 typedef int64_t i64;
 typedef float f32;
 typedef double f64;
+typedef const char *cstr;
 
 #if defined(_WIN32)
 #define PLATFORM_WINDOWS
