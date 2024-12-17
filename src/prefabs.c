@@ -36,8 +36,8 @@ Prefabs create_prefabs(void)
 
     prefab.sprite.muzzle_flash      = (Sprite) {v2i(5, 4), v2i(1, 1)};
     prefab.sprite.bullet            = (Sprite) {v2i(6, 4), v2i(1, 1)};
-    prefab.sprite.coin              = (Sprite) {v2i(8, 4), v2i(1, 1)};
-    prefab.sprite.soul              = (Sprite) {v2i(9, 4), v2i(1, 1)};
+    prefab.sprite.coin              = (Sprite) {v2i(10, 4), v2i(1, 1)};
+    prefab.sprite.soul              = (Sprite) {v2i(11, 4), v2i(1, 1)};
 
     prefab.sprite.egg_0             = (Sprite) {v2i(0, 5), v2i(1, 1)};
     prefab.sprite.egg_1             = (Sprite) {v2i(1, 5), v2i(1, 1)};
@@ -124,7 +124,7 @@ Prefabs create_prefabs(void)
       .spread = 180.0f,
       .color_primary = v4f(0.55f, 0.55f, 0.55f, 1.0f),
       .color_secondary = v4f(0.1f, 0.1f, 0.1f, 1.0f),
-      .scale = v2f(9, 9),
+      .scale = v2f(7, 7),
       .scale_delta = v2f(-8.0f, -8.0f),
       .speed = 60.0f,
       .speed_delta = -4000.0f,
@@ -254,7 +254,7 @@ Prefabs create_prefabs(void)
       .sprite = prefab.sprite.revolver,
       .ancor = v2f(35, 0),
       .shot_point = v2f(20, 2.5),
-      .shot_cooldown = 0.75f,
+      .shot_cooldown = 0.6f,
       .damage = 6,
       .bullet_speed = 1000.0f,
       .ammo = 6,

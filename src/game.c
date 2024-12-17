@@ -764,12 +764,18 @@ void update_game(void)
           muzzle_flash->pos = shot_point->pos;
           if (!muzzle_flash->muzzle_flash_timer.ticking)
           {
-            timer_start(&muzzle_flash->muzzle_flash_timer, 0.05f);
+            timer_start(&muzzle_flash->muzzle_flash_timer, 0.08f);
             entity_add_prop(muzzle_flash, EntityProp_Renders);
+
+            entity_add_prop(gun, EntityProp_DistortScaleX);
+            gun->distort_x.state = 0;
+            gun->distort_x.rate = 4.0f;
+            gun->distort_x.scale = 0.75f;
+            gun->distort_x.saved = 1.0f;
           }
 
-          // spawn_particles(ParticleKind_Smoke, spawn_pos);
-          push_event(EventType_UsedWeapon, (EventDesc) {.type=gun->weapon_kind});
+          spawn_particles(ParticleKind_Smoke, spawn_pos);
+          game.weapon.ammo_remaining -= 1;
         }
       }
     }
@@ -817,17 +823,69 @@ void update_game(void)
   {
     if (entity_has_prop(en, EntityProp_BobsOverTime))
     {
-      if (en->pos.y > en->bobbing_range.e[1] - 0.1f)
+      if (en->pos.y > en->bobbing.range.e[1] - 0.1f)
       {
-        en->bobbing_state = -1;
+        en->bobbing.state = -1;
       }
 
-      if (en->pos.y < en->bobbing_range.e[0] + 0.1f)
+      if (en->pos.y < en->bobbing.range.e[0] + 0.1f)
       {
-        en->bobbing_state = 1;
+        en->bobbing.state = 1;
       }
       
-      en->pos.y += 10 * dt * en->bobbing_state;
+      en->pos.y += 10 * dt * en->bobbing.state;
+    }
+
+    if (entity_has_prop(en, EntityProp_DistortScaleX))
+    {
+      if (en->distort_x.state == 0)
+      {
+        en->scale.x -= dt * en->distort_x.rate;
+
+        if (en->scale.x <= en->distort_x.saved * en->distort_x.scale)
+        {
+          en->scale.x = en->distort_x.saved * en->distort_x.scale;
+          en->distort_x.state = 1;
+        }
+      }
+
+      if (en->distort_x.state == 1)
+      {
+        en->scale.x += dt * en->distort_x.rate;
+
+        if (en->scale.x >= en->distort_x.saved)
+        {
+          en->scale.x = en->distort_x.saved;
+          en->distort_x.state = 0;
+          entity_rem_prop(en, EntityProp_DistortScaleX);
+        }
+      }
+    }
+
+    if (entity_has_prop(en, EntityProp_DistortScaleY))
+    {
+      if (en->distort_y.state == 0)
+      {
+        en->scale.y -= dt * en->distort_y.rate;
+
+        if (en->scale.y <= en->distort_y.saved * en->distort_y.scale)
+        {
+          en->scale.y = en->distort_y.saved * en->distort_y.scale;
+          en->distort_y.state = 1;
+        }
+      }
+
+      if (en->distort_y.state == 1)
+      {
+        en->scale.y += dt * en->distort_y.rate;
+
+        if (en->scale.y >= en->distort_y.saved)
+        {
+          en->scale.y = en->distort_y.saved;
+          en->distort_y.state = 0;
+          entity_rem_prop(en, EntityProp_DistortScaleY);
+        }
+      }
     }
 
     if (entity_has_prop(en, EntityProp_FlashWhite))
@@ -1012,46 +1070,40 @@ void update_game(void)
     assert(ev);
     switch (ev->type)
     {
-      case EventType_Nil: break;
-      case EventType_EntityKilled:
-      {
-        Entity *en = ev->desc.en;
-        if (!entity_is_valid(en)) continue;
+    case EventType_Nil: break;
+    case EventType_EntityKilled:
+      {}
+      Entity *en = ev->desc.en;
+      if (!entity_is_valid(en)) continue;
 
-        if (ev->desc.type == EntityType_Player)
+      if (ev->desc.type == EntityType_Player)
+      {
+        game.is_so_over = TRUE;
+        logger_debug(str("Player has been killed.\n"));
+      }
+
+      if (en->type == EntityType_Zombie && ev->desc.slain)
+      {
+        game.current_wave.zombies_killed += 1;
+
+        CollectableKind kind = CollectableKind_Nil;
+        i32 roll = random_i32(1, 100);
+        if (roll <= prefab.collectable[CollectableKind_Soul].draw_chance)
         {
-          game.is_so_over = TRUE;
-          logger_debug(str("Player has been killed.\n"));
+          kind = CollectableKind_Soul;
+        }
+        else if (roll <= prefab.collectable[CollectableKind_Coin].draw_chance)
+        {
+          kind = CollectableKind_Coin;
         }
 
-        if (en->type == EntityType_Zombie && ev->desc.slain)
+        // Spawn drop
+        if (kind != CollectableKind_Nil)
         {
-          game.current_wave.zombies_killed += 1;
-
-          CollectableKind kind = CollectableKind_Nil;
-          i32 roll = random_i32(1, 100);
-          if (roll <= prefab.collectable[CollectableKind_Soul].draw_chance)
-          {
-            kind = CollectableKind_Soul;
-          }
-          else if (roll <= prefab.collectable[CollectableKind_Coin].draw_chance)
-          {
-            kind = CollectableKind_Coin;
-          }
-
-          // Spawn drop
-          if (kind != CollectableKind_Nil)
-          {
-            spawn_collectable(kind, v2f(en->pos.x, GROUND_Y + (4 * SPRITE_SCALE)));
-          }
+          spawn_collectable(kind, v2f(en->pos.x, GROUND_Y + (4 * SPRITE_SCALE)));
         }
       }
-      break;
-      case EventType_UsedWeapon:
-      {
-        game.weapon.ammo_remaining -= 1;
-      }
-      break;
+    break;
     }
   }
 
@@ -1149,10 +1201,10 @@ void update_game(void)
     }
 
     // - Spawn particles --- 
-    if (is_key_pressed(Key_P) && entity_is_valid(player))
-    {
-      spawn_particles(ParticleKind_Debug, player->pos);
-    }
+    // if (is_key_pressed(Key_P) && entity_is_valid(player))
+    // {
+    //   spawn_particles(ParticleKind_Debug, player->pos);
+    // }
 
     // - Unlock all progression ---
     if (is_key_just_pressed(Key_P) && entity_is_valid(player))

@@ -24,7 +24,6 @@ typedef enum EventType
 {
   EventType_Nil,
   EventType_EntityKilled,
-  EventType_UsedWeapon,
 } EventType;
 
 typedef struct EventDesc EventDesc;

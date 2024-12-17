@@ -14,7 +14,7 @@
 
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_INVINCIBILITY_TIMER 0.5f
-#define FLASH_TIME 0.05f
+#define FLASH_TIME 0.075f
 
 #define WALKER_SPEED 50.0f
 #define BABY_CHICKEN_GROWTH_DURATION 3.0f
@@ -59,7 +59,7 @@ typedef enum AnimationState
 typedef struct Animation Animation;
 struct Animation
 {
-  u8 frame_idx;
+  u16 frame_idx;
   u16 tick_counter;
 };
 
@@ -67,7 +67,7 @@ typedef struct AnimationDesc AnimationDesc;
 struct AnimationDesc
 {
   Sprite frames[5];
-  u8 frame_count;
+  u16 frame_count;
   u16 ticks_per_frame;
 };
 
@@ -175,7 +175,7 @@ typedef enum EntityType
   EntityType_Merchant,
 } EntityType;
 
-typedef enum EntityProp
+typedef enum EntityProp : u64
 {
   EntityProp_Renders =            bit(0),
   EntityProp_Collides =           bit(1),
@@ -192,6 +192,8 @@ typedef enum EntityProp
   EntityProp_HideAfterTime =      bit(12),
   EntityProp_LaysEggs =           bit(13),
   EntityProp_Morphs =             bit(14),
+  EntityProp_DistortScaleX =      bit(15),
+  EntityProp_DistortScaleY =      bit(16),
 } EntityProp;
 
 typedef enum WeaponKind
@@ -334,8 +336,25 @@ struct Entity
   AnimationDesc anims[Animation_COUNT];
   AnimationState anim_state;
   AnimationState anim_state_prev;
-  Vec2F bobbing_range;
-  i8 bobbing_state;
+  struct
+  {
+    Vec2F range;
+    i8 state;
+  } bobbing;
+  struct
+  {
+    f32 saved;
+    f32 scale;
+    f32 rate;
+    i8 state;
+  } distort_x;
+  struct
+  {
+    f32 saved;
+    f32 scale;
+    f32 rate;
+    i8 state;
+  } distort_y;
 
   // Targeting
   bool has_target;

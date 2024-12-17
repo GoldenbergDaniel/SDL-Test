@@ -5,9 +5,17 @@ set -e
 
 MODE="dev"
 if [[ $1 != "" ]]; then MODE=$1; fi
+if [[ $MODE != "dev" && $MODE != "debug" && $MODE != "release" ]]; then
+  echo "Failed to build. '$MODE' is not valid mode."
+  exit 1
+fi
 
 TARGET="linux_amd64"
 if [[ $2 != "" ]]; then TARGET=$2; fi
+if [[ $TARGET != "darwin_amd64" && $TARGET != "darwin_arm64" && $TARGET != "linux_amd64" ]]; then
+  echo "Failed to build. '$TARGET' is not a valid target."
+  exit 1
+fi
 
 CFLAGS="-std=gnu17 -Iext"
 if [[ $MODE == "dev"     ]]; then CFLAGS="$CFLAGS -O0 -DDEBUG"; fi

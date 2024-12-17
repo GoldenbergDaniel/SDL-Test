@@ -1,25 +1,25 @@
 TODO
   [X] animation
-  [_] complex animation
-  [_] squash and stretch
   [X] text rendering
   [X] weapon switching
-  [~] merchant
-  [_] merchant ui
   [X] zombie progression
   [X] zombie drops (coins and souls)
   [X] reloading
   [X] chicken
   [X] egg hatching
-  [_] headshots
-  [_] shotgun (pellets)
   [X] player death
   [X] invincibility timer
   [X] gameover state
-  [_] play again
-  [_] text centering
-  [X] hud ui (health, ammo, collectables)
+  [X] ui: health, ammo, collectables
   [X] muzzle flash
-  [_] audio
   [X] event queue
   [X] logger
+  [X] juice: squash and stretch
+  [_] audio
+  [_] play again
+  [~] merchant
+  [_] headshots
+  [_] shotgun (pellets)
+  [_] text centering
+  [_] complex animation
+  [_] juice: camera shake 

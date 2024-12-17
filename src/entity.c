@@ -237,8 +237,8 @@ Entity *spawn_collectable(CollectableKind kind, Vec2F pos)
   en->pos = pos;
   en->item_kind = kind;
   en->sprite = desc.sprite;
-  en->bobbing_range = v2f(en->pos.y - 5, en->pos.y + 5);
-  en->bobbing_state = -1;
+  en->bobbing.range = v2f(en->pos.y - 5, en->pos.y + 5);
+  en->bobbing.state = -1;
 
   entity_rem_prop(en, EntityProp_Renders);
   en->is_active = FALSE;
