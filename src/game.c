@@ -27,7 +27,7 @@ void init_game(void)
 
   ui_init_widgetstore(128, &global.perm_arena);
 
-  // - Starting entities ----------------
+  // - Starting entities ---
   {
     Entity *merchant = create_entity(EntityType_Merchant);
     merchant->sp = SPID_Merchant;
@@ -72,7 +72,7 @@ void update_game(void)
 
   ui_clear_widgetstore();
 
-  // - Zombie waves ----------------
+  // - Zombie waves ---
   if (!game.is_so_over)
   // if (0)
   {
@@ -172,7 +172,7 @@ void update_game(void)
     }
   }
 
-  // - Switch weapon ----------------
+  // - Switch weapon ---
   {
     if (game.is_grace_period)
     {
@@ -208,12 +208,12 @@ void update_game(void)
       }
       else if (is_key_just_pressed(Key_5) && game.progression.smg)
       {
-        equip_weapon(player, WeaponKind_Pistol);
+        equip_weapon(player, WeaponKind_LaserPistol);
       }
     }
   }
 
-  // - Weapon reloading ----------------
+  // - Weapon reloading ---
   if (entity_is_valid(player))
   {
     Entity *gun = get_entity_child_of_sp(player, SPID_Gun);
@@ -234,7 +234,7 @@ void update_game(void)
     }
   }
   
-  // - Update entity spawning and dying ----------------
+  // - Update entity spawning and dying ---
   for (EN_IN_ENTITIES)
   {
     if (en->marked_for_spawn)
@@ -256,19 +256,18 @@ void update_game(void)
     game.time_alive = t;
   }
 
-  // - Update entity position ----------------
+  // - Update entity position ---
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
     
-    // Apply gravity ----------------
     if (entity_has_prop(en, EntityProp_AffectedByGravity) &&
        !entity_has_prop(en, EntityProp_Grounded))
     {
       en->new_vel.y -= GRAVITY * dt * dt;
     }
 
-    // - Update entitiy movement ----------------
+    // - Update entitiy movement ---
     if (entity_has_prop(en, EntityProp_Moves))
     {
       // NOTE(dg): State changes are temporary. Need proper state machine
@@ -423,7 +422,7 @@ void update_game(void)
       en->vel = en->new_vel;
       en->pos = add_2f(en->pos, en->vel);
 
-      // - Handle entity wrapping ----------------
+      // - Handle entity wrapping ---
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
@@ -456,7 +455,7 @@ void update_game(void)
       }
     }
 
-    // - Update entity xform ----------------
+    // - Update entity xform ---
     {
       Mat3x3F xform = m3x3f(1.0f);
       Entity *parent = entity_from_ref(en->parent);
@@ -608,7 +607,7 @@ void update_game(void)
     }
   }
 
-  // - Update entity collision ----------------
+  // - Update entity collision ---
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -639,7 +638,7 @@ void update_game(void)
       }
 
       // Bullet vs Zombie collision
-      if (en->type == EntityType_Bullet)
+      if (en->type == EntityType_Ammo)
       {
         for (Entity *other = game.entities.head; other; other = other->next)
         {
@@ -718,7 +717,7 @@ void update_game(void)
     }
   }
 
-  // - Update entity combat ----------------
+  // - Update entity combat ---
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
@@ -754,14 +753,22 @@ void update_game(void)
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
-
-          Entity *bullet = spawn_entity(EntityType_Bullet, spawn_pos);
-          bullet->rot = spawn_rot;
-          bullet->speed = gun->speed;
-          bullet->damage = gun->damage;
+          Entity *ammo = spawn_ammo(prefab.weapon[gun->weapon_kind].ammo_kind, spawn_pos);
+          ammo->rot = spawn_rot;
+          ammo->speed = gun->speed;
+          ammo->damage = gun->damage;
 
           Entity *muzzle_flash = get_entity_child_at(gun, 1);
           muzzle_flash->pos = shot_point->pos;
+          if (gun->weapon_kind == WeaponKind_LaserPistol)
+          {
+            muzzle_flash->sprite = prefab.sprite.laser_flash;
+          }
+          else
+          {
+            muzzle_flash->sprite = prefab.sprite.muzzle_flash;
+          }
+
           if (!muzzle_flash->muzzle_flash_timer.ticking)
           {
             timer_start(&muzzle_flash->muzzle_flash_timer, 0.08f);
@@ -774,7 +781,11 @@ void update_game(void)
             gun->distort_x.saved = 1.0f;
           }
 
-          spawn_particles(ParticleKind_Smoke, spawn_pos);
+          if (gun->weapon_kind != WeaponKind_LaserPistol)
+          {
+            spawn_particles(ParticleKind_Smoke, spawn_pos);
+          }
+            
           game.weapon.ammo_remaining -= 1;
         }
       }
@@ -805,10 +816,10 @@ void update_game(void)
               en->attack_timer.ticking = FALSE;
 
               Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-              Entity *laser = spawn_entity(EntityType_Bullet, spawn_pos);
-              laser->tint = DEBUG_GREEN;
-              laser->rot = en->rot;
-              laser->speed = 700.0f;
+              Entity *ammo = spawn_ammo(AmmoKind_Laser, spawn_pos);
+              ammo->tint = DEBUG_GREEN;
+              ammo->rot = en->rot;
+              ammo->speed = 700.0f;
             }
           }
           break;
@@ -818,7 +829,7 @@ void update_game(void)
     }
   }
 
-  // - Animate entities ----------------
+  // - Animate entities ---
   for (EN_IN_ENTITIES)
   {
     if (entity_has_prop(en, EntityProp_BobsOverTime))
@@ -944,7 +955,7 @@ void update_game(void)
     }
   }
 
-  // - Update particles ----------------
+  // - Update particles ---
   for (i32 i = 0; i < MAX_PARTICLES; i++)
   {
     Particle *particle = &game.particle_buffer.data[i];
@@ -1053,7 +1064,7 @@ void update_game(void)
 
   if (game.is_so_over)
   {
-    // FIXME(dg): these alignments
+    // FIXME(dg): center these alignments
     if (game.won)
     {
       ui_text(str("YOU WIN!"), v2f(WIDTH/2 - 150, HEIGHT/2), 50, 999);
@@ -1064,7 +1075,7 @@ void update_game(void)
     }
   }
 
-  // - Event queue ----------------
+  // - Event queue ---
   for (Event *ev = peek_event(); game.event_queue.count != 0; pop_event())
   {
     assert(ev);
@@ -1238,7 +1249,7 @@ void render_game(void)
     }
   }
   
-  // - Draw primitive batch ----------------
+  // - Draw primitive batch ---
   {
     // Draw entities
     for (EN_IN_ENTITIES)
@@ -1285,7 +1296,7 @@ void render_game(void)
     }
   }
 
-  // - Draw UI batch ----------------
+  // - Draw UI batch ---
   UI_WidgetStore *widgets = ui_get_widgetstore();
   {
     for (u64 wdgt_idx = 0; wdgt_idx < widgets->count; wdgt_idx++)

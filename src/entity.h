@@ -43,7 +43,7 @@ struct EntityRef
   u64 id;
 };
 
-// @Animation ////////////////////////////////////////////////////////////////////////////
+// Animation ////////////////////////////////////////////////////////////////////////
 
 typedef enum AnimationState
 {
@@ -71,7 +71,7 @@ struct AnimationDesc
   u16 ticks_per_frame;
 };
 
-// @Timer ////////////////////////////////////////////////////////////////////////////////
+// Timer ////////////////////////////////////////////////////////////////////////////
 
 typedef struct Timer Timer;
 struct Timer
@@ -81,7 +81,7 @@ struct Timer
   f64 end_time;
 };
 
-// @Particle /////////////////////////////////////////////////////////////////////////////
+// Particle /////////////////////////////////////////////////////////////////////////
 
 typedef enum ParticleKind
 {
@@ -147,7 +147,7 @@ struct Particle
   EntityRef owner;
 };
 
-// @Entity ///////////////////////////////////////////////////////////////////////////////
+// Entity ///////////////////////////////////////////////////////////////////////////
 
 typedef enum EntityState
 {
@@ -167,7 +167,7 @@ typedef enum EntityType
   EntityType_Player,
   EntityType_Zombie,
   EntityType_Equipped,
-  EntityType_Bullet,
+  EntityType_Ammo,
   EntityType_Egg,
   EntityType_Decoration,
   EntityType_Collider,
@@ -196,6 +196,13 @@ typedef enum EntityProp : u64
   EntityProp_DistortScaleY =      bit(16),
 } EntityProp;
 
+typedef enum AmmoKind
+{
+  AmmoKind_Bullet,
+  AmmoKind_Pellet,
+  AmmoKind_Laser,
+} AmmoKind;
+
 typedef enum WeaponKind
 {
   WeaponKind_Nil,
@@ -203,7 +210,7 @@ typedef enum WeaponKind
   WeaponKind_Rifle,
   WeaponKind_Shotgun,
   WeaponKind_SMG,
-  WeaponKind_Pistol,
+  WeaponKind_LaserPistol,
 
   WeaponKind_COUNT,
 } WeaponKind;
@@ -212,6 +219,7 @@ typedef struct WeaponDesc WeaponDesc;
 struct WeaponDesc
 {
   Sprite sprite;
+  AmmoKind ammo_kind;
   Vec2F ancor;
   Vec2F shot_point;
   f32 shot_cooldown;
@@ -402,18 +410,13 @@ struct EntityList
 
 Entity *NIL_ENTITY = &(Entity) {0};
 
-// @SpawnEntity //////////////////////////////////////////////////////////////////////////
-
 Entity *create_entity(EntityType type);
-
 Entity *spawn_entity(EntityType type, Vec2F pos);
+Entity *spawn_ammo(AmmoKind kind, Vec2F pos);
 Entity *spawn_zombie(ZombieKind kind, Vec2F pos);
 Entity *spawn_collectable(CollectableKind kind, Vec2F pos);
 Entity *spawn_particles(ParticleKind kind, Vec2F pos);
-
 void kill_entity(Entity *en, bool slain);
-
-// @GeneralEntity ////////////////////////////////////////////////////////////////////////
 
 bool entity_has_prop(Entity *en, EntityProp prop);
 void entity_add_prop(Entity *en, EntityProp prop);
@@ -438,12 +441,12 @@ bool entity_is_valid(Entity *en);
 
 void damage_entity(Entity *reciever, i16 damage);
 
-// @EntityRef ////////////////////////////////////////////////////////////////////////////
+// EntityRef ////////////////////////////////////////////////////////////////////////
 
 EntityRef ref_from_entity(Entity *en);
 Entity *entity_from_ref(EntityRef ref);
 
-// @EntityList ///////////////////////////////////////////////////////////////////////////
+// EntityList ///////////////////////////////////////////////////////////////////////
 
 Entity *alloc_entity(void);
 void free_entity(Entity *en);
@@ -460,13 +463,13 @@ Entity *get_entity_child_of_type(Entity *en, EntityType type);
 
 void entity_add_collider(Entity *en, ColliderID col_id);
 
-// @Timer ////////////////////////////////////////////////////////////////////////////////
+// Timer /////////////////////////////////////////////////////////////////////////////
 
 void timer_start(Timer *timer, f64 duration);
 bool timer_timeout(Timer *timert);
 f64 timer_remaining(Timer *timer);
 
-// @Misc /////////////////////////////////////////////////////////////////////////////////
+// Misc //////////////////////////////////////////////////////////////////////////////
 
 bool has_prop(b64 props, u64 prop);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);

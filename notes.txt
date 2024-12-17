@@ -15,6 +15,7 @@ TODO
   [X] event queue
   [X] logger
   [X] juice: squash and stretch
+  [_] laser pistol
   [_] audio
   [_] play again
   [~] merchant
@@ -23,3 +24,4 @@ TODO
   [_] text centering
   [_] complex animation
   [_] juice: camera shake 
+  [_] buff zombie

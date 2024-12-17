@@ -40,6 +40,9 @@ struct Prefabs
 
     Sprite muzzle_flash;
     Sprite bullet;
+    Sprite laser_flash;
+    Sprite laser;
+    Sprite pellet;
     Sprite coin;
     Sprite soul;
 

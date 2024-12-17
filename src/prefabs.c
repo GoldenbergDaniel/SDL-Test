@@ -36,6 +36,9 @@ Prefabs create_prefabs(void)
 
     prefab.sprite.muzzle_flash      = (Sprite) {v2i(5, 4), v2i(1, 1)};
     prefab.sprite.bullet            = (Sprite) {v2i(6, 4), v2i(1, 1)};
+    prefab.sprite.laser_flash       = (Sprite) {v2i(7, 4), v2i(1, 1)};
+    prefab.sprite.laser             = (Sprite) {v2i(8, 4), v2i(1, 1)};
+    prefab.sprite.pellet            = (Sprite) {v2i(8, 4), v2i(1, 1)};
     prefab.sprite.coin              = (Sprite) {v2i(10, 4), v2i(1, 1)};
     prefab.sprite.soul              = (Sprite) {v2i(11, 4), v2i(1, 1)};
 
@@ -252,6 +255,7 @@ Prefabs create_prefabs(void)
   {
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
       .sprite = prefab.sprite.revolver,
+      .ammo_kind = AmmoKind_Bullet,
       .ancor = v2f(35, 0),
       .shot_point = v2f(20, 2.5),
       .shot_cooldown = 0.6f,
@@ -263,6 +267,7 @@ Prefabs create_prefabs(void)
 
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
       .sprite = prefab.sprite.rifle,
+      .ammo_kind = AmmoKind_Bullet,
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 0),
       .shot_cooldown = 1.15f,
@@ -274,6 +279,7 @@ Prefabs create_prefabs(void)
 
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
       .sprite = prefab.sprite.shotgun,
+      .ammo_kind = AmmoKind_Pellet,
       .ancor = v2f(35, 5),
       .shot_point = v2f(40, 0),
       .shot_cooldown = 0.95f,
@@ -285,22 +291,24 @@ Prefabs create_prefabs(void)
 
     prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
       .sprite = prefab.sprite.smg,
+      .ammo_kind = AmmoKind_Bullet,
       .ancor = v2f(25, 0),
       .shot_point = v2f(35, 0),
       .shot_cooldown = 0.085f,
-      .damage = 1,
+      .damage = 2,
       .bullet_speed = 1500.0f,
       .ammo = 30,
       .reload_duration = 5
     };
 
-    prefab.weapon[WeaponKind_Pistol] = (WeaponDesc) {
+    prefab.weapon[WeaponKind_LaserPistol] = (WeaponDesc) {
       .sprite = prefab.sprite.pistol,
+      .ammo_kind = AmmoKind_Laser,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 0),
       .shot_cooldown = 0.2f,
       .damage = 6,
-      .bullet_speed = 1250.0f,
+      .bullet_speed = 1000.0f,
       .ammo = 999,
       .reload_duration = 5,
     };

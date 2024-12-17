@@ -77,13 +77,12 @@ Entity *create_entity(EntityType type)
     en->draw_type = DrawType_Sprite;
     en->dim = v2f(16, 16);
     break;
-  case EntityType_Bullet:
+  case EntityType_Ammo:
     en->props = EntityProp_Renders | 
                 EntityProp_Moves | 
                 EntityProp_Collides;
     
     en->draw_type = DrawType_Sprite;
-    en->sprite = prefab.sprite.bullet;
     en->move_type = MoveType_Projectile;
     en->kill_timer.duration = BULLET_KILL_TIME;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
@@ -146,6 +145,31 @@ Entity *spawn_entity(EntityType type, Vec2F pos)
   entity_rem_prop(en, EntityProp_Renders);
   en->is_active = FALSE;
   en->marked_for_spawn = TRUE;
+
+  return en;
+}
+
+Entity *spawn_ammo(AmmoKind kind, Vec2F pos)
+{
+  Entity *en = create_entity(EntityType_Ammo);
+  en->pos = pos;
+
+  switch (kind)
+  {
+  case AmmoKind_Bullet:
+    en->sprite = prefab.sprite.bullet;
+    break;
+  case AmmoKind_Pellet:
+    en->sprite = prefab.sprite.pellet;
+    break;
+  case AmmoKind_Laser:
+    en->sprite = prefab.sprite.laser;
+    break;
+  }
+
+  en->is_active = FALSE;
+  en->marked_for_spawn = TRUE;
+  entity_rem_prop(en, EntityProp_Renders);
 
   return en;
 }
