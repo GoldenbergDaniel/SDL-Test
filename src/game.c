@@ -52,6 +52,7 @@ void init_game(void)
     attach_entity_child(gun, muzzle_flash);
 
     // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -73,8 +74,8 @@ void update_game(void)
   ui_clear_widgetstore();
 
   // - Zombie waves ---
-  if (!game.is_so_over)
-  // if (0)
+  // if (!game.is_so_over)
+  if (0)
   {
     i32 total_zombies_this_wave = 0;
     if (game.current_wave.num >= 0)
@@ -773,12 +774,7 @@ void update_game(void)
           {
             timer_start(&muzzle_flash->muzzle_flash_timer, 0.08f);
             entity_add_prop(muzzle_flash, EntityProp_Renders);
-
-            entity_add_prop(gun, EntityProp_DistortScaleX);
-            gun->distort_x.state = 0;
-            gun->distort_x.rate = 4.0f;
-            gun->distort_x.scale = 0.75f;
-            gun->distort_x.saved = 1.0f;
+            entity_distort_x(gun, 0.75f, 4.0f, 1.0f);
           }
 
           if (gun->weapon_kind != WeaponKind_LaserPistol)
@@ -794,7 +790,7 @@ void update_game(void)
     {
       if (entity_is_valid(player) && player->is_active)
       {
-        set_entity_target(en, ref_from_entity(player));
+        entity_set_target(en, ref_from_entity(player));
       }
       else
       {

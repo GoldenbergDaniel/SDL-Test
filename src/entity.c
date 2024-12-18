@@ -156,6 +156,8 @@ Entity *spawn_ammo(AmmoKind kind, Vec2F pos)
 
   switch (kind)
   {
+  case AmmoKind_Nil: 
+    break;
   case AmmoKind_Bullet:
     en->sprite = prefab.sprite.bullet;
     break;
@@ -243,6 +245,24 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->cols[Collider_Hit]->pos = v2f(20, 0);
     en->cols[Collider_Hit]->scale = v2f(0.1, 0.1);
     
+    break;
+  case ZombieKind_Bloat:
+    en->dim = v2f(16, 32);
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE * 2);
+    en->sprite = prefab.sprite.bloat_idle;
+    en->anims[Animation_Idle] = prefab.animation.bloat_idle;
+    en->anims[Animation_Walk] = prefab.animation.bloat_walk;
+
+    entity_add_collider(en, Collider_Body);
+    en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Body]->pos = v2f(0, 0);
+    en->cols[Collider_Body]->scale = v2f(0.5, 1);
+
+    entity_add_collider(en, Collider_Hit);
+    en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
+    en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
+    en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
+
     break;
   }
 
@@ -461,7 +481,7 @@ void entity_look_at(Entity *en, Vec2F target_pos)
   en->flip_x = entity_pos.x > target_pos.x ? TRUE : FALSE;
 }
 
-void set_entity_target(Entity *en, EntityRef target)
+void entity_set_target(Entity *en, EntityRef target)
 {
   Entity *target_entity = entity_from_ref(target);
   Vec2F target_pos = pos_from_entity(target_entity);
@@ -838,4 +858,22 @@ void equip_weapon(Entity *en, WeaponKind kind)
   entity_add_prop(weapon_en, EntityProp_Renders);
 
   shot_point_en->pos = desc.shot_point;
+}
+
+void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original)
+{
+  entity_add_prop(en, EntityProp_DistortScaleX);
+  en->distort_x.state = 0;
+  en->distort_x.rate = rate;
+  en->distort_x.scale = scale;
+  en->distort_x.saved = original;
+}
+
+void entity_distort_y(Entity *en, f32 scale, f32 rate, f32 original)
+{
+  entity_add_prop(en, EntityProp_DistortScaleY);
+  en->distort_y.state = 0;
+  en->distort_y.rate = rate;
+  en->distort_y.scale = scale;
+  en->distort_y.saved = original;
 }

@@ -4,9 +4,13 @@
 #include "render/render.h"
 #include "ui/ui.h"
 
+#define TEXTURE_SPRITE 0
+#define TEXTURE_FONT 1
+#define TEXTURE_SCENE 2
+
 #define SPRITE_ATLAS_CELL 16
 #define SPRITE_ATLAS_WIDTH 256
-#define SPRITE_ATLAS_HEIGHT 128
+#define SPRITE_ATLAS_HEIGHT 256
 
 #define GLYPH_ATLAS_CELL 8
 #define GLYPH_ATLAS_WIDTH 128
@@ -14,10 +18,6 @@
 
 #define SHADER_PRIMITIVE 0
 #define SHADER_SPRITE 1
-
-#define TEXTURE_SPRITE 0
-#define TEXTURE_FONT 1
-#define TEXTURE_SCENE 2
 
 #define DEBUG_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
 #define DEBUG_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})

@@ -14,44 +14,42 @@ Prefabs create_prefabs(void)
     prefab.sprite.player_walk_3     = (Sprite) {v2i(4, 0), v2i(1, 1)};
     prefab.sprite.player_walk_4     = (Sprite) {v2i(5, 0), v2i(1, 1)};
     prefab.sprite.player_jump       = (Sprite) {v2i(6, 0), v2i(1, 1)};
-
     prefab.sprite.walker_idle       = (Sprite) {v2i(0, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_0     = (Sprite) {v2i(1, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_1     = (Sprite) {v2i(2, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_2     = (Sprite) {v2i(3, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_3     = (Sprite) {v2i(4, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_4     = (Sprite) {v2i(5, 1), v2i(1, 1)};
-
     prefab.sprite.chicken_idle      = (Sprite) {v2i(0, 2), v2i(1, 1)};
     prefab.sprite.chicken_lay_0     = (Sprite) {v2i(1, 2), v2i(1, 1)};
     prefab.sprite.chicken_lay_1     = (Sprite) {v2i(2, 2), v2i(1, 1)};
-
     prefab.sprite.baby_chicken_idle = (Sprite) {v2i(6, 2), v2i(1, 1)};
-    
-    prefab.sprite.revolver          = (Sprite) {v2i(0, 4), v2i(1, 1)};
-    prefab.sprite.rifle             = (Sprite) {v2i(1, 4), v2i(1, 1)};
-    prefab.sprite.shotgun           = (Sprite) {v2i(2, 4), v2i(1, 1)};
-    prefab.sprite.smg               = (Sprite) {v2i(3, 4), v2i(1, 1)};
-    prefab.sprite.pistol            = (Sprite) {v2i(4, 4), v2i(1, 1)};
-
-    prefab.sprite.muzzle_flash      = (Sprite) {v2i(5, 4), v2i(1, 1)};
-    prefab.sprite.bullet            = (Sprite) {v2i(6, 4), v2i(1, 1)};
-    prefab.sprite.laser_flash       = (Sprite) {v2i(7, 4), v2i(1, 1)};
-    prefab.sprite.laser             = (Sprite) {v2i(8, 4), v2i(1, 1)};
-    prefab.sprite.pellet            = (Sprite) {v2i(8, 4), v2i(1, 1)};
-    prefab.sprite.coin              = (Sprite) {v2i(10, 4), v2i(1, 1)};
-    prefab.sprite.soul              = (Sprite) {v2i(11, 4), v2i(1, 1)};
-
-    prefab.sprite.egg_0             = (Sprite) {v2i(0, 5), v2i(1, 1)};
-    prefab.sprite.egg_1             = (Sprite) {v2i(1, 5), v2i(1, 1)};
-    prefab.sprite.egg_2             = (Sprite) {v2i(2, 5), v2i(1, 1)};
-
-    prefab.sprite.wagon_left        = (Sprite) {v2i(8, 6), v2i(4, 2)};
-    prefab.sprite.wagon_right       = (Sprite) {v2i(12, 6), v2i(4, 2)};
-
-    prefab.sprite.ui_heart_full     = (Sprite) {v2i(0, 6), v2i(1, 1)};
-    prefab.sprite.ui_heart_empty    = (Sprite) {v2i(1, 6), v2i(1, 1)};
-    prefab.sprite.ui_ammo           = (Sprite) {v2i(3, 6), v2i(1, 1)};
+    prefab.sprite.bloat_idle        = (Sprite) {v2i(0, 3), v2i(1, 2)};
+    prefab.sprite.bloat_walk_0      = (Sprite) {v2i(1, 3), v2i(1, 2)};
+    prefab.sprite.bloat_walk_1      = (Sprite) {v2i(2, 3), v2i(1, 2)};
+    prefab.sprite.bloat_walk_2      = (Sprite) {v2i(3, 3), v2i(1, 2)};
+    prefab.sprite.bloat_walk_3      = (Sprite) {v2i(4, 3), v2i(1, 2)};
+    prefab.sprite.bloat_walk_4      = (Sprite) {v2i(5, 3), v2i(1, 2)};
+    prefab.sprite.revolver          = (Sprite) {v2i(0, 5), v2i(1, 1)};
+    prefab.sprite.rifle             = (Sprite) {v2i(1, 5), v2i(1, 1)};
+    prefab.sprite.shotgun           = (Sprite) {v2i(2, 5), v2i(1, 1)};
+    prefab.sprite.smg               = (Sprite) {v2i(3, 5), v2i(1, 1)};
+    prefab.sprite.laser_pistol      = (Sprite) {v2i(4, 5), v2i(1, 1)};
+    prefab.sprite.muzzle_flash      = (Sprite) {v2i(0, 6), v2i(1, 1)};
+    prefab.sprite.bullet            = (Sprite) {v2i(1, 6), v2i(1, 1)};
+    prefab.sprite.laser_flash       = (Sprite) {v2i(2, 6), v2i(1, 1)};
+    prefab.sprite.laser             = (Sprite) {v2i(3, 6), v2i(1, 1)};
+    prefab.sprite.pellet            = (Sprite) {v2i(4, 6), v2i(1, 1)};
+    prefab.sprite.coin              = (Sprite) {v2i(5, 6), v2i(1, 1)};
+    prefab.sprite.soul              = (Sprite) {v2i(6, 6), v2i(1, 1)};
+    prefab.sprite.egg_0             = (Sprite) {v2i(0, 7), v2i(1, 1)};
+    prefab.sprite.egg_1             = (Sprite) {v2i(1, 7), v2i(1, 1)};
+    prefab.sprite.egg_2             = (Sprite) {v2i(2, 7), v2i(1, 1)};
+    prefab.sprite.wagon_left        = (Sprite) {v2i(8, 7), v2i(4, 2)};
+    prefab.sprite.wagon_right       = (Sprite) {v2i(12, 7), v2i(4, 2)};
+    prefab.sprite.ui_heart_full     = (Sprite) {v2i(0, 8), v2i(1, 1)};
+    prefab.sprite.ui_heart_empty    = (Sprite) {v2i(1, 8), v2i(1, 1)};
+    prefab.sprite.ui_ammo           = (Sprite) {v2i(3, 8), v2i(1, 1)};
   }
 
   // - Animation ----------------
@@ -110,6 +108,21 @@ Prefabs create_prefabs(void)
     prefab.animation.baby_chicken_idle = (AnimationDesc) {
       .frame_count = 1,
       .frames[0] = prefab.sprite.baby_chicken_idle,
+    };
+
+    prefab.animation.bloat_idle = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0] = prefab.sprite.bloat_idle,
+    };
+
+    prefab.animation.bloat_walk = (AnimationDesc) {
+      .ticks_per_frame = 20,
+      .frame_count = 5,
+      .frames[0] = prefab.sprite.bloat_walk_0,
+      .frames[1] = prefab.sprite.bloat_walk_1,
+      .frames[2] = prefab.sprite.bloat_walk_2,
+      .frames[3] = prefab.sprite.bloat_walk_3,
+      .frames[4] = prefab.sprite.bloat_walk_4,
     };
   }
 
@@ -249,6 +262,14 @@ Prefabs create_prefabs(void)
       .damage = 0,
       .attack_cooldown = 0.5f,
     };
+
+    prefab.zombie[ZombieKind_Bloat] = (ZombieDesc) {
+      .props = 0,
+      .speed = 50,
+      .health = 70,
+      .damage = 2,
+      .attack_cooldown = 2.0f,
+    };
   }
 
   // - Weapon ----------------
@@ -302,7 +323,7 @@ Prefabs create_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_LaserPistol] = (WeaponDesc) {
-      .sprite = prefab.sprite.pistol,
+      .sprite = prefab.sprite.laser_pistol,
       .ammo_kind = AmmoKind_Laser,
       .ancor = v2f(35, 5),
       .shot_point = v2f(20, 0),

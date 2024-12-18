@@ -198,6 +198,7 @@ typedef enum EntityProp : u64
 
 typedef enum AmmoKind
 {
+  AmmoKind_Nil,
   AmmoKind_Bullet,
   AmmoKind_Pellet,
   AmmoKind_Laser,
@@ -251,6 +252,7 @@ typedef enum ZombieKind
   ZombieKind_Walker,
   ZombieKind_Chicken,
   ZombieKind_BabyChicken,
+  ZombieKind_Bloat,
 
   ZombieKind_COUNT,
 } ZombieKind;
@@ -427,16 +429,14 @@ Vec2F pos_tl_from_entity(Entity *en);
 Vec2F pos_tr_from_entity(Entity *en);
 Vec2F pos_bl_from_entity(Entity *en);
 Vec2F pos_br_from_entity(Entity *en);
-
 Vec2F dim_from_entity(Entity *en);
 Vec2F scale_from_entity(Entity *en);
 f32 rot_from_entity(Entity *en);
-
 bool flip_x_from_entity(Entity *en);
 bool flip_y_from_entity(Entity *en);
 
 void entity_look_at(Entity *en, Vec2F target_pos);
-void set_entity_target(Entity *en, EntityRef target);
+void entity_set_target(Entity *en, EntityRef target);
 bool entity_is_valid(Entity *en);
 
 void damage_entity(Entity *reciever, i16 damage);
@@ -474,3 +474,5 @@ f64 timer_remaining(Timer *timer);
 bool has_prop(b64 props, u64 prop);
 P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void equip_weapon(Entity *en, WeaponKind kind);
+void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
+void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);

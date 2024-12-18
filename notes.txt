@@ -15,7 +15,7 @@ TODO
   [X] event queue
   [X] logger
   [X] juice: squash and stretch
-  [_] laser pistol
+  [X] laser pistol
   [_] audio
   [_] play again
   [~] merchant
@@ -24,4 +24,19 @@ TODO
   [_] text centering
   [_] complex animation
   [_] juice: camera shake 
-  [_] buff zombie
+  [~] BIG zombie
+  [_] powerups/abilities (bought with souls)
+
+ZOMBIES
+  - walker: he walks
+  - chicken: lays eggs which hatch into more chickens
+  - bloat: jumps in the air and smashes the ground
+  - ?
+  - ?
+
+WEAPONS
+  - revolver
+  - rifle
+  - shotgun
+  - smg
+  - laser pistol
