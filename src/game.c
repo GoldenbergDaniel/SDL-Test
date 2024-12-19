@@ -30,15 +30,16 @@ void init_game(void)
   // - Starting entities ---
   {
     Entity *merchant = create_entity(EntityType_Merchant);
-    merchant->sp = SPID_Merchant;
+    merchant->spid = SPID_Merchant;
     merchant->pos = v2f(WIDTH/2, GROUND_Y + 80);
 
     Entity *player = create_entity(EntityType_Player);
-    player->sp = SPID_Player;
+    player->spid = SPID_Player;
     player->pos = v2f(WIDTH/2.0f, HEIGHT/2.0f);
+    entity_set_gender(player, EntityGender_Female);
 
     Entity *gun = create_entity(EntityType_Equipped);
-    gun->sp = SPID_Gun;
+    gun->spid = SPID_Gun;
     gun->pos = v2f(35.0f, 5.0f);
     attach_entity_child(player, gun);
 
@@ -175,16 +176,6 @@ void update_game(void)
 
   // - Switch weapon ---
   {
-    if (game.is_grace_period)
-    {
-      switch (game.current_wave.num)
-      {
-        case 1: game.progression.rifle   = TRUE; break;
-        case 2: game.progression.shotgun = TRUE; break;
-        case 3: game.progression.smg     = TRUE; break;
-      }
-    }
-
     if (entity_is_valid(player))
     {
       if (is_key_just_pressed(Key_0))
@@ -195,19 +186,23 @@ void update_game(void)
       {
         equip_weapon(player, WeaponKind_Revolver);
       }
-      else if (is_key_just_pressed(Key_2) && game.progression.rifle)
+      else if (is_key_just_pressed(Key_2) && game.progression.unlocked[WeaponKind_Rifle])
       {
         equip_weapon(player, WeaponKind_Rifle);
       }
-      else if (is_key_just_pressed(Key_3) && game.progression.shotgun)
+      else if (is_key_just_pressed(Key_3) && game.progression.unlocked[WeaponKind_Shotgun])
       {
         equip_weapon(player, WeaponKind_Shotgun);
       }
-      else if (is_key_just_pressed(Key_4) && game.progression.smg)
+      else if (is_key_just_pressed(Key_4) && game.progression.unlocked[WeaponKind_SMG])
       {
         equip_weapon(player, WeaponKind_SMG);
       }
-      else if (is_key_just_pressed(Key_5) && game.progression.smg)
+      else if (is_key_just_pressed(Key_5) && game.progression.unlocked[WeaponKind_BurstRifle])
+      {
+        equip_weapon(player, WeaponKind_BurstRifle);
+      }
+      else if (is_key_just_pressed(Key_6) && game.progression.unlocked[WeaponKind_LaserPistol])
       {
         equip_weapon(player, WeaponKind_LaserPistol);
       }
@@ -724,7 +719,7 @@ void update_game(void)
     if (!en->is_active) continue;
 
     // Update player invinsibility timer
-    if (en->sp == SPID_Player)
+    if (en->spid == SPID_Player)
     {
       if (!en->invincibility_timer.ticking)
       {
@@ -736,21 +731,44 @@ void update_game(void)
     {
       if (en->is_weapon_equipped)
       {
-        if (!en->attack_timer.ticking)
+        Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
+
+        if (game.weapon.shot_count == 0) game.weapon.shot_count = 3;
+
+        if (!en->attack_timer.ticking &&
+            gun->weapon_kind == WeaponKind_BurstRifle && 
+            game.weapon.shot_count == 3)
+        {
+          timer_start(&en->attack_timer, en->attack_timer.duration * 3);
+        }
+        else if (!en->attack_timer.ticking)
         {
           timer_start(&en->attack_timer, en->attack_timer.duration);
         }
 
-        bool can_shoot = is_key_pressed(Key_Mouse1) && 
-                         timer_timeout(&en->attack_timer) &&
-                         game.weapon.ammo_remaining > 0 &&
-                         !game.weapon.is_reloading;
+        bool can_shoot = FALSE;
+
+        if (timer_timeout(&en->attack_timer) && 
+            game.weapon.ammo_remaining > 0 && 
+            !game.weapon.is_reloading)
+        {
+          if (gun->weapon_kind == WeaponKind_BurstRifle)
+          {
+            can_shoot = (is_key_pressed(Key_Mouse1) && game.weapon.shot_count == 3) ||
+                        (game.weapon.shot_count < 3 && game.weapon.shot_count > 0);
+
+            if (can_shoot) game.weapon.shot_count -= 1;
+          }
+          else
+          {
+            can_shoot = is_key_pressed(Key_Mouse1);
+          }
+        }
 
         if (can_shoot)
         {
           en->attack_timer.ticking = FALSE;
 
-          Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
@@ -1216,9 +1234,10 @@ void update_game(void)
     // - Unlock all progression ---
     if (is_key_just_pressed(Key_P) && entity_is_valid(player))
     {
-      game.progression.rifle = TRUE;
-      game.progression.shotgun = TRUE;  
-      game.progression.smg = TRUE;
+      for (i32 i = 1; i < WeaponKind_COUNT; i++)
+      {
+        game.progression.unlocked[i] = TRUE;
+      }
     }
   }
 

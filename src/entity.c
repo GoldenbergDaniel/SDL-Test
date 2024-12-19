@@ -44,15 +44,15 @@ Entity *create_entity(EntityType type)
     en->move_type = MoveType_Grounded;
     en->combat_type = CombatType_Ranged;
     en->speed = PLAYER_SPEED;
-    en->sprite = prefab.sprite.player_idle;
+    en->sprite = prefab.sprite.player_male_idle;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     en->health = PLAYER_HEALTH;
     en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
     en->dim = v2f(7, 15);
 
-    en->anims[Animation_Idle] = prefab.animation.player_idle;
-    en->anims[Animation_Walk] = prefab.animation.player_walk;
-    en->anims[Animation_Jump] = prefab.animation.player_jump;
+    en->anims[Animation_Idle] = prefab.animation.player_male_idle;
+    en->anims[Animation_Walk] = prefab.animation.player_male_walk;
+    en->anims[Animation_Jump] = prefab.animation.player_male_jump;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -639,7 +639,7 @@ Entity *get_entity_by_sp(u8 sp)
 
   for (Entity *en = game.entities.head; en != NULL; en = en->next)
   {
-    if (en->sp == sp)
+    if (en->spid == sp)
     {
       result = en;
       break;
@@ -747,7 +747,7 @@ Entity *get_entity_child_of_sp(Entity *en, u8 sp)
   for (u16 i = 0; i < MAX_ENTITY_CHILDREN; i++)
   {
     Entity *curr = entity_from_ref(en->children[i]);
-    if (curr->sp == sp)
+    if (curr->spid == sp)
     {
       result = curr;
       break;
@@ -876,4 +876,24 @@ void entity_distort_y(Entity *en, f32 scale, f32 rate, f32 original)
   en->distort_y.rate = rate;
   en->distort_y.scale = scale;
   en->distort_y.saved = original;
+}
+
+void entity_set_gender(Entity *en, EntityGender gender)
+{
+  if (en->type != EntityType_Player) return;
+
+  if (gender == EntityGender_Male)
+  {
+    en->sprite = prefab.sprite.player_male_idle;
+    en->anims[Animation_Idle] = prefab.animation.player_male_idle;
+    en->anims[Animation_Walk] = prefab.animation.player_male_walk;
+    en->anims[Animation_Jump] = prefab.animation.player_male_jump;
+  }
+  else if (gender == EntityGender_Female)
+  {
+    en->sprite = prefab.sprite.player_female_idle;
+    en->anims[Animation_Idle] = prefab.animation.player_female_idle;
+    en->anims[Animation_Walk] = prefab.animation.player_female_walk;
+    en->anims[Animation_Jump] = prefab.animation.player_female_jump;
+  }
 }

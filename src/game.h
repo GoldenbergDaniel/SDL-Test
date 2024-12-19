@@ -142,6 +142,7 @@ struct Game
 
   struct
   {
+    i8 shot_count;
     i16 ammo_remaining;
     Timer reload_timer;
     bool is_reloading;
@@ -149,9 +150,7 @@ struct Game
 
   struct
   {
-    bool rifle;
-    bool shotgun;
-    bool smg;
+    bool unlocked[WeaponKind_COUNT]; 
   } progression;
 };
 

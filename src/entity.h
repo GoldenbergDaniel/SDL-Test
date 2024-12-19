@@ -149,6 +149,13 @@ struct Particle
 
 // Entity ///////////////////////////////////////////////////////////////////////////
 
+typedef enum EntityGender
+{
+  EntityGender_Nil,
+  EntityGender_Male,
+  EntityGender_Female,
+} EntityGender;
+
 typedef enum EntityState
 {
   EntityState_Idle,
@@ -211,6 +218,7 @@ typedef enum WeaponKind
   WeaponKind_Rifle,
   WeaponKind_Shotgun,
   WeaponKind_SMG,
+  WeaponKind_BurstRifle,
   WeaponKind_LaserPistol,
 
   WeaponKind_COUNT,
@@ -280,6 +288,7 @@ typedef enum CombatType
   CombatType_Nil,
   CombatType_Melee,
   CombatType_Ranged,
+  CombatType_BurstRanged,
 } CombatType;
 
 typedef enum DrawType
@@ -303,7 +312,7 @@ struct Entity
 
   // General
   u64 id;
-  u8 sp;
+  u8 spid;
   EntityType type;
   MoveType move_type;
   CombatType combat_type;
@@ -476,3 +485,4 @@ P_CollisionParams collision_params_from_entity(Entity *en, Vec2F vel);
 void equip_weapon(Entity *en, WeaponKind kind);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
+void entity_set_gender(Entity *en, EntityGender gender);

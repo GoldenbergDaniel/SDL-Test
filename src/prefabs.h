@@ -9,14 +9,22 @@ struct Prefabs
 {
   struct
   {
-    Sprite player_idle;
-    Sprite player_walk_0;
-    Sprite player_walk_1;
-    Sprite player_walk_2;
-    Sprite player_walk_3;
-    Sprite player_walk_4;
-    Sprite player_walk_5;
-    Sprite player_jump;
+    Sprite player_male_idle;
+    Sprite player_male_walk_0;
+    Sprite player_male_walk_1;
+    Sprite player_male_walk_2;
+    Sprite player_male_walk_3;
+    Sprite player_male_walk_4;
+    Sprite player_male_walk_5;
+    Sprite player_male_jump;
+    Sprite player_female_idle;
+    Sprite player_female_walk_0;
+    Sprite player_female_walk_1;
+    Sprite player_female_walk_2;
+    Sprite player_female_walk_3;
+    Sprite player_female_walk_4;
+    Sprite player_female_walk_5;
+    Sprite player_female_jump;
     Sprite walker_idle;
     Sprite walker_walk_0;
     Sprite walker_walk_1;
@@ -39,6 +47,7 @@ struct Prefabs
     Sprite rifle;
     Sprite shotgun;
     Sprite smg;
+    Sprite burst_rifle;
     Sprite laser_pistol;
     Sprite muzzle_flash;
     Sprite bullet;
@@ -59,9 +68,12 @@ struct Prefabs
 
   struct
   {
-    AnimationDesc player_idle;
-    AnimationDesc player_walk;
-    AnimationDesc player_jump;
+    AnimationDesc player_male_idle;
+    AnimationDesc player_male_walk;
+    AnimationDesc player_male_jump;
+    AnimationDesc player_female_idle;
+    AnimationDesc player_female_walk;
+    AnimationDesc player_female_jump;
     AnimationDesc walker_idle;
     AnimationDesc walker_walk;
     AnimationDesc chicken_idle;

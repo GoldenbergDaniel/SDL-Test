@@ -16,6 +16,8 @@ TODO
   [X] logger
   [X] juice: squash and stretch
   [X] laser pistol
+  [X] burst rifle
+  [~] girl playable character
   [_] audio
   [_] play again
   [~] merchant
@@ -25,7 +27,7 @@ TODO
   [_] complex animation
   [_] juice: camera shake 
   [~] BIG zombie
-  [_] powerups/abilities (bought with souls)
+  [_] powerups/abilities
 
 ZOMBIES
   - walker: he walks
@@ -39,4 +41,5 @@ WEAPONS
   - rifle
   - shotgun
   - smg
+  - burst rifle
   - laser pistol
