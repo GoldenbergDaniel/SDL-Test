@@ -254,27 +254,6 @@ struct CollectableDesc
   i32 draw_chance;
 };
 
-typedef enum ZombieKind
-{
-  ZombieKind_Nil,
-  ZombieKind_Walker,
-  ZombieKind_Chicken,
-  ZombieKind_BabyChicken,
-  ZombieKind_Bloat,
-
-  ZombieKind_COUNT,
-} ZombieKind;
-
-typedef struct ZombieDesc ZombieDesc;
-struct ZombieDesc
-{
-  b64 props;
-  u16 speed;
-  u16 health;
-  u16 damage;
-  f32 attack_cooldown;
-};
-
 typedef enum MoveType
 {
   MoveType_Nil,
@@ -297,6 +276,29 @@ typedef enum DrawType
   DrawType_Primitive,
   DrawType_Sprite,
 } DrawType;
+
+typedef enum ZombieKind
+{
+  ZombieKind_Nil,
+  ZombieKind_Walker,
+  ZombieKind_Chicken,
+  ZombieKind_BabyChicken,
+  ZombieKind_Bloat,
+
+  ZombieKind_COUNT,
+} ZombieKind;
+
+typedef struct ZombieDesc ZombieDesc;
+struct ZombieDesc
+{
+  b64 props;
+  MoveType move_type;
+  CombatType combat_type;
+  u16 speed;
+  u16 health;
+  u16 damage;
+  f32 attack_cooldown;
+};
 
 typedef struct Entity Entity;
 struct Entity

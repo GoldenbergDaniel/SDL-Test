@@ -67,8 +67,6 @@ Entity *create_entity(EntityType type)
                 EntityProp_CollidesWithGround;
     
     en->draw_type = DrawType_Sprite;
-    en->move_type = MoveType_Grounded;
-    en->combat_type = CombatType_Melee;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
   case EntityType_Equipped:
@@ -184,6 +182,8 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
 
   ZombieDesc desc = prefab.zombie[kind];
   en->props |= desc.props;
+  en->move_type = desc.move_type;
+  en->combat_type = desc.combat_type;
   en->health = desc.health;
   en->damage = desc.damage;
   en->speed = desc.speed;
@@ -211,7 +211,6 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     break;
   case ZombieKind_Chicken:
     en->dim = v2f(10, 8);
-
     en->sprite = prefab.sprite.chicken_idle;
     en->anims[Animation_Idle] = prefab.animation.chicken_idle;
     en->anims[Animation_Walk] = prefab.animation.chicken_idle;

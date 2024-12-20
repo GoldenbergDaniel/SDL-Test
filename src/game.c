@@ -819,23 +819,26 @@ void update_game(void)
       {
         switch (en->combat_type)
         {
-          case CombatType_Ranged:
+        case CombatType_Ranged:
+          if (!en->attack_timer.ticking)
           {
-            if (!en->attack_timer.ticking)
-            {
-              timer_start(&en->attack_timer, en->attack_timer.duration);
-            }
-            else if (timer_timeout(&en->attack_timer))
-            {
-              en->attack_timer.ticking = FALSE;
-
-              Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
-              Entity *ammo = spawn_ammo(AmmoKind_Laser, spawn_pos);
-              ammo->tint = DEBUG_GREEN;
-              ammo->rot = en->rot;
-              ammo->speed = 700.0f;
-            }
+            timer_start(&en->attack_timer, en->attack_timer.duration);
           }
+          else if (timer_timeout(&en->attack_timer))
+          {
+            en->attack_timer.ticking = FALSE;
+
+            Vec2F spawn_pos = v2f(en->pos.x, en->pos.y);
+            Entity *ammo = spawn_ammo(AmmoKind_Laser, spawn_pos);
+            ammo->tint = DEBUG_GREEN;
+            ammo->rot = en->rot;
+            ammo->speed = 700.0f;
+          }
+
+          break;
+        case CombatType_Pound:
+          
+
           break;
           default: break;
         }
