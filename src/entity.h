@@ -182,7 +182,7 @@ typedef enum EntityType
   EntityType_Merchant,
 } EntityType;
 
-typedef enum EntityProp : u64
+typedef enum EntityProp
 {
   EntityProp_Renders =            bit(0),
   EntityProp_Collides =           bit(1),
@@ -288,7 +288,7 @@ typedef enum CombatType
   CombatType_Nil,
   CombatType_Melee,
   CombatType_Ranged,
-  CombatType_BurstRanged,
+  CombatType_Pound,
 } CombatType;
 
 typedef enum DrawType
