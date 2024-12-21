@@ -24,7 +24,7 @@ TODO
   [_] headshots
   [_] shotgun (pellets)
   [_] text centering
-  [_] complex animation
+  [~] complex animation
   [_] juice: camera shake 
   [~] BIG zombie
   [_] powerups/abilities

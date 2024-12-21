@@ -52,8 +52,8 @@ void init_game(void)
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
 
-    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
-    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -212,7 +212,7 @@ void update_game(void)
   // - Weapon reloading ---
   if (entity_is_valid(player))
   {
-    Entity *gun = get_entity_child_of_sp(player, SPID_Gun);
+    Entity *gun = get_entity_child_by_spid(player, SPID_Gun);
     WeaponDesc desc = prefab.weapon[gun->weapon_kind];
 
     if (!game.weapon.is_reloading && is_key_just_pressed(Key_R) && player->is_weapon_equipped)
@@ -274,27 +274,27 @@ void update_game(void)
         if (is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
-          en->anim_state = Animation_Walk;
+          en->state = EntityState_Walk;
         }
 
         if (is_key_pressed(Key_D) && !is_key_pressed(Key_A))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
-          en->anim_state = Animation_Walk;
+          en->state = EntityState_Walk;
         }
 
         if (is_key_pressed(Key_A) && is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-          en->anim_state = Animation_Idle;
+          en->state = EntityState_Walk;
         }
         
         if (!is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-          en->anim_state = Animation_Idle;
+          en->state = EntityState_Idle;
         }
 
         bool jump_key_pressed = is_key_pressed(Key_W) || is_key_pressed(Key_Space);
@@ -304,9 +304,10 @@ void update_game(void)
           entity_rem_prop(en, EntityProp_Grounded);
         }
 
+        // @TODO: This should not be the jump state entry.
         if (!entity_has_prop(en, EntityProp_Grounded))
         {
-          en->anim_state = Animation_Jump;
+          en->state = EntityState_Jump;
         }
       }
       else
@@ -317,101 +318,93 @@ void update_game(void)
           entity_look_at(en, player_pos);
         }
 
+        f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
+
         switch (en->move_type)
         {
-          case MoveType_Grounded:
-          {
-            f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
-
-            if (entity_has_prop(en, EntityProp_Grounded) && en->anim_state != Animation_LayEgg)
+        default: break;
+        case MoveType_Grounded:
+          if (entity_has_prop(en, EntityProp_Grounded) && !entity_is_laying(en))
+          { 
+            if (dist_from_player >= 40.0f)
             {
-              if (dist_from_player >= 40.0f)
-              {
-                en->anim_state = Animation_Walk;
-              }
-              else
-              {
-                en->anim_state = Animation_Idle;
-              }
+              en->state = EntityState_Walk;
             }
-
-            switch (en->anim_state)
+            else
             {
-            case Animation_Idle:
-            case Animation_LayEgg:
-              en->new_vel.x = 0;
-            break;
-            case Animation_Walk:
-              en->new_vel.x = en->flip_x ? -en->speed * dt : en->speed * dt;
-            break;
-            default: break;
+              en->state = EntityState_Idle;
             }
           }
+
+          if (en->state == EntityState_Walk)
+          {
+            en->new_vel.x = en->flip_x ? -en->speed * dt : en->speed * dt;
+          }
+          else
+          {
+            en->new_vel.x = 0;
+          }
+
           break;
-          case MoveType_Flying:
+        case MoveType_Flying:
+          if (en->has_target)
           {
-            if (en->has_target)
-            {
-              en->input_dir.x = cos_1f(en->target_angle);
-              en->input_dir.y = sin_1f(en->target_angle);
+            en->input_dir.x = cos_1f(en->target_angle);
+            en->input_dir.y = sin_1f(en->target_angle);
 
-              en->rot = en->target_angle * DEGREES;
-            }
-            else
-            {
-              en->input_dir = V2F_ZERO;
-            }
-
-            if (en->input_dir.x != 0.0f || en->input_dir.y != 0.0f)
-            {
-              en->input_dir = normalize_2f(en->input_dir);
-            }
-
-            // X Acceleration
-            if (en->input_dir.x != 0.0f)
-            {
-              en->new_vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
-              f32 bound = en->speed * absv(en->input_dir.x) * dt;
-              en->new_vel.x = clamp(en->vel.x, -bound, bound);
-            }
-            else
-            {
-              en->new_vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
-              en->new_vel.x = to_zero(en->vel.x, 0.1f);
-            }
-
-            // Y Acceleration
-            if (en->input_dir.y != 0.0f)
-            {
-              en->new_vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
-              f32 bound = en->speed * absv(en->input_dir.y) * dt;
-              en->new_vel.y = clamp(en->vel.y, -bound, bound);
-            }
-            else
-            {
-              en->new_vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
-              en->new_vel.y = to_zero(en->vel.y, 0.1f);
-            }
+            en->rot = en->target_angle * DEGREES;
           }
-          case MoveType_Projectile:
+          else
           {
-            if (!en->kill_timer.ticking)
-            {
-              timer_start(&en->kill_timer, en->kill_timer.duration);
-            }
-
-            if (timer_timeout(&en->kill_timer))
-            {
-              en->kill_timer.ticking = FALSE;
-
-              kill_entity(en, TRUE);
-            }
-
-            en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
-            en->new_vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
+            en->input_dir = V2F_ZERO;
           }
+
+          if (en->input_dir.x != 0.0f || en->input_dir.y != 0.0f)
+          {
+            en->input_dir = normalize_2f(en->input_dir);
+          }
+
+          // X Acceleration
+          if (en->input_dir.x != 0.0f)
+          {
+            en->new_vel.x += PLAYER_ACC * dir(en->input_dir.x) * dt;
+            f32 bound = en->speed * absv(en->input_dir.x) * dt;
+            en->new_vel.x = clamp(en->vel.x, -bound, bound);
+          }
+          else
+          {
+            en->new_vel.x = lerp_1f(en->vel.x, 0.0f, PLAYER_FRIC * dt);
+            en->new_vel.x = to_zero(en->vel.x, 0.1f);
+          }
+
+          // Y Acceleration
+          if (en->input_dir.y != 0.0f)
+          {
+            en->new_vel.y += PLAYER_ACC * dir(en->input_dir.y) * dt;
+            f32 bound = en->speed * absv(en->input_dir.y) * dt;
+            en->new_vel.y = clamp(en->vel.y, -bound, bound);
+          }
+          else
+          {
+            en->new_vel.y = lerp_1f(en->vel.y, 0.0f, PLAYER_FRIC * dt);
+            en->new_vel.y = to_zero(en->vel.y, 0.1f);
+          }
+        case MoveType_Projectile:
+          if (!en->kill_timer.ticking)
+          {
+            timer_start(&en->kill_timer, en->kill_timer.duration);
+          }
+
+          if (timer_timeout(&en->kill_timer))
+          {
+            en->kill_timer.ticking = FALSE;
+
+            kill_entity(en, TRUE);
+          }
+
+          en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
+          en->new_vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
           break;
-          default: break;
         }
       }
 
@@ -530,11 +523,14 @@ void update_game(void)
   {
     if (!en->is_active) continue;
 
+    // - Lay eggs ---
     if (entity_has_prop(en, EntityProp_LaysEggs))
     {
+      logger_debug(str("State: %i\n"), en->state);
+
       if (!en->egg_timer.ticking)
       {
-        if (en->anim_state != Animation_LayEgg)
+        if (!entity_is_laying(en))
         {
           timer_start(&en->egg_timer, 2.0f);
         }
@@ -548,14 +544,14 @@ void update_game(void)
       {
         en->egg_timer.ticking = FALSE;
 
-        if (en->anim_state != Animation_LayEgg)
+        if (en->state != EntityState_LayEggBegin)
         {
-          en->anim_state = Animation_LayEgg;
+          en->state = EntityState_LayEggBegin;
         }
         else
         {
           spawn_entity(EntityType_Egg, en->pos);
-          en->anim_state = Animation_Walk;
+          en->state = EntityState_Walk;
         }
       }
     }
@@ -731,7 +727,7 @@ void update_game(void)
     {
       if (en->is_weapon_equipped)
       {
-        Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
+        Entity *gun = get_entity_child_by_spid(en, SPID_Gun);
 
         if (game.weapon.shot_count == 0) game.weapon.shot_count = 3;
 
@@ -837,7 +833,22 @@ void update_game(void)
 
           break;
         case CombatType_Pound:
-          
+          // @TODO(dg): this.
+          if (!en->attack_timer.ticking)
+          {
+            timer_start(&en->attack_timer, 3.0f);
+          }
+
+          if (timer_timeout(&en->attack_timer))
+          {
+            en->attack_timer.ticking = FALSE;
+
+            en->state = EntityState_Jump;
+            en->pound_attack_state = 1;
+            en->sprite = prefab.sprite.bloat_pound_1;
+            en->new_vel.y = PLAYER_JUMP_VEL * 1.5f * dt;
+            entity_rem_prop(en, EntityProp_Grounded);
+          }
 
           break;
           default: break;
@@ -943,20 +954,20 @@ void update_game(void)
       }
     }
 
-    if (en->anim_state == Animation_None) continue;
+    if (en->state == EntityState_Nil) continue;
     
     // Clear prev animation if the state changed
-    if (en->anim_state_prev != en->anim_state)
+    if (en->prev_state != en->state)
     {
       zero(en->anim, Animation);
-      en->anim_state_prev = en->anim_state;
+      en->prev_state = en->state;
     }
     
-    AnimationDesc anim_desc = en->anims[en->anim_state];
+    AnimationDesc anim_desc = en->anim_descriptors[en->state];
     en->sprite = anim_desc.frames[en->anim.frame_idx];
 
     // Tick animation
-    if (en->anims[en->anim_state].frame_count > 1)
+    if (anim_desc.frame_count > 1)
     {
       en->anim.tick_counter += ANIM_TICK;
 

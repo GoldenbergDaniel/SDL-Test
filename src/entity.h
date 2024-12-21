@@ -43,34 +43,6 @@ struct EntityRef
   u64 id;
 };
 
-// Animation ////////////////////////////////////////////////////////////////////////
-
-typedef enum AnimationState
-{
-  Animation_None,
-  Animation_Idle,
-  Animation_Walk,
-  Animation_Jump,
-  Animation_LayEgg,
-
-  Animation_COUNT,
-} AnimationState;
-
-typedef struct Animation Animation;
-struct Animation
-{
-  u16 frame_idx;
-  u16 tick_counter;
-};
-
-typedef struct AnimationDesc AnimationDesc;
-struct AnimationDesc
-{
-  Sprite frames[5];
-  u16 frame_count;
-  u16 ticks_per_frame;
-};
-
 // Timer ////////////////////////////////////////////////////////////////////////////
 
 typedef struct Timer Timer;
@@ -147,6 +119,23 @@ struct Particle
   EntityRef owner;
 };
 
+// Animation ////////////////////////////////////////////////////////////////////////
+
+typedef struct Animation Animation;
+struct Animation
+{
+  u16 frame_idx;
+  u16 tick_counter;
+};
+
+typedef struct AnimationDesc AnimationDesc;
+struct AnimationDesc
+{
+  Sprite frames[5];
+  u16 frame_count;
+  u16 ticks_per_frame;
+};
+
 // Entity ///////////////////////////////////////////////////////////////////////////
 
 typedef enum EntityGender
@@ -158,12 +147,17 @@ typedef enum EntityGender
 
 typedef enum EntityState
 {
+  EntityState_Nil,
   EntityState_Idle,
   EntityState_Walk,
   EntityState_Jump,
   EntityState_LayEggBegin,
   EntityState_LayEggLaying,
   EntityState_LayEggEnd,
+  EntityState_PoundBegin,
+  EntityState_PoundEnd,
+
+  EntityState_COUNT,
 } EntityState;
 
 typedef enum EntityType
@@ -352,11 +346,10 @@ struct Entity
   bool colliding_with_player;
 
   // Animation
-  Timer flash_timer;
+  AnimationDesc *anim_descriptors;
   Animation anim;
-  AnimationDesc anims[Animation_COUNT];
-  AnimationState anim_state;
-  AnimationState anim_state_prev;
+  EntityState state;
+  EntityState prev_state;
   struct
   {
     Vec2F range;
@@ -376,6 +369,7 @@ struct Entity
     f32 rate;
     i8 state;
   } distort_y;
+  Timer flash_timer;
 
   // Targeting
   bool has_target;
@@ -405,6 +399,11 @@ struct Entity
   Timer invincibility_timer;
   Timer muzzle_flash_timer;
   Timer egg_timer;
+  enum
+  {
+    PoundAttackState_Jump,
+    PoundAttackState_,
+  } pound_attack_state;
 
   // Kinds
   ZombieKind zombie_kind;
@@ -468,9 +467,9 @@ void attach_entity_child(Entity *en, Entity *child);
 void attach_entity_child_at(Entity *en, Entity *child, u16 index);
 void detach_entity_child(Entity *en, Entity *child);
 Entity *get_entity_child_at(Entity *en, u16 index);
-Entity *get_entity_child_of_id(Entity *en, u64 id);
-Entity *get_entity_child_of_sp(Entity *en, u8 sp);
-Entity *get_entity_child_of_type(Entity *en, EntityType type);
+Entity *get_entity_child_by_id(Entity *en, u64 id);
+Entity *get_entity_child_by_spid(Entity *en, u8 sp);
+Entity *get_entity_child_by_type(Entity *en, EntityType type);
 
 void entity_add_collider(Entity *en, ColliderID col_id);
 
@@ -488,3 +487,4 @@ void equip_weapon(Entity *en, WeaponKind kind);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_set_gender(Entity *en, EntityGender gender);
+bool entity_is_laying(Entity *en);

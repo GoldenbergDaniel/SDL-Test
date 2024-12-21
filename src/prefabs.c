@@ -14,13 +14,13 @@ Prefabs create_prefabs(void)
     prefab.sprite.player_male_walk_3    = (Sprite) {v2i(4, 0), v2i(1, 1)};
     prefab.sprite.player_male_walk_4    = (Sprite) {v2i(5, 0), v2i(1, 1)};
     prefab.sprite.player_male_jump      = (Sprite) {v2i(6, 0), v2i(1, 1)};
-    prefab.sprite.player_female_idle    = (Sprite) {v2i(7, 0), v2i(1, 1)};
-    prefab.sprite.player_female_walk_0  = (Sprite) {v2i(8, 0), v2i(1, 1)};
-    prefab.sprite.player_female_walk_1  = (Sprite) {v2i(9, 0), v2i(1, 1)};
-    prefab.sprite.player_female_walk_2  = (Sprite) {v2i(10, 0), v2i(1, 1)};
-    prefab.sprite.player_female_walk_3  = (Sprite) {v2i(11, 0), v2i(1, 1)};
-    prefab.sprite.player_female_walk_4  = (Sprite) {v2i(12, 0), v2i(1, 1)};
-    prefab.sprite.player_female_jump    = (Sprite) {v2i(13, 0), v2i(1, 1)};
+    prefab.sprite.player_female_idle    = (Sprite) {v2i(8, 0), v2i(1, 1)};
+    prefab.sprite.player_female_walk_0  = (Sprite) {v2i(9, 0), v2i(1, 1)};
+    prefab.sprite.player_female_walk_1  = (Sprite) {v2i(10, 0), v2i(1, 1)};
+    prefab.sprite.player_female_walk_2  = (Sprite) {v2i(11, 0), v2i(1, 1)};
+    prefab.sprite.player_female_walk_3  = (Sprite) {v2i(12, 0), v2i(1, 1)};
+    prefab.sprite.player_female_walk_4  = (Sprite) {v2i(13, 0), v2i(1, 1)};
+    prefab.sprite.player_female_jump    = (Sprite) {v2i(14, 0), v2i(1, 1)};
     prefab.sprite.walker_idle           = (Sprite) {v2i(0, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_0         = (Sprite) {v2i(1, 1), v2i(1, 1)};
     prefab.sprite.walker_walk_1         = (Sprite) {v2i(2, 1), v2i(1, 1)};
@@ -37,6 +37,7 @@ Prefabs create_prefabs(void)
     prefab.sprite.bloat_walk_2          = (Sprite) {v2i(3, 3), v2i(1, 2)};
     prefab.sprite.bloat_walk_3          = (Sprite) {v2i(4, 3), v2i(1, 2)};
     prefab.sprite.bloat_walk_4          = (Sprite) {v2i(5, 3), v2i(1, 2)};
+    prefab.sprite.bloat_pound_1         = (Sprite) {v2i(6, 3), v2i(1, 2)};
     prefab.sprite.revolver              = (Sprite) {v2i(0, 5), v2i(1, 1)};
     prefab.sprite.rifle                 = (Sprite) {v2i(1, 5), v2i(1, 1)};
     prefab.sprite.shotgun               = (Sprite) {v2i(2, 5), v2i(1, 1)};
@@ -62,12 +63,12 @@ Prefabs create_prefabs(void)
 
   // - Animation ----------------
   {
-    prefab.animation.player_male_idle = (AnimationDesc) {
+    prefab.animation.player_male[EntityState_Idle] = (AnimationDesc) {
       .frame_count = 1,
       .frames[0]   = prefab.sprite.player_male_idle,
     };
 
-    prefab.animation.player_male_walk = (AnimationDesc) {
+    prefab.animation.player_male[EntityState_Walk] = (AnimationDesc) {
       .ticks_per_frame = 10,
       .frame_count     = 5,
       .frames[0]       = prefab.sprite.player_male_walk_0,
@@ -77,18 +78,18 @@ Prefabs create_prefabs(void)
       .frames[4]       = prefab.sprite.player_male_walk_4,
     };
 
-    prefab.animation.player_male_jump = (AnimationDesc) {
+    prefab.animation.player_male[EntityState_Jump] = (AnimationDesc) {
       .ticks_per_frame = 0,
-      .frame_count = 1,
-      .frames[0]   = prefab.sprite.player_male_jump,
+      .frame_count     = 1,
+      .frames[0]       = prefab.sprite.player_male_jump,
     };
 
-    prefab.animation.player_female_idle = (AnimationDesc) {
+    prefab.animation.player_female[EntityState_Idle] = (AnimationDesc) {
       .frame_count = 1,
       .frames[0]   = prefab.sprite.player_female_idle,
     };
 
-    prefab.animation.player_female_walk = (AnimationDesc) {
+    prefab.animation.player_female[EntityState_Walk] = (AnimationDesc) {
       .ticks_per_frame = 10,
       .frame_count     = 5,
       .frames[0]       = prefab.sprite.player_female_walk_0,
@@ -98,18 +99,18 @@ Prefabs create_prefabs(void)
       .frames[4]       = prefab.sprite.player_female_walk_4,
     };
 
-    prefab.animation.player_female_jump = (AnimationDesc) {
+    prefab.animation.player_female[EntityState_Jump] = (AnimationDesc) {
       .ticks_per_frame = 0,
       .frame_count     = 1,
       .frames[0]       = prefab.sprite.player_female_jump,
     };
 
-    prefab.animation.walker_idle = (AnimationDesc) {
+    prefab.animation.zombie_walker[EntityState_Idle] = (AnimationDesc) {
       .frame_count = 1,
       .frames[0]   = prefab.sprite.walker_idle,
     };
 
-    prefab.animation.walker_walk = (AnimationDesc) {
+    prefab.animation.zombie_walker[EntityState_Walk] = (AnimationDesc) {
       .ticks_per_frame = 20,
       .frame_count     = 5,
       .frames[0]       = prefab.sprite.walker_walk_0,
@@ -119,32 +120,57 @@ Prefabs create_prefabs(void)
       .frames[4]       = prefab.sprite.walker_walk_4,
     };
 
-    prefab.animation.chicken_idle = (AnimationDesc) {
+    prefab.animation.zombie_chicken[EntityState_Idle] = (AnimationDesc) {
       .ticks_per_frame = 40,
       .frame_count     = 2,
       .frames[0]       = prefab.sprite.chicken_idle,
       .frames[1]       = prefab.sprite.chicken_lay_0,
     };
 
-    prefab.animation.chicken_lay = (AnimationDesc) {
-      .ticks_per_frame = 20,
+    prefab.animation.zombie_chicken[EntityState_Walk] = (AnimationDesc) {
+      .ticks_per_frame = 30,
+      .frame_count     = 2,
+      .frames[0]       = prefab.sprite.chicken_idle,
+      .frames[1]       = prefab.sprite.chicken_lay_0,
+    };
+
+    prefab.animation.zombie_chicken[EntityState_LayEggBegin] = (AnimationDesc) {
+      .ticks_per_frame = 60,
       .frame_count     = 3,
       .frames[0]       = prefab.sprite.chicken_idle,
       .frames[1]       = prefab.sprite.chicken_lay_0,
       .frames[2]       = prefab.sprite.chicken_lay_1,
     };
 
-    prefab.animation.baby_chicken_idle = (AnimationDesc) {
+    prefab.animation.zombie_chicken[EntityState_LayEggLaying] = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0]   = prefab.sprite.chicken_lay_1,
+    };
+
+    prefab.animation.zombie_chicken[EntityState_LayEggEnd] = (AnimationDesc) {
+      .ticks_per_frame = 60,
+      .frame_count     = 3,
+      .frames[0]       = prefab.sprite.chicken_lay_1,
+      .frames[1]       = prefab.sprite.chicken_lay_0,
+      .frames[2]       = prefab.sprite.chicken_idle,
+    };
+
+    prefab.animation.zombie_baby_chicken[EntityState_Idle] = (AnimationDesc) {
       .frame_count = 1,
       .frames[0]   = prefab.sprite.baby_chicken_idle,
     };
 
-    prefab.animation.bloat_idle = (AnimationDesc) {
+    prefab.animation.zombie_baby_chicken[EntityState_Walk] = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0]   = prefab.sprite.baby_chicken_idle,
+    };
+
+    prefab.animation.zombie_bloat[EntityState_Idle] = (AnimationDesc) {
       .frame_count = 1,
       .frames[0]   = prefab.sprite.bloat_idle,
     };
 
-    prefab.animation.bloat_walk = (AnimationDesc) {
+    prefab.animation.zombie_bloat[EntityState_Walk] = (AnimationDesc) {
       .ticks_per_frame = 25,
       .frame_count     = 5,
       .frames[0]       = prefab.sprite.bloat_walk_0,
@@ -152,6 +178,16 @@ Prefabs create_prefabs(void)
       .frames[2]       = prefab.sprite.bloat_walk_2,
       .frames[3]       = prefab.sprite.bloat_walk_3,
       .frames[4]       = prefab.sprite.bloat_walk_4,
+    };
+
+    prefab.animation.zombie_bloat[EntityState_Jump] = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0]   = prefab.sprite.bloat_pound_1,
+    };
+
+    prefab.animation.zombie_bloat[EntityState_PoundBegin] = (AnimationDesc) {
+      .frame_count = 1,
+      .frames[0]   = prefab.sprite.rifle,
     };
   }
 
@@ -325,8 +361,8 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
       .sprite          = prefab.sprite.rifle,
       .ammo_kind       = AmmoKind_Bullet,
-      .ancor           = v2f(35, 5),
-      .shot_point      = v2f(40, 0),
+      .ancor           = v2f(30, 5),
+      .shot_point      = v2f(45, 0),
       .shot_cooldown   = 1.15f,
       .damage          = 14,
       .bullet_speed    = 1500.0f,
@@ -337,7 +373,7 @@ Prefabs create_prefabs(void)
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
       .sprite          = prefab.sprite.shotgun,
       .ammo_kind       = AmmoKind_Pellet,
-      .ancor           = v2f(35, 5),
+      .ancor           = v2f(30, 5),
       .shot_point      = v2f(40, 0),
       .shot_cooldown   = 0.95f,
       .damage          = 4,

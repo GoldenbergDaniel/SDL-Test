@@ -43,6 +43,7 @@ struct Prefabs
     Sprite bloat_walk_3;
     Sprite bloat_walk_4;
     Sprite bloat_walk_5;
+    Sprite bloat_pound_1;
     Sprite revolver;
     Sprite rifle;
     Sprite shotgun;
@@ -68,19 +69,12 @@ struct Prefabs
 
   struct
   {
-    AnimationDesc player_male_idle;
-    AnimationDesc player_male_walk;
-    AnimationDesc player_male_jump;
-    AnimationDesc player_female_idle;
-    AnimationDesc player_female_walk;
-    AnimationDesc player_female_jump;
-    AnimationDesc walker_idle;
-    AnimationDesc walker_walk;
-    AnimationDesc chicken_idle;
-    AnimationDesc chicken_lay;
-    AnimationDesc baby_chicken_idle;
-    AnimationDesc bloat_idle;
-    AnimationDesc bloat_walk;
+    AnimationDesc player_male[EntityState_COUNT];
+    AnimationDesc player_female[EntityState_COUNT];
+    AnimationDesc zombie_walker[EntityState_COUNT];
+    AnimationDesc zombie_chicken[EntityState_COUNT];
+    AnimationDesc zombie_baby_chicken[EntityState_COUNT];
+    AnimationDesc zombie_bloat[EntityState_COUNT];
   } animation;
 
   ParticleDesc particle[ParticleKind_COUNT];

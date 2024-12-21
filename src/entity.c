@@ -50,9 +50,7 @@ Entity *create_entity(EntityType type)
     en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
     en->dim = v2f(7, 15);
 
-    en->anims[Animation_Idle] = prefab.animation.player_male_idle;
-    en->anims[Animation_Walk] = prefab.animation.player_male_walk;
-    en->anims[Animation_Jump] = prefab.animation.player_male_jump;
+    en->anim_descriptors = prefab.animation.player_male;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -195,8 +193,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   default: break;
   case ZombieKind_Walker:
     en->sprite = prefab.sprite.walker_idle;
-    en->anims[Animation_Idle] = prefab.animation.walker_idle;
-    en->anims[Animation_Walk] = prefab.animation.walker_walk;
+    en->anim_descriptors = prefab.animation.zombie_walker;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -212,9 +209,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   case ZombieKind_Chicken:
     en->dim = v2f(10, 8);
     en->sprite = prefab.sprite.chicken_idle;
-    en->anims[Animation_Idle] = prefab.animation.chicken_idle;
-    en->anims[Animation_Walk] = prefab.animation.chicken_idle;
-    en->anims[Animation_LayEgg] = prefab.animation.chicken_lay;
+    en->anim_descriptors = prefab.animation.zombie_chicken;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -231,8 +226,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->dim = v2f(5, 4);
 
     en->sprite = prefab.sprite.baby_chicken_idle;
-    en->anims[Animation_Idle] = prefab.animation.baby_chicken_idle;
-    en->anims[Animation_Walk] = prefab.animation.baby_chicken_idle;
+    en->anim_descriptors = prefab.animation.zombie_baby_chicken;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -249,8 +243,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->dim = v2f(16, 32);
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE * 2);
     en->sprite = prefab.sprite.bloat_idle;
-    en->anims[Animation_Idle] = prefab.animation.bloat_idle;
-    en->anims[Animation_Walk] = prefab.animation.bloat_walk;
+    en->anim_descriptors = prefab.animation.zombie_bloat;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -722,7 +715,7 @@ Entity *get_entity_child_at(Entity *en, u16 index)
   return entity_from_ref(en->children[index]);
 }
 
-Entity *get_entity_child_of_id(Entity *en, u64 id)
+Entity *get_entity_child_by_id(Entity *en, u64 id)
 {
   Entity *result = NIL_ENTITY;
 
@@ -739,7 +732,7 @@ Entity *get_entity_child_of_id(Entity *en, u64 id)
   return result;
 }
 
-Entity *get_entity_child_of_sp(Entity *en, u8 sp)
+Entity *get_entity_child_by_spid(Entity *en, u8 sp)
 {
   Entity *result = NIL_ENTITY;
 
@@ -756,7 +749,7 @@ Entity *get_entity_child_of_sp(Entity *en, u8 sp)
   return result;
 }
 
-Entity *get_entity_child_of_type(Entity *en, EntityType type)
+Entity *get_entity_child_by_type(Entity *en, EntityType type)
 {
   Entity *result = NIL_ENTITY;
 
@@ -828,13 +821,13 @@ void equip_weapon(Entity *en, WeaponKind kind)
 {
   if (!entity_is_valid(en)) return;
 
-  Entity *weapon_en = get_entity_child_of_sp(en, SPID_Gun);
+  Entity *weapon_en = get_entity_child_by_spid(en, SPID_Gun);
   Entity *shot_point_en = get_entity_child_at(weapon_en, 0);
 
   if (kind == WeaponKind_Nil)
   {
     en->is_weapon_equipped = FALSE;
-    Entity *gun = get_entity_child_of_sp(en, SPID_Gun);
+    Entity *gun = get_entity_child_by_spid(en, SPID_Gun);
     entity_rem_prop(gun, EntityProp_Renders);
     return;
   }
@@ -884,15 +877,18 @@ void entity_set_gender(Entity *en, EntityGender gender)
   if (gender == EntityGender_Male)
   {
     en->sprite = prefab.sprite.player_male_idle;
-    en->anims[Animation_Idle] = prefab.animation.player_male_idle;
-    en->anims[Animation_Walk] = prefab.animation.player_male_walk;
-    en->anims[Animation_Jump] = prefab.animation.player_male_jump;
+    en->anim_descriptors = prefab.animation.player_male;
   }
   else if (gender == EntityGender_Female)
   {
     en->sprite = prefab.sprite.player_female_idle;
-    en->anims[Animation_Idle] = prefab.animation.player_female_idle;
-    en->anims[Animation_Walk] = prefab.animation.player_female_walk;
-    en->anims[Animation_Jump] = prefab.animation.player_female_jump;
+    en->anim_descriptors = prefab.animation.player_female;
   }
+}
+
+bool entity_is_laying(Entity *en)
+{
+  return en->state == EntityState_LayEggBegin ||
+         en->state == EntityState_LayEggLaying ||
+         en->state == EntityState_LayEggEnd;
 }
