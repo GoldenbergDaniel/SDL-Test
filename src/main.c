@@ -83,10 +83,10 @@ void init(void)
 {
   init_scratch_arenas();
 
-  global.perm_arena = create_arena(GiB(1), TRUE);
+  global.perm_arena = create_arena(GiB(16), TRUE);
 
-  game.entity_arena = create_arena(GiB(1), FALSE);
-  game.frame_arena = create_arena(GiB(1), TRUE);
+  game.entity_arena = create_arena(GiB(2), FALSE);
+  game.frame_arena = create_arena(GiB(2), TRUE);
   game.draw_arena = create_arena(MiB(16), FALSE);
   
   stm_setup();
@@ -114,7 +114,7 @@ void init(void)
   global.resources = load_resources(&global.perm_arena, res_path);
   global.renderer = r_create_renderer(40000, WIDTH, HEIGHT, &global.perm_arena);
 
-  prefab = create_prefabs();
+  init_prefabs();
 
   game.dt = TIME_STEP;
   init_game();

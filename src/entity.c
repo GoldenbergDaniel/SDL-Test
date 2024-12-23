@@ -39,14 +39,13 @@ Entity *create_entity(EntityType type)
                 EntityProp_Moves | 
                 EntityProp_AffectedByGravity |
                 EntityProp_CollidesWithGround;
-
     en->draw_type = DrawType_Sprite;
     en->move_type = MoveType_Grounded;
     en->combat_type = CombatType_Ranged;
-    en->speed = PLAYER_SPEED;
+    en->speed = prefab.player_stat[EntityGender_Male].speed;
     en->sprite = prefab.sprite.player_male_idle;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
-    en->health = PLAYER_HEALTH;
+    en->health = prefab.player_stat[EntityGender_Male].health;
     en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
     en->dim = v2f(7, 15);
 
@@ -62,8 +61,8 @@ Entity *create_entity(EntityType type)
                 EntityProp_Moves | 
                 EntityProp_Collides |
                 EntityProp_AffectedByGravity |
-                EntityProp_CollidesWithGround;
-    
+                EntityProp_CollidesWithGround |
+                EntityProp_LookAtPlayer;
     en->draw_type = DrawType_Sprite;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
@@ -76,7 +75,8 @@ Entity *create_entity(EntityType type)
   case EntityType_Ammo:
     en->props = EntityProp_Renders | 
                 EntityProp_Moves | 
-                EntityProp_Collides;
+                EntityProp_Collides |
+                EntityProp_KillAfterTime;
     
     en->draw_type = DrawType_Sprite;
     en->move_type = MoveType_Projectile;
@@ -89,6 +89,11 @@ Entity *create_entity(EntityType type)
     en->cols[Collider_Hit]->radius = 1;
     en->cols[Collider_Hit]->draw_type = DrawType_Nil;
     en->cols[Collider_Hit]->dim = V2F_ZERO;
+    break;
+  case EntityType_Collider:
+    en->props = EntityProp_Collides |
+                EntityProp_Renders;
+    en->draw_type = DrawType_Primitive;
     break;
   case EntityType_Decoration:
     en->props = EntityProp_Renders;
@@ -115,10 +120,15 @@ Entity *create_entity(EntityType type)
     en->sprite = prefab.sprite.egg_0;
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
-  case EntityType_Collider:
-    en->props = EntityProp_Collides |
-                EntityProp_Renders;
-    en->draw_type = DrawType_Primitive;
+  case EntityType_Shockwave:
+    en->props = EntityProp_Renders |
+                EntityProp_KillAfterTime |
+                EntityProp_Moves;
+    en->draw_type = DrawType_Sprite;
+    en->sprite = prefab.sprite.egg_0;
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
+    en->state = EntityState_Idle;
+    en->anim_descriptors = prefab.animation.shockwave;
     break;
   case EntityType_Merchant:
     en->props = EntityProp_Renders;
@@ -208,7 +218,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     break;
   case ZombieKind_Chicken:
     en->dim = v2f(10, 8);
-    en->sprite = prefab.sprite.chicken_idle;
+    en->sprite = prefab.sprite.chicken_idle_0;
     en->anim_descriptors = prefab.animation.zombie_chicken;
 
     entity_add_collider(en, Collider_Body);
@@ -311,6 +321,7 @@ Entity *spawn_particles(ParticleKind kind, Vec2F pos)
 void kill_entity(Entity *en, bool slain)
 {
   en->marked_for_death = TRUE;
+
   push_event(EventType_EntityKilled, (EventDesc) {
     .en=en, 
     .type=en->type, 
@@ -874,15 +885,20 @@ void entity_set_gender(Entity *en, EntityGender gender)
 {
   if (en->type != EntityType_Player) return;
 
+  en->speed = prefab.player_stat[gender].speed;
+  en->health = prefab.player_stat[gender].health;
+
   if (gender == EntityGender_Male)
   {
     en->sprite = prefab.sprite.player_male_idle;
     en->anim_descriptors = prefab.animation.player_male;
+    game.player_gender = EntityGender_Male;
   }
   else if (gender == EntityGender_Female)
   {
     en->sprite = prefab.sprite.player_female_idle;
     en->anim_descriptors = prefab.animation.player_female;
+    game.player_gender = EntityGender_Female;
   }
 }
 

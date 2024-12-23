@@ -52,8 +52,10 @@ void init_game(void)
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
 
-    spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
-    // spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_Walker, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_entity(EntityType_Shockwave, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -215,9 +217,12 @@ void update_game(void)
     Entity *gun = get_entity_child_by_spid(player, SPID_Gun);
     WeaponDesc desc = prefab.weapon[gun->weapon_kind];
 
-    if (!game.weapon.is_reloading && is_key_just_pressed(Key_R) && player->is_weapon_equipped)
+    if (!game.weapon.is_reloading && 
+        game.weapon.ammo_remaining != prefab.weapon[gun->weapon_kind].ammo &&
+        is_key_just_pressed(Key_R) && 
+        player->is_weapon_equipped)
     {      
-      game.weapon.is_reloading = TRUE;      
+      game.weapon.is_reloading = TRUE;
       gun->rot = -45;
 
       timer_start(&game.weapon.reload_timer, desc.reload_duration);
@@ -245,6 +250,20 @@ void update_game(void)
       en->marked_for_death = FALSE;
       free_entity(en);
     }
+
+    if (entity_has_prop(en, EntityProp_KillAfterTime))
+    {
+      if (!en->kill_timer.ticking)
+      {
+        timer_start(&en->kill_timer, en->kill_timer.duration);
+      }
+
+      if (timer_timeout(&en->kill_timer))
+      {
+        en->kill_timer.ticking = FALSE;
+        kill_entity(en, TRUE);
+      }
+    }
   }
 
   if (!game.is_so_over)
@@ -256,6 +275,15 @@ void update_game(void)
   for (EN_IN_ENTITIES)
   {
     if (!en->is_active) continue;
+
+    if (entity_has_prop(en, EntityProp_LookAtPlayer))
+    {
+      Vec2F player_pos = pos_from_entity(player);
+      if (entity_is_valid(player) && !game.is_so_over)
+      {
+        entity_look_at(en, player_pos);
+      }
+    }
     
     if (entity_has_prop(en, EntityProp_AffectedByGravity) &&
        !entity_has_prop(en, EntityProp_Grounded))
@@ -274,50 +302,57 @@ void update_game(void)
         if (is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, -en->speed * dt, PLAYER_ACC * dt);
-          en->state = EntityState_Walk;
+          if (entity_has_prop(en, EntityProp_Grounded))
+          {
+            en->state = EntityState_Walk;
+          }
         }
 
         if (is_key_pressed(Key_D) && !is_key_pressed(Key_A))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, en->speed * dt, PLAYER_ACC * dt);
-          en->state = EntityState_Walk;
+          if (entity_has_prop(en, EntityProp_Grounded))
+          {
+            en->state = EntityState_Walk;
+          }
         }
 
         if (is_key_pressed(Key_A) && is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * 2.0f * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-          en->state = EntityState_Walk;
+          if (entity_has_prop(en, EntityProp_Grounded))
+          {
+            en->state = EntityState_Walk;
+          }
         }
         
         if (!is_key_pressed(Key_A) && !is_key_pressed(Key_D))
         {
           en->new_vel.x = lerp_1f(en->new_vel.x, 0.0f, PLAYER_FRIC * dt);
           en->new_vel.x = to_zero(en->new_vel.x, 1.0f);
-          en->state = EntityState_Idle;
+          if (entity_has_prop(en, EntityProp_Grounded))
+          {
+            en->state = EntityState_Idle;
+          }
         }
 
         bool jump_key_pressed = is_key_pressed(Key_W) || is_key_pressed(Key_Space);
         if (jump_key_pressed && entity_has_prop(en, EntityProp_Grounded))
         {
-          en->new_vel.y = PLAYER_JUMP_VEL * dt;
+          en->new_vel.y = prefab.player_stat[game.player_gender].jump_vel * dt;
           entity_rem_prop(en, EntityProp_Grounded);
+          en->state = EntityState_Jump;
         }
 
         // @TODO: This should not be the jump state entry.
         if (!entity_has_prop(en, EntityProp_Grounded))
         {
-          en->state = EntityState_Jump;
         }
       }
       else
       {
         Vec2F player_pos = pos_from_entity(player);
-        if (entity_is_valid(player) && !game.is_so_over)
-        {
-          entity_look_at(en, player_pos);
-        }
-
         f32 dist_from_player = distance_2f(pos_from_entity(en), player_pos);
 
         switch (en->move_type)
@@ -390,18 +425,6 @@ void update_game(void)
             en->new_vel.y = to_zero(en->vel.y, 0.1f);
           }
         case MoveType_Projectile:
-          if (!en->kill_timer.ticking)
-          {
-            timer_start(&en->kill_timer, en->kill_timer.duration);
-          }
-
-          if (timer_timeout(&en->kill_timer))
-          {
-            en->kill_timer.ticking = FALSE;
-
-            kill_entity(en, TRUE);
-          }
-
           en->new_vel.x = cos_1f(en->rot * RADIANS) * en->speed * dt;
           en->new_vel.y = sin_1f(en->rot * RADIANS) * en->speed * dt;
           break;
@@ -411,7 +434,6 @@ void update_game(void)
       en->vel = en->new_vel;
       en->pos = add_2f(en->pos, en->vel);
 
-      // - Handle entity wrapping ---
       if (entity_has_prop(en, EntityProp_WrapsAtEdges))
       {
         Vec2F dim = dim_from_entity(en);
@@ -526,17 +548,15 @@ void update_game(void)
     // - Lay eggs ---
     if (entity_has_prop(en, EntityProp_LaysEggs))
     {
-      logger_debug(str("State: %i\n"), en->state);
-
       if (!en->egg_timer.ticking)
       {
         if (!entity_is_laying(en))
         {
-          timer_start(&en->egg_timer, 2.0f);
-        }
-        else
-        {
           timer_start(&en->egg_timer, 3.0f);
+        }
+        else if (en->state == EntityState_LayEggLaying)
+        {
+          timer_start(&en->egg_timer, 2.0f);
         }
       }
 
@@ -544,14 +564,14 @@ void update_game(void)
       {
         en->egg_timer.ticking = FALSE;
 
-        if (en->state != EntityState_LayEggBegin)
+        if (!entity_is_laying(en))
         {
           en->state = EntityState_LayEggBegin;
         }
         else
         {
           spawn_entity(EntityType_Egg, en->pos);
-          en->state = EntityState_Walk;
+          en->state = EntityState_LayEggEnd;
         }
       }
     }
@@ -833,8 +853,7 @@ void update_game(void)
 
           break;
         case CombatType_Pound:
-          // @TODO(dg): this.
-          if (!en->attack_timer.ticking)
+          if (!en->attack_timer.ticking && en->state != EntityState_Jump)
           {
             timer_start(&en->attack_timer, 3.0f);
           }
@@ -844,10 +863,40 @@ void update_game(void)
             en->attack_timer.ticking = FALSE;
 
             en->state = EntityState_Jump;
-            en->pound_attack_state = 1;
-            en->sprite = prefab.sprite.bloat_pound_1;
-            en->new_vel.y = PLAYER_JUMP_VEL * 1.5f * dt;
-            entity_rem_prop(en, EntityProp_Grounded);
+            en->sprite = prefab.sprite.bloat_pound_0;
+            en->new_vel.y = prefab.player_stat[game.player_gender].jump_vel * 1.5f * dt;
+            entity_rem_prop(en, EntityProp_Grounded); 
+          }
+          
+          if (en->state == EntityState_Jump && entity_has_prop(en, EntityProp_Grounded))
+          {
+            logger_debug(str("POUND!\n"));
+            en->state = EntityState_PoundEnd;
+
+            Vec2F this_pos = pos_from_entity(en);
+            Vec2F player_pos = pos_from_entity(player);
+            if (absv(this_pos.x - player_pos.x) <= BLOAT_POUND_RANGE &&
+                entity_has_prop(player, EntityProp_Grounded))
+            {
+              damage_entity(player, en->damage);
+            }
+
+            // - Spawn shockwave ---
+            {
+              Entity *shockwave;
+              Vec2F spawn_pos = sub_2f(this_pos, v2f(0, 50.0f));
+
+              shockwave = spawn_entity(EntityType_Shockwave, spawn_pos);
+              shockwave->kill_timer.duration = 0.5f;
+              shockwave->new_vel.x = -2.5f;
+
+              shockwave = spawn_entity(EntityType_Shockwave, spawn_pos);
+              shockwave->kill_timer.duration = 0.5f;
+              shockwave->new_vel.x = 2.5f;
+              shockwave->flip_x = TRUE;
+            }
+
+            // @TODO(dg): camera shake
           }
 
           break;
@@ -963,10 +1012,11 @@ void update_game(void)
       en->prev_state = en->state;
     }
     
+    assert(en->anim_descriptors != NULL);
     AnimationDesc anim_desc = en->anim_descriptors[en->state];
     en->sprite = anim_desc.frames[en->anim.frame_idx];
 
-    // Tick animation
+    // - Tick animation ---
     if (anim_desc.frame_count > 1)
     {
       en->anim.tick_counter += ANIM_TICK;
@@ -978,6 +1028,12 @@ void update_game(void)
         if (en->anim.frame_idx == anim_desc.frame_count)
         {
           en->anim.frame_idx = 0;
+
+          // - Exit animation ---
+          if (anim_desc.exit_state != EntityState_Nil)
+          {
+            en->state = anim_desc.exit_state;
+          }
         }
       }
     }
@@ -1150,7 +1206,8 @@ void update_game(void)
   {
     // - Hearts ---
     {
-      for (i32 heart_idx = 1; heart_idx <= PLAYER_HEALTH; heart_idx++)
+      const i32 max_health = prefab.player_stat[game.player_gender].health;
+      for (i32 heart_idx = 1; heart_idx <= max_health; heart_idx++)
       {
         Sprite sprite;
         if (heart_idx <= player->health)
@@ -1269,7 +1326,7 @@ void render_game(void)
   // - Draw sprite batch ----------------
   for (EN_IN_ENTITIES)
   {
-    if (!en->is_active || en->draw_type != DrawType_Sprite) continue;
+    if (en->draw_type != DrawType_Sprite) continue;
 
     if (entity_has_prop(en, EntityProp_Renders))
     {

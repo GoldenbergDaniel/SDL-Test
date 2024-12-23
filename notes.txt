@@ -17,24 +17,22 @@ TODO
   [X] juice: squash and stretch
   [X] laser pistol
   [X] burst rifle
-  [~] girl playable character
-  [_] audio
-  [_] play again
+  [X] complex animation
+  [X] girl playable character
+  [X] BIG zombie
   [~] merchant
   [_] headshots
   [_] shotgun (pellets)
-  [_] text centering
-  [~] complex animation
   [_] juice: camera shake 
-  [~] BIG zombie
   [_] powerups/abilities
+  [_] play again
+  [_] main menu and character select
+  [_] audio
 
 ZOMBIES
   - walker: he walks
   - chicken: lays eggs which hatch into more chickens
   - bloat: jumps in the air and smashes the ground
-  - ?
-  - ?
 
 WEAPONS
   - revolver

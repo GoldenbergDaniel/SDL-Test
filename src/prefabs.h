@@ -17,6 +17,7 @@ struct Prefabs
     Sprite player_male_walk_4;
     Sprite player_male_walk_5;
     Sprite player_male_jump;
+    Sprite player_male_dead;
     Sprite player_female_idle;
     Sprite player_female_walk_0;
     Sprite player_female_walk_1;
@@ -25,6 +26,7 @@ struct Prefabs
     Sprite player_female_walk_4;
     Sprite player_female_walk_5;
     Sprite player_female_jump;
+    Sprite player_female_dead;
     Sprite walker_idle;
     Sprite walker_walk_0;
     Sprite walker_walk_1;
@@ -32,7 +34,8 @@ struct Prefabs
     Sprite walker_walk_3;
     Sprite walker_walk_4;
     Sprite walker_walk_5;
-    Sprite chicken_idle;
+    Sprite chicken_idle_0;
+    Sprite chicken_idle_1;
     Sprite chicken_lay_0;
     Sprite chicken_lay_1;
     Sprite baby_chicken_idle;
@@ -43,7 +46,7 @@ struct Prefabs
     Sprite bloat_walk_3;
     Sprite bloat_walk_4;
     Sprite bloat_walk_5;
-    Sprite bloat_pound_1;
+    Sprite bloat_pound_0;
     Sprite revolver;
     Sprite rifle;
     Sprite shotgun;
@@ -65,6 +68,9 @@ struct Prefabs
     Sprite ui_heart_full;
     Sprite ui_heart_empty;
     Sprite ui_ammo;
+    Sprite shockwave_0;
+    Sprite shockwave_1;
+    Sprite shockwave_2;
   } sprite;
 
   struct
@@ -75,7 +81,15 @@ struct Prefabs
     AnimationDesc zombie_chicken[EntityState_COUNT];
     AnimationDesc zombie_baby_chicken[EntityState_COUNT];
     AnimationDesc zombie_bloat[EntityState_COUNT];
+    AnimationDesc shockwave[EntityState_COUNT];
   } animation;
+
+  struct
+  {
+    f32 speed;
+    f32 jump_vel;
+    f32 health;
+  } player_stat[EntityGender_COUNT];
 
   ParticleDesc particle[ParticleKind_COUNT];
   WaveDesc wave[TOTAL_WAVE_COUNT];
@@ -84,4 +98,4 @@ struct Prefabs
   CollectableDesc collectable[CollectableKind_COUNT];
 };
 
-Prefabs create_prefabs(void);
+void init_prefabs(void);

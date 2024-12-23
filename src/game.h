@@ -128,9 +128,9 @@ struct Game
   Timer grace_period_timer;
   Timer spawn_timer;
   f64 time_alive;
-
   u16 coin_count;
   u16 soul_count;
+  EntityGender player_gender;
 
   struct
   {

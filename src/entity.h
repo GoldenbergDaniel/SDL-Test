@@ -6,11 +6,8 @@
 
 #define MAX_ENTITY_CHILDREN 16
 
-#define PLAYER_SPEED 400.0f
-#define PLAYER_JUMP_VEL 900.0f
 #define PLAYER_ACC 3.0f
 #define PLAYER_FRIC 8.0f
-#define PLAYER_HEALTH 5
 
 #define BULLET_KILL_TIME 5.0f
 #define PLAYER_INVINCIBILITY_TIMER 0.5f
@@ -18,6 +15,7 @@
 
 #define WALKER_SPEED 50.0f
 #define BABY_CHICKEN_GROWTH_DURATION 3.0f
+#define BLOAT_POUND_RANGE 200.0f
 
 enum
 {
@@ -119,23 +117,6 @@ struct Particle
   EntityRef owner;
 };
 
-// Animation ////////////////////////////////////////////////////////////////////////
-
-typedef struct Animation Animation;
-struct Animation
-{
-  u16 frame_idx;
-  u16 tick_counter;
-};
-
-typedef struct AnimationDesc AnimationDesc;
-struct AnimationDesc
-{
-  Sprite frames[5];
-  u16 frame_count;
-  u16 ticks_per_frame;
-};
-
 // Entity ///////////////////////////////////////////////////////////////////////////
 
 typedef enum EntityGender
@@ -143,6 +124,8 @@ typedef enum EntityGender
   EntityGender_Nil,
   EntityGender_Male,
   EntityGender_Female,
+  
+  EntityGender_COUNT,
 } EntityGender;
 
 typedef enum EntityState
@@ -156,9 +139,26 @@ typedef enum EntityState
   EntityState_LayEggEnd,
   EntityState_PoundBegin,
   EntityState_PoundEnd,
+  EntityState_Dead,
 
   EntityState_COUNT,
 } EntityState;
+
+typedef struct Animation Animation;
+struct Animation
+{
+  u16 frame_idx;
+  u16 tick_counter;
+};
+
+typedef struct AnimationDesc AnimationDesc;
+struct AnimationDesc
+{
+  Sprite frames[16];
+  u16 frame_count;
+  u16 ticks_per_frame;
+  EntityState exit_state;
+};
 
 typedef enum EntityType
 {
@@ -174,6 +174,8 @@ typedef enum EntityType
   EntityType_Collider,
   EntityType_Collectable,
   EntityType_Merchant,
+  EntityType_Corpse,
+  EntityType_Shockwave,
 } EntityType;
 
 typedef enum EntityProp
@@ -195,6 +197,8 @@ typedef enum EntityProp
   EntityProp_Morphs =             bit(14),
   EntityProp_DistortScaleX =      bit(15),
   EntityProp_DistortScaleY =      bit(16),
+  EntityProp_KillAfterTime =      bit(17),
+  EntityProp_LookAtPlayer =       bit(18),
 } EntityProp;
 
 typedef enum AmmoKind
@@ -399,11 +403,6 @@ struct Entity
   Timer invincibility_timer;
   Timer muzzle_flash_timer;
   Timer egg_timer;
-  enum
-  {
-    PoundAttackState_Jump,
-    PoundAttackState_,
-  } pound_attack_state;
 
   // Kinds
   ZombieKind zombie_kind;
