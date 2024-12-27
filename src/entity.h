@@ -41,8 +41,6 @@ struct EntityRef
   u64 id;
 };
 
-// Timer ////////////////////////////////////////////////////////////////////////////
-
 typedef struct Timer Timer;
 struct Timer
 {
@@ -61,6 +59,7 @@ typedef enum ParticleKind
   ParticleKind_PickupCoin,
   ParticleKind_PickupSoul,
   ParticleKind_EggHatch,
+  ParticleKind_Dirt,
   ParticleKind_Debug,
 
   ParticleKind_COUNT,
@@ -234,6 +233,11 @@ struct WeaponDesc
   u16 damage;
   u16 ammo;
   f32 reload_duration;
+  struct
+  {
+    Vec2F offset;
+    u16 price;
+  } merchant;
 };
 
 typedef enum CollectableKind
@@ -380,6 +384,7 @@ struct Entity
   Vec2F target_pos;
   f32 target_angle;
   f32 view_dist;
+  f32 stop_dist;
 
   // Morphing
   struct
@@ -388,7 +393,21 @@ struct Entity
     EntityType into;
   } morphing;
 
-  // ParticleGroup
+  // Merchant slot
+  struct
+  {
+    enum
+    {
+      MerchantSlotKind_Weapon,
+      MerchantSlotKind_Coin,
+      MerchantSlotKind_Powerup,
+    } kind;
+    WeaponKind weapon_kind;
+    u16 price;
+    bool purchased;
+  } merchant_slot;
+
+  // Particle group
   ParticleDesc particle_desc;
   Timer particle_timer;
   u32 particles_killed;
@@ -427,6 +446,7 @@ Entity *spawn_ammo(AmmoKind kind, Vec2F pos);
 Entity *spawn_zombie(ZombieKind kind, Vec2F pos);
 Entity *spawn_collectable(CollectableKind kind, Vec2F pos);
 Entity *spawn_particles(ParticleKind kind, Vec2F pos);
+Entity *spawn_merchant(void);
 void kill_entity(Entity *en, bool slain);
 
 bool entity_has_prop(Entity *en, EntityProp prop);
@@ -487,3 +507,7 @@ void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_set_gender(Entity *en, EntityGender gender);
 bool entity_is_laying(Entity *en);
+bool slot_purchase_item(Entity *en, CollectableKind currency);
+void slot_populate_weapon(Entity *slot);
+void slot_populate_ammo(Entity *slot);
+void slot_populate_powerup(Entity *slot);

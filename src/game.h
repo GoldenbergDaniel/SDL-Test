@@ -15,7 +15,7 @@
 #define WIDTH 960.0f
 #define HEIGHT 540.0f
 #define SPRITE_SCALE 5
-
+#define GROUND_Y (30 * SPRITE_SCALE)
 #define GRAVITY 3600.0f
 
 // @Event ////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ struct Game
 
   struct
   {
-    bool unlocked[WeaponKind_COUNT]; 
+    bool weapon_unlocked[WeaponKind_COUNT]; 
   } progression;
 };
 

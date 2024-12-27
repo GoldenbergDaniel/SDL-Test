@@ -71,6 +71,10 @@ struct Prefabs
     Sprite shockwave_0;
     Sprite shockwave_1;
     Sprite shockwave_2;
+    Sprite ui_slot_coin_empty;
+    Sprite ui_slot_coin_ammo;
+    Sprite ui_slot_soul_empty;
+    Sprite ui_slot_soul_heal;
   } sprite;
 
   struct

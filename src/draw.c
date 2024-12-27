@@ -344,16 +344,16 @@ void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, Sprite sp
   r_push_quad_indices(renderer);
 }
 
-void draw_sprite_x(Mat3x3F xform, Vec4F tint, Sprite sprite, bool flash)
+void draw_sprite_x(Mat3x3F xform, Vec2F dim, Vec4F tint, Sprite sprite, bool flash)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_texture(renderer, &global.resources.textures[TEXTURE_SPRITE]);
   r_use_shader(renderer, &global.resources.shaders[SHADER_SPRITE]);
 
-  Vec3F p0 = transform_3f(v3f(-8.0f,  8.0f, 1.0f), xform); // tl
-  Vec3F p1 = transform_3f(v3f( 8.0f,  8.0f, 1.0f), xform); // tr
-  Vec3F p2 = transform_3f(v3f( 8.0f, -8.0f, 1.0f), xform); // br
-  Vec3F p3 = transform_3f(v3f(-8.0f, -8.0f, 1.0f), xform); // bl
+  Vec3F p0 = transform_3f(v3f(-dim.width/2,  dim.height/2, 1.0f), xform); // tl
+  Vec3F p1 = transform_3f(v3f( dim.width/2,  dim.height/2, 1.0f), xform); // tr
+  Vec3F p2 = transform_3f(v3f( dim.width/2, -dim.height/2, 1.0f), xform); // br
+  Vec3F p3 = transform_3f(v3f(-dim.width/2, -dim.height/2, 1.0f), xform); // bl
 
   sprite.coord.y = (SPRITE_ATLAS_HEIGHT/SPRITE_ATLAS_CELL) - sprite.coord.y - 1;
 

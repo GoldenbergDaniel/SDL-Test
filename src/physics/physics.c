@@ -4,7 +4,7 @@
 
 typedef P_CollisionParams CollisionParams;
 
-// NOTE(dg): Assume bottem-left origin
+// @NOTE(dg): Assume bottem-left origin
 
 bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y)
 {
@@ -16,6 +16,14 @@ bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y)
   }
 
   return result;
+}
+
+bool p_rect_point_interect(P_CollisionParams a, Vec2F point)
+{
+  assert(a.type == P_ColliderType_Rect);
+
+  return point.x > a.pos.x && point.x < a.pos.x + a.dim.width &&
+         point.y > a.pos.y && point.y < a.pos.y + a.dim.height;
 }
 
 bool p_rect_x_range_intersect(CollisionParams a, Vec2F range, f32 x)

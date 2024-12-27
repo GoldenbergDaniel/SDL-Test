@@ -12,7 +12,6 @@
 #include "game.h"
 
 #define EN_IN_ENTITIES Entity *en = game.entities.head; en; en = en->next
-#define GROUND_Y (30 * SPRITE_SCALE)
 
 extern Globals global;
 extern Prefabs prefab;
@@ -29,9 +28,7 @@ void init_game(void)
 
   // - Starting entities ---
   {
-    Entity *merchant = create_entity(EntityType_Merchant);
-    merchant->spid = SPID_Merchant;
-    merchant->pos = v2f(WIDTH/2, GROUND_Y + 80);
+    spawn_merchant();
 
     Entity *player = create_entity(EntityType_Player);
     player->spid = SPID_Player;
@@ -52,10 +49,9 @@ void init_game(void)
     entity_rem_prop(muzzle_flash, EntityProp_Renders);
     attach_entity_child(gun, muzzle_flash);
 
-    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
-    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
     // spawn_zombie(ZombieKind_Walker, v2f(WIDTH - 100, GROUND_Y + 100));
-    spawn_entity(EntityType_Shockwave, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -168,10 +164,99 @@ void update_game(void)
 
     if (game.is_grace_period)
     {
-      merchant->scale = lerp_2f(merchant->scale, v2f(SPRITE_SCALE*4, SPRITE_SCALE*2), dt*3);
+      merchant->scale = lerp_2f(merchant->scale, v2f(SPRITE_SCALE, SPRITE_SCALE), dt*3);
+      if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
+      {
+        entity_add_prop(get_entity_child_at(merchant, 0), EntityProp_Renders);
+        entity_add_prop(get_entity_child_at(merchant, 1), EntityProp_Renders);
+        entity_add_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
+      }
+
+      const f32 LERP_MULT = 20.0f;
+
+      // - Slot 0 ---
+      {
+        Entity *slot = get_entity_child_at(merchant, 0);
+        slot_populate_weapon(slot);
+        
+        P_CollisionParams col = {
+          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+        };
+
+        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          
+          if (is_key_just_pressed(Key_Mouse1))
+          {
+            bool purchase_made = slot_purchase_item(slot, CollectableKind_Coin);
+            if (purchase_made)
+            {
+              Entity *child = get_entity_child_at(slot, 0);
+              detach_entity_child(slot, child);
+              kill_entity(child, FALSE);
+            }
+          }
+        }
+        else
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
+        }
+      }
+
+      // - Slot 1 ---
+      {
+        Entity *slot = get_entity_child_at(merchant, 1);
+        P_CollisionParams col = {
+          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+        };
+
+        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          if (is_key_just_pressed(Key_Mouse1))
+          {
+            slot_purchase_item(slot, CollectableKind_Coin);
+            slot->sprite = prefab.sprite.ui_slot_coin_empty;
+          }
+        }
+        else
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
+        }
+      }
+
+      // - Slot 2 ---
+      {
+        Entity *slot = get_entity_child_at(merchant, 2);
+        P_CollisionParams col = {
+          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+        };
+
+        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+
+          if (is_key_just_pressed(Key_Mouse1))
+          {
+            slot_purchase_item(slot, CollectableKind_Soul);
+            slot->sprite = prefab.sprite.ui_slot_soul_empty;
+          }
+        }
+        else
+        {
+          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
+        }
+      }
     }
     else
     {
+      entity_rem_prop(get_entity_child_at(merchant, 0), EntityProp_Renders);
+      entity_rem_prop(get_entity_child_at(merchant, 1), EntityProp_Renders);
+      entity_rem_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
       merchant->scale = lerp_2f(merchant->scale, V2F_ZERO, dt*3);
     }
   }
@@ -188,23 +273,23 @@ void update_game(void)
       {
         equip_weapon(player, WeaponKind_Revolver);
       }
-      else if (is_key_just_pressed(Key_2) && game.progression.unlocked[WeaponKind_Rifle])
+      else if (is_key_just_pressed(Key_2) && game.progression.weapon_unlocked[WeaponKind_Rifle])
       {
         equip_weapon(player, WeaponKind_Rifle);
       }
-      else if (is_key_just_pressed(Key_3) && game.progression.unlocked[WeaponKind_Shotgun])
+      else if (is_key_just_pressed(Key_3) && game.progression.weapon_unlocked[WeaponKind_Shotgun])
       {
         equip_weapon(player, WeaponKind_Shotgun);
       }
-      else if (is_key_just_pressed(Key_4) && game.progression.unlocked[WeaponKind_SMG])
+      else if (is_key_just_pressed(Key_4) && game.progression.weapon_unlocked[WeaponKind_SMG])
       {
         equip_weapon(player, WeaponKind_SMG);
       }
-      else if (is_key_just_pressed(Key_5) && game.progression.unlocked[WeaponKind_BurstRifle])
+      else if (is_key_just_pressed(Key_5) && game.progression.weapon_unlocked[WeaponKind_BurstRifle])
       {
         equip_weapon(player, WeaponKind_BurstRifle);
       }
-      else if (is_key_just_pressed(Key_6) && game.progression.unlocked[WeaponKind_LaserPistol])
+      else if (is_key_just_pressed(Key_6) && game.progression.weapon_unlocked[WeaponKind_LaserPistol])
       {
         equip_weapon(player, WeaponKind_LaserPistol);
       }
@@ -361,7 +446,7 @@ void update_game(void)
         case MoveType_Grounded:
           if (entity_has_prop(en, EntityProp_Grounded) && !entity_is_laying(en))
           { 
-            if (dist_from_player >= 40.0f)
+            if (dist_from_player >= en->stop_dist)
             {
               en->state = EntityState_Walk;
             }
@@ -451,7 +536,7 @@ void update_game(void)
       }
     }
 
-    // - Wagon merhchant face player ---
+    // - Wagon merchant face player ---
     if (en->type == EntityType_Merchant)
     {
       Vec2F en_pos = pos_from_entity(en);
@@ -864,13 +949,12 @@ void update_game(void)
 
             en->state = EntityState_Jump;
             en->sprite = prefab.sprite.bloat_pound_0;
-            en->new_vel.y = prefab.player_stat[game.player_gender].jump_vel * 1.5f * dt;
+            en->new_vel.y = 1200.0f * dt;
             entity_rem_prop(en, EntityProp_Grounded); 
           }
           
           if (en->state == EntityState_Jump && entity_has_prop(en, EntityProp_Grounded))
           {
-            logger_debug(str("POUND!\n"));
             en->state = EntityState_PoundEnd;
 
             Vec2F this_pos = pos_from_entity(en);
@@ -882,9 +966,9 @@ void update_game(void)
             }
 
             // - Spawn shockwave ---
+            Vec2F spawn_pos = sub_2f(this_pos, v2f(0, 65.0f));
             {
               Entity *shockwave;
-              Vec2F spawn_pos = sub_2f(this_pos, v2f(0, 50.0f));
 
               shockwave = spawn_entity(EntityType_Shockwave, spawn_pos);
               shockwave->kill_timer.duration = 0.5f;
@@ -895,6 +979,8 @@ void update_game(void)
               shockwave->new_vel.x = 2.5f;
               shockwave->flip_x = TRUE;
             }
+
+            spawn_particles(ParticleKind_Dirt, spawn_pos);
 
             // @TODO(dg): camera shake
           }
@@ -1265,7 +1351,7 @@ void update_game(void)
     ui_text(duration_str, v2f(WIDTH - 150, HEIGHT - 100), 15, 999);
   }
 
-  // - Developer tools ----------------
+  // - Developer tools ---
   {
     // - Toggle debug ---
     if (is_key_just_pressed(Key_Tab))
@@ -1307,7 +1393,7 @@ void update_game(void)
     {
       for (i32 i = 1; i < WeaponKind_COUNT; i++)
       {
-        game.progression.unlocked[i] = TRUE;
+        game.progression.weapon_unlocked[i] = TRUE;
       }
     }
   }
@@ -1320,10 +1406,10 @@ void render_game(void)
 {
   clear_frame(V4F_ZERO);
 
-  // - Draw scene ----------------
+  // - Draw scene ---
   draw_scene(v2f(0, 0), scale_2f(v2f(192, 108), SPRITE_SCALE), v4f(1, 1, 1, 1));
 
-  // - Draw sprite batch ----------------
+  // - Draw sprite batch ---
   for (EN_IN_ENTITIES)
   {
     if (en->draw_type != DrawType_Sprite) continue;
@@ -1331,7 +1417,7 @@ void render_game(void)
     if (entity_has_prop(en, EntityProp_Renders))
     {
       bool flash = entity_has_prop(en, EntityProp_FlashWhite);
-      draw_sprite_x(en->xform, en->tint, en->sprite, flash);
+      draw_sprite_x(en->xform, en->dim, en->tint, en->sprite, flash);
     }
   }
   

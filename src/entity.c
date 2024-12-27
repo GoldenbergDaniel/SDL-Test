@@ -47,7 +47,6 @@ Entity *create_entity(EntityType type)
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     en->health = prefab.player_stat[EntityGender_Male].health;
     en->invincibility_timer.duration = PLAYER_INVINCIBILITY_TIMER;
-    en->dim = v2f(7, 15);
 
     en->anim_descriptors = prefab.animation.player_male;
 
@@ -68,9 +67,7 @@ Entity *create_entity(EntityType type)
     break;
   case EntityType_Equipped:
     en->props = EntityProp_Equipped;
-
     en->draw_type = DrawType_Sprite;
-    en->dim = v2f(16, 16);
     break;
   case EntityType_Ammo:
     en->props = EntityProp_Renders | 
@@ -135,7 +132,7 @@ Entity *create_entity(EntityType type)
     en->draw_type = DrawType_Sprite;
     en->sprite = prefab.sprite.wagon_left;
     en->dim = v2f(16 * 4, 16 * 2);
-    en->scale = v2f(SPRITE_SCALE * 4, SPRITE_SCALE * 2);
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     break;
   default: break;
   }
@@ -204,6 +201,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
   case ZombieKind_Walker:
     en->sprite = prefab.sprite.walker_idle;
     en->anim_descriptors = prefab.animation.zombie_walker;
+    en->stop_dist = 40.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -220,6 +218,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->dim = v2f(10, 8);
     en->sprite = prefab.sprite.chicken_idle_0;
     en->anim_descriptors = prefab.animation.zombie_chicken;
+    en->stop_dist = 40.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -234,9 +233,9 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     break;
   case ZombieKind_BabyChicken:
     en->dim = v2f(5, 4);
-
     en->sprite = prefab.sprite.baby_chicken_idle;
     en->anim_descriptors = prefab.animation.zombie_baby_chicken;
+    en->stop_dist = 40.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -254,6 +253,7 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE * 2);
     en->sprite = prefab.sprite.bloat_idle;
     en->anim_descriptors = prefab.animation.zombie_bloat;
+    en->stop_dist = 70.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
@@ -314,6 +314,33 @@ Entity *spawn_particles(ParticleKind kind, Vec2F pos)
     particle->speed = desc.speed;
     particle->owner = ref_from_entity(en);
   }
+
+  return en;
+}
+
+Entity *spawn_merchant(void)
+{
+  Entity *en = create_entity(EntityType_Merchant);
+  en->spid = SPID_Merchant;
+  en->pos = v2f(WIDTH/2, GROUND_Y+80);
+
+  Entity *slot_0 = create_entity(EntityType_Decoration);
+  slot_0->merchant_slot.kind = MerchantSlotKind_Weapon;
+  slot_0->pos = v2f(SPRITE_SCALE * -19, SPRITE_SCALE * 3);
+  slot_0->sprite = prefab.sprite.ui_slot_coin_empty;
+  attach_entity_child(en, slot_0);
+
+  Entity *slot_1 = create_entity(EntityType_Decoration);
+  slot_1->merchant_slot.kind = MerchantSlotKind_Coin;
+  slot_1->pos = v2f(SPRITE_SCALE * -8, SPRITE_SCALE * 3);
+  slot_1->sprite = prefab.sprite.ui_slot_coin_ammo;
+  attach_entity_child(en, slot_1);
+
+  Entity *slot_2 = create_entity(EntityType_Decoration);
+  slot_2->merchant_slot.kind = MerchantSlotKind_Powerup;
+  slot_2->pos = v2f(SPRITE_SCALE * 15, SPRITE_SCALE * 3);
+  slot_2->sprite = prefab.sprite.ui_slot_soul_heal;
+  attach_entity_child(en, slot_2);
 
   return en;
 }
@@ -907,4 +934,111 @@ bool entity_is_laying(Entity *en)
   return en->state == EntityState_LayEggBegin ||
          en->state == EntityState_LayEggLaying ||
          en->state == EntityState_LayEggEnd;
+}
+
+bool slot_purchase_item(Entity *slot, CollectableKind currency)
+{
+  bool purchase_made = FALSE;
+
+  if (slot->merchant_slot.kind == MerchantSlotKind_Weapon &&
+      game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind])
+  {
+    return FALSE;
+  }
+
+  if (currency == CollectableKind_Coin)
+  {
+    if (game.coin_count >= slot->merchant_slot.price)
+    {
+      game.coin_count -= slot->merchant_slot.price;
+      purchase_made = TRUE;
+
+      if (slot->merchant_slot.kind == MerchantSlotKind_Weapon)
+      {
+        game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind] = TRUE;
+        logger_debug(str("%i\n"), slot->merchant_slot.weapon_kind);
+      }
+    }
+  }
+  else if (currency == CollectableKind_Soul)
+  {
+    if (game.soul_count >= slot->merchant_slot.price)
+    {
+      game.soul_count -= slot->merchant_slot.price;
+      purchase_made = TRUE;
+    }
+  }
+
+  if (purchase_made)
+  {
+    slot->merchant_slot.purchased = TRUE;
+  }
+
+  return purchase_made;
+}
+
+void slot_populate_weapon(Entity *slot)
+{
+  if (slot->merchant_slot.weapon_kind != WeaponKind_Nil) return;
+
+  {
+    bool is_weapon_remaining = FALSE;
+    for (i32 i = 1; i < WeaponKind_COUNT; i++)
+    {
+      if (game.progression.weapon_unlocked[i] == TRUE)
+      {
+        is_weapon_remaining = TRUE;
+      }
+    }
+
+    if (!is_weapon_remaining) return;
+  }
+  
+  WeaponKind weapon_kind = WeaponKind_Nil;
+  bool hit = FALSE;
+  while (!hit)
+  {
+    i32 roll = random_i32(1, 100);
+    i32 acc = 0;
+    if (roll <= (acc += 10))
+    {
+      weapon_kind = WeaponKind_BurstRifle;
+    }
+    else if (roll <= (acc += 20))
+    {
+      weapon_kind = WeaponKind_Shotgun;
+    }
+    else if (roll <= (acc += 20))
+    {
+      weapon_kind = WeaponKind_SMG;
+    }
+    else if (roll <= (acc += 30))
+    {
+      weapon_kind = WeaponKind_Rifle;
+    }
+
+    if (game.progression.weapon_unlocked[weapon_kind] != TRUE)
+    {
+      hit = TRUE;
+    }
+  }
+
+  slot->merchant_slot.weapon_kind = weapon_kind;
+  slot->merchant_slot.price = prefab.weapon[weapon_kind].merchant.price;
+
+  Entity *weapon_deco = spawn_entity(EntityType_Decoration, v2f(0, 0));
+  attach_entity_child(slot, weapon_deco);
+  weapon_deco->pos = prefab.weapon[weapon_kind].merchant.offset;
+  weapon_deco->sprite = prefab.weapon[weapon_kind].sprite;
+  weapon_deco->rot = 270;
+}
+
+void slot_populate_ammo(Entity *slot)
+{
+  i32 roll = random_i32(1, 4);
+}
+
+void slot_populate_powerup(Entity *slot)
+{
+
 }

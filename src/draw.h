@@ -19,8 +19,8 @@
 #define SHADER_PRIMITIVE 0
 #define SHADER_SPRITE 1
 
-#define DEBUG_BLACK ((Vec4F) {0.01f, 0.01f, 0.01f, 1.0f})
-#define DEBUG_WHITE ((Vec4F) {0.9f, 0.9f, 0.9f, 1.0f})
+#define DEBUG_BLACK ((Vec4F) {0.0f, 0.0f, 0.0f, 1.0f})
+#define DEBUG_WHITE ((Vec4F) {1.0f, 1.0f, 1.0f, 1.0f})
 #define DEBUG_GRAY ((Vec4F) {0.5f, 0.5f, 0.5f, 1.0f})
 #define DEBUG_RED ((Vec4F) {0.9f, 0.2f, 0.1f, 1.0f})
 #define DEBUG_GREEN ((Vec4F) {0.3f, 0.9f, 0.2f, 1.0f})
@@ -63,7 +63,7 @@ void draw_rectangle_x(Mat3x3F xform, Vec4F tint);
 
 void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, Sprite sprite, bool flash);
 void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, Sprite sprite, bool flash);
-void draw_sprite_x(Mat3x3F xform, Vec4F tint, Sprite sprite, bool flash);
+void draw_sprite_x(Mat3x3F xform, Vec2F dim, Vec4F tint, Sprite sprite, bool flash);
 
 void draw_scene(Vec2F pos, Vec2F dim, Vec4F tint);
 void draw_glyph(Vec2F pos, f32 size, Vec4F tint, Vec2I tex_coord);

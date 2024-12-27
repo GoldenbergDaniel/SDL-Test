@@ -18,6 +18,7 @@ struct P_CollisionParams
 };
 
 bool p_point_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y);
+bool p_rect_point_interect(P_CollisionParams a, Vec2F point);
 bool p_rect_x_range_intersect(P_CollisionParams a, Vec2F range, f32 x);
 bool p_rect_y_range_intersect(P_CollisionParams a, Vec2F range, f32 y);
 bool p_rect_rect_intersect(P_CollisionParams a, P_CollisionParams b);

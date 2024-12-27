@@ -12,7 +12,6 @@ TODO
   [X] gameover state
   [X] ui: health, ammo, collectables
   [X] muzzle flash
-  [X] event queue
   [X] logger
   [X] juice: squash and stretch
   [X] laser pistol
@@ -23,7 +22,7 @@ TODO
   [~] merchant
   [_] headshots
   [_] shotgun (pellets)
-  [_] juice: camera shake 
+  [_] camera shake 
   [_] powerups/abilities
   [_] play again
   [_] main menu and character select

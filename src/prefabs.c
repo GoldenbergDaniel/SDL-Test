@@ -65,6 +65,10 @@ void init_prefabs(void)
     prefab.sprite.shockwave_0           = (Sprite) {v2i(0, 9), v2i(1, 1)};
     prefab.sprite.shockwave_1           = (Sprite) {v2i(1, 9), v2i(1, 1)};
     prefab.sprite.shockwave_2           = (Sprite) {v2i(2, 9), v2i(1, 1)};
+    prefab.sprite.ui_slot_coin_empty    = (Sprite) {v2i(0, 10), v2i(1, 1)};
+    prefab.sprite.ui_slot_coin_ammo     = (Sprite) {v2i(1, 10), v2i(1, 1)};
+    prefab.sprite.ui_slot_soul_empty    = (Sprite) {v2i(2, 10), v2i(1, 1)};
+    prefab.sprite.ui_slot_soul_heal     = (Sprite) {v2i(3, 10), v2i(1, 1)};
   }
 
   // - :animations ---
@@ -322,6 +326,24 @@ void init_prefabs(void)
       .scale_delta    = v2f(-6.0f, -6.0f),
       .speed          = 60.0f,
       .rot_delta      = 50.0f,
+    };
+
+    prefab.particle[ParticleKind_Dirt] = (ParticleDesc) {
+      .emmission_type  = ParticleEmmissionType_Burst,
+      .props           = ParticleProp_ScaleOverTime |
+                         ParticleProp_SpeedOverTime |
+                         ParticleProp_VariateColor |
+                         ParticleProp_RotateOverTime |
+                         ParticleProp_KillAfterTime,
+      .count           = 16,
+      .duration        = 0.25f,
+      .spread          = 180.0f,
+      .color_primary   = v4f(120/255.0f, 71/255.0f, 48/255.0f, 1.0f),
+      .color_secondary = v4f(0.1f, 0.1f, 0.1f, 1.0f),
+      .scale           = v2f(4, 4),
+      .speed           = 120.0f,
+      .speed_delta     = -4000.0f,
+      .rot_delta       = 20.0f,
     };
 
     prefab.particle[ParticleKind_Debug] = (ParticleDesc) {
