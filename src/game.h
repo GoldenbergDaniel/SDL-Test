@@ -112,23 +112,19 @@ typedef enum GameState
 typedef struct Game Game;
 struct Game
 {
-  Arena frame_arena;
-  Arena draw_arena;
-  Arena entity_arena;
-
-  u64 update_time;
-  u64 render_time;
-
   EntityList entities;
   EventQueue event_queue;
   ParticleBuffer particle_buffer;
 
+  u64 update_time;
+  u64 render_time;
   f64 t;
   f64 dt;
   Mat3x3F camera;
   bool should_quit;
   bool won;
   
+  bool is_ui_hovered;
   bool just_entered_wave;
   bool just_entered_grace;
   Timer grace_period_timer;
@@ -151,6 +147,7 @@ struct Game
   {
     i8 shot_count;
     i16 ammo_remaining;
+    i16 total_ammo_remaining;
     Timer reload_timer;
     bool is_reloading;
   } weapon;
@@ -159,6 +156,10 @@ struct Game
   {
     bool weapon_unlocked[WeaponKind_COUNT]; 
   } progression;
+
+  Arena frame_arena;
+  Arena draw_arena;
+  Arena entity_arena;
 };
 
 void init_game(void);

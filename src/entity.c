@@ -938,32 +938,30 @@ bool entity_is_laying(Entity *en)
          en->state == EntityState_LayEggEnd;
 }
 
-bool slot_purchase_item(Entity *slot, CollectableKind currency)
+bool slot_purchase_item(Entity *slot)
 {
   bool purchase_made = FALSE;
 
   if (slot->merchant_slot.kind == MerchantSlotKind_Weapon &&
-      game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind])
-  {
-    return FALSE;
-  }
+      game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind]) return FALSE;
 
-  if (currency == CollectableKind_Coin)
+  if (slot->merchant_slot.purchased == TRUE) return FALSE;
+
+  switch (slot->merchant_slot.kind)
   {
+  case MerchantSlotKind_Weapon:
     if (game.coin_count >= slot->merchant_slot.price)
     {
       game.coin_count -= slot->merchant_slot.price;
       purchase_made = TRUE;
-
-      if (slot->merchant_slot.kind == MerchantSlotKind_Weapon)
-      {
-        game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind] = TRUE;
-        logger_debug(str("%i\n"), slot->merchant_slot.weapon_kind);
-      }
     }
-  }
-  else if (currency == CollectableKind_Soul)
-  {
+  case MerchantSlotKind_Coin:
+    if (game.coin_count >= slot->merchant_slot.price)
+    {
+      game.coin_count -= slot->merchant_slot.price;
+      purchase_made = TRUE;
+    }
+  case MerchantSlotKind_Powerup:
     if (game.soul_count >= slot->merchant_slot.price)
     {
       game.soul_count -= slot->merchant_slot.price;
@@ -971,10 +969,7 @@ bool slot_purchase_item(Entity *slot, CollectableKind currency)
     }
   }
 
-  if (purchase_made)
-  {
-    slot->merchant_slot.purchased = TRUE;
-  }
+  slot->merchant_slot.purchased = purchase_made;
 
   return purchase_made;
 }
@@ -1031,6 +1026,8 @@ void slot_populate_weapon(Entity *slot)
   weapon_deco->pos = prefab.weapon[weapon_kind].merchant.offset;
   weapon_deco->sprite = prefab.weapon[weapon_kind].sprite;
   weapon_deco->rot = 270;
+  weapon_deco->is_active = TRUE;
+  entity_add_prop(weapon_deco, EntityProp_Renders);
 }
 
 void slot_populate_ammo(Entity *slot)

@@ -74,6 +74,7 @@ void update_game(void)
     player = NIL_ENTITY;
   }
 
+  game.is_ui_hovered = FALSE;
   ui_clear_widgetstore();
 
   // - Zombie waves ---
@@ -198,22 +199,30 @@ void update_game(void)
           .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
         };
 
-        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        if (p_rect_point_interect(col, mouse_pos))
         {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          game.is_ui_hovered = TRUE;
+
+          if (!slot->merchant_slot.purchased)
+          {
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          }
           
           if (is_key_just_pressed(Key_Mouse1))
           {
-            bool purchase_made = slot_purchase_item(slot, CollectableKind_Coin);
+            bool purchase_made = slot_purchase_item(slot);
             if (purchase_made)
             {
+              game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind] = TRUE;
+
               Entity *child = get_entity_child_at(slot, 0);
-              detach_entity_child(slot, child);
-              kill_entity(child, FALSE);
+              child->is_active = FALSE;
+              entity_rem_prop(child, EntityProp_Renders);
             }
           }
         }
-        else
+
+        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
         {
           slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
         }
@@ -227,13 +236,27 @@ void update_game(void)
           .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
         };
 
-        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        if (p_rect_point_interect(col, mouse_pos))
         {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          game.is_ui_hovered = TRUE;
+
+          if (!slot->merchant_slot.purchased)
+          {
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          }
+
           if (is_key_just_pressed(Key_Mouse1))
           {
-            slot_purchase_item(slot, CollectableKind_Coin);
-            slot->sprite = prefab.sprite.ui_slot_coin_empty;
+            bool purchase_made = slot_purchase_item(slot);
+            if (purchase_made)
+            {
+              game.weapon.total_ammo_remaining += slot->merchant_slot.ammo_count;
+              slot->sprite = prefab.sprite.ui_slot_coin_empty;
+
+              Entity *child = get_entity_child_at(slot, 0);
+              child->is_active = FALSE;
+              entity_rem_prop(child, EntityProp_Renders);
+            }
           }
 
           ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)), 
@@ -246,7 +269,8 @@ void update_game(void)
                   999,
                   slot->merchant_slot.ammo_count);
         }
-        else
+        
+        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
         {
           slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
         }
@@ -260,17 +284,30 @@ void update_game(void)
           .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
         };
 
-        if (p_rect_point_interect(col, mouse_pos) && !slot->merchant_slot.purchased)
+        if (p_rect_point_interect(col, mouse_pos))
         {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          game.is_ui_hovered = TRUE;
+
+          if (!slot->merchant_slot.purchased)
+          {
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+          }
 
           if (is_key_just_pressed(Key_Mouse1))
           {
-            slot_purchase_item(slot, CollectableKind_Soul);
-            slot->sprite = prefab.sprite.ui_slot_soul_empty;
+            bool purchase_made = slot_purchase_item(slot);
+            if (purchase_made)
+            {
+              slot->sprite = prefab.sprite.ui_slot_soul_empty;
+              
+              Entity *child = get_entity_child_at(slot, 0);
+              child->is_active = FALSE;
+              entity_rem_prop(child, EntityProp_Renders);
+            }
           }
         }
-        else
+        
+        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
         {
           slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
         }
@@ -327,9 +364,10 @@ void update_game(void)
     WeaponDesc desc = prefab.weapon[gun->weapon_kind];
 
     if (!game.weapon.is_reloading && 
+        game.weapon.total_ammo_remaining > 0 &&
         game.weapon.ammo_remaining != prefab.weapon[gun->weapon_kind].ammo &&
-        is_key_just_pressed(Key_R) && 
-        player->is_weapon_equipped)
+        player->is_weapon_equipped &&
+        is_key_just_pressed(Key_R))
     {      
       game.weapon.is_reloading = TRUE;
       gun->rot = -45;
@@ -879,19 +917,24 @@ void update_game(void)
         {
           if (gun->weapon_kind == WeaponKind_BurstRifle)
           {
-            can_shoot = (is_key_pressed(Key_Mouse1) && game.weapon.shot_count == 3) ||
-                        (game.weapon.shot_count < 3 && game.weapon.shot_count > 0);
+            can_shoot = ((is_key_pressed(Key_Mouse1) && game.weapon.shot_count == 3) ||
+                        (game.weapon.shot_count < 3 && game.weapon.shot_count > 0)) &&
+                        !game.is_ui_hovered;
 
-            if (can_shoot) game.weapon.shot_count -= 1;
+            if (can_shoot)
+            {
+              game.weapon.shot_count -= 1;
+            }
           }
           else
           {
-            can_shoot = is_key_pressed(Key_Mouse1);
+            can_shoot = is_key_pressed(Key_Mouse1) && !game.is_ui_hovered;
           }
         }
 
         if (can_shoot)
         {
+          logger_debug(str("is_ui_hovered: %i\n"), game.is_ui_hovered);
           en->attack_timer.ticking = FALSE;
 
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -1338,10 +1381,13 @@ void update_game(void)
     // - Ammo ---
     {
       ui_rect_textured(v2f(0, HEIGHT-130), 
-              v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
-              v4f(1, 1, 1, 1),
-              *(UI_Sprite *) &prefab.sprite.ui_ammo);
-      ui_text(str("%i"), v2f(65, HEIGHT-110), 30, 999, game.weapon.ammo_remaining);
+                      v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+                      v4f(1, 1, 1, 1),
+                      *(UI_Sprite *) &prefab.sprite.ui_ammo);
+
+      ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
+              game.weapon.ammo_remaining,
+              game.weapon.total_ammo_remaining);
     }
 
     // - Collectables ---

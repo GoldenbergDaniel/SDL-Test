@@ -508,7 +508,7 @@ void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original);
 void entity_set_gender(Entity *en, EntityGender gender);
 bool entity_is_laying(Entity *en);
-bool slot_purchase_item(Entity *en, CollectableKind currency);
+bool slot_purchase_item(Entity *en);
 void slot_populate_weapon(Entity *slot);
 void slot_populate_ammo(Entity *slot);
 void slot_populate_powerup(Entity *slot);
