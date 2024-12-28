@@ -147,7 +147,7 @@ struct Game
   {
     i8 shot_count;
     i16 ammo_remaining;
-    i16 total_ammo_remaining;
+    i16 ammo_reserved;
     Timer reload_timer;
     bool is_reloading;
   } weapon;

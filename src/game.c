@@ -250,7 +250,7 @@ void update_game(void)
             bool purchase_made = slot_purchase_item(slot);
             if (purchase_made)
             {
-              game.weapon.total_ammo_remaining += slot->merchant_slot.ammo_count;
+              game.weapon.ammo_reserved += slot->merchant_slot.ammo_count;
               slot->sprite = prefab.sprite.ui_slot_coin_empty;
 
               Entity *child = get_entity_child_at(slot, 0);
@@ -364,7 +364,7 @@ void update_game(void)
     WeaponDesc desc = prefab.weapon[gun->weapon_kind];
 
     if (!game.weapon.is_reloading && 
-        game.weapon.total_ammo_remaining > 0 &&
+        game.weapon.ammo_reserved > 0 &&
         game.weapon.ammo_remaining != prefab.weapon[gun->weapon_kind].ammo &&
         player->is_weapon_equipped &&
         is_key_just_pressed(Key_R))
@@ -377,7 +377,9 @@ void update_game(void)
     else if (timer_timeout(&game.weapon.reload_timer))
     {
       game.weapon.reload_timer.ticking = FALSE;
-      game.weapon.ammo_remaining = desc.ammo;
+      u16 ammo_to_load = min(desc.ammo, game.weapon.ammo_reserved);
+      game.weapon.ammo_remaining = ammo_to_load;
+      game.weapon.ammo_reserved -= ammo_to_load;
       game.weapon.is_reloading = FALSE;
     }
   }
@@ -1387,7 +1389,7 @@ void update_game(void)
 
       ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
               game.weapon.ammo_remaining,
-              game.weapon.total_ammo_remaining);
+              game.weapon.ammo_reserved);
     }
 
     // - Collectables ---
