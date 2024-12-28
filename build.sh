@@ -34,9 +34,9 @@ echo "[mode:$MODE]"
 
 # --- PREPROCESS --------------------------------------------------------------------
 
-# echo "[preprocess]"
+echo "[preprocess]"
 
-# shadertoh src/shaders/ src/render/shaders.h
+bin/shadertoh-$TARGET src/shaders/ src/render/shaders.h
 
 # --- BUILD -------------------------------------------------------------------------
 # -target arm64-apple-macos14

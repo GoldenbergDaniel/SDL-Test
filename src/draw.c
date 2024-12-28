@@ -210,7 +210,7 @@ void clear_frame(Vec4F color)
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
+void draw_rect(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);
@@ -231,7 +231,7 @@ void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
+void draw_rect_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);
@@ -243,7 +243,7 @@ void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint)
   r_push_quad_indices(renderer);
 }
 
-void draw_rectangle_x(Mat3x3F xform, Vec4F tint)
+void draw_rect_x(Mat3x3F xform, Vec4F tint)
 {
   R_Renderer *renderer = &global.renderer;
   r_use_shader(renderer, &global.resources.shaders[SHADER_PRIMITIVE]);

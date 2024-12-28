@@ -22,6 +22,7 @@ typedef enum UI_WidgetType
 {
   UI_WidgetType_Nil,
   UI_WidgetType_Rect,
+  UI_WidgetType_TexturedRect,
   UI_WidgetType_Text,
 } UI_WidgetType;
 
@@ -32,6 +33,7 @@ struct UI_Widget
   Vec2F pos;
   Vec2F dim;
   Vec2F scale;
+  Vec4F color;
   UI_Sprite sprite;
   String text;
   u32 text_size;
@@ -55,5 +57,6 @@ UI_WidgetStore *ui_get_widgetstore(void);
 void ui_clear_widgetstore(void);
 void ui_push_widget(UI_Widget *widget);
 
-void ui_rect(Vec2F pos, Vec2F dim, UI_Sprite sprite);
+void ui_rect(Vec2F pos, Vec2F dim, Vec4F color);
+void ui_rect_textured(Vec2F pos, Vec2F dim, Vec4F color, UI_Sprite sprite);
 void ui_text(String text, Vec2F pos, u32 size, u32 width, ...);

@@ -10,7 +10,7 @@ TODO
   [X] player death
   [X] invincibility timer
   [X] gameover state
-  [X] ui: health, ammo, collectables
+  [X] health, ammo, collectables ui
   [X] muzzle flash
   [X] logger
   [X] juice: squash and stretch
@@ -24,8 +24,8 @@ TODO
   [_] shotgun (pellets)
   [_] camera shake 
   [_] powerups/abilities
+  [_] main menu, character select
   [_] play again
-  [_] main menu and character select
   [_] audio
 
 ZOMBIES

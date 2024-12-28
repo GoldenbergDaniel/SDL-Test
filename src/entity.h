@@ -404,6 +404,7 @@ struct Entity
     } kind;
     WeaponKind weapon_kind;
     u16 price;
+    u16 ammo_count;
     bool purchased;
   } merchant_slot;
 

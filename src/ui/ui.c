@@ -40,12 +40,24 @@ void ui_push_widget(UI_Widget *widget)
   _widget_store.count += 1;
 }
 
-void ui_rect(Vec2F pos, Vec2F dim, UI_Sprite sprite)
+void ui_rect(Vec2F pos, Vec2F dim, Vec4F color)
 {
   ui_push_widget(&(UI_Widget) {
     .type = UI_WidgetType_Rect,
     .pos = pos,
     .dim = dim,
+    .color = color,
+    .scale = v2f(1.0f, 1.0f),
+  });
+}
+
+void ui_rect_textured(Vec2F pos, Vec2F dim, Vec4F color, UI_Sprite sprite)
+{
+  ui_push_widget(&(UI_Widget) {
+    .type = UI_WidgetType_TexturedRect,
+    .pos = pos,
+    .dim = dim,
+    .color = color,
     .scale = v2f(1.0f, 1.0f),
     .sprite = sprite,
   });

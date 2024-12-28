@@ -102,6 +102,13 @@ struct WaveDesc
 
 bool is_zombie_remaining_to_spawn(WaveDesc *desc);
 
+typedef enum GameState
+{
+  GameState_GracePeriod,
+  GameState_ZombieWave,
+  GameState_SoOver,
+} GameState;
+
 typedef struct Game Game;
 struct Game
 {
@@ -120,17 +127,17 @@ struct Game
   f64 dt;
   Mat3x3F camera;
   bool should_quit;
-  bool is_so_over;
   bool won;
   
-  bool is_grace_period;
-  bool wave_just_began;
+  bool just_entered_wave;
+  bool just_entered_grace;
   Timer grace_period_timer;
   Timer spawn_timer;
   f64 time_alive;
   u16 coin_count;
   u16 soul_count;
   EntityGender player_gender;
+  GameState state;
 
   struct
   {

@@ -328,12 +328,14 @@ Entity *spawn_merchant(void)
   slot_0->merchant_slot.kind = MerchantSlotKind_Weapon;
   slot_0->pos = v2f(SPRITE_SCALE * -19, SPRITE_SCALE * 3);
   slot_0->sprite = prefab.sprite.ui_slot_coin_empty;
+  slot_populate_weapon(slot_0);
   attach_entity_child(en, slot_0);
 
   Entity *slot_1 = create_entity(EntityType_Decoration);
   slot_1->merchant_slot.kind = MerchantSlotKind_Coin;
   slot_1->pos = v2f(SPRITE_SCALE * -8, SPRITE_SCALE * 3);
   slot_1->sprite = prefab.sprite.ui_slot_coin_ammo;
+  slot_populate_ammo(slot_1);
   attach_entity_child(en, slot_1);
 
   Entity *slot_2 = create_entity(EntityType_Decoration);
@@ -981,18 +983,16 @@ void slot_populate_weapon(Entity *slot)
 {
   if (slot->merchant_slot.weapon_kind != WeaponKind_Nil) return;
 
+  bool is_weapon_remaining = FALSE;
+  for (i32 i = 1; i < WeaponKind_COUNT-1; i++)
   {
-    bool is_weapon_remaining = FALSE;
-    for (i32 i = 1; i < WeaponKind_COUNT; i++)
+    if (game.progression.weapon_unlocked[i] == FALSE)
     {
-      if (game.progression.weapon_unlocked[i] == TRUE)
-      {
-        is_weapon_remaining = TRUE;
-      }
+      is_weapon_remaining = TRUE;
     }
-
-    if (!is_weapon_remaining) return;
   }
+
+  if (!is_weapon_remaining) return;
   
   WeaponKind weapon_kind = WeaponKind_Nil;
   bool hit = FALSE;
@@ -1036,6 +1036,7 @@ void slot_populate_weapon(Entity *slot)
 void slot_populate_ammo(Entity *slot)
 {
   i32 roll = random_i32(1, 4);
+  slot->merchant_slot.ammo_count = 8 * roll;
 }
 
 void slot_populate_powerup(Entity *slot)

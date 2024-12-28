@@ -20,9 +20,10 @@ extern Game game;
 void init_game(void)
 {
   game.camera = m3x3f(1.0f);
-  game.is_grace_period = TRUE;
-  game.grace_period_timer.duration = 5.0f;
+  game.state = GameState_GracePeriod;
+  game.grace_period_timer.duration = 15.0f;
   game.current_wave.num = -1;
+  game.just_entered_grace = TRUE;
 
   ui_init_widgetstore(128, &global.perm_arena);
 
@@ -68,13 +69,16 @@ void update_game(void)
   Vec2F mouse_pos = screen_to_world(get_mouse_pos());
 
   Entity *player = get_entity_by_sp(SPID_Player);
-  if (!entity_is_valid(player)) player = NIL_ENTITY;
+  if (!entity_is_valid(player))
+  {
+    player = NIL_ENTITY;
+  }
 
   ui_clear_widgetstore();
 
   // - Zombie waves ---
-  // if (!game.is_so_over)
-  if (0)
+  if (game.state != GameState_SoOver)
+  // if (0)
   {
     i32 total_zombies_this_wave = 0;
     if (game.current_wave.num >= 0)
@@ -85,7 +89,7 @@ void update_game(void)
       }
     }
 
-    if (game.is_grace_period)
+    if (game.state == GameState_GracePeriod)
     {
       String text = str("Next wave in %0.f");
       if (game.current_wave.num < 0)
@@ -110,23 +114,30 @@ void update_game(void)
         game.current_wave.zombies_spawned = 0;
         game.current_wave.zombies_killed = 0;
         game.current_wave.desc = prefab.wave[game.current_wave.num];
-        game.wave_just_began = TRUE;
-        game.is_grace_period = FALSE;
+
+        game.just_entered_wave = TRUE;
+        game.state = GameState_ZombieWave;
       }
 
       if (game.current_wave.num == TOTAL_WAVE_COUNT)
       {
-        game.is_so_over = TRUE;
+        game.state = GameState_SoOver;
         game.won = TRUE;
       }
+
+      game.just_entered_grace = FALSE;
     }
     else
     {
-      game.is_grace_period = game.current_wave.zombies_killed == total_zombies_this_wave;
+      if (game.current_wave.zombies_killed == total_zombies_this_wave)
+      {
+        game.state = GameState_GracePeriod;
+        game.just_entered_grace = TRUE;
+      }
 
       if (game.current_wave.zombies_spawned < total_zombies_this_wave)
       {
-        game.wave_just_began = FALSE;
+        game.just_entered_wave = FALSE;
         WaveDesc *desc = &game.current_wave.desc;
 
         if (!game.spawn_timer.ticking)
@@ -161,8 +172,13 @@ void update_game(void)
   // - Merchant ---
   {
     Entity *merchant = get_entity_by_sp(SPID_Merchant);
+    if (game.just_entered_grace)
+    {
+      slot_populate_weapon(get_entity_child_at(merchant, 0));
+      slot_populate_ammo(get_entity_child_at(merchant, 1));
+    }
 
-    if (game.is_grace_period)
+    if (game.state == GameState_GracePeriod)
     {
       merchant->scale = lerp_2f(merchant->scale, v2f(SPRITE_SCALE, SPRITE_SCALE), dt*3);
       if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
@@ -172,13 +188,11 @@ void update_game(void)
         entity_add_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
       }
 
-      const f32 LERP_MULT = 20.0f;
+      #define LERP_MULT 20.0f
 
       // - Slot 0 ---
       {
-        Entity *slot = get_entity_child_at(merchant, 0);
-        slot_populate_weapon(slot);
-        
+        Entity *slot = get_entity_child_at(merchant, 0); 
         P_CollisionParams col = {
           .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
           .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
@@ -221,6 +235,16 @@ void update_game(void)
             slot_purchase_item(slot, CollectableKind_Coin);
             slot->sprite = prefab.sprite.ui_slot_coin_empty;
           }
+
+          ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)), 
+                  v2f(80, 25), 
+                  v4f(0, 0, 0, 1));
+
+          ui_text(str("%i"),
+                  add_2f(pos_from_entity(slot), v2f(-4 * SPRITE_SCALE, 35)),
+                  20,
+                  999,
+                  slot->merchant_slot.ammo_count);
         }
         else
         {
@@ -351,7 +375,7 @@ void update_game(void)
     }
   }
 
-  if (!game.is_so_over)
+  if (game.state != GameState_SoOver)
   {
     game.time_alive = t;
   }
@@ -364,7 +388,7 @@ void update_game(void)
     if (entity_has_prop(en, EntityProp_LookAtPlayer))
     {
       Vec2F player_pos = pos_from_entity(player);
-      if (entity_is_valid(player) && !game.is_so_over)
+      if (entity_is_valid(player) && game.state != GameState_SoOver)
       {
         entity_look_at(en, player_pos);
       }
@@ -1215,7 +1239,7 @@ void update_game(void)
       }
       else
       {
-        if (game.wave_just_began)
+        if (game.just_entered_wave)
         {
           particle->is_active = FALSE;
           owner->particles_killed += 1;
@@ -1232,7 +1256,7 @@ void update_game(void)
     }
   }
 
-  if (game.is_so_over)
+  if (game.state == GameState_SoOver)
   {
     // FIXME(dg): center these alignments
     if (game.won)
@@ -1248,7 +1272,6 @@ void update_game(void)
   // - Event queue ---
   for (Event *ev = peek_event(); game.event_queue.count != 0; pop_event())
   {
-    assert(ev);
     switch (ev->type)
     {
     case EventType_Nil: break;
@@ -1259,7 +1282,7 @@ void update_game(void)
 
       if (ev->desc.type == EntityType_Player)
       {
-        game.is_so_over = TRUE;
+        game.state = GameState_SoOver;
         logger_debug(str("Player has been killed.\n"));
       }
 
@@ -1305,29 +1328,33 @@ void update_game(void)
           sprite = prefab.sprite.ui_heart_empty;
         }
 
-        ui_rect(v2f((45 * heart_idx) - 45, HEIGHT - 75), 
+        ui_rect_textured(v2f((45 * heart_idx) - 45, HEIGHT - 75), 
                 v2f(14 * SPRITE_SCALE, 14 * SPRITE_SCALE), 
+                v4f(1, 1, 1, 1),
                 *(UI_Sprite *) &sprite);
       }
     }
 
     // - Ammo ---
     {
-      ui_rect(v2f(0, HEIGHT-130), 
+      ui_rect_textured(v2f(0, HEIGHT-130), 
               v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              v4f(1, 1, 1, 1),
               *(UI_Sprite *) &prefab.sprite.ui_ammo);
       ui_text(str("%i"), v2f(65, HEIGHT-110), 30, 999, game.weapon.ammo_remaining);
     }
 
     // - Collectables ---
     {
-      ui_rect(v2f(0, 65), 
+      ui_rect_textured(v2f(0, 65), 
               v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              v4f(1, 1, 1, 1),
               *(UI_Sprite *) &prefab.sprite.coin);
       ui_text(str("%i"), v2f(65, 85), 30, 999, game.coin_count);
 
-      ui_rect(v2f(0, 15), 
+      ui_rect_textured(v2f(0, 15), 
               v2f(14*SPRITE_SCALE, 14*SPRITE_SCALE), 
+              v4f(1, 1, 1, 1),
               *(UI_Sprite *) &prefab.sprite.soul);
       ui_text(str("%i"), v2f(65, 35), 30, 999, game.soul_count);
     }
@@ -1447,11 +1474,11 @@ void render_game(void)
             break;
           }
 
-          draw_rectangle_x(en->xform, color);
+          draw_rect_x(en->xform, color);
         }
         else if (en->type != EntityType_Collider)
         {
-          draw_rectangle_x(en->xform, en->tint);
+          draw_rect_x(en->xform, en->tint);
         }
       }
     }
@@ -1464,7 +1491,7 @@ void render_game(void)
       if (!particle->is_active) continue;
 
       f32 rot = particle->rot * RADIANS;
-      draw_rectangle(particle->pos, particle->scale, rot, particle->color);
+      draw_rect(particle->pos, particle->scale, rot, particle->color);
     }
   }
 
@@ -1481,7 +1508,9 @@ void render_game(void)
       case UI_WidgetType_Nil:
         break;
       case UI_WidgetType_Rect:
-        draw_sprite(widget.pos, widget.dim, 0, v4f(1, 1, 1, 1), *(Sprite *) &widget.sprite, FALSE);
+        draw_rect(widget.pos, widget.dim, 0, widget.color);
+      case UI_WidgetType_TexturedRect:
+        draw_sprite(widget.pos, widget.dim, 0, widget.color, *(Sprite *) &widget.sprite, FALSE);
         break;
       case UI_WidgetType_Text:
         {}
@@ -1549,8 +1578,6 @@ void render_game(void)
   r_flush(&global.renderer);
   arena_clear(&game.draw_arena);
 }
-
-
 
 Particle *get_next_free_particle(void)
 {

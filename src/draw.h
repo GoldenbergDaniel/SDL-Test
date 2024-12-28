@@ -57,9 +57,9 @@ UI_Glyph get_glyph(char glyph);
 
 void clear_frame(Vec4F color);
 
-void draw_rectangle(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
-void draw_rectangle_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
-void draw_rectangle_x(Mat3x3F xform, Vec4F tint);
+void draw_rect(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint);
+void draw_rect_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint);
+void draw_rect_x(Mat3x3F xform, Vec4F tint);
 
 void draw_sprite(Vec2F pos, Vec2F dim, f32 rot, Vec4F tint, Sprite sprite, bool flash);
 void draw_sprite_v(Vec3F p0, Vec3F p1, Vec3F p2, Vec3F p3, Vec4F tint, Sprite sprite, bool flash);
