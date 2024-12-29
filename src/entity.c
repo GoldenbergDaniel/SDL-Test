@@ -874,11 +874,6 @@ void equip_weapon(Entity *en, WeaponKind kind)
 
   WeaponDesc desc = prefab.weapon[kind];
 
-  if (weapon_en->weapon_kind != kind)
-  {
-    game.weapon.ammo_remaining = desc.ammo;
-  }
-
   en->is_weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
@@ -943,7 +938,10 @@ bool slot_purchase_item(Entity *slot)
   bool purchase_made = FALSE;
 
   if (slot->merchant_slot.kind == MerchantSlotKind_Weapon &&
-      game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind]) return FALSE;
+      game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind])
+  {
+    return FALSE;
+  }
 
   if (slot->merchant_slot.purchased == TRUE) return FALSE;
 
@@ -976,8 +974,6 @@ bool slot_purchase_item(Entity *slot)
 
 void slot_populate_weapon(Entity *slot)
 {
-  if (slot->merchant_slot.weapon_kind != WeaponKind_Nil) return;
-
   bool is_weapon_remaining = FALSE;
   for (i32 i = 1; i < WeaponKind_COUNT-1; i++)
   {
@@ -1012,14 +1008,17 @@ void slot_populate_weapon(Entity *slot)
       weapon_kind = WeaponKind_Rifle;
     }
 
-    if (game.progression.weapon_unlocked[weapon_kind] != TRUE)
+    if (!game.progression.weapon_unlocked[weapon_kind])
     {
       hit = TRUE;
     }
+
+    logger_debug(str("weapon: %i\n"), weapon_kind);
   }
 
   slot->merchant_slot.weapon_kind = weapon_kind;
   slot->merchant_slot.price = prefab.weapon[weapon_kind].merchant.price;
+  slot->merchant_slot.purchased = FALSE;
 
   Entity *weapon_deco = spawn_entity(EntityType_Decoration, v2f(0, 0));
   attach_entity_child(slot, weapon_deco);
@@ -1034,6 +1033,8 @@ void slot_populate_ammo(Entity *slot)
 {
   i32 roll = random_i32(1, 4);
   slot->merchant_slot.ammo_count = 8 * roll;
+  slot->merchant_slot.purchased = FALSE;
+  slot->sprite = prefab.sprite.ui_slot_coin_ammo;
 }
 
 void slot_populate_powerup(Entity *slot)

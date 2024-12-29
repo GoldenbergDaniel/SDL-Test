@@ -145,16 +145,16 @@ struct Game
 
   struct
   {
+    bool is_reloading;
     i8 shot_count;
-    i16 ammo_remaining;
+    i16 ammo_loaded;
     i16 ammo_reserved;
     Timer reload_timer;
-    bool is_reloading;
   } weapon;
 
   struct
   {
-    bool weapon_unlocked[WeaponKind_COUNT]; 
+    bool weapon_unlocked[WeaponKind_COUNT];
   } progression;
 
   Arena frame_arena;

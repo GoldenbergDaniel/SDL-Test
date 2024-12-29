@@ -213,7 +213,10 @@ void update_game(void)
             bool purchase_made = slot_purchase_item(slot);
             if (purchase_made)
             {
-              game.progression.weapon_unlocked[slot->merchant_slot.weapon_kind] = TRUE;
+              WeaponKind weapon = slot->merchant_slot.weapon_kind;
+              game.progression.weapon_unlocked[weapon] = TRUE;
+              game.weapon.ammo_loaded = prefab.weapon[weapon].ammo;
+              equip_weapon(player, weapon);
 
               Entity *child = get_entity_child_at(slot, 0);
               child->is_active = FALSE;
@@ -365,7 +368,7 @@ void update_game(void)
 
     if (!game.weapon.is_reloading && 
         game.weapon.ammo_reserved > 0 &&
-        game.weapon.ammo_remaining != prefab.weapon[gun->weapon_kind].ammo &&
+        game.weapon.ammo_loaded != prefab.weapon[gun->weapon_kind].ammo &&
         player->is_weapon_equipped &&
         is_key_just_pressed(Key_R))
     {      
@@ -378,7 +381,7 @@ void update_game(void)
     {
       game.weapon.reload_timer.ticking = FALSE;
       u16 ammo_to_load = min(desc.ammo, game.weapon.ammo_reserved);
-      game.weapon.ammo_remaining = ammo_to_load;
+      game.weapon.ammo_loaded = ammo_to_load;
       game.weapon.ammo_reserved -= ammo_to_load;
       game.weapon.is_reloading = FALSE;
     }
@@ -912,9 +915,8 @@ void update_game(void)
         }
 
         bool can_shoot = FALSE;
-
         if (timer_timeout(&en->attack_timer) && 
-            game.weapon.ammo_remaining > 0 && 
+            game.weapon.ammo_loaded > 0 && 
             !game.weapon.is_reloading)
         {
           if (gun->weapon_kind == WeaponKind_BurstRifle)
@@ -936,7 +938,6 @@ void update_game(void)
 
         if (can_shoot)
         {
-          logger_debug(str("is_ui_hovered: %i\n"), game.is_ui_hovered);
           en->attack_timer.ticking = FALSE;
 
           Entity *shot_point = get_entity_child_at(gun, 0);
@@ -970,7 +971,7 @@ void update_game(void)
             spawn_particles(ParticleKind_Smoke, spawn_pos);
           }
             
-          game.weapon.ammo_remaining -= 1;
+          game.weapon.ammo_loaded -= 1;
         }
       }
     }
@@ -1388,7 +1389,7 @@ void update_game(void)
                       *(UI_Sprite *) &prefab.sprite.ui_ammo);
 
       ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
-              game.weapon.ammo_remaining,
+              game.weapon.ammo_loaded,
               game.weapon.ammo_reserved);
     }
 
