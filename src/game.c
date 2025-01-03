@@ -380,9 +380,14 @@ void update_game(void)
     else if (timer_timeout(&game.weapon.reload_timer))
     {
       game.weapon.reload_timer.ticking = FALSE;
-      u16 ammo_to_load = min(desc.ammo, game.weapon.ammo_reserved);
-      game.weapon.ammo_loaded = ammo_to_load;
-      game.weapon.ammo_reserved -= ammo_to_load;
+      u16 ammo_to_load = min(desc.ammo - game.weapon.ammo_loaded, game.weapon.ammo_reserved);
+      game.weapon.ammo_loaded += ammo_to_load;
+      
+      if (!game.weapon.unlimitted_ammo)
+      {
+        game.weapon.ammo_reserved -= ammo_to_load;
+      }
+
       game.weapon.is_reloading = FALSE;
     }
   }
@@ -1388,9 +1393,17 @@ void update_game(void)
                       v4f(1, 1, 1, 1),
                       *(UI_Sprite *) &prefab.sprite.ui_ammo);
 
-      ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
-              game.weapon.ammo_loaded,
-              game.weapon.ammo_reserved);
+      if (game.weapon.unlimitted_ammo)
+      {
+        ui_text(str("%i/\r"), v2f(65, HEIGHT-110), 30, 999, 
+                game.weapon.ammo_loaded);
+      }
+      else
+      {
+        ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
+                game.weapon.ammo_loaded,
+                game.weapon.ammo_reserved);
+      }
     }
 
     // - Collectables ---
@@ -1511,11 +1524,11 @@ void render_game(void)
           Vec4F color = en->tint;
           switch (en->col_id)
           {
-          case Collider_Body: 
-          case Collider_Head: 
+          case Collider_Body:
+          case Collider_Head:
             color = v4f(0, 1, 0, 0.35f); 
             break;
-          case Collider_Hit:  
+          case Collider_Hit:
             color = v4f(1, 0, 0, 0.35f); 
             break;
           default:            

@@ -146,6 +146,7 @@ struct Game
   struct
   {
     bool is_reloading;
+    bool unlimitted_ammo;
     i8 shot_count;
     i16 ammo_loaded;
     i16 ammo_reserved;

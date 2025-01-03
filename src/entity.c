@@ -871,6 +871,14 @@ void equip_weapon(Entity *en, WeaponKind kind)
     entity_rem_prop(gun, EntityProp_Renders);
     return;
   }
+  else if (kind == WeaponKind_Revolver)
+  {
+    game.weapon.unlimitted_ammo = TRUE;
+  }
+  else
+  {
+    game.weapon.unlimitted_ammo = FALSE;
+  }
 
   WeaponDesc desc = prefab.weapon[kind];
 

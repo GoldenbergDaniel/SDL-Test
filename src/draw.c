@@ -116,6 +116,7 @@ UI_Glyph GLYPH_TABLE[127] = {
   ['\"'] = ui_glyph(11, 6, 3, 8, 0, 0),
   ['^'] = ui_glyph(14, 6, 3, 8, 0, 0),
   ['*'] = ui_glyph(15, 6, 3, 8, 0, 0),
+  ['\r'] = ui_glyph(0, 7, 3, 8, 0, 0),
 };
 
 inline
