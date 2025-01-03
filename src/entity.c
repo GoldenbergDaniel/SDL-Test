@@ -1011,7 +1011,7 @@ void slot_populate_weapon(Entity *slot)
     {
       weapon_kind = WeaponKind_SMG;
     }
-    else if (roll <= (acc += 30))
+    else
     {
       weapon_kind = WeaponKind_Rifle;
     }
@@ -1020,8 +1020,6 @@ void slot_populate_weapon(Entity *slot)
     {
       hit = TRUE;
     }
-
-    logger_debug(str("weapon: %i\n"), weapon_kind);
   }
 
   slot->merchant_slot.weapon_kind = weapon_kind;
