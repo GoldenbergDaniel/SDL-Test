@@ -885,6 +885,8 @@ void equip_weapon(Entity *en, WeaponKind kind)
   en->is_weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
+  game.weapon.kind = kind;
+
   weapon_en->sprite = desc.sprite;
   weapon_en->weapon_kind = kind;
   weapon_en->pos = desc.ancor;

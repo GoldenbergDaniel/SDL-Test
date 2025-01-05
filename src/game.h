@@ -145,10 +145,11 @@ struct Game
 
   struct
   {
+    WeaponKind kind;
     bool is_reloading;
     bool unlimitted_ammo;
     i8 shot_count;
-    i16 ammo_loaded;
+    i16 ammo_loaded[WeaponKind_COUNT];
     i16 ammo_reserved;
     Timer reload_timer;
   } weapon;

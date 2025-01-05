@@ -215,7 +215,7 @@ void update_game(void)
             {
               WeaponKind weapon = slot->merchant_slot.weapon_kind;
               game.progression.weapon_unlocked[weapon] = TRUE;
-              game.weapon.ammo_loaded = prefab.weapon[weapon].ammo;
+              game.weapon.ammo_loaded[weapon] = prefab.weapon[weapon].ammo;
               equip_weapon(player, weapon);
 
               Entity *child = get_entity_child_at(slot, 0);
@@ -363,15 +363,15 @@ void update_game(void)
   // - Weapon reloading ---
   if (entity_is_valid(player))
   {
-    Entity *gun = get_entity_child_by_spid(player, SPID_Gun);
-    WeaponDesc desc = prefab.weapon[gun->weapon_kind];
+    WeaponDesc desc = prefab.weapon[game.weapon.kind];
 
     if (!game.weapon.is_reloading && 
-        game.weapon.ammo_reserved > 0 &&
-        game.weapon.ammo_loaded != prefab.weapon[gun->weapon_kind].ammo &&
+        (game.weapon.ammo_reserved > 0 || game.weapon.unlimitted_ammo) &&
+        game.weapon.ammo_loaded[game.weapon.kind] != prefab.weapon[game.weapon.kind].ammo &&
         player->is_weapon_equipped &&
         is_key_just_pressed(Key_R))
-    {      
+    {
+      Entity *gun = get_entity_child_by_spid(player, SPID_Gun);
       game.weapon.is_reloading = TRUE;
       gun->rot = -45;
 
@@ -380,11 +380,16 @@ void update_game(void)
     else if (timer_timeout(&game.weapon.reload_timer))
     {
       game.weapon.reload_timer.ticking = FALSE;
-      u16 ammo_to_load = min(desc.ammo - game.weapon.ammo_loaded, game.weapon.ammo_reserved);
-      game.weapon.ammo_loaded += ammo_to_load;
-      
-      if (!game.weapon.unlimitted_ammo)
+
+      if (game.weapon.unlimitted_ammo)
       {
+        game.weapon.ammo_loaded[game.weapon.kind] = prefab.weapon[game.weapon.kind].ammo;
+      }
+      else
+      {
+        u16 ammo_to_load = min(desc.ammo - game.weapon.ammo_loaded[game.weapon.kind], 
+                              game.weapon.ammo_reserved);
+        game.weapon.ammo_loaded[game.weapon.kind] += ammo_to_load;
         game.weapon.ammo_reserved -= ammo_to_load;
       }
 
@@ -904,12 +909,10 @@ void update_game(void)
     {
       if (en->is_weapon_equipped)
       {
-        Entity *gun = get_entity_child_by_spid(en, SPID_Gun);
-
         if (game.weapon.shot_count == 0) game.weapon.shot_count = 3;
 
         if (!en->attack_timer.ticking &&
-            gun->weapon_kind == WeaponKind_BurstRifle && 
+            game.weapon.kind == WeaponKind_BurstRifle && 
             game.weapon.shot_count == 3)
         {
           timer_start(&en->attack_timer, en->attack_timer.duration * 3);
@@ -921,10 +924,10 @@ void update_game(void)
 
         bool can_shoot = FALSE;
         if (timer_timeout(&en->attack_timer) && 
-            game.weapon.ammo_loaded > 0 && 
+            game.weapon.ammo_loaded[game.weapon.kind] > 0 && 
             !game.weapon.is_reloading)
         {
-          if (gun->weapon_kind == WeaponKind_BurstRifle)
+          if (game.weapon.kind == WeaponKind_BurstRifle)
           {
             can_shoot = ((is_key_pressed(Key_Mouse1) && game.weapon.shot_count == 3) ||
                         (game.weapon.shot_count < 3 && game.weapon.shot_count > 0)) &&
@@ -945,6 +948,7 @@ void update_game(void)
         {
           en->attack_timer.ticking = FALSE;
 
+          Entity *gun = get_entity_child_by_spid(en, SPID_Gun);
           Entity *shot_point = get_entity_child_at(gun, 0);
           Vec2F spawn_pos = pos_from_entity(shot_point);
           f32 spawn_rot = en->flip_x ? -gun->rot + 180 : gun->rot;
@@ -976,7 +980,7 @@ void update_game(void)
             spawn_particles(ParticleKind_Smoke, spawn_pos);
           }
             
-          game.weapon.ammo_loaded -= 1;
+          game.weapon.ammo_loaded[game.weapon.kind] -= 1;
         }
       }
     }
@@ -1396,12 +1400,12 @@ void update_game(void)
       if (game.weapon.unlimitted_ammo)
       {
         ui_text(str("%i/\r"), v2f(65, HEIGHT-110), 30, 999, 
-                game.weapon.ammo_loaded);
+                game.weapon.ammo_loaded[game.weapon.kind]);
       }
       else
       {
         ui_text(str("%i/%i"), v2f(65, HEIGHT-110), 30, 999, 
-                game.weapon.ammo_loaded,
+                game.weapon.ammo_loaded[game.weapon.kind],
                 game.weapon.ammo_reserved);
       }
     }
