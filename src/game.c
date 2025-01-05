@@ -21,9 +21,10 @@ void init_game(void)
 {
   game.camera = m3x3f(1.0f);
   game.state = GameState_GracePeriod;
-  game.grace_period_timer.duration = 15.0f;
+  game.grace_period_timer.duration = 10.0f;
   game.current_wave.num = -1;
   game.just_entered_grace = TRUE;
+  game.weapon.ammo_loaded[WeaponKind_Revolver] = prefab.weapon[WeaponKind_Revolver].ammo;
 
   ui_init_widgetstore(128, &global.perm_arena);
 
@@ -256,9 +257,9 @@ void update_game(void)
               game.weapon.ammo_reserved += slot->merchant_slot.ammo_count;
               slot->sprite = prefab.sprite.ui_slot_coin_empty;
 
-              Entity *child = get_entity_child_at(slot, 0);
-              child->is_active = FALSE;
-              entity_rem_prop(child, EntityProp_Renders);
+              Entity *weapon_deco = get_entity_child_at(slot, 0);
+              // weapon_deco->is_active = FALSE;
+              entity_rem_prop(weapon_deco, EntityProp_Renders);
             }
           }
 

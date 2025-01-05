@@ -328,21 +328,28 @@ Entity *spawn_merchant(void)
   slot_0->merchant_slot.kind = MerchantSlotKind_Weapon;
   slot_0->pos = v2f(SPRITE_SCALE * -19, SPRITE_SCALE * 3);
   slot_0->sprite = prefab.sprite.ui_slot_coin_empty;
-  slot_populate_weapon(slot_0);
   attach_entity_child(en, slot_0);
+  Entity *weapon_deco_0 = spawn_entity(EntityType_Decoration, v2f(0, 0));
+  attach_entity_child(slot_0, weapon_deco_0);
+  slot_populate_weapon(slot_0);
 
   Entity *slot_1 = create_entity(EntityType_Decoration);
   slot_1->merchant_slot.kind = MerchantSlotKind_Coin;
   slot_1->pos = v2f(SPRITE_SCALE * -8, SPRITE_SCALE * 3);
   slot_1->sprite = prefab.sprite.ui_slot_coin_ammo;
-  slot_populate_ammo(slot_1);
   attach_entity_child(en, slot_1);
+  Entity *weapon_deco_1 = spawn_entity(EntityType_Decoration, v2f(0, 0));
+  attach_entity_child(slot_1, weapon_deco_1);
+  slot_populate_ammo(slot_1);
 
   Entity *slot_2 = create_entity(EntityType_Decoration);
   slot_2->merchant_slot.kind = MerchantSlotKind_Powerup;
   slot_2->pos = v2f(SPRITE_SCALE * 15, SPRITE_SCALE * 3);
   slot_2->sprite = prefab.sprite.ui_slot_soul_heal;
   attach_entity_child(en, slot_2);
+  Entity *weapon_deco_2 = spawn_entity(EntityType_Decoration, v2f(0, 0));
+  attach_entity_child(slot_1, weapon_deco_2);
+  slot_populate_ammo(slot_1);
 
   return en;
 }
@@ -1028,8 +1035,7 @@ void slot_populate_weapon(Entity *slot)
   slot->merchant_slot.price = prefab.weapon[weapon_kind].merchant.price;
   slot->merchant_slot.purchased = FALSE;
 
-  Entity *weapon_deco = spawn_entity(EntityType_Decoration, v2f(0, 0));
-  attach_entity_child(slot, weapon_deco);
+  Entity *weapon_deco = get_entity_child_at(slot, 0);
   weapon_deco->pos = prefab.weapon[weapon_kind].merchant.offset;
   weapon_deco->sprite = prefab.weapon[weapon_kind].sprite;
   weapon_deco->rot = 270;
