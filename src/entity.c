@@ -215,31 +215,31 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
 
     break;
   case ZombieKind_Chicken:
-    en->dim = v2f(10, 8);
+    en->dim = v2f(16, 16);
     en->sprite = prefab.sprite.chicken_idle_0;
     en->anim_descriptors = prefab.animation.zombie_chicken;
     en->stop_dist = 40.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Body]->pos = v2f(0, pos_bl_from_entity(en).y);
+    en->cols[Collider_Body]->pos = v2f(0, -4 * SPRITE_SCALE);
     en->cols[Collider_Body]->scale = v2f(0.5, 0.5);
 
     entity_add_collider(en, Collider_Hit);
     en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Hit]->pos = v2f(20, pos_bl_from_entity(en).y);
+    en->cols[Collider_Hit]->pos = v2f(20, -4 * SPRITE_SCALE);
     en->cols[Collider_Hit]->scale = v2f(0.2, 0.2);
 
     break;
   case ZombieKind_BabyChicken:
-    en->dim = v2f(5, 4);
+    en->dim = v2f(16, 16);
     en->sprite = prefab.sprite.baby_chicken_idle;
     en->anim_descriptors = prefab.animation.zombie_baby_chicken;
     en->stop_dist = 40.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Body]->pos = v2f(0, -en->dim.height * SPRITE_SCALE);
+    en->cols[Collider_Body]->pos = v2f(0, -4 * SPRITE_SCALE);
     en->cols[Collider_Body]->scale = v2f(0.5, 0.5);
 
     entity_add_collider(en, Collider_Hit);
@@ -250,19 +250,19 @@ Entity *spawn_zombie(ZombieKind kind, Vec2F pos)
     break;
   case ZombieKind_Bloat:
     en->dim = v2f(16, 32);
-    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE * 2);
+    en->scale = v2f(SPRITE_SCALE, SPRITE_SCALE);
     en->sprite = prefab.sprite.bloat_idle;
     en->anim_descriptors = prefab.animation.zombie_bloat;
     en->stop_dist = 70.0f;
 
     entity_add_collider(en, Collider_Body);
     en->cols[Collider_Body]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Body]->pos = v2f(0, 0);
-    en->cols[Collider_Body]->scale = v2f(0.5, 1);
+    en->cols[Collider_Body]->pos = v2f(0, -6 * SPRITE_SCALE);
+    en->cols[Collider_Body]->scale = v2f(0.75, 1.25);
 
     entity_add_collider(en, Collider_Hit);
     en->cols[Collider_Hit]->col_type = P_ColliderType_Rect;
-    en->cols[Collider_Hit]->pos = v2f(en->dim.width, 0);
+    en->cols[Collider_Hit]->pos = v2f(5 * SPRITE_SCALE, -4 * SPRITE_SCALE);
     en->cols[Collider_Hit]->scale = v2f(0.25, 0.5);
 
     break;

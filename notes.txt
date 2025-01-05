@@ -13,7 +13,7 @@ TODO
   [X] health, ammo, collectables ui
   [X] muzzle flash
   [X] logger
-  [X] juice: squash and stretch
+  [X] squash and stretch
   [X] laser pistol
   [X] burst rifle
   [X] complex animation

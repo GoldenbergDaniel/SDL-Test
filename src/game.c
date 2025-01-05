@@ -52,8 +52,8 @@ void init_game(void)
     attach_entity_child(gun, muzzle_flash);
 
     // spawn_zombie(ZombieKind_Walker, v2f(WIDTH - 100, GROUND_Y + 100));
-    // spawn_zombie(ZombieKind_BabyChicken, v2f(WIDTH - 100, GROUND_Y + 100));
-    // spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_Chicken, v2f(WIDTH - 100, GROUND_Y + 100));
+    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
