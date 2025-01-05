@@ -258,7 +258,6 @@ void update_game(void)
               slot->sprite = prefab.sprite.ui_slot_coin_empty;
 
               Entity *weapon_deco = get_entity_child_at(slot, 0);
-              // weapon_deco->is_active = FALSE;
               entity_rem_prop(weapon_deco, EntityProp_Renders);
             }
           }
@@ -361,7 +360,7 @@ void update_game(void)
     }
   }
 
-  // - Weapon reloading ---
+  // - Reloading ---
   if (entity_is_valid(player))
   {
     WeaponDesc desc = prefab.weapon[game.weapon.kind];
@@ -1675,6 +1674,12 @@ bool is_zombie_remaining_to_spawn(WaveDesc *desc)
   }
 
   return result;
+}
+
+void weapon_cancel_reload(void)
+{
+  game.weapon.is_reloading = FALSE;
+  game.weapon.reload_timer.ticking = FALSE;
 }
 
 void push_event(EventType type, EventDesc desc)

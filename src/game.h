@@ -101,6 +101,7 @@ struct WaveDesc
 };
 
 bool is_zombie_remaining_to_spawn(WaveDesc *desc);
+void weapon_cancel_reload(void);
 
 typedef enum GameState
 {

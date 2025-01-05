@@ -338,8 +338,6 @@ Entity *spawn_merchant(void)
   slot_1->pos = v2f(SPRITE_SCALE * -8, SPRITE_SCALE * 3);
   slot_1->sprite = prefab.sprite.ui_slot_coin_ammo;
   attach_entity_child(en, slot_1);
-  Entity *weapon_deco_1 = spawn_entity(EntityType_Decoration, v2f(0, 0));
-  attach_entity_child(slot_1, weapon_deco_1);
   slot_populate_ammo(slot_1);
 
   Entity *slot_2 = create_entity(EntityType_Decoration);
@@ -347,9 +345,7 @@ Entity *spawn_merchant(void)
   slot_2->pos = v2f(SPRITE_SCALE * 15, SPRITE_SCALE * 3);
   slot_2->sprite = prefab.sprite.ui_slot_soul_heal;
   attach_entity_child(en, slot_2);
-  Entity *weapon_deco_2 = spawn_entity(EntityType_Decoration, v2f(0, 0));
-  attach_entity_child(slot_1, weapon_deco_2);
-  slot_populate_ammo(slot_1);
+  slot_populate_powerup(slot_2);
 
   return en;
 }
@@ -892,8 +888,6 @@ void equip_weapon(Entity *en, WeaponKind kind)
   en->is_weapon_equipped = TRUE;
   en->attack_timer.duration = desc.shot_cooldown;
 
-  game.weapon.kind = kind;
-
   weapon_en->sprite = desc.sprite;
   weapon_en->weapon_kind = kind;
   weapon_en->pos = desc.ancor;
@@ -902,6 +896,12 @@ void equip_weapon(Entity *en, WeaponKind kind)
   entity_add_prop(weapon_en, EntityProp_Renders);
 
   shot_point_en->pos = desc.shot_point;
+
+  game.weapon.kind = kind;
+  if (game.weapon.is_reloading)
+  {
+    weapon_cancel_reload();
+  }
 }
 
 void entity_distort_x(Entity *en, f32 scale, f32 rate, f32 original)
