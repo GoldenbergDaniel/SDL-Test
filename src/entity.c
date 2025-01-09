@@ -1047,7 +1047,7 @@ void slot_populate_ammo(Entity *slot)
 {
   i32 roll = random_i32(1, 4);
   slot->merchant_slot.ammo_count = 8 * roll;
-  slot->merchant_slot.price = 2 * roll;
+  slot->merchant_slot.price = roll;
   slot->merchant_slot.purchased = FALSE;
   slot->sprite = prefab.sprite.ui_slot_coin_ammo;
 }

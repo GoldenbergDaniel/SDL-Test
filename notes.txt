@@ -19,7 +19,7 @@ TODO
   [X] complex animation
   [X] girl playable character
   [X] BIG zombie
-  [~] merchant
+  [X] merchant
   [_] headshots
   [_] shotgun (pellets)
   [_] camera shake 

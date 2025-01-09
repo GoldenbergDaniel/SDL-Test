@@ -529,7 +529,7 @@ void init_prefabs(void)
     };
 
     prefab.wave[2] = (WaveDesc) {
-      .time_btwn_spawns = 2,
+      .time_btwn_spawns = 3,
       .zombie_counts = {
         [ZombieKind_Walker]  = 8,
         [ZombieKind_Chicken] = 1,
@@ -539,7 +539,7 @@ void init_prefabs(void)
     prefab.wave[3] = (WaveDesc) {
       .time_btwn_spawns = 2,
       .zombie_counts = {
-        [ZombieKind_Walker]  = 10,
+        [ZombieKind_Walker]  = 8,
         [ZombieKind_Chicken] = 3,
       }
     };
@@ -547,8 +547,9 @@ void init_prefabs(void)
     prefab.wave[4] = (WaveDesc) {
       .time_btwn_spawns = 2,
       .zombie_counts = {
-        [ZombieKind_Walker]  = 15,
+        [ZombieKind_Walker]  = 7,
         [ZombieKind_Chicken] = 5,
+        [ZombieKind_Bloat] = 1,
       }
     };
   }
