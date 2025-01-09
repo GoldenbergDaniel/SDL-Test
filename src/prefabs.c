@@ -409,6 +409,7 @@ void init_prefabs(void)
   // - :weapons ---
   {
     prefab.weapon[WeaponKind_Revolver] = (WeaponDesc) {
+      .name            = str("Revolver"),
       .sprite          = prefab.sprite.revolver,
       .ammo_kind       = AmmoKind_Bullet,
       .ancor           = v2f(35, 0),
@@ -421,6 +422,7 @@ void init_prefabs(void)
     };
 
     prefab.weapon[WeaponKind_Rifle] = (WeaponDesc) {
+      .name            = str("Rifle"),
       .sprite          = prefab.sprite.rifle,
       .ammo_kind       = AmmoKind_Bullet,
       .ancor           = v2f(30, 5),
@@ -430,9 +432,13 @@ void init_prefabs(void)
       .bullet_speed    = 1500.0f,
       .ammo            = 5,
       .reload_duration = 5,
+      .merchant = {
+        .price = 3,
+      }
     };
 
     prefab.weapon[WeaponKind_Shotgun] = (WeaponDesc) {
+      .name            = str("Shotgun"),
       .sprite          = prefab.sprite.shotgun,
       .ammo_kind       = AmmoKind_Pellet,
       .ancor           = v2f(30, 5),
@@ -442,9 +448,13 @@ void init_prefabs(void)
       .bullet_speed    = 1000.0f,
       .ammo            = 7,
       .reload_duration = 3,
+      .merchant = {
+        .price = 7,
+      }
     };
 
     prefab.weapon[WeaponKind_SMG] = (WeaponDesc) {
+      .name            = str("SMG"),
       .sprite          = prefab.sprite.smg,
       .ammo_kind       = AmmoKind_Bullet,
       .ancor           = v2f(25, 0),
@@ -453,10 +463,14 @@ void init_prefabs(void)
       .damage          = 2,
       .bullet_speed    = 1500.0f,
       .ammo            = 30,
-      .reload_duration = 5
+      .reload_duration = 5,
+      .merchant = {
+        .price = 7,
+      }
     };
 
     prefab.weapon[WeaponKind_BurstRifle] = (WeaponDesc) {
+      .name            = str("Burst Rifle"),
       .sprite          = prefab.sprite.burst_rifle,
       .ammo_kind       = AmmoKind_Bullet,
       .ancor           = v2f(25, 0),
@@ -465,10 +479,14 @@ void init_prefabs(void)
       .damage          = 3,
       .bullet_speed    = 1200.0f,
       .ammo            = 30,
-      .reload_duration = 5
+      .reload_duration = 5,
+      .merchant = {
+        .price = 10,
+      }
     };
 
     prefab.weapon[WeaponKind_LaserPistol] = (WeaponDesc) {
+      .name            = str("Laser Pistol"),
       .sprite          = prefab.sprite.laser_pistol,
       .ammo_kind       = AmmoKind_Laser,
       .ancor           = v2f(35, 5),

@@ -25,6 +25,7 @@ void init_game(void)
   game.current_wave.num = -1;
   game.just_entered_grace = TRUE;
   game.weapon.ammo_loaded[WeaponKind_Revolver] = prefab.weapon[WeaponKind_Revolver].ammo;
+  game.coin_count = 5;
 
   ui_init_widgetstore(128, &global.perm_arena);
 
@@ -53,7 +54,7 @@ void init_game(void)
 
     // spawn_zombie(ZombieKind_Walker, v2f(WIDTH - 100, GROUND_Y + 100));
     // spawn_zombie(ZombieKind_Chicken, v2f(WIDTH - 100, GROUND_Y + 100));
-    spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
+    // spawn_zombie(ZombieKind_Bloat, v2f(WIDTH - 100, GROUND_Y + 100));
   }
 
   for (i32 i = 0; i < 0; i++)
@@ -224,6 +225,25 @@ void update_game(void)
               entity_rem_prop(child, EntityProp_Renders);
             }
           }
+
+          if (!slot->merchant_slot.purchased)
+          {
+            ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
+                    v2f(150, 60), 
+                    v4f(0, 0, 0, 1));
+
+            ui_text(str("%s"),
+                    add_2f(pos_from_entity(slot), v2f(-70, 80)),
+                    20,
+                    999,
+                    prefab.weapon[slot->merchant_slot.weapon_kind].name.data);
+
+            ui_text(str("Cost: %i"),
+                    add_2f(pos_from_entity(slot), v2f(-70, 55)),
+                    20,
+                    999,
+                    prefab.weapon[slot->merchant_slot.weapon_kind].merchant.price);
+          }
         }
 
         if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
@@ -262,15 +282,24 @@ void update_game(void)
             }
           }
 
-          ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)), 
-                  v2f(80, 25), 
-                  v4f(0, 0, 0, 1));
+          if (!slot->merchant_slot.purchased)
+          {
+            ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
+                    v2f(150, 60), 
+                    v4f(0, 0, 0, 1));
 
-          ui_text(str("%i"),
-                  add_2f(pos_from_entity(slot), v2f(-4 * SPRITE_SCALE, 35)),
-                  20,
-                  999,
-                  slot->merchant_slot.ammo_count);
+            ui_text(str("%i ammo"),
+                    add_2f(pos_from_entity(slot), v2f(-70, 80)),
+                    20,
+                    999,
+                    slot->merchant_slot.ammo_count);
+
+            ui_text(str("Cost: %i"),
+                    add_2f(pos_from_entity(slot), v2f(-70, 55)),
+                    20,
+                    999,
+                    slot->merchant_slot.price);
+          }
         }
         
         if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
@@ -307,6 +336,25 @@ void update_game(void)
               child->is_active = FALSE;
               entity_rem_prop(child, EntityProp_Renders);
             }
+          }
+
+          if (!slot->merchant_slot.purchased)
+          {
+            ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)),
+                    v2f(100, 50), 
+                    v4f(0, 0, 0, 1));
+
+            ui_text(str("%i"),
+                    add_2f(pos_from_entity(slot), v2f(-35, 60)),
+                    20,
+                    999,
+                    slot->merchant_slot.ammo_count);
+
+            ui_text(str("Cost: %i"),
+                    add_2f(pos_from_entity(slot), v2f(-35, 40)),
+                    20,
+                    999,
+                    0);
           }
         }
         

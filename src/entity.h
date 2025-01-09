@@ -224,6 +224,7 @@ typedef enum WeaponKind
 typedef struct WeaponDesc WeaponDesc;
 struct WeaponDesc
 {
+  String name;
   Sprite sprite;
   AmmoKind ammo_kind;
   Vec2F ancor;
