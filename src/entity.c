@@ -874,7 +874,7 @@ void equip_weapon(Entity *en, WeaponKind kind)
     entity_rem_prop(gun, EntityProp_Renders);
     return;
   }
-  else if (kind == WeaponKind_Revolver)
+  else if (kind == WeaponKind_Revolver || kind == WeaponKind_LaserPistol)
   {
     game.weapon.unlimitted_ammo = TRUE;
   }

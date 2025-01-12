@@ -79,9 +79,8 @@ void update_game(void)
   game.is_ui_hovered = FALSE;
   ui_clear_widgetstore();
 
-  // - Zombie waves ---
+  // - Waves ---
   if (game.state != GameState_SoOver)
-  // if (0)
   {
     i32 total_zombies_this_wave = 0;
     if (game.current_wave.num >= 0)
@@ -175,20 +174,31 @@ void update_game(void)
   // - Merchant ---
   {
     Entity *merchant = get_entity_by_sp(SPID_Merchant);
+
     if (game.just_entered_grace)
     {
       slot_populate_weapon(get_entity_child_at(merchant, 0));
       slot_populate_ammo(get_entity_child_at(merchant, 1));
+
+      merchant->state = EntityState_MerchantComing;
     }
 
     if (game.state == GameState_GracePeriod)
     {
       merchant->scale = lerp_2f(merchant->scale, v2f(SPRITE_SCALE, SPRITE_SCALE), dt*3);
-      if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
+
+      if (merchant->state == EntityState_MerchantComing)
       {
-        entity_add_prop(get_entity_child_at(merchant, 0), EntityProp_Renders);
-        entity_add_prop(get_entity_child_at(merchant, 1), EntityProp_Renders);
-        entity_add_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
+        if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
+        {
+          Entity *slot_0 = get_entity_child_at(merchant, 0);
+          entity_add_prop(slot_0, EntityProp_Renders);
+          entity_add_prop(get_entity_child_at(slot_0, 0), EntityProp_Renders);
+          entity_add_prop(get_entity_child_at(merchant, 1), EntityProp_Renders);
+          entity_add_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
+
+          merchant->state = EntityState_MerchantArrived;
+        }
       }
 
       #define LERP_MULT 20.0f
@@ -364,12 +374,21 @@ void update_game(void)
         }
       }
     }
-    else
+    else if (game.state == GameState_ZombieWave)
     {
-      entity_rem_prop(get_entity_child_at(merchant, 0), EntityProp_Renders);
+      Entity *slot_0 = get_entity_child_at(merchant, 0);
+      entity_rem_prop(slot_0, EntityProp_Renders);
+      entity_rem_prop(get_entity_child_at(slot_0, 0), EntityProp_Renders);
       entity_rem_prop(get_entity_child_at(merchant, 1), EntityProp_Renders);
       entity_rem_prop(get_entity_child_at(merchant, 2), EntityProp_Renders);
+
       merchant->scale = lerp_2f(merchant->scale, V2F_ZERO, dt*3);
+      merchant->state = EntityState_MerchantLeaving;
+
+      if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
+      {
+        merchant->state = EntityState_MerchantGone;
+      }
     }
   }
 
@@ -1020,7 +1039,7 @@ void update_game(void)
           {
             timer_start(&muzzle_flash->muzzle_flash_timer, 0.08f);
             entity_add_prop(muzzle_flash, EntityProp_Renders);
-            entity_distort_x(gun, 0.75f, 4.0f, 1.0f);
+            entity_distort_x(gun, 0.7f, 4.0f, 1.0f);
           }
 
           if (gun->weapon_kind != WeaponKind_LaserPistol)
@@ -1141,7 +1160,7 @@ void update_game(void)
     {
       if (en->distort_x.state == 0)
       {
-        en->scale.x -= dt * en->distort_x.rate;
+        en->scale.x -= dt * en->distort_x.rate * 8;
 
         if (en->scale.x <= en->distort_x.saved * en->distort_x.scale)
         {
@@ -1167,7 +1186,7 @@ void update_game(void)
     {
       if (en->distort_y.state == 0)
       {
-        en->scale.y -= dt * en->distort_y.rate;
+        en->scale.y -= dt * en->distort_y.rate * 8;
 
         if (en->scale.y <= en->distort_y.saved * en->distort_y.scale)
         {
@@ -1225,27 +1244,29 @@ void update_game(void)
       en->prev_state = en->state;
     }
     
-    assert(en->anim_descriptors != NULL);
-    AnimationDesc anim_desc = en->anim_descriptors[en->state];
-    en->sprite = anim_desc.frames[en->anim.frame_idx];
-
-    // - Tick animation ---
-    if (anim_desc.frame_count > 1)
+    if (en->anim_descriptors != NULL)
     {
-      en->anim.tick_counter += ANIM_TICK;
+      AnimationDesc anim_desc = en->anim_descriptors[en->state];
+      en->sprite = anim_desc.frames[en->anim.frame_idx];
 
-      if (en->anim.tick_counter % anim_desc.ticks_per_frame == 0)
+      // - Tick animation ---
+      if (anim_desc.frame_count > 1)
       {
-        en->anim.frame_idx += 1;
+        en->anim.tick_counter += ANIM_TICK;
 
-        if (en->anim.frame_idx == anim_desc.frame_count)
+        if (en->anim.tick_counter % anim_desc.ticks_per_frame == 0)
         {
-          en->anim.frame_idx = 0;
+          en->anim.frame_idx += 1;
 
-          // - Exit animation ---
-          if (anim_desc.exit_state != EntityState_Nil)
+          if (en->anim.frame_idx == anim_desc.frame_count)
           {
-            en->state = anim_desc.exit_state;
+            en->anim.frame_idx = 0;
+
+            // - Exit animation ---
+            if (anim_desc.exit_state != EntityState_Nil)
+            {
+              en->state = anim_desc.exit_state;
+            }
           }
         }
       }

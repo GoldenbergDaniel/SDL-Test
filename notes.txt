@@ -20,9 +20,10 @@ TODO
   [X] girl playable character
   [X] BIG zombie
   [X] merchant
+  [_] reload bar
   [_] headshots
   [_] shotgun (pellets)
-  [_] camera shake 
+  [_] camera shake
   [_] powerups/abilities
   [_] main menu, character select
   [_] play again
