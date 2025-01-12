@@ -20,14 +20,15 @@ TODO
   [X] girl playable character
   [X] BIG zombie
   [X] merchant
+  [_] powerups
+  [_] main menu
+  [_] character select
+  [_] play again
+  [_] audio
   [_] reload bar
   [_] headshots
   [_] shotgun (pellets)
   [_] camera shake
-  [_] powerups/abilities
-  [_] main menu, character select
-  [_] play again
-  [_] audio
 
 ZOMBIES
   - walker: he walks

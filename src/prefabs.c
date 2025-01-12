@@ -514,10 +514,17 @@ void init_prefabs(void)
 
   // - :waves ---
   {
+    // prefab.wave[0] = (WaveDesc) {
+    //   .time_btwn_spawns = 3,
+    //   .zombie_counts = {
+    //     [ZombieKind_Walker] = 4,
+    //   }
+    // };
+
     prefab.wave[0] = (WaveDesc) {
       .time_btwn_spawns = 3,
       .zombie_counts = {
-        [ZombieKind_Walker] = 4,
+        [ZombieKind_Walker] = 0,
       }
     };
 

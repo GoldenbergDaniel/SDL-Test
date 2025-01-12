@@ -323,15 +323,21 @@ Entity *spawn_merchant(void)
   Entity *en = create_entity(EntityType_Merchant);
   en->spid = SPID_Merchant;
   en->pos = v2f(WIDTH/2, GROUND_Y+80);
+  en->state = EntityState_MerchantComing;
+  en->scale = V2F_ZERO;
 
   Entity *slot_0 = create_entity(EntityType_Decoration);
   slot_0->merchant_slot.kind = MerchantSlotKind_Weapon;
   slot_0->pos = v2f(SPRITE_SCALE * -19, SPRITE_SCALE * 3);
   slot_0->sprite = prefab.sprite.ui_slot_coin_empty;
   attach_entity_child(en, slot_0);
-  Entity *weapon_deco_0 = spawn_entity(EntityType_Decoration, v2f(0, 0));
-  attach_entity_child(slot_0, weapon_deco_0);
+  
+  Entity *weapon_deco = create_entity(EntityType_Decoration);
+  attach_entity_child(slot_0, weapon_deco);
   slot_populate_weapon(slot_0);
+  entity_rem_prop(slot_0, EntityProp_Renders);
+  entity_rem_prop(weapon_deco, EntityProp_Renders);
+  weapon_deco->is_active = TRUE;
 
   Entity *slot_1 = create_entity(EntityType_Decoration);
   slot_1->merchant_slot.kind = MerchantSlotKind_Coin;
@@ -339,6 +345,7 @@ Entity *spawn_merchant(void)
   slot_1->sprite = prefab.sprite.ui_slot_coin_ammo;
   attach_entity_child(en, slot_1);
   slot_populate_ammo(slot_1);
+  entity_rem_prop(slot_1, EntityProp_Renders);
 
   Entity *slot_2 = create_entity(EntityType_Decoration);
   slot_2->merchant_slot.kind = MerchantSlotKind_Powerup;
@@ -346,6 +353,7 @@ Entity *spawn_merchant(void)
   slot_2->sprite = prefab.sprite.ui_slot_soul_heal;
   attach_entity_child(en, slot_2);
   slot_populate_powerup(slot_2);
+  entity_rem_prop(slot_2, EntityProp_Renders);
 
   return en;
 }
@@ -1039,8 +1047,7 @@ void slot_populate_weapon(Entity *slot)
   weapon_deco->pos = prefab.weapon[weapon_kind].merchant.offset;
   weapon_deco->sprite = prefab.weapon[weapon_kind].sprite;
   weapon_deco->rot = 270;
-  weapon_deco->is_active = TRUE;
-  entity_add_prop(weapon_deco, EntityProp_Renders);
+  entity_rem_prop(weapon_deco, EntityProp_Renders);
 }
 
 void slot_populate_ammo(Entity *slot)

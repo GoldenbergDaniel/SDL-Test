@@ -21,11 +21,11 @@ void init_game(void)
 {
   game.camera = m3x3f(1.0f);
   game.state = GameState_GracePeriod;
-  game.grace_period_timer.duration = 10.0f;
+  game.grace_period_timer.duration = 5.0f;
   game.current_wave.num = -1;
   game.just_entered_grace = TRUE;
   game.weapon.ammo_loaded[WeaponKind_Revolver] = prefab.weapon[WeaponKind_Revolver].ammo;
-  game.coin_count = 5;
+  game.coin_count = 50;
 
   ui_init_widgetstore(128, &global.perm_arena);
 
@@ -200,177 +200,179 @@ void update_game(void)
           merchant->state = EntityState_MerchantArrived;
         }
       }
-
-      #define LERP_MULT 20.0f
-
-      // - Slot 0 ---
+      else if (merchant->state == EntityState_MerchantArrived)
       {
-        Entity *slot = get_entity_child_at(merchant, 0); 
-        P_CollisionParams col = {
-          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
-          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
-        };
+        #define LERP_MULT 20.0f
 
-        if (p_rect_point_interect(col, mouse_pos))
+        // - Slot 0 ---
         {
-          game.is_ui_hovered = TRUE;
+          Entity *slot = get_entity_child_at(merchant, 0); 
+          P_CollisionParams col = {
+            .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+            .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+          };
 
-          if (!slot->merchant_slot.purchased)
+          if (p_rect_point_interect(col, mouse_pos))
           {
-            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+            game.is_ui_hovered = TRUE;
+
+            if (!slot->merchant_slot.purchased)
+            {
+              slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+            }
+            
+            if (is_key_just_pressed(Key_Mouse1))
+            {
+              bool purchase_made = slot_purchase_item(slot);
+              if (purchase_made)
+              {
+                WeaponKind weapon = slot->merchant_slot.weapon_kind;
+                game.progression.weapon_unlocked[weapon] = TRUE;
+                game.weapon.ammo_loaded[weapon] = prefab.weapon[weapon].ammo;
+                equip_weapon(player, weapon);
+
+                Entity *child = get_entity_child_at(slot, 0);
+                child->is_active = FALSE;
+                entity_rem_prop(child, EntityProp_Renders);
+              }
+            }
+
+            if (!slot->merchant_slot.purchased)
+            {
+              ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
+                      v2f(150, 60), 
+                      v4f(0, 0, 0, 1));
+
+              ui_text(str("%s"),
+                      add_2f(pos_from_entity(slot), v2f(-70, 80)),
+                      20,
+                      999,
+                      prefab.weapon[slot->merchant_slot.weapon_kind].name.data);
+
+              ui_text(str("Cost: %i"),
+                      add_2f(pos_from_entity(slot), v2f(-70, 55)),
+                      20,
+                      999,
+                      prefab.weapon[slot->merchant_slot.weapon_kind].merchant.price);
+            }
+          }
+
+          if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
+          {
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
+          }
+        }
+
+        // - Slot 1 ---
+        {
+          Entity *slot = get_entity_child_at(merchant, 1);
+          P_CollisionParams col = {
+            .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+            .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+          };
+
+          if (p_rect_point_interect(col, mouse_pos))
+          {
+            game.is_ui_hovered = TRUE;
+
+            if (!slot->merchant_slot.purchased)
+            {
+              slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+            }
+
+            if (is_key_just_pressed(Key_Mouse1))
+            {
+              bool purchase_made = slot_purchase_item(slot);
+              if (purchase_made)
+              {
+                game.weapon.ammo_reserved += slot->merchant_slot.ammo_count;
+                slot->sprite = prefab.sprite.ui_slot_coin_empty;
+
+                Entity *weapon_deco = get_entity_child_at(slot, 0);
+                entity_rem_prop(weapon_deco, EntityProp_Renders);
+              }
+            }
+
+            if (!slot->merchant_slot.purchased)
+            {
+              ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
+                      v2f(150, 60), 
+                      v4f(0, 0, 0, 1));
+
+              ui_text(str("%i ammo"),
+                      add_2f(pos_from_entity(slot), v2f(-70, 80)),
+                      20,
+                      999,
+                      slot->merchant_slot.ammo_count);
+
+              ui_text(str("Cost: %i"),
+                      add_2f(pos_from_entity(slot), v2f(-70, 55)),
+                      20,
+                      999,
+                      slot->merchant_slot.price);
+            }
           }
           
-          if (is_key_just_pressed(Key_Mouse1))
+          if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
           {
-            bool purchase_made = slot_purchase_item(slot);
-            if (purchase_made)
-            {
-              WeaponKind weapon = slot->merchant_slot.weapon_kind;
-              game.progression.weapon_unlocked[weapon] = TRUE;
-              game.weapon.ammo_loaded[weapon] = prefab.weapon[weapon].ammo;
-              equip_weapon(player, weapon);
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
+          }
+        }
 
-              Entity *child = get_entity_child_at(slot, 0);
-              child->is_active = FALSE;
-              entity_rem_prop(child, EntityProp_Renders);
+        // - Slot 2 ---
+        {
+          Entity *slot = get_entity_child_at(merchant, 2);
+          P_CollisionParams col = {
+            .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
+            .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
+          };
+
+          if (p_rect_point_interect(col, mouse_pos))
+          {
+            game.is_ui_hovered = TRUE;
+
+            if (!slot->merchant_slot.purchased)
+            {
+              slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
+            }
+
+            if (is_key_just_pressed(Key_Mouse1))
+            {
+              bool purchase_made = slot_purchase_item(slot);
+              if (purchase_made)
+              {
+                slot->sprite = prefab.sprite.ui_slot_soul_empty;
+                
+                Entity *child = get_entity_child_at(slot, 0);
+                child->is_active = FALSE;
+                entity_rem_prop(child, EntityProp_Renders);
+              }
+            }
+
+            if (!slot->merchant_slot.purchased)
+            {
+              ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)),
+                      v2f(100, 50), 
+                      v4f(0, 0, 0, 1));
+
+              ui_text(str("%i"),
+                      add_2f(pos_from_entity(slot), v2f(-35, 60)),
+                      20,
+                      999,
+                      slot->merchant_slot.ammo_count);
+
+              ui_text(str("Cost: %i"),
+                      add_2f(pos_from_entity(slot), v2f(-35, 40)),
+                      20,
+                      999,
+                      0);
             }
           }
-
-          if (!slot->merchant_slot.purchased)
+          
+          if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
           {
-            ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
-                    v2f(150, 60), 
-                    v4f(0, 0, 0, 1));
-
-            ui_text(str("%s"),
-                    add_2f(pos_from_entity(slot), v2f(-70, 80)),
-                    20,
-                    999,
-                    prefab.weapon[slot->merchant_slot.weapon_kind].name.data);
-
-            ui_text(str("Cost: %i"),
-                    add_2f(pos_from_entity(slot), v2f(-70, 55)),
-                    20,
-                    999,
-                    prefab.weapon[slot->merchant_slot.weapon_kind].merchant.price);
+            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
           }
-        }
-
-        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
-        {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
-        }
-      }
-
-      // - Slot 1 ---
-      {
-        Entity *slot = get_entity_child_at(merchant, 1);
-        P_CollisionParams col = {
-          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
-          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
-        };
-
-        if (p_rect_point_interect(col, mouse_pos))
-        {
-          game.is_ui_hovered = TRUE;
-
-          if (!slot->merchant_slot.purchased)
-          {
-            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
-          }
-
-          if (is_key_just_pressed(Key_Mouse1))
-          {
-            bool purchase_made = slot_purchase_item(slot);
-            if (purchase_made)
-            {
-              game.weapon.ammo_reserved += slot->merchant_slot.ammo_count;
-              slot->sprite = prefab.sprite.ui_slot_coin_empty;
-
-              Entity *weapon_deco = get_entity_child_at(slot, 0);
-              entity_rem_prop(weapon_deco, EntityProp_Renders);
-            }
-          }
-
-          if (!slot->merchant_slot.purchased)
-          {
-            ui_rect(add_2f(pos_from_entity(slot), v2f(-75, 45)),
-                    v2f(150, 60), 
-                    v4f(0, 0, 0, 1));
-
-            ui_text(str("%i ammo"),
-                    add_2f(pos_from_entity(slot), v2f(-70, 80)),
-                    20,
-                    999,
-                    slot->merchant_slot.ammo_count);
-
-            ui_text(str("Cost: %i"),
-                    add_2f(pos_from_entity(slot), v2f(-70, 55)),
-                    20,
-                    999,
-                    slot->merchant_slot.price);
-          }
-        }
-        
-        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
-        {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
-        }
-      }
-
-      // - Slot 2 ---
-      {
-        Entity *slot = get_entity_child_at(merchant, 2);
-        P_CollisionParams col = {
-          .pos = add_2f(pos_bl_from_entity(slot), v2f(4*SPRITE_SCALE, 4*SPRITE_SCALE)),
-          .dim = v2f(9*SPRITE_SCALE, 9*SPRITE_SCALE),
-        };
-
-        if (p_rect_point_interect(col, mouse_pos))
-        {
-          game.is_ui_hovered = TRUE;
-
-          if (!slot->merchant_slot.purchased)
-          {
-            slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE * (3 + 2), dt * LERP_MULT);
-          }
-
-          if (is_key_just_pressed(Key_Mouse1))
-          {
-            bool purchase_made = slot_purchase_item(slot);
-            if (purchase_made)
-            {
-              slot->sprite = prefab.sprite.ui_slot_soul_empty;
-              
-              Entity *child = get_entity_child_at(slot, 0);
-              child->is_active = FALSE;
-              entity_rem_prop(child, EntityProp_Renders);
-            }
-          }
-
-          if (!slot->merchant_slot.purchased)
-          {
-            ui_rect(add_2f(pos_from_entity(slot), v2f(-40, 35)),
-                    v2f(100, 50), 
-                    v4f(0, 0, 0, 1));
-
-            ui_text(str("%i"),
-                    add_2f(pos_from_entity(slot), v2f(-35, 60)),
-                    20,
-                    999,
-                    slot->merchant_slot.ammo_count);
-
-            ui_text(str("Cost: %i"),
-                    add_2f(pos_from_entity(slot), v2f(-35, 40)),
-                    20,
-                    999,
-                    0);
-          }
-        }
-        
-        if (!p_rect_point_interect(col, mouse_pos) || slot->merchant_slot.purchased)
-        {
-          slot->pos.y = lerp_1f(slot->pos.y, SPRITE_SCALE*3, dt * LERP_MULT);
         }
       }
     }
