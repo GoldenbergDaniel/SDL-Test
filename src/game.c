@@ -385,7 +385,7 @@ void update_game(void)
       merchant->scale = lerp_2f(merchant->scale, V2F_ZERO, dt*3);
       merchant->state = EntityState_MerchantLeaving;
 
-      if (to_zero(merchant->scale.x - SPRITE_SCALE, 0.1f) == 0)
+      if (to_zero(merchant->scale.x, 0.1f) == 0)
       {
         merchant->state = EntityState_MerchantGone;
       }
